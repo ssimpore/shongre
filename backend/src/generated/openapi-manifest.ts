@@ -5095,6 +5095,26 @@ export const OPENAPI_OPERATIONS = {
       locale: "string",
     },
   },
+  "GET /messaging/presence": {
+    operationId: "getMessagingPresence",
+    access: "permission",
+    permission: "message.read.own",
+    denyStaffMarketplace: false,
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {
+      conversationIds: "string",
+    },
+  },
+  "POST /messaging/presence": {
+    operationId: "postMessagingPresence",
+    access: "permission",
+    permission: "message.read.own",
+    denyStaffMarketplace: false,
+    requestBodyRequired: true,
+    successStatus: 200,
+    queryParameters: {},
+  },
 } as const;
 
 export type OpenApiOperationKey = keyof typeof OPENAPI_OPERATIONS;

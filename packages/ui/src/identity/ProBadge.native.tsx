@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
 
 const labelTones = StyleSheet.create({
   inverse: { color: nativeColors.text.inverse },
-  primary: { color: nativeColors.action.primary },
+  primary: { color: nativeColors.text.primary },
 });
 
 const labelSizes = StyleSheet.create({

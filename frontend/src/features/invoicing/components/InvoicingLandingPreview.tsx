@@ -111,7 +111,7 @@ export function InvoicingLandingPreview({
     >
       <div className="flex min-h-control-lg items-center justify-between gap-3 border-b border-border-base bg-bg-subtle px-4">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-control bg-primary text-xs font-bold text-text-inverse">
+          <span className="flex h-7 w-7 items-center justify-center rounded-control bg-primary text-xs font-bold text-on-primary">
             S
           </span>
           <span className="text-xs font-bold text-text-main">
@@ -183,7 +183,7 @@ export function InvoicingLandingPreview({
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="rounded-control bg-primary-light px-2 py-1 text-micro font-bold text-primary">
+            <span className="rounded-control bg-primary-light px-2 py-1 text-micro font-bold text-text-main">
               {labels.status}
             </span>
             <span className="rounded-control bg-bg-muted px-2 py-1 text-micro font-bold text-text-secondary">

@@ -30,6 +30,7 @@ import {
   Image,
   ViewModeToggle,
   countActiveSearchParams,
+  useSearchFilterDisclosure,
 } from "../../design-system";
 import type {
   FilterPanelPresentation,
@@ -436,8 +437,13 @@ export const AutoSearchPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const {
+    desktopFiltersExpanded: showDesktopFilters,
+    mobileFiltersExpanded: filterOpen,
+    toggleDesktopFilters,
+    openMobileFilters,
+    closeMobileFilters,
+  } = useSearchFilterDisclosure();
   const requestedView = params.get("view");
   const viewMode =
     requestedView === "list" || requestedView === "map"
@@ -828,16 +834,14 @@ export const AutoSearchPage: React.FC = () => {
             desktopFiltersExpanded={showDesktopFilters}
             mobileFiltersExpanded={filterOpen}
             activeFilterCount={activeFilterCount}
-            onToggleDesktopFilters={() =>
-              setShowDesktopFilters(!showDesktopFilters)
-            }
-            onOpenMobileFilters={() => setFilterOpen(true)}
+            onToggleDesktopFilters={toggleDesktopFilters}
+            onOpenMobileFilters={openMobileFilters}
             actions={
               <Button
                 data-marketplace-action="saved-search.create"
                 aria-label="Créer une alerte"
                 variant="outline"
-                size="sm"
+                size="md"
                 leftIcon={<Bell className="h-icon-sm w-icon-sm" />}
                 onClick={saveAlert}
               >
@@ -851,7 +855,7 @@ export const AutoSearchPage: React.FC = () => {
                   update("view", mode === "grid" ? undefined : mode)
                 }
                 showMap
-                size="sm"
+                size="md"
               />
             }
             sortControl={
@@ -860,7 +864,7 @@ export const AutoSearchPage: React.FC = () => {
                   ariaLabel="Trier les véhicules"
                   headerTitle="Trier par"
                   placement="bottom-right"
-                  size="sm"
+                  size="md"
                   value={query.sort}
                   onChange={(value) => update("sort", value)}
                   options={[
@@ -1101,7 +1105,7 @@ export const AutoSearchPage: React.FC = () => {
       {catalog && (
         <Drawer
           isOpen={filterOpen}
-          onClose={() => setFilterOpen(false)}
+          onClose={closeMobileFilters}
           title="Filtrer les véhicules"
         >
           <AutoFilters
@@ -1112,7 +1116,7 @@ export const AutoSearchPage: React.FC = () => {
             updateLocation={updateLocation}
             locationSelectorId="auto-location-selector-mobile"
             onReset={resetFilters}
-            onApply={() => setFilterOpen(false)}
+            onApply={closeMobileFilters}
             presentation="drawer"
           />
         </Drawer>

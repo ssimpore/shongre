@@ -1,5 +1,5 @@
 import { brandPalette } from "./brand.generated.js";
-import { deriveShongreOrangeTokens } from "#brand-orange";
+import { deriveShongreOrangeTokens, mixHex } from "#brand-orange";
 
 /**
  * Canonical Shongre design-token values.
@@ -114,11 +114,20 @@ const colorPrimitives = {
   yellow500: "oklch(79.5% 0.184 86.047)",
 } as const;
 
-const themeBrandOrange = deriveShongreOrangeTokens(
-  brandPalette.orange,
-  brandPalette.ink,
-  brandPalette.white,
-);
+const themeBrandOrange = deriveShongreOrangeTokens(brandPalette.orange);
+
+// Dark chrome shares the official ink, with distinct layers and control states.
+const inversePalette = {
+  muted: mixHex(brandPalette.ink, brandPalette.white, 0.16),
+  hover: mixHex(brandPalette.ink, brandPalette.white, 0.08),
+  deep: mixHex(brandPalette.ink, colorPrimitives.black, 0.45),
+  border: mixHex(brandPalette.ink, brandPalette.white, 0.36),
+  textBright: mixHex(brandPalette.ink, brandPalette.white, 0.98),
+  textSoft: mixHex(brandPalette.ink, brandPalette.white, 0.95),
+  textFaint: mixHex(brandPalette.ink, brandPalette.white, 0.9),
+  textMuted: mixHex(brandPalette.ink, brandPalette.white, 0.8),
+  textSubtle: mixHex(brandPalette.ink, brandPalette.white, 0.65),
+} as const;
 
 /** Brand, surface, border, text and semantic status colours. */
 export const themeColors = {
@@ -127,17 +136,14 @@ export const themeColors = {
   "brand-background": brandPalette.white,
   "brand-surface-subtle": brandPalette.mist,
 
-  /* The official orange is a brand swatch, not a safe background for white
-     normal-size text (2.95:1). Interactive surfaces therefore retain a
-     centrally derived, darker orange with WCAG AA white contrast. */
+  /* Solid controls share the logo's orange and white foreground. */
   primary: themeBrandOrange.interactive,
+  "on-primary": brandPalette.white,
   "primary-hover": themeBrandOrange.hover,
   "primary-active": themeBrandOrange.active,
   "primary-disabled": themeBrandOrange.disabled,
   "primary-disabled-border": themeBrandOrange.disabledBorder,
-  /* Primary text and icons are frequently paired with this subtle surface.
-     Keep enough separation for normal-size copy as well as decorative icons;
-     the former tint did not meet 4.5:1 against `primary`. */
+  /* Subtle surfaces retain the canonical orange with token-owned alpha. */
   "primary-light": themeBrandOrange.light,
   "primary-surface-faint": themeBrandOrange.surfaceFaint,
   "primary-surface-soft": themeBrandOrange.surfaceSoft,
@@ -166,10 +172,10 @@ export const themeColors = {
   "surface-selected": colorPrimitives.neutral300,
   "surface-strong": colorPrimitives.neutral400,
   "surface-neutral": colorPrimitives.neutral500,
-  "surface-inverse-muted": colorPrimitives.neutral700,
-  "surface-inverse-hover": colorPrimitives.neutral800,
+  "surface-inverse-muted": inversePalette.muted,
+  "surface-inverse-hover": inversePalette.hover,
   "surface-inverse": brandPalette.ink,
-  "surface-inverse-deep": colorPrimitives.neutral950,
+  "surface-inverse-deep": inversePalette.deep,
   "surface-overlay-deep": colorPrimitives.black,
 
   "border-base": brandPalette.border,
@@ -180,9 +186,9 @@ export const themeColors = {
   "border-prominent": colorPrimitives.neutral300,
   "border-strong": colorPrimitives.neutral400,
   "border-neutral": colorPrimitives.neutral500,
-  "border-inverse-muted": colorPrimitives.neutral600,
-  "border-inverse-subtle": colorPrimitives.neutral700,
-  "border-inverse": colorPrimitives.neutral800,
+  "border-inverse-muted": inversePalette.border,
+  "border-inverse-subtle": inversePalette.muted,
+  "border-inverse": inversePalette.hover,
   "border-inverse-strong": brandPalette.ink,
   "border-on-inverse": brandPalette.white,
 
@@ -204,11 +210,11 @@ export const themeColors = {
   "text-strong": colorPrimitives.neutral800,
   "text-deep": colorPrimitives.neutral950,
   "text-inverse": brandPalette.white,
-  "text-inverse-bright": colorPrimitives.neutral50,
-  "text-inverse-soft": colorPrimitives.neutral100,
-  "text-inverse-faint": colorPrimitives.neutral200,
-  "text-inverse-muted": colorPrimitives.neutral300,
-  "text-inverse-subtle": colorPrimitives.neutral400,
+  "text-inverse-bright": inversePalette.textBright,
+  "text-inverse-soft": inversePalette.textSoft,
+  "text-inverse-faint": inversePalette.textFaint,
+  "text-inverse-muted": inversePalette.textMuted,
+  "text-inverse-subtle": inversePalette.textSubtle,
   focus: themeBrandOrange.interactive,
   overlay: "rgb(28 25 23 / 0.6)",
   /* The scrim behind small white text sitting directly on a photo — media
@@ -342,7 +348,7 @@ export const themeColors = {
   "category-real-estate": "#0284C7",
   "category-jobs": "#059669",
   "category-multimedia": "#6366F1",
-  "category-home-garden": "#D97706",
+  "category-home-garden": themeBrandOrange.canonical,
   "category-fashion": "#DB2777",
   "category-leisure": "#8B5CF6",
   "category-services": "#0D9488",
@@ -412,8 +418,10 @@ export const themeRadii = {
  * primitives; numeric steps preserve the compact marketplace composition.
  */
 export const themeText = {
-  "card-title": "0.9375rem",
+  "card-title": "1rem",
+  "card-price": "1.5rem",
   hero: "clamp(2.25rem, 3.75vw, 3rem)",
+  "home-hero-wide": "4rem",
   micro: "0.75rem",
   xs: "0.8125rem",
   sm: "0.875rem",
@@ -443,7 +451,9 @@ export const themeText = {
 
 export const themeTextLineHeights = {
   "card-title": "1.4",
+  "card-price": "1.25",
   hero: "1.06",
+  "home-hero-wide": "1.02",
   micro: "1rem",
   xs: "1.125rem",
   sm: "1.25rem",
@@ -507,6 +517,9 @@ export const themeSpacing = {
   base: "0.25rem",
   "surface-lift": "0.125rem",
   "control-sm": "2rem",
+  /* Favorite controls keep this painted size on touch surfaces; their hit area
+     expands independently to control-touch. */
+  "control-favorite": "2rem",
   "control-md": "2.5rem",
   "control-lg": "3rem",
   "control-fab": "3.25rem",
@@ -521,30 +534,22 @@ export const themeSpacing = {
   "brand-signature-wordmark-compact": "6rem",
   "brand-signature-icon-standard": "2.75rem",
   "brand-signature-wordmark-standard": "7.5rem",
+  "brand-signature-icon-prominent": "6rem",
+  "brand-signature-wordmark-prominent": "18rem",
   /* Compact persistent environment chrome shared by every application shell. */
   "environment-toolbar-height": "3.5rem",
   "select-chevron-size": "0.25rem",
   "select-chevron-offset": "0.75rem",
-  /* Shared compact width for listing cards in rails and desktop grids. Five
-     cards plus four standard gaps fit a 69rem discovery row. */
-  "listing-card": "13rem",
-  /* A one-column phone grid may use the available guttered width, but the card
-     must remain the same compact object rather than stretching with every
-     larger handset. */
-  "listing-card-mobile-max": "19rem",
-  /* Dense result grids may compress standard cards slightly so an available
-     listing can use an otherwise empty desktop column. The card component and
-     height remain shared with homepage rails. */
-  "listing-card-grid-min": "12.5rem",
-  /* One compact card rhythm shared by grids and discovery rails. Essential
-     single-line values truncate within this footprint so neighbours align. */
-  "listing-card-height": "23rem",
-  /* A near-4:5 well at the 13rem canonical width. Keeping one media height for
-     fluid and mobile cards reserves the same complete four-row body everywhere. */
-  "listing-card-media-height": "16rem",
-  /* Kept as a semantic compatibility token for existing showcase shells. A
-     showcase is now the same card, not a taller second anatomy. */
-  "listing-card-showcase-height": "23rem",
+  /* The canonical vertical marketplace card is 220 x 420 CSS pixels. Mobile
+     keeps that footprint when space allows and scales down only below it. */
+  "listing-card": "13.75rem",
+  "listing-card-mobile-max": "13.75rem",
+  "listing-card-grid-min": "13.75rem",
+  /* A media-led crop preserves the reference hierarchy while leaving a fixed
+     body for category, price, title, seller trust and category-specific facts. */
+  "listing-card-height": "26.25rem",
+  "listing-card-media-height": "13.125rem",
+  "listing-card-showcase-height": "26.25rem",
   /* Horizontal result cards share one footprint. The image steps up with the
      available viewport so list mode remains useful on desktop without
      squeezing the copy column on phones. */
@@ -556,6 +561,9 @@ export const themeSpacing = {
      row. A fixed token prevents its intrinsic grid height from changing as
      category-specific decision fields and seller metadata rotate. */
   "listing-card-hero-height": "18.5rem",
+  "listing-card-hero-height-wide": "27.5rem",
+  "listing-card-hero-image": "19rem",
+  "listing-card-hero-wide": "53rem",
   "collection-card": "9.6875rem",
   "collection-card-wide": "11.875rem",
   "recent-search-card": "17rem",
@@ -572,7 +580,6 @@ export const themeSpacing = {
     "calc(100dvh - var(--spacing-messaging-shell-offset-mobile))",
   "messaging-shell-height-desktop":
     "calc(100dvh - var(--spacing-messaging-shell-offset-desktop))",
-  "auth-shell-min": "calc(100vh - 3.5rem)",
   "search-map": "42.5rem",
   "search-map-tall": "45rem",
   "search-map-panel": "calc(100vh - 9rem)",
@@ -673,7 +680,7 @@ export const themeGridTemplates = {
   "agency-fields": "minmax(0, 1fr) 10rem 10rem",
   "listing-grid-fixed": "repeat(auto-fill, var(--spacing-listing-card))",
   "listing-grid-fluid":
-    "repeat(auto-fill, minmax(var(--spacing-listing-card-grid-min), 1fr))",
+    "repeat(auto-fit, minmax(var(--spacing-listing-card-grid-min), 1fr))",
   "description-list": "auto 1fr",
   "plans-tiers": "1fr 1.4fr 1fr",
   "admin-content-aside": "minmax(0, 1fr) 21.25rem",
@@ -683,7 +690,6 @@ export const themeGridTemplates = {
   "trending-columns": "minmax(0, 0.8fr) minmax(0, 1.2fr)",
   "agency-content-aside": "minmax(0, 1.35fr) minmax(18rem, 0.65fr)",
   "agency-content-aside-secondary": "minmax(0, 1fr) minmax(18rem, 0.7fr)",
-  footer: "repeat(3, minmax(0, 1fr)) minmax(16rem, 1.25fr)",
 } as const;
 
 /** Semantic 4px spacing scale shared by CSS utilities and React Native. */
@@ -695,7 +701,7 @@ export const themeGridTemplates = {
  */
 export const themeAspect = {
   brandLogo: "240 / 61",
-  listingCard: "4 / 5",
+  listingCard: "29 / 25",
   media: "4 / 3",
   square: "1 / 1",
   video: "16 / 9",

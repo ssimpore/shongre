@@ -2,6 +2,7 @@ import React from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { cn } from "../utils/variants";
+import { Button } from "./Button";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
@@ -56,55 +57,34 @@ export const FilterPanelToggle: React.FC<FilterPanelToggleProps> = ({
       : t("ui.filterPanel.show");
 
   return (
-    <button
+    <Button
       type="button"
+      variant="secondary"
+      size="md"
       onClick={onToggle}
       aria-controls={controls}
       aria-expanded={isExpanded}
       aria-label={accessibleLabel}
       title={accessibleLabel}
       className={cn(
-        "shrink-0 cursor-pointer items-center gap-1.5 rounded-control text-xs font-semibold uppercase tracking-wider",
-        CONTROL_MOTION_CLASS,
-        CONTROL_FOCUS_CLASS,
-        isDrawer
-          ? "inline-flex h-control-sm px-2.5 sm:px-3 lg:hidden"
-          : "hidden px-2 py-1 lg:inline-flex",
-        activeCount > 0 && isDrawer
-          ? "bg-primary text-text-inverse shadow-xs"
-          : isDrawer
-            ? "border border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
-            : isExpanded
-              ? /* Open. Since the wording no longer changes, the surface is
-                   what distinguishes the two states for a sighted reader — and
-                   the panel appearing beside it is the other half of that
-                   signal, so this is never colour on its own. */
-                "border border-primary-border bg-primary-light text-primary hover:bg-primary-light"
-              : "border border-transparent text-text-main hover:text-primary",
+        "shrink-0 gap-2 shadow-sm",
+        isDrawer ? "inline-flex lg:hidden" : "hidden lg:inline-flex",
+        (isExpanded || activeCount > 0) &&
+          "border-primary-border bg-primary-surface-soft hover:bg-primary-light",
         className,
       )}
     >
-      {/* The same icon and the same word as the panel's own heading, in every
-          state. The control used to become "Masquer" with a panel-collapse
-          icon once open, which named the *action* rather than the thing — so
-          the button a reader had learned to look for as "Filtres" was not
-          there any more, and the one word that would have led them back to it
-          was the one word missing from the screen. What the press will do is
-          still announced, through `aria-label` and `aria-expanded`. */}
-      <SlidersHorizontal
-        className={cn(
-          "h-icon-sm w-icon-sm",
-          activeCount > 0 && isDrawer ? "text-text-inverse" : "text-primary",
-        )}
-        aria-hidden="true"
-      />
-      <span>{t("ui.filterPanel.filters")}</span>
-      {activeCount > 0 && isDrawer ? (
-        <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-bg-surface px-1 text-micro font-bold text-primary">
+      {/* Keep the visible label stable; aria-expanded announces disclosure. */}
+      <SlidersHorizontal className="h-icon-md w-icon-md" aria-hidden="true" />
+      <span className={isDrawer ? "sr-only sm:not-sr-only" : undefined}>
+        {t("ui.filterPanel.filters")}
+      </span>
+      {activeCount > 0 ? (
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-bg-surface px-1 text-micro font-bold text-text-main">
           {activeCount}
         </span>
       ) : null}
-    </button>
+    </Button>
   );
 };
 

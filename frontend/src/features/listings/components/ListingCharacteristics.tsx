@@ -12,7 +12,7 @@ import { useTranslation } from "../../../i18n/I18nProvider";
 export interface ListingCharacteristicsProps {
   data: ListingCharacteristicsData | null;
   state: "loading" | "ready" | "error";
-  onRetry: () => void;
+  onRetry?: () => void;
   className?: string;
 }
 
@@ -60,13 +60,15 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
         className={`rounded-card border border-border-base bg-bg-surface p-5 text-sm text-text-supporting ${className}`}
       >
         <p>{t("listings.characteristics.unavailable")}</p>
-        <button
-          type="button"
-          className="mt-3 min-h-control-target font-semibold text-primary hover:underline"
-          onClick={onRetry}
-        >
-          {t("common.retry")}
-        </button>
+        {onRetry ? (
+          <button
+            type="button"
+            className="mt-3 min-h-control-target font-semibold text-primary hover:underline"
+            onClick={onRetry}
+          >
+            {t("common.retry")}
+          </button>
+        ) : null}
       </div>
     );
   }
@@ -77,7 +79,8 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
 
   // Only the first row of capabilities is shown until asked; a rental can
   // declare dozens and they would otherwise push the description off-screen.
-  const visibleFeatures = featuresExpanded ? features : features.slice(0, 6);
+  const visibleFeatures = features.slice(0, 6);
+  const additionalFeatures = features.slice(6);
 
   return (
     <div
@@ -105,9 +108,11 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
               >
                 {additionalGroups.map((group) => (
                   <div key={group.id} data-detail-fact-group={group.id}>
-                    <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-text-tertiary">
-                      {group.label}
-                    </h3>
+                    {group.label ? (
+                      <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-text-tertiary">
+                        {group.label}
+                      </h3>
+                    ) : null}
                     <DetailFactList facts={group.facts} />
                   </div>
                 ))}
@@ -120,14 +125,19 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
       {features.length ? (
         <DetailSection title={t("listings.characteristics.amenities")}>
           <DetailFeatureList features={visibleFeatures} />
-          {features.length > visibleFeatures.length || featuresExpanded ? (
-            <DetailDisclosure
-              controls={featuresId}
-              expanded={featuresExpanded}
-              onToggle={() => setFeaturesExpanded((open) => !open)}
-              label={t("listings.characteristics.showAllAmenities")}
-              expandedLabel={t("listings.characteristics.hideAllAmenities")}
-            />
+          {additionalFeatures.length ? (
+            <>
+              <DetailDisclosure
+                controls={featuresId}
+                expanded={featuresExpanded}
+                onToggle={() => setFeaturesExpanded((open) => !open)}
+                label={t("listings.characteristics.showAllAmenities")}
+                expandedLabel={t("listings.characteristics.hideAllAmenities")}
+              />
+              <div id={featuresId} hidden={!featuresExpanded} className="mt-5">
+                <DetailFeatureList features={additionalFeatures} />
+              </div>
+            </>
           ) : null}
         </DetailSection>
       ) : null}

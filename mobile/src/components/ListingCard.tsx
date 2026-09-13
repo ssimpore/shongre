@@ -45,6 +45,10 @@ export function ListingCard({ listing }: { listing: ListingCardView }) {
       }
       labels={{
         boosted: messagesFr["ui.listingCard.boosted"],
+        sponsored: messagesFr["ui.listingCard.sponsored"],
+        featured: messagesFr["ui.listingCard.featured"],
+        urgent: messagesFr["ui.listingCard.urgent"],
+        promotion: messagesFr["ui.listingCard.promotion"],
         delivery: messagesFr["ui.listingCard.delivery"],
         digitalFulfillment: messagesFr["ui.listingCard.digitalFulfillment"],
         free: messagesFr["ui.listingCard.free"],
@@ -62,6 +66,7 @@ export function ListingCard({ listing }: { listing: ListingCardView }) {
             .replace("{rating}", rating)
             .replace("{count}", count),
         verifiedSeller: messagesFr["ui.listingCard.verifiedSeller"],
+        verifiedSellerShort: messagesFr["ui.listingCard.verifiedSellerShort"],
       }}
       identityLabels={{
         pro: messagesFr["ui.identityStatus.pro.short"],

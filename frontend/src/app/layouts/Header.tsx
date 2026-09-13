@@ -550,8 +550,8 @@ export const Header: React.FC = () => {
 
   return (
     <header className="border-b border-border-base bg-bg-surface/95 shadow-xs backdrop-blur-md">
-      <Container>
-        <div className="flex items-center justify-between h-16 gap-3 sm:gap-6">
+      <Container width="full">
+        <div className="flex h-16 items-center justify-between gap-3 sm:gap-6 xl:h-18">
           {/* Logo & Category trigger.
               `min-w-0` rather than `shrink-0`: on tablet the wordmark is allowed
               to give up space to the search field instead of forcing the row
@@ -651,7 +651,7 @@ export const Header: React.FC = () => {
             >
               <Heart className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
               {favCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-text-inverse text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-on-primary text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {favCount}
                 </span>
               )}
@@ -666,7 +666,7 @@ export const Header: React.FC = () => {
             >
               <MessageSquare className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
               {unreadMessagesCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-text-inverse text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-on-primary text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {unreadMessagesCount}
                 </span>
               )}
@@ -851,13 +851,13 @@ export const Header: React.FC = () => {
           onTouchStart={revealCategoryNav}
           className={`bg-bg-surface/95 backdrop-blur-md motion-layout ${
             isCategoryNavVisible
-              ? "visible max-h-control-md translate-y-0 overflow-visible opacity-100"
+              ? "visible max-h-control-touch translate-y-0 overflow-visible opacity-100"
               : "invisible pointer-events-none max-h-0 -translate-y-1 overflow-hidden opacity-0"
           }`}
         >
-          <Container>
+          <Container width="full">
             <Suspense
-              fallback={<div className="h-control-md" aria-hidden="true" />}
+              fallback={<div className="h-control-touch" aria-hidden="true" />}
             >
               <HeaderCategoryNav
                 activeCategorySlug={activeCategorySlug}
@@ -1010,7 +1010,7 @@ export const Header: React.FC = () => {
                         <Link
                           to="/inscription"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-text-inverse bg-primary rounded-control hover:bg-primary-hover active:bg-primary-active ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
+                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-on-primary bg-primary rounded-control hover:bg-primary-hover active:bg-primary-active ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
                         >
                           S'inscrire
                         </Link>
@@ -1045,7 +1045,7 @@ export const Header: React.FC = () => {
                     <Link
                       to="/recherche?view=map"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-primary bg-primary-light hover:bg-primary-surface-soft transition-colors"
+                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-text-main bg-primary-light hover:bg-primary-surface-soft transition-colors"
                     >
                       <span className="flex items-center gap-2.5">
                         <MapIcon className="w-icon-md h-icon-md text-primary" />

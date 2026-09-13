@@ -156,7 +156,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                       }}
                       className={`flex items-center justify-between min-h-control-sm px-3 py-2 rounded-control text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer group select-none ${
                         isSelected
-                          ? "bg-primary-light text-primary font-semibold"
+                          ? "bg-primary-light text-text-main font-semibold"
                           : "text-text-strong hover:bg-surface-soft"
                       }`}
                     >
@@ -226,7 +226,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                       }}
                       className={`flex items-center justify-between min-h-control-sm px-3 py-2 rounded-control text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer group select-none ${
                         isSelected
-                          ? "bg-primary-light text-primary font-semibold"
+                          ? "bg-primary-light text-text-main font-semibold"
                           : "text-text-strong hover:bg-surface-soft"
                       }`}
                     >
@@ -336,7 +336,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                       }}
                       className={`flex items-center justify-between min-h-control-sm px-3 py-2 rounded-control text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer group select-none ${
                         isSelected
-                          ? "bg-primary-light text-primary font-semibold"
+                          ? "bg-primary-light text-text-main font-semibold"
                           : "text-text-strong hover:bg-surface-soft"
                       }`}
                     >

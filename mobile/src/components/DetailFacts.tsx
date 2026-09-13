@@ -72,12 +72,8 @@ export function DetailFactList({ facts }: { facts: readonly DetailFact[] }) {
           <View style={styles.iconBadge}>
             <SemanticIcon name={fact.icon} size="sm" color={colors.text} />
           </View>
-          <Text style={styles.label} numberOfLines={2}>
-            {fact.label}
-          </Text>
-          <Text style={styles.value} numberOfLines={2}>
-            {fact.value}
-          </Text>
+          <Text style={styles.label}>{fact.label}</Text>
+          <Text style={styles.value}>{fact.value}</Text>
         </View>
       ))}
     </View>
@@ -104,9 +100,7 @@ export function DetailFeatureList({
           <View style={styles.iconBadge}>
             <SemanticIcon name={feature.icon} size="sm" color={colors.text} />
           </View>
-          <Text style={styles.featureLabel} numberOfLines={2}>
-            {feature.label}
-          </Text>
+          <Text style={styles.featureLabel}>{feature.label}</Text>
         </View>
       ))}
     </View>

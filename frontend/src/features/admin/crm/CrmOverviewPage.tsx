@@ -173,7 +173,7 @@ export const CrmOverviewPage: React.FC = () => {
       ),
       detail: "Valeur commerciale brute",
       icon: BriefcaseBusiness,
-      tone: "text-primary bg-primary-light border-primary-border-soft",
+      tone: "text-text-main bg-primary-light border-primary-border-soft",
     },
     {
       label: t("admin.crmOverviewPage.pipelinePondere"),
@@ -501,7 +501,7 @@ export const CrmOverviewPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex rounded-pill bg-primary-light px-2 py-1 text-micro font-bold text-primary">
+                    <span className="inline-flex rounded-pill bg-primary-light px-2 py-1 text-micro font-bold text-text-main">
                       {opportunity.stageName}
                     </span>
                   </td>

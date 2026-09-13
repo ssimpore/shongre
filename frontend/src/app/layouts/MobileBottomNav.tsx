@@ -144,7 +144,7 @@ export const MobileBottomNav: React.FC = () => {
                   /* The digit is decorative: the `sr-only` sentence beside it
                      already says the count in words. Announcing both made the
                      item read as "1 1 message non lu Messages". */
-                  <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-primary text-text-inverse text-micro font-bold flex items-center justify-center shadow-xs border-2 border-border-on-inverse">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-primary text-on-primary text-micro font-bold flex items-center justify-center shadow-xs border-2 border-border-on-inverse">
                     <span aria-hidden="true">{unreadMessagesCount}</span>
                     <span className="sr-only">
                       {" "}

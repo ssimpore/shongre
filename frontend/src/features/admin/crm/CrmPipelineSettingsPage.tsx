@@ -289,7 +289,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-bold">{pipeline.name}</h2>
                   {pipeline.isDefault && (
-                    <span className="rounded-pill bg-primary-light px-2 py-1 text-micro font-bold text-primary">
+                    <span className="rounded-pill bg-primary-light px-2 py-1 text-micro font-bold text-text-main">
                       {t("admin.crmPipelineSettingsPage.parDefaut")}
                     </span>
                   )}

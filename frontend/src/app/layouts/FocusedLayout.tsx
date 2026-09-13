@@ -31,7 +31,7 @@ export const FocusedLayout: React.FC = () => {
         <header className="border-b border-border-base bg-bg-surface">
           <Container
             width="task"
-            className="h-14 flex items-center justify-between gap-3"
+            className="h-14 grid grid-cols-3 items-center gap-3"
           >
             {/* `hidden sm:inline` on the only label left this button with no
               accessible name at all below `sm` — the icon is aria-hidden, so a
@@ -41,7 +41,7 @@ export const FocusedLayout: React.FC = () => {
             <button
               type="button"
               onClick={goBack}
-              className="inline-flex items-center justify-center gap-1.5 h-control-touch min-w-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-text-emphasis hover:text-text-deep hover:bg-bg-subtle motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-w-0"
+              className="inline-flex justify-self-start items-center justify-center gap-1.5 h-control-touch min-w-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-text-emphasis hover:text-text-deep hover:bg-bg-subtle motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-w-0"
             >
               <ArrowLeft className="w-icon-md h-icon-md" />
               <span className="sr-only sm:not-sr-only">Retour</span>
@@ -49,7 +49,7 @@ export const FocusedLayout: React.FC = () => {
 
             <Link
               to={routes.home()}
-              className="flex items-center select-none min-w-0"
+              className="flex justify-self-center items-center select-none"
               aria-label="SHONGRE., accueil"
             >
               <BrandHeaderSignature priority />
@@ -60,7 +60,7 @@ export const FocusedLayout: React.FC = () => {
             <Link
               to={routes.home()}
               aria-label={t("shell.focusedLayout.quitterEtRevenirAL")}
-              className="inline-flex items-center justify-center w-control-touch h-control-touch -mr-2 rounded-control text-text-supporting hover:text-text-deep hover:bg-bg-subtle motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex justify-self-end items-center justify-center w-control-touch h-control-touch -mr-2 rounded-control text-text-supporting hover:text-text-deep hover:bg-bg-subtle motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               <X className="w-icon-lg h-icon-lg" />
             </Link>
@@ -70,7 +70,7 @@ export const FocusedLayout: React.FC = () => {
 
       {/* No marketplace footer and no bottom tab bar: the flow's own primary
           action owns the bottom of the screen. */}
-      <main id="main-content" tabIndex={-1} className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex flex-1 flex-col">
         <Outlet />
       </main>
     </div>

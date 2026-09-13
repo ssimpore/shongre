@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **540**
-- Specification SHA-256: `73e00f6e6bea8c84`
+- Operations: **542**
+- Specification SHA-256: `8f9e23144e543b86`
 
 ## account
 
@@ -634,6 +634,8 @@
 | `POST` | `/messaging/offer` | `postMessagingOffer` | `permission` | `message.send` | `200` |
 | `POST` | `/messaging/offers/{id}/counter` | `postMessagingOffersIdCounter` | `permission` | `message.send` | `200` |
 | `POST` | `/messaging/offers/{id}/withdraw` | `postMessagingOffersIdWithdraw` | `permission` | `message.send` | `200` |
+| `GET` | `/messaging/presence` | `getMessagingPresence` | `permission` | `message.read.own` | `200` |
+| `POST` | `/messaging/presence` | `postMessagingPresence` | `permission` | `message.read.own` | `200` |
 | `POST` | `/messaging/read` | `postMessagingRead` | `permission` | `message.read.own` | `200` |
 | `POST` | `/messaging/schedule-pickup` | `postMessagingSchedulePickup` | `permission` | `message.send` | `200` |
 | `POST` | `/messaging/unblock` | `postMessagingUnblock` | `permission` | `message.block` | `200` |

@@ -4,6 +4,7 @@ import {
 } from "../../../domains/user/user.domain";
 import React, { useEffect, useState } from "react";
 import { ProBadge, VerificationBadge } from "@shongre/ui/web";
+import type { UserPresence } from "@shongre/shared/presence";
 
 import {
   MapPin,
@@ -19,7 +20,7 @@ import {
   List,
 } from "lucide-react";
 import { PublicSellerProfile } from "../../../types";
-import { Avatar } from "../../../design-system/primitives/Badge";
+import { SellerAvatarWithPresence } from "../../../design-system/components/SellerAvatarWithPresence";
 import { Button } from "../../../design-system/primitives/Button";
 import { IconButton } from "../../../design-system/primitives/IconButton";
 import { useAuth } from "../../../app/providers/AuthProvider";
@@ -36,6 +37,7 @@ export interface SellerProfileHeaderProps {
   isOwnProfile: boolean;
   onContactClick: () => void;
   onOpenReportModal: () => void;
+  presence?: UserPresence;
 }
 
 export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
@@ -45,6 +47,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
   isOwnProfile,
   onContactClick,
   onOpenReportModal,
+  presence,
 }) => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
@@ -176,20 +179,25 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
       <div className="p-6 sm:p-8 relative">
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-8">
           {/* Avatar & Main Identity */}
-          <div className="flex items-start gap-5 w-full md:w-auto">
-            <div className="relative shrink-0 -mt-16 sm:-mt-20">
-              <Avatar
-                src={seller.avatarUrl}
-                name={displayName}
-                size="2xl"
-                isVerified={seller.isVerified}
-                className="ring-4 ring-border-on-inverse shadow-md"
-              />
-            </div>
+          <div
+            className="flex items-start gap-5 w-full md:w-auto"
+            data-seller-profile-identity="true"
+          >
+            <SellerAvatarWithPresence
+              src={seller.avatarUrl}
+              name={displayName}
+              size="2xl"
+              presence={presence}
+              className="-mt-16 sm:-mt-20"
+              avatarClassName="ring-4 ring-border-on-inverse shadow-md"
+            />
 
             <div className="min-w-0 flex-1 pb-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-main leading-tight">
+                <h1
+                  className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-main leading-tight"
+                  data-seller-name="true"
+                >
                   {displayName}
                 </h1>
                 {isPro ? (
@@ -198,17 +206,15 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                     label={t("ui.identityStatus.pro.short")}
                     accessibilityLabel={t("ui.identityStatus.pro.account")}
                   />
-                ) : (
-                  <span className="text-xs font-semibold text-text-tertiary bg-surface-muted px-2 py-1 rounded-full">
-                    Particulier
-                  </span>
-                )}
+                ) : null}
                 {showsVerifiedBadge(seller) && (
                   <VerificationBadge
+                    size="xs"
                     label={t("ui.identityStatus.verification.generic")}
                     accessibilityLabel={t(
                       "ui.identityStatus.verification.profile",
                     )}
+                    showIcon={false}
                   />
                 )}
               </div>
@@ -308,7 +314,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   size="md"
                   onClick={handleShare}
                   ariaLabel={t("profile.sellerProfileHeader.partagerCeProfil")}
-                  className="!h-control-touch !w-control-touch shrink-0"
+                  className="shrink-0"
                 >
                   <Share2 className="w-icon-lg h-icon-lg" />
                 </IconButton>
@@ -322,7 +328,6 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                     ariaLabel={t(
                       "profile.sellerProfileHeader.optionsSupplementaires",
                     )}
-                    className="!h-control-touch !w-control-touch"
                   >
                     <MoreVertical className="w-icon-lg h-icon-lg" />
                   </IconButton>

@@ -20,7 +20,7 @@ export const NewsletterLandingPage: React.FC = () => {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16 space-y-12">
       {/* 1. Header & Value Proposition */}
       <div className="text-center max-w-2xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-text-main text-xs font-bold">
           <Mail className="w-icon-sm h-icon-sm" />
           <span>
             {t("newsletter.newsletterLandingPage.laNewsletterShongre")}
@@ -37,8 +37,8 @@ export const NewsletterLandingPage: React.FC = () => {
       </div>
 
       {/* 2. Embedded Main Signup Band */}
-      <div className="max-w-3xl mx-auto">
-        <NewsletterSignup variant="band" source="newsletter_page" />
+      <div className="max-w-4xl mx-auto">
+        <NewsletterSignup source="newsletter_page" />
       </div>
 
       {/* 3. Topics Grid */}

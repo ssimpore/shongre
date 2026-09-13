@@ -78,6 +78,15 @@ function messagePage(response: MessageWireResponse): {
 }
 
 export interface MessagingService {
+  updatePresence(
+    heartbeat: import("@shongre/shared/presence").PresenceHeartbeat,
+    signal?: AbortSignal,
+  ): Promise<{ readonly updated: boolean }>;
+  getPresence(
+    conversationIds: readonly string[],
+    marketCode: string,
+    signal?: AbortSignal,
+  ): Promise<import("@shongre/shared/presence").ConversationPresencePage>;
   list(userId: string, marketCode: string): Promise<MobileConversation[]>;
   messages(
     conversationId: string,
@@ -147,6 +156,24 @@ const mapConversation = (
 });
 
 export class HttpMessagingService implements MessagingService {
+  async updatePresence(
+    heartbeat: import("@shongre/shared/presence").PresenceHeartbeat,
+    signal?: AbortSignal,
+  ) {
+    return apiOperation("postMessagingPresence", { body: heartbeat, signal });
+  }
+
+  async getPresence(
+    conversationIds: readonly string[],
+    marketCode: string,
+    signal?: AbortSignal,
+  ) {
+    return apiOperation(
+      "getMessagingPresence",
+      { query: { conversationIds: conversationIds.join(",") }, signal },
+      marketCode,
+    );
+  }
   async list(
     userId: string,
     marketCode: string,

@@ -30,6 +30,7 @@ import {
   StatePanel,
   ViewModeToggle,
   countActiveSearchParams,
+  useSearchFilterDisclosure,
 } from "../../design-system";
 import type {
   FilterPanelPresentation,
@@ -281,8 +282,13 @@ export const EmploymentSearchPage: React.FC = () => {
   );
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(false);
-  const [mobileFilters, setMobileFilters] = useState(false);
-  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const {
+    desktopFiltersExpanded: showDesktopFilters,
+    mobileFiltersExpanded: mobileFilters,
+    toggleDesktopFilters,
+    openMobileFilters,
+    closeMobileFilters,
+  } = useSearchFilterDisclosure();
   const requestedView = params.get("view");
   const viewMode =
     requestedView === "list" || requestedView === "map"
@@ -698,14 +704,13 @@ export const EmploymentSearchPage: React.FC = () => {
           desktopFiltersExpanded={showDesktopFilters}
           mobileFiltersExpanded={mobileFilters}
           activeFilterCount={activeFilterCount}
-          onToggleDesktopFilters={() =>
-            setShowDesktopFilters(!showDesktopFilters)
-          }
-          onOpenMobileFilters={() => setMobileFilters(true)}
+          onToggleDesktopFilters={toggleDesktopFilters}
+          onOpenMobileFilters={openMobileFilters}
           actions={
             <Button
+              aria-label={savingAlert ? "Création…" : "Créer une alerte"}
               variant="outline"
-              size="sm"
+              size="md"
               leftIcon={<Bell className="h-icon-sm w-icon-sm" />}
               onClick={createAlert}
               disabled={savingAlert}
@@ -722,7 +727,7 @@ export const EmploymentSearchPage: React.FC = () => {
                 setParam("view", mode === "grid" ? undefined : mode)
               }
               showMap
-              size="sm"
+              size="md"
             />
           }
           sortControl={
@@ -731,7 +736,7 @@ export const EmploymentSearchPage: React.FC = () => {
                 ariaLabel="Trier les offres"
                 headerTitle="Trier par"
                 placement="bottom-right"
-                size="sm"
+                size="md"
                 value={query.sort}
                 onChange={(value) => setParam("sort", value)}
                 options={[
@@ -898,7 +903,7 @@ export const EmploymentSearchPage: React.FC = () => {
       {catalog ? (
         <Drawer
           isOpen={mobileFilters}
-          onClose={() => setMobileFilters(false)}
+          onClose={closeMobileFilters}
           title="Filtres emploi"
         >
           <EmploymentFilters
@@ -911,7 +916,7 @@ export const EmploymentSearchPage: React.FC = () => {
             onReset={resetFilters}
             presentation="drawer"
             resultCount={total}
-            onApply={() => setMobileFilters(false)}
+            onApply={closeMobileFilters}
           />
         </Drawer>
       ) : null}

@@ -92,7 +92,7 @@ export function InvoicingActivationPage() {
             {alreadyActive ? (
               <a
                 href={applicationHref("facturation", "/onboarding")}
-                className="inline-flex min-h-control-md items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-text-inverse"
+                className="inline-flex min-h-control-md items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-on-primary"
               >
                 Continuer la configuration
                 <ArrowRight

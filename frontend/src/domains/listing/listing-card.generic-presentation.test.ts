@@ -68,6 +68,7 @@ describe("generic listing-card presentation", () => {
         cardCharacteristics: [
           {
             code: "fuel",
+            icon: "fuel" as const,
             labels: { "fr-FR": "Énergie" },
             values: { "fr-FR": "Électrique", "en-US": "Electric" },
           },
@@ -82,7 +83,7 @@ describe("generic listing-card presentation", () => {
     expect(
       getGenericListingCardCharacteristicPresentation(listing, "en-GB"),
     ).toEqual([
-      { icon: "tag", label: "Electric" },
+      { icon: "fuel", label: "Electric" },
       { icon: "tag", label: "10 km" },
     ]);
     expect(

@@ -1,0 +1,314 @@
+- generic [active] [ref=f7e1]:
+  - generic [ref=f7e2]:
+    - link "Aller au contenu principal" [ref=f7e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=f7e4]:
+      - generic [ref=f7e6]:
+        - generic [ref=f7e7]:
+          - generic [ref=f7e8]: test
+          - generic [ref=f7e13]: Données fournies par l’API Shongre
+        - button "Réduire la barre d’environnement" [expanded] [ref=f7e15] [cursor=pointer]
+      - banner [ref=f7e19]:
+        - generic [ref=f7e21]:
+          - generic [ref=f7e22]:
+            - link "SHONGRE. France, accueil" [ref=f7e23] [cursor=pointer]:
+              - /url: /
+              - img "SHONGRE." [ref=f7e24]:
+                - generic [aria-hidden] [ref=f7e28]: France
+            - 'button "Langue et préférences régionales : Français" [ref=f7e31] [cursor=pointer]':
+              - generic [ref=f7e37]: fr
+          - search "Recherche globale" [ref=f7e43]:
+            - button "Sélectionner une catégorie" [ref=f7e45] [cursor=pointer]:
+              - generic [ref=f7e50]: Catégories
+            - combobox "Rechercher une annonce" [ref=f7e57]
+            - button "Lancer la recherche" [ref=f7e58] [cursor=pointer]
+          - generic [ref=f7e62]:
+            - link "Déposer une annonce" [ref=f7e64] [cursor=pointer]:
+              - /url: /deposer
+            - link "Favoris" [ref=f7e70] [cursor=pointer]:
+              - /url: /compte/favoris
+            - link "Messagerie" [ref=f7e73] [cursor=pointer]:
+              - /url: /compte/messages
+            - button "Notifications" [ref=f7e78] [cursor=pointer]
+            - link "Se connecter" [ref=f7e325] [cursor=pointer]:
+              - /url: /connexion
+        - navigation "Filtres par catégorie" [ref=f7e86]:
+          - generic [ref=f7e89]:
+            - region "Navigation par catégorie" [ref=f7e90]:
+              - list [ref=f7e91]:
+                - listitem [ref=f7e1990]:
+                  - link "Immobilier" [ref=f7e1991] [cursor=pointer]:
+                    - /url: /immo
+                - listitem [ref=f7e1998]:
+                  - link "Véhicules" [ref=f7e1999] [cursor=pointer]:
+                    - /url: /auto
+                - listitem [ref=f7e2006]:
+                  - link "Outils pro" [ref=f7e2007] [cursor=pointer]:
+                    - /url: /recherche?category=materiel-professionnel
+                - listitem [ref=f7e2015]:
+                  - link "Emploi" [ref=f7e2016] [cursor=pointer]:
+                    - /url: /emploi
+                - listitem [ref=f7e2023]:
+                  - link "Mode" [ref=f7e2024] [cursor=pointer]:
+                    - /url: /recherche?category=mode
+                - listitem [ref=f7e2029]:
+                  - link "Maison" [ref=f7e2030] [cursor=pointer]:
+                    - /url: /recherche?category=maison-jardin
+                - listitem [ref=f7e2036]:
+                  - link "Bébé & Famille" [ref=f7e2037] [cursor=pointer]:
+                    - /url: /recherche?category=bebe-famille
+                - listitem [ref=f7e2043]:
+                  - link "Électronique" [ref=f7e2044] [cursor=pointer]:
+                    - /url: /recherche?category=electronique
+                - listitem [ref=f7e2049]:
+                  - link "Loisirs & Culture" [ref=f7e2050] [cursor=pointer]:
+                    - /url: /recherche?category=loisirs-culture
+                - listitem [ref=f7e2055]:
+                  - link "Éducation" [ref=f7e2056] [cursor=pointer]:
+                    - /url: /education
+                - listitem [ref=f7e2062]:
+                  - link "Autres" [ref=f7e2063] [cursor=pointer]:
+                    - /url: /categories
+                - listitem [ref=f7e2070]:
+                  - link "Promotions" [ref=f7e2071] [cursor=pointer]:
+                    - /url: /offres-prix-reduit
+            - button "Faire défiler les catégories vers la droite" [ref=f7e2078]
+    - main [ref=f7e92]:
+      - generic [ref=f7e2081]:
+        - generic [ref=f7e2082]:
+          - heading "Toutes les annonces" [level=1] [ref=f7e2083]
+          - paragraph [ref=f7e2084]: Recherche en cours…
+        - generic [ref=f7e2085]:
+          - complementary "Filtres de recherche" [ref=f7e2086]:
+            - generic [ref=f7e2087]:
+              - generic [ref=f7e2088]:
+                - heading "Filtres" [level=2] [ref=f7e2089]
+                - button "Réinitialiser" [ref=f7e2092]
+              - generic [ref=f7e2093]:
+                - generic [ref=f7e2094]:
+                  - generic [ref=f7e2095]: Catégories
+                  - button "Filtrer par catégorie" [ref=f7e2098] [cursor=pointer]:
+                    - generic [ref=f7e2099]: Toutes les catégories
+                - generic [ref=f7e2107]:
+                  - generic [ref=f7e2108]: Localisation
+                  - 'button "Localisation : Toute la France" [ref=f7e2109] [cursor=pointer]':
+                    - generic [ref=f7e2110]: Toute la France
+                - generic [ref=f7e2117]:
+                  - heading "Type de vendeur" [level=2] [ref=f7e2118]
+                  - generic [ref=f7e2119]:
+                    - generic [ref=f7e2120] [cursor=pointer]:
+                      - radio "Tous les vendeurs" [checked] [ref=f7e2121]
+                      - generic [ref=f7e2122]: Tous les vendeurs
+                    - generic [ref=f7e2123] [cursor=pointer]:
+                      - radio "Particuliers uniquement" [ref=f7e2124]
+                      - generic [ref=f7e2125]: Particuliers uniquement
+                    - generic [ref=f7e2126] [cursor=pointer]:
+                      - radio "Professionnels (Boutiques)" [ref=f7e2127]
+                      - generic [ref=f7e2128]: Professionnels (Boutiques)
+                - generic [ref=f7e2129]:
+                  - heading "État" [level=2] [ref=f7e2130]
+                  - generic [ref=f7e2131]:
+                    - generic [ref=f7e2132] [cursor=pointer]:
+                      - checkbox "Neuf avec étiquette" [ref=f7e2133]
+                      - generic [ref=f7e2134]: Neuf avec étiquette
+                    - generic [ref=f7e2135] [cursor=pointer]:
+                      - checkbox "Neuf sans étiquette" [ref=f7e2136]
+                      - generic [ref=f7e2137]: Neuf sans étiquette
+                    - generic [ref=f7e2138] [cursor=pointer]:
+                      - checkbox "Très bon état" [ref=f7e2139]
+                      - generic [ref=f7e2140]: Très bon état
+                    - generic [ref=f7e2141] [cursor=pointer]:
+                      - checkbox "Bon état" [ref=f7e2142]
+                      - generic [ref=f7e2143]: Bon état
+                    - generic [ref=f7e2144] [cursor=pointer]:
+                      - checkbox "État correct" [ref=f7e2145]
+                      - generic [ref=f7e2146]: État correct
+                    - generic [ref=f7e2147] [cursor=pointer]:
+                      - checkbox "Pour pièces" [ref=f7e2148]
+                      - generic [ref=f7e2149]: Pour pièces
+                - generic [ref=f7e2150]:
+                  - heading "Prix (€)" [level=2] [ref=f7e2151]
+                  - generic [ref=f7e2152]:
+                    - generic [ref=f7e2153]: Tous les prix
+                    - generic [ref=f7e2155]:
+                      - slider "Prix minimum": "0"
+                      - slider "Prix maximum": "29"
+                    - generic [ref=f7e2157]:
+                      - generic [ref=f7e2158]: 0 €
+                      - generic [ref=f7e2159]: 500 000 €+
+                - generic [ref=f7e2160]:
+                  - generic [ref=f7e2161] [cursor=pointer]:
+                    - checkbox "Livraison disponible Mondial Relay, Colissimo" [ref=f7e2162]
+                    - generic [ref=f7e2163]:
+                      - generic [ref=f7e2164]: Livraison disponible
+                      - generic [ref=f7e2165]: Mondial Relay, Colissimo
+                  - generic [ref=f7e2166] [cursor=pointer]:
+                    - checkbox "Paiement sécurisé en ligne" [ref=f7e2167]
+                    - generic [ref=f7e2168]: Paiement sécurisé en ligne
+                  - generic [ref=f7e2170] [cursor=pointer]:
+                    - checkbox "Bons plans uniquement" [ref=f7e2171]
+                    - generic [ref=f7e2172]: Bons plans uniquement
+          - generic [ref=f7e2174]:
+            - generic [ref=f7e2175]:
+              - generic [ref=f7e2176]:
+                - status [ref=f7e2178]: 0 annonce
+                - button "Masquer les filtres" [expanded] [ref=f7e2179] [cursor=pointer]:
+                  - generic [ref=f7e2181]: Filtres
+              - generic [ref=f7e2182]:
+                - button "Sauvegarder cette recherche" [ref=f7e2183] [cursor=pointer]:
+                  - generic [ref=f7e2187]: Sauvegarder
+                - group "Mode d'affichage des annonces" [ref=f7e2189]:
+                  - button "Affichage grille" [pressed] [ref=f7e2190] [cursor=pointer]:
+                    - generic [ref=f7e2196]: Grille
+                  - button "Affichage liste" [ref=f7e2197] [cursor=pointer]:
+                    - generic [ref=f7e2199]: Liste
+                  - button "Affichage carte" [ref=f7e2200] [cursor=pointer]:
+                    - generic [ref=f7e2203]: Carte
+                - generic [ref=f7e2204]:
+                  - generic [ref=f7e2205]: "Trier par :"
+                  - button "Trier les résultats" [ref=f7e2207] [cursor=pointer]:
+                    - generic [ref=f7e2208]: Plus récentes
+            - heading "Résultats de recherche" [level=2] [ref=f7e2212]
+    - contentinfo [ref=f7e95]:
+      - generic [ref=f7e96]:
+        - generic [ref=f7e98]:
+          - generic [ref=f7e99]:
+            - heading "Catégories phares Trouvez ce dont vous avez besoin" [level=2] [ref=f7e100]:
+              - generic [ref=f7e108]:
+                - generic [ref=f7e109]: Catégories phares
+                - generic [ref=f7e110]: Trouvez ce dont vous avez besoin
+            - list [ref=f7e111]:
+              - listitem [ref=f7e1792]:
+                - link "Immobilier" [ref=f7e1793] [cursor=pointer]:
+                  - /url: /categorie/immobilier
+              - listitem [ref=f7e1797]:
+                - link "Véhicules" [ref=f7e1798] [cursor=pointer]:
+                  - /url: /categorie/vehicules
+              - listitem [ref=f7e1802]:
+                - link "Outils pro" [ref=f7e1803] [cursor=pointer]:
+                  - /url: /categorie/materiel-professionnel
+              - listitem [ref=f7e1807]:
+                - link "Emploi" [ref=f7e1808] [cursor=pointer]:
+                  - /url: /categorie/emploi
+              - listitem [ref=f7e1812]:
+                - link "Mode" [ref=f7e1813] [cursor=pointer]:
+                  - /url: /categorie/mode
+              - listitem [ref=f7e1817]:
+                - link "Maison" [ref=f7e1818] [cursor=pointer]:
+                  - /url: /categorie/maison-jardin
+          - generic [ref=f7e117]:
+            - heading "Espace professionnels Développez votre activité" [level=2] [ref=f7e118]:
+              - generic [ref=f7e124]:
+                - generic [ref=f7e125]: Espace professionnels
+                - generic [ref=f7e126]: Développez votre activité
+            - list [ref=f7e127]:
+              - listitem [ref=f7e128]:
+                - link "Toutes les solutions Shongre" [ref=f7e129] [cursor=pointer]:
+                  - /url: /solutions
+              - listitem [ref=f7e133]:
+                - link "Solutions & Tarifs Pro" [ref=f7e134] [cursor=pointer]:
+                  - /url: /solutions-pro
+              - listitem [ref=f7e138]:
+                - link "Shongre Prospects" [ref=f7e139] [cursor=pointer]:
+                  - /url: /prospects
+              - listitem [ref=f7e143]:
+                - link "Shongre Facturation" [ref=f7e144] [cursor=pointer]:
+                  - /url: http://facturation.localhost:3110/
+              - listitem [ref=f7e148]:
+                - link "Annuaire des boutiques" [ref=f7e149] [cursor=pointer]:
+                  - /url: /professionnels
+              - listitem [ref=f7e153]:
+                - link "Grille des options & boosts" [ref=f7e154] [cursor=pointer]:
+                  - /url: /tarifs
+          - generic [ref=f7e158]:
+            - heading [level=2] [ref=f7e159]:
+              - link "Aide & Confiance Un accompagnement à chaque étape" [ref=f7e160] [cursor=pointer]:
+                - /url: /securite
+                - generic [ref=f7e166]:
+                  - generic [ref=f7e167]: Aide & Confiance
+                  - generic [ref=f7e168]: Un accompagnement à chaque étape
+            - list [ref=f7e169]:
+              - listitem [ref=f7e170]:
+                - link "Centre d’aide & FAQ" [ref=f7e171] [cursor=pointer]:
+                  - /url: /aide
+              - listitem [ref=f7e175]:
+                - link "Contacter le support" [ref=f7e176] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=f7e180]:
+                - link "Livraison & coursier" [ref=f7e181] [cursor=pointer]:
+                  - /url: /livraison
+              - listitem [ref=f7e185]:
+                - link "Promotions" [ref=f7e186] [cursor=pointer]:
+                  - /url: /offres-prix-reduit
+          - complementary "Newsletter Shongre" [ref=f7e190]:
+            - heading "Newsletter Shongre Recevez notre sélection hebdomadaire d’annonces et de nouveautés." [level=2] [ref=f7e191]:
+              - generic [ref=f7e197]:
+                - generic [ref=f7e198]: Newsletter Shongre
+                - generic [ref=f7e199]: Recevez notre sélection hebdomadaire d’annonces et de nouveautés.
+            - generic [ref=f7e201]:
+              - textbox "Votre adresse email" [ref=f7e206]:
+                - /placeholder: votre@email.com
+              - button "S'inscrire" [ref=f7e207] [cursor=pointer]
+            - list [ref=f7e213]:
+              - listitem [ref=f7e214]:
+                - generic [ref=f7e218]: Bons plans et nouveautés
+              - listitem [ref=f7e219]:
+                - generic [ref=f7e223]: Conseils et guides pratiques
+              - listitem [ref=f7e224]:
+                - generic [ref=f7e228]: Désinscription en un clic
+        - generic [ref=f7e229]:
+          - region [ref=f7e230]:
+            - generic [ref=f7e231]:
+              - generic [ref=f7e236]:
+                - heading "Applications mobiles Shongre" [level=2] [ref=f7e237]
+                - paragraph [ref=f7e238]: Emportez Shongre partout avec vous. Achetez, vendez et gérez vos annonces depuis votre mobile.
+              - generic [ref=f7e239]:
+                - generic "App Store — bientôt disponible" [ref=f7e240]:
+                  - generic [ref=f7e243]:
+                    - generic [ref=f7e244]: Bientôt sur
+                    - generic [ref=f7e245]: App Store
+                - generic "Google Play — bientôt disponible" [ref=f7e246]:
+                  - generic [ref=f7e249]:
+                    - generic [ref=f7e250]: Bientôt sur
+                    - generic [ref=f7e251]: Google Play
+          - region [ref=f7e252]:
+            - heading "Suivez Shongre" [level=2] [ref=f7e253]
+            - paragraph [ref=f7e254]: Rejoignez notre communauté
+            - generic [ref=f7e255]:
+              - img "Instagram — bientôt disponible" [ref=f7e256]
+              - img "Facebook — bientôt disponible" [ref=f7e261]
+              - img "LinkedIn — bientôt disponible" [ref=f7e264]
+              - img "YouTube — bientôt disponible" [ref=f7e267]
+        - generic [ref=f7e270]:
+          - generic [ref=f7e271]:
+            - generic [ref=f7e272]:
+              - link "SHONGRE., accueil" [ref=f7e273] [cursor=pointer]:
+                - /url: /
+                - generic [ref=f7e278]: Le bon plan, plus proche de vous.
+              - generic [ref=f7e280]: Marché France
+            - navigation "Informations légales" [ref=f7e288]:
+              - list [ref=f7e289]:
+                - listitem [ref=f7e290]:
+                  - link "À propos" [ref=f7e291] [cursor=pointer]:
+                    - /url: /a-propos
+                - listitem [ref=f7e292]:
+                  - link "CGU" [ref=f7e293] [cursor=pointer]:
+                    - /url: /conditions-utilisation
+                - listitem [ref=f7e294]:
+                  - link "Politique de confidentialité" [ref=f7e295] [cursor=pointer]:
+                    - /url: /confidentialite
+                - listitem [ref=f7e296]:
+                  - link "Mentions légales" [ref=f7e297] [cursor=pointer]:
+                    - /url: /mentions-legales
+                - listitem [ref=f7e298]:
+                  - link "Accessibilité (WCAG 2.2 AA)" [ref=f7e299] [cursor=pointer]:
+                    - /url: /accessibilite
+                - listitem [ref=f7e300]:
+                  - button "Gestion des cookies" [ref=f7e301] [cursor=pointer]
+          - generic [ref=f7e302]:
+            - generic [ref=f7e303]: © 2026 Shongre SAS. Tous droits réservés.
+            - 'button "Langue et préférences régionales : Français" [ref=f7e305] [cursor=pointer]':
+              - generic [ref=f7e311]: fr
+  - region "Notifications"
+  - button "Open Next.js Dev Tools" [ref=f7e320] [cursor=pointer]
+  - alert [ref=f7e324]

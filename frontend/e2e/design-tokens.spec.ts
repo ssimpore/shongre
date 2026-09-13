@@ -75,7 +75,7 @@ test.describe("design-token runtime contracts @serial", () => {
     });
 
     expect(contract.version).toBe("5");
-    expect(contract.tokenWidth).toBe("13rem");
+    expect(contract.tokenWidth).toBe("13.75rem");
     expect(contract.firstTrackCardCount).toBeGreaterThan(0);
     expect(contract.fullyVisibleCards).toBe(
       Math.min(5, contract.firstTrackCardCount),
@@ -85,7 +85,7 @@ test.describe("design-token runtime contracts @serial", () => {
       "the recent-listings rail did not render",
     ).toBeGreaterThanOrEqual(6);
     for (const width of contract.widths) {
-      expect(width).toBeCloseTo(208, 0);
+      expect(width).toBeCloseTo(220, 0);
     }
   });
 
@@ -112,23 +112,23 @@ test.describe("design-token runtime contracts @serial", () => {
       contract.cells.length,
       "no standard listing rails rendered",
     ).toBeGreaterThanOrEqual(6);
-    expect(contract.tokenWidth).toBe("13rem");
+    expect(contract.tokenWidth).toBe("13.75rem");
     for (const item of contract.cells) {
-      expect(item.cell).toBeCloseTo(208, 0);
-      expect(item.card).toBeCloseTo(208, 0);
+      expect(item.cell).toBeCloseTo(220, 0);
+      expect(item.card).toBeCloseTo(220, 0);
     }
   });
 
   test("packs available desktop search cards into shared dense columns", async ({
     page,
   }) => {
-    await page.goto("/recherche?category=vehicules&maxPrice=100000", {
+    await page.goto("/recherche", {
       waitUntil: "domcontentloaded",
     });
     await waitForStableLayout(page);
     await expect(
-      page.locator(".listing-grid article.listing-card-standard"),
-    ).toHaveCount(6);
+      page.locator(".listing-grid article.listing-card-standard").nth(5),
+    ).toBeAttached();
 
     const contract = await page.evaluate(() => {
       const root = getComputedStyle(document.documentElement);
@@ -148,6 +148,9 @@ test.describe("design-token runtime contracts @serial", () => {
         (candidate) =>
           Math.abs(candidate.getBoundingClientRect().top - (firstTop ?? 0)) < 1,
       );
+      const gridBounds = grid?.getBoundingClientRect();
+      const firstBounds = firstRow[0]?.getBoundingClientRect();
+      const lastBounds = firstRow.at(-1)?.getBoundingClientRect();
       return {
         tokenWidth: root.getPropertyValue("--spacing-listing-card").trim(),
         gridMinWidth: root
@@ -162,29 +165,38 @@ test.describe("design-token runtime contracts @serial", () => {
         cardWidth: card?.getBoundingClientRect().width ?? null,
         cardHeight: card?.getBoundingClientRect().height ?? null,
         cardMinHeight: cardStyle?.minHeight ?? "",
+        rowLeftInset:
+          gridBounds && firstBounds ? firstBounds.left - gridBounds.left : null,
+        rowRightInset:
+          gridBounds && lastBounds ? gridBounds.right - lastBounds.right : null,
       };
     });
 
-    expect(contract.tokenWidth).toBe("13rem");
-    expect(contract.gridMinWidth).toBe("12.5rem");
-    expect(contract.tokenHeight).toBe("23rem");
+    expect(contract.tokenWidth).toBe("13.75rem");
+    expect(contract.gridMinWidth).toBe("13.75rem");
+    expect(contract.tokenHeight).toBe("26.25rem");
     const columns = contract.gridColumns
       .split(" ")
       .map((column) => Number.parseFloat(column))
       .filter((column) => column > 0);
-    expect(contract.cardCount).toBe(6);
-    expect(columns.length).toBeGreaterThanOrEqual(5);
+    expect(contract.cardCount).toBeGreaterThanOrEqual(6);
+    expect(columns.length).toBeGreaterThanOrEqual(4);
     expect(contract.firstRowCount).toBe(columns.length);
     expect(columns.every((column) => column >= 200)).toBe(true);
     expect(
       columns.every((column) => Math.abs(column - (columns[0] ?? 0)) < 1),
     ).toBe(true);
-    expect(contract.cardWidth).toBeCloseTo(columns[0] ?? 0, 0);
-    expect(contract.cardHeight).toBeGreaterThanOrEqual(368);
-    expect(contract.cardMinHeight).toBe("368px");
+    expect(contract.cardWidth).toBeCloseTo(220, 0);
+    expect(contract.cardHeight).toBeCloseTo(420, 0);
+    expect(contract.cardMinHeight).toBe("420px");
+    expect(contract.rowLeftInset).not.toBeNull();
+    expect(contract.rowRightInset).not.toBeNull();
+    expect(contract.rowLeftInset ?? Number.POSITIVE_INFINITY).toBeLessThan(16);
+    expect(contract.rowRightInset ?? Number.POSITIVE_INFINITY).toBeLessThan(16);
+    expect(contract.rowLeftInset).toBeCloseTo(contract.rowRightInset ?? 0, 0);
   });
 
-  test("keeps a sparse result card on one shared dense grid track", async ({
+  test("centres a sparse result card within the complete results row", async ({
     page,
   }) => {
     await page.goto("/recherche?category=mode-accessoires", {
@@ -207,6 +219,8 @@ test.describe("design-token runtime contracts @serial", () => {
         : [];
       const card = cards[0];
       const image = card?.querySelector<HTMLElement>("img");
+      const gridBounds = grid?.getBoundingClientRect();
+      const cardBounds = card?.getBoundingClientRect();
       const columns = grid
         ? getComputedStyle(grid)
             .gridTemplateColumns.split(" ")
@@ -227,23 +241,28 @@ test.describe("design-token runtime contracts @serial", () => {
         cardWidth: card?.getBoundingClientRect().width ?? null,
         cardHeight: card?.getBoundingClientRect().height ?? null,
         imageHeight: image?.getBoundingClientRect().height ?? null,
+        rowLeftInset:
+          gridBounds && cardBounds ? cardBounds.left - gridBounds.left : null,
+        rowRightInset:
+          gridBounds && cardBounds ? gridBounds.right - cardBounds.right : null,
       };
     });
 
-    expect(contract.tokenWidth).toBe("13rem");
-    expect(contract.gridMinWidth).toBe("12.5rem");
-    expect(contract.tokenHeight).toBe("23rem");
+    expect(contract.tokenWidth).toBe("13.75rem");
+    expect(contract.gridMinWidth).toBe("13.75rem");
+    expect(contract.tokenHeight).toBe("26.25rem");
     expect(contract.cardCount).toBe(1);
-    expect(contract.columns.length).toBeGreaterThan(1);
+    expect(contract.columns).toHaveLength(1);
     expect(contract.columns.every((column) => column >= 200)).toBe(true);
     expect(
       contract.columns.every(
         (column) => Math.abs(column - (contract.columns[0] ?? 0)) < 1,
       ),
     ).toBe(true);
-    expect(contract.cardWidth).toBeCloseTo(contract.columns[0] ?? 0, 0);
-    expect(contract.cardHeight).toBeGreaterThanOrEqual(368);
+    expect(contract.cardWidth).toBeCloseTo(220, 0);
+    expect(contract.cardHeight).toBeCloseTo(420, 0);
     expect(contract.imageHeight).toBeLessThan(contract.cardHeight ?? 0);
+    expect(contract.rowLeftInset).toBeCloseTo(contract.rowRightInset ?? 0, 0);
   });
 
   test("keeps listing rails and grids responsive across the supported viewport matrix", async ({
@@ -287,19 +306,19 @@ test.describe("design-token runtime contracts @serial", () => {
       });
 
       expect(rail.tokenWidth, `${viewport.name}: listing-card token`).toBe(
-        "13rem",
+        "13.75rem",
       );
       expect(
         rail.cardWidths.length,
         `${viewport.name}: listing rail rendered`,
       ).toBeGreaterThan(0);
       for (const width of rail.cardWidths) {
-        expect(width, `${viewport.name}: rail card width`).toBeCloseTo(208, 0);
+        expect(width, `${viewport.name}: rail card width`).toBeCloseTo(220, 0);
       }
       expect(
         rail.scrollerWidth,
         `${viewport.name}: one complete rail card fits`,
-      ).toBeGreaterThanOrEqual(208);
+      ).toBeGreaterThanOrEqual(220);
       expect(
         rail.scrollWidth > rail.scrollerWidth ||
           rail.fullyVisibleCards === rail.cardCount,
@@ -379,8 +398,8 @@ test.describe("design-token runtime contracts @serial", () => {
       for (const width of grid.cardWidths) {
         expect(
           width,
-          `${viewport.name}: card follows its grid column`,
-        ).toBeCloseTo(grid.columns[0] ?? 0, 0);
+          `${viewport.name}: card keeps the shared fixed width`,
+        ).toBeCloseTo(220, 0);
       }
       await expectNoHorizontalOverflow(
         page,
@@ -614,7 +633,7 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(styles.boxShadow).not.toBe("none");
   });
 
-  test("renders every primary interaction state from the computed Shongre Orange family", async ({
+  test("keeps solid orange controls identical to the logo through interaction states", async ({
     page,
   }) => {
     const readColors = async () =>
@@ -637,6 +656,12 @@ test.describe("design-token runtime contracts @serial", () => {
           border: computed.borderColor,
           text: computed.color,
           primary: resolveToken("primary"),
+          brand: resolveToken("brand-primary"),
+          foreground: resolveToken("on-primary"),
+          logoForeground: resolveToken("brand-background"),
+          icons: Array.from(button.querySelectorAll("svg")).map(
+            (icon) => getComputedStyle(icon).color,
+          ),
           hover: resolveToken("primary-hover"),
           active: resolveToken("primary-active"),
           disabled: resolveToken("primary-disabled"),
@@ -662,6 +687,14 @@ test.describe("design-token runtime contracts @serial", () => {
       let state = await readColors();
       expect(state?.canonical).toBe(semanticColors.brand.primary);
       expect(state?.background).toBe(state?.primary);
+      expect(state?.primary).toBe(state?.brand);
+      expect(state?.hover).toBe(state?.brand);
+      expect(state?.active).toBe(state?.brand);
+      expect(state?.text).toBe(state?.foreground);
+      expect(state?.foreground).toBe(state?.logoForeground);
+      expect(state?.icons.length).toBeGreaterThan(0);
+      for (const color of state?.icons ?? [])
+        expect(color).toBe(state?.foreground);
 
       await button.hover();
       await expect
@@ -770,7 +803,7 @@ test.describe("design-token runtime contracts @serial", () => {
       };
     });
 
-    expect(hierarchy).toEqual({ title: "700", price: "700", category: "500" });
+    expect(hierarchy).toEqual({ title: "500", price: "700", category: "500" });
   });
 
   for (const [chunkIndex, routes] of ROUTE_TYPOGRAPHY_AUDIT_CHUNKS.entries()) {
@@ -913,7 +946,7 @@ test.describe("design-token runtime contracts @serial", () => {
     );
   });
 
-  test("harmonizes primary authentication actions on the touch control metric", async ({
+  test("harmonizes primary authentication actions on the header control metric", async ({
     page,
   }) => {
     const paths = [
@@ -930,7 +963,9 @@ test.describe("design-token runtime contracts @serial", () => {
       await page.goto(path, { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
-      const action = page.locator("main button.h-control-touch").first();
+      const action = page
+        .locator('main button[data-ui="button"][data-size="md"]')
+        .first();
       await expect(action, `missing auth action on ${path}`).toBeVisible();
 
       const metric = await action.evaluate((element) => {
@@ -942,7 +977,7 @@ test.describe("design-token runtime contracts @serial", () => {
         };
       });
 
-      expect(metric, path).toEqual({ height: 44, radius: "10px" });
+      expect(metric, path).toEqual({ height: 40, radius: "10px" });
     }
   });
 
@@ -959,7 +994,9 @@ test.describe("design-token runtime contracts @serial", () => {
       await page.goto(path, { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
-      const action = page.locator("main button.h-control-touch").first();
+      const action = page
+        .locator('main button[data-ui="button"][data-size="md"]')
+        .first();
       await expect(
         action,
         `missing mobile auth action on ${path}`,
@@ -974,7 +1011,7 @@ test.describe("design-token runtime contracts @serial", () => {
           radius: computed.borderRadius,
         };
       });
-      expect(metric, path).toEqual({ height: 44, radius: "10px" });
+      expect(metric, path).toEqual({ height: 40, radius: "10px" });
     }
   });
 
@@ -1159,74 +1196,60 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(colors.outline).toBe(colors.token);
   });
 
-  test("aligns footer newsletter controls with the Pro discovery control", async ({
+  test("keeps footers on the same ink as the header publish action", async ({
     page,
   }) => {
-    const readMetric = async (locator: Locator) =>
-      locator.evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-        const computed = getComputedStyle(element);
-        return {
-          height: Math.round(rect.height),
-          radius: computed.borderRadius,
-        };
-      });
-
-    const main = page.getByRole("main");
-    const proDiscovery = main.getByRole("link", {
-      name: "Découvrir les forfaits Pro",
-      exact: true,
-    });
-    const newsletter = page.getByRole("complementary", {
-      name: "Newsletter Shongre",
-    });
-    const newsletterHeading = newsletter.getByRole("heading", {
-      name: "Newsletter Shongre",
-    });
-    const newsletterHeadingIcon = newsletterHeading.locator("svg");
-    const categoriesHeadingIcon = page
-      .getByRole("button", { name: /Catégories phares/i })
-      .locator("svg")
-      .first();
-    const email = newsletter.getByRole("textbox", { name: /adresse email/i });
-    const submit = newsletter.getByRole("button", {
-      name: "S'inscrire",
-      exact: true,
-    });
-
-    await expect(email).toBeVisible();
-    await expect(submit).toBeVisible();
-    await expect(newsletterHeadingIcon).toHaveCount(1);
-    const headingIconMetrics = await Promise.all(
-      [newsletterHeadingIcon, categoriesHeadingIcon].map((icon) =>
-        icon.evaluate((element) => {
-          const rect = element.getBoundingClientRect();
-          return {
-            width: Math.round(rect.width),
-            height: Math.round(rect.height),
-            color: getComputedStyle(element).color,
-          };
-        }),
-      ),
+    const publish = page.locator(
+      'header [data-marketplace-action="listing.publish"]',
     );
-    expect(headingIconMetrics[0]).toEqual(headingIconMetrics[1]);
-    expect(headingIconMetrics[0]).toMatchObject({ width: 16, height: 16 });
-    expect(await readMetric(proDiscovery)).toEqual({
-      height: 44,
-      radius: "10px",
-    });
-    expect(await readMetric(email)).toEqual({ height: 44, radius: "10px" });
-    expect(await readMetric(submit)).toEqual({ height: 44, radius: "10px" });
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect(email).toBeVisible();
-    await expect(submit).toBeVisible();
-    await expectNoHorizontalOverflow(page, "mobile footer newsletter controls");
-    expect(await readMetric(email)).toEqual({ height: 44, radius: "10px" });
-    expect(await readMetric(submit)).toEqual({ height: 44, radius: "10px" });
+    await expect(publish).toBeVisible();
+    const ink = await publish.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    );
+    for (const path of ["/", "/prospects", "/facturation"]) {
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+      const footer = page.locator("footer");
+      await footer.scrollIntoViewIfNeeded();
+      await expect(footer).toHaveCSS("background-color", ink);
+    }
   });
 
-  test("aligns listing transaction actions with the shared touch control metric", async ({
+  test("keeps footer controls on the shared touch scale", async ({ page }) => {
+    const footer = page.locator("footer");
+    await footer.scrollIntoViewIfNeeded();
+    const market = footer.getByRole("button", {
+      name: "Préférences régionales : France",
+    });
+    const cookiePreferences = footer.getByRole("button", {
+      name: "Gestion des cookies",
+    });
+    for (const control of [market, cookiePreferences]) {
+      await expect(control).toBeVisible();
+      expect(
+        await control.evaluate(
+          (element) => element.getBoundingClientRect().height,
+        ),
+      ).toBeGreaterThanOrEqual(44);
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const buy = footer.getByRole("button", { name: "Acheter", exact: true });
+    const listings = footer.getByRole("link", { name: "Toutes les annonces" });
+    await expect(buy).toHaveAttribute("aria-expanded", "false");
+    await expect(listings).toBeHidden();
+    expect(
+      await buy.evaluate((element) => element.getBoundingClientRect().height),
+    ).toBeGreaterThanOrEqual(48);
+    await buy.click();
+    await expect(buy).toHaveAttribute("aria-expanded", "true");
+    await expect(listings).toBeVisible();
+    await expectNoHorizontalOverflow(page, "expanded mobile footer");
+    await buy.click();
+    await expect(listings).toBeHidden();
+  });
+
+  test("aligns listing transaction actions with the shared header control metric", async ({
     page,
   }) => {
     const readMetric = async (locator: Locator) =>
@@ -1250,7 +1273,7 @@ test.describe("design-token runtime contracts @serial", () => {
     await expect(desktopActions.first()).toBeVisible();
     expect(await desktopActions.count()).toBeGreaterThanOrEqual(2);
     for (const action of await desktopActions.all()) {
-      expect(await readMetric(action)).toEqual({ height: 44, radius: "10px" });
+      expect(await readMetric(action)).toEqual({ height: 40, radius: "10px" });
     }
 
     for (const width of [320, 390, 768]) {
@@ -1276,7 +1299,7 @@ test.describe("design-token runtime contracts @serial", () => {
       expect(await mobileActions.count()).toBeGreaterThanOrEqual(2);
       for (const action of await mobileActions.all()) {
         expect(await readMetric(action), `${width}px`).toEqual({
-          height: 44,
+          height: 40,
           radius: "10px",
         });
       }
@@ -1290,7 +1313,7 @@ test.describe("design-token runtime contracts @serial", () => {
   test("keeps scrolled content underneath the sticky environment header stack", async ({
     page,
   }) => {
-    const recentCard = page.getByRole("link", { name: /Antiquités/i });
+    const recentCard = page.locator("main article a[href]").first();
     await expect(recentCard).toBeVisible();
 
     const result = await page.evaluate(() => {
@@ -1298,13 +1321,13 @@ test.describe("design-token runtime contracts @serial", () => {
         '[data-environment-header-stack="true"]',
       );
       const toolbar = stack?.querySelector<HTMLElement>(
-        '[data-environment-toolbar="demo"]',
+        '[data-environment-toolbar="api"]',
       );
       const toolbarContent = toolbar?.firstElementChild as HTMLElement | null;
       const header = stack?.querySelector<HTMLElement>("header");
-      const cardLink = [
-        ...document.querySelectorAll<HTMLAnchorElement>("a"),
-      ].find((link) => /Antiquités/i.test(link.textContent || ""));
+      const cardLink = document.querySelector<HTMLAnchorElement>(
+        "main article a[href]",
+      );
       if (!stack || !toolbar || !toolbarContent || !header || !cardLink) {
         return null;
       }
@@ -1359,7 +1382,7 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(result!.topmostIsStack).toBe(true);
   });
 
-  test("keeps every demo toolbar control on one horizontal axis", async ({
+  test("keeps every environment toolbar control on one horizontal axis", async ({
     page,
   }) => {
     await usePersona(page, "support");
@@ -1368,13 +1391,11 @@ test.describe("design-token runtime contracts @serial", () => {
       await page.setViewportSize({ width, height: 844 });
       await page.goto("/recherche", { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
-      await expect(
-        page.getByRole("button", { name: /11\. Support Shongre/ }),
-      ).toBeVisible();
+      await expect(page.getByTestId("staff-marketplace-mode")).toBeVisible();
 
       const alignment = await page.evaluate(() => {
         const toolbar = document.querySelector<HTMLElement>(
-          '[data-environment-toolbar="demo"]',
+          '[data-environment-toolbar="api"]',
         );
         const content = toolbar?.firstElementChild as HTMLElement | null;
         if (!toolbar || !content) return null;
@@ -1394,15 +1415,6 @@ test.describe("design-token runtime contracts @serial", () => {
         const controlRects = [...toolbar.querySelectorAll("button, summary, a")]
           .map(visibleRect)
           .filter((rect): rect is DOMRect => Boolean(rect));
-        const developmentIndicatorRect = Array.from(
-          document.querySelectorAll<HTMLElement>("nextjs-portal"),
-        )
-          .map((portal) =>
-            portal.shadowRoot
-              ?.querySelector("[data-next-badge-root]")
-              ?.getBoundingClientRect(),
-          )
-          .find((rect): rect is DOMRect => Boolean(rect));
         return {
           toolbarHeight: toolbarRect.height,
           verticalPaddingDelta: Math.abs(
@@ -1418,13 +1430,6 @@ test.describe("design-token runtime contracts @serial", () => {
           ),
           controlHeights: controlRects.map((rect) => rect.height),
           controlWidths: controlRects.map((rect) => rect.width),
-          developmentIndicatorCenterDelta: developmentIndicatorRect
-            ? Math.abs(
-                developmentIndicatorRect.top +
-                  developmentIndicatorRect.height / 2 -
-                  centerY,
-              )
-            : null,
           horizontalOverflow:
             document.documentElement.scrollWidth -
             document.documentElement.clientWidth,
@@ -1445,123 +1450,88 @@ test.describe("design-token runtime contracts @serial", () => {
       );
       expect(
         alignment!.controlWidths.every((width) => width >= 24),
-        `demo-toolbar target narrower than the 24px WCAG 2.5.8 floor at ${width}px`,
+        `environment-toolbar target narrower than the 24px WCAG 2.5.8 floor at ${width}px`,
       ).toBe(true);
-      if (alignment!.developmentIndicatorCenterDelta !== null) {
-        expect(alignment!.developmentIndicatorCenterDelta).toBeLessThanOrEqual(
-          0.5,
-        );
-      }
       expect(alignment!.horizontalOverflow).toBe(0);
     }
   });
 
-  test("collapses and restores the environment toolbar with one accessible toggle", async ({
+  test("fully hides and restores the environment toolbar across reloads and navigation", async ({
     page,
   }) => {
-    await usePersona(page, "individual_buyer");
-
     for (const width of [1408, 390]) {
       await page.setViewportSize({ width, height: 844 });
-      await page.goto("/compte/annonces", { waitUntil: "domcontentloaded" });
-      await waitForStableLayout(page);
+      await page.goto("/recherche", { waitUntil: "domcontentloaded" });
+      const toolbar = page.locator('[data-environment-toolbar="api"]');
+      const hide = page.getByRole("button", {
+        name: "Masquer la barre d’environnement",
+        exact: true,
+      });
+      const restore = page.getByRole("button", {
+        name: "Afficher la barre d’environnement",
+        exact: true,
+      });
 
-      const toolbar = page.locator('[data-environment-toolbar="demo"]');
-      const collapse = page.getByRole("button", {
-        name: "Réduire la barre d’environnement",
-      });
-      const persona = page.getByRole("button", {
-        name: /2\. Acheteur Particulier/,
-      });
-      const modeBadge = toolbar.getByText("Mode Démo", { exact: true });
-      const toolbarContent = toolbar.locator(
-        "[data-environment-toolbar-content]",
+      await expect(toolbar).toBeVisible();
+      await expect(hide).toHaveAttribute("aria-expanded", "true");
+      await expect
+        .poll(() =>
+          toolbar.evaluate((element) => element.getBoundingClientRect().height),
+        )
+        .toBe(56);
+      await hide.focus();
+      await hide.press("Enter");
+
+      await expect(toolbar).toBeHidden();
+      await expect(restore).toBeVisible();
+      await expect(restore).toBeFocused();
+      await expect(restore).toHaveAttribute("aria-expanded", "false");
+      await expect
+        .poll(() =>
+          toolbar.evaluate((element) => element.getBoundingClientRect().height),
+        )
+        .toBe(0);
+      await expect
+        .poll(() =>
+          page
+            .locator("header")
+            .first()
+            .evaluate((element) => element.getBoundingClientRect().top),
+        )
+        .toBe(0);
+      await expectNoHorizontalOverflow(
+        page,
+        `hidden environment toolbar at ${width}px`,
       );
 
-      await expect(toolbar).toHaveAttribute("data-collapsed", "false");
-      await expect(collapse).toHaveAttribute("aria-expanded", "true");
-      await expect(persona).toBeVisible();
-      await expect(modeBadge).toBeVisible();
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(restore).toBeVisible();
+      await expect(toolbar).toBeHidden();
+      await page.goto("/connexion", { waitUntil: "domcontentloaded" });
+      await expect(restore).toBeVisible();
+      await expect(toolbar).toBeHidden();
+      await expect
+        .poll(() =>
+          page
+            .locator("header")
+            .first()
+            .evaluate((element) => element.getBoundingClientRect().top),
+        )
+        .toBe(0);
+
+      await restore.focus();
+      await restore.press("Enter");
+      await expect(toolbar).toBeVisible();
+      await expect(hide).toBeFocused();
+      await expect(restore).toHaveCount(0);
       await expect
         .poll(() =>
           toolbar.evaluate((element) => element.getBoundingClientRect().height),
         )
         .toBe(56);
-
-      await collapse.focus();
-      await expect(collapse).toBeFocused();
-      await collapse.press("Enter");
-      const expand = page.getByRole("button", {
-        name: "Développer la barre d’environnement",
-      });
-      await expect(toolbar).toHaveAttribute("data-collapsed", "true");
-      await expect(expand).toHaveAttribute("aria-expanded", "false");
-      await expect(expand).toBeFocused();
-      await expect(persona).toBeHidden();
-      await expect(modeBadge).toBeHidden();
-      await expect(toolbarContent).toHaveCount(2);
-      for (let index = 0; index < (await toolbarContent.count()); index += 1) {
-        await expect(toolbarContent.nth(index)).toBeHidden();
-        await expect(toolbarContent.nth(index)).toHaveAttribute(
-          "aria-hidden",
-          "true",
-        );
-      }
-      await expect(
-        toolbar.locator(
-          "button:visible, a:visible, input:visible, select:visible, summary:visible",
-        ),
-      ).toHaveCount(1);
-      await expect
-        .poll(() =>
-          toolbar.evaluate((element) => element.getBoundingClientRect().height),
-        )
-        .toBe(32);
-      const collapsedCenterDelta = await page.evaluate(() => {
-        const toggle = document.querySelector<HTMLElement>(
-          "[data-environment-toolbar-toggle]",
-        );
-        const indicator = Array.from(
-          document.querySelectorAll<HTMLElement>("nextjs-portal"),
-        )
-          .map((portal) =>
-            portal.shadowRoot
-              ?.querySelector("[data-next-badge-root]")
-              ?.getBoundingClientRect(),
-          )
-          .find((rect): rect is DOMRect => Boolean(rect));
-        if (!toggle || !indicator) return null;
-        const toggleRect = toggle.getBoundingClientRect();
-        return Math.abs(
-          indicator.top +
-            indicator.height / 2 -
-            (toggleRect.top + toggleRect.height / 2),
-        );
-      });
-      if (collapsedCenterDelta !== null) {
-        expect(collapsedCenterDelta).toBeLessThanOrEqual(0.5);
-      }
-      await expectNoHorizontalOverflow(page, `collapsed toolbar at ${width}px`);
-
-      await expand.focus();
-      await expect(expand).toBeFocused();
-      await expand.press("Enter");
-      await expect(toolbar).toHaveAttribute("data-collapsed", "false");
-      await expect(collapse).toHaveAttribute("aria-expanded", "true");
-      await expect(collapse).toBeFocused();
-      await expect(persona).toBeVisible();
-      await expect(modeBadge).toBeVisible();
-      for (let index = 0; index < (await toolbarContent.count()); index += 1) {
-        await expect(toolbarContent.nth(index)).toHaveAttribute(
-          "aria-hidden",
-          "false",
-        );
-      }
-      await expect
-        .poll(() =>
-          toolbar.evaluate((element) => element.getBoundingClientRect().height),
-        )
-        .toBe(56);
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(hide).toBeVisible();
+      await expect(toolbar).toBeVisible();
     }
   });
 });

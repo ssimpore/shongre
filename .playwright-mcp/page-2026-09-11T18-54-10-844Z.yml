@@ -1,0 +1,173 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - link "Aller au contenu principal" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]: test
+          - generic [ref=e13]: Données fournies par l’API Shongre
+        - button "Réduire la barre d’environnement" [expanded] [ref=e15] [cursor=pointer]
+      - banner [ref=e19]:
+        - generic [ref=e21]:
+          - link "SHONGRE. France, accueil" [ref=e23] [cursor=pointer]:
+            - /url: /
+            - img "SHONGRE." [ref=e24]:
+              - generic [aria-hidden] [ref=e28]: France
+          - search "Recherche globale" [ref=e31]:
+            - button "Sélectionner une catégorie" [ref=e33] [cursor=pointer]:
+              - generic [ref=e38]: Catégories
+            - combobox "Rechercher une annonce" [ref=e45]
+            - button "Lancer la recherche" [ref=e46] [cursor=pointer]
+          - generic [ref=e50]:
+            - link "Déposer une annonce" [ref=e52] [cursor=pointer]:
+              - /url: /deposer
+            - link "Favoris" [ref=e58] [cursor=pointer]:
+              - /url: /compte/favoris
+            - link "Messagerie" [ref=e61] [cursor=pointer]:
+              - /url: /compte/messages
+            - button "Notifications" [ref=e66] [cursor=pointer]
+            - link "Se connecter" [ref=e337] [cursor=pointer]:
+              - /url: /connexion
+        - navigation "Filtres par catégorie" [ref=e74]:
+          - region "Navigation par catégorie" [ref=e315]:
+            - list [ref=e316]:
+              - listitem [ref=e343]:
+                - status [ref=e344]: Navigation indisponible
+                - button "Réessayer" [ref=e345]
+    - main [ref=e80]:
+      - status "Chargement de la page d’accueil" [ref=e318]
+    - contentinfo [ref=e83]:
+      - generic [ref=e84]:
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - heading "Catégories phares Trouvez ce dont vous avez besoin" [level=2] [ref=e88]:
+              - generic [ref=e96]:
+                - generic [ref=e97]: Catégories phares
+                - generic [ref=e98]: Trouvez ce dont vous avez besoin
+            - list [ref=e99]:
+              - listitem [ref=e100]:
+                - link "Catégories phares" [ref=e101] [cursor=pointer]:
+                  - /url: /categories
+          - generic [ref=e105]:
+            - heading "Espace professionnels Développez votre activité" [level=2] [ref=e106]:
+              - generic [ref=e112]:
+                - generic [ref=e113]: Espace professionnels
+                - generic [ref=e114]: Développez votre activité
+            - list [ref=e115]:
+              - listitem [ref=e116]:
+                - link "Toutes les solutions Shongre" [ref=e117] [cursor=pointer]:
+                  - /url: /solutions
+              - listitem [ref=e121]:
+                - link "Solutions & Tarifs Pro" [ref=e122] [cursor=pointer]:
+                  - /url: /solutions-pro
+              - listitem [ref=e126]:
+                - link "Shongre Prospects" [ref=e127] [cursor=pointer]:
+                  - /url: /prospects
+              - listitem [ref=e131]:
+                - link "Shongre Facturation" [ref=e132] [cursor=pointer]:
+                  - /url: http://facturation.localhost:3110/
+              - listitem [ref=e136]:
+                - link "Annuaire des boutiques" [ref=e137] [cursor=pointer]:
+                  - /url: /professionnels
+              - listitem [ref=e141]:
+                - link "Grille des options & boosts" [ref=e142] [cursor=pointer]:
+                  - /url: /tarifs
+          - generic [ref=e146]:
+            - heading [level=2] [ref=e147]:
+              - link "Aide & Confiance Un accompagnement à chaque étape" [ref=e148] [cursor=pointer]:
+                - /url: /securite
+                - generic [ref=e154]:
+                  - generic [ref=e155]: Aide & Confiance
+                  - generic [ref=e156]: Un accompagnement à chaque étape
+            - list [ref=e157]:
+              - listitem [ref=e158]:
+                - link "Centre d’aide & FAQ" [ref=e159] [cursor=pointer]:
+                  - /url: /aide
+              - listitem [ref=e163]:
+                - link "Contacter le support" [ref=e164] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=e168]:
+                - link "Livraison & coursier" [ref=e169] [cursor=pointer]:
+                  - /url: /livraison
+              - listitem [ref=e173]:
+                - link "Promotions" [ref=e174] [cursor=pointer]:
+                  - /url: /offres-prix-reduit
+          - complementary "Newsletter Shongre" [ref=e178]:
+            - heading "Newsletter Shongre Recevez notre sélection hebdomadaire d’annonces et de nouveautés." [level=2] [ref=e179]:
+              - generic [ref=e185]:
+                - generic [ref=e186]: Newsletter Shongre
+                - generic [ref=e187]: Recevez notre sélection hebdomadaire d’annonces et de nouveautés.
+            - generic [ref=e189]:
+              - textbox "Votre adresse email" [ref=e194]:
+                - /placeholder: votre@email.com
+              - button "S'inscrire" [ref=e195] [cursor=pointer]
+            - list [ref=e201]:
+              - listitem [ref=e202]:
+                - generic [ref=e206]: Bons plans et nouveautés
+              - listitem [ref=e207]:
+                - generic [ref=e211]: Conseils et guides pratiques
+              - listitem [ref=e212]:
+                - generic [ref=e216]: Désinscription en un clic
+        - generic [ref=e217]:
+          - region [ref=e218]:
+            - generic [ref=e219]:
+              - generic [ref=e224]:
+                - heading "Applications mobiles Shongre" [level=2] [ref=e225]
+                - paragraph [ref=e226]: Emportez Shongre partout avec vous. Achetez, vendez et gérez vos annonces depuis votre mobile.
+              - generic [ref=e227]:
+                - generic "App Store — bientôt disponible" [ref=e228]:
+                  - generic [ref=e231]:
+                    - generic [ref=e232]: Bientôt sur
+                    - generic [ref=e233]: App Store
+                - generic "Google Play — bientôt disponible" [ref=e234]:
+                  - generic [ref=e237]:
+                    - generic [ref=e238]: Bientôt sur
+                    - generic [ref=e239]: Google Play
+          - region [ref=e240]:
+            - heading "Suivez Shongre" [level=2] [ref=e241]
+            - paragraph [ref=e242]: Rejoignez notre communauté
+            - generic [ref=e243]:
+              - img "Instagram — bientôt disponible" [ref=e244]
+              - img "Facebook — bientôt disponible" [ref=e249]
+              - img "LinkedIn — bientôt disponible" [ref=e252]
+              - img "YouTube — bientôt disponible" [ref=e255]
+        - generic [ref=e258]:
+          - generic [ref=e259]:
+            - generic [ref=e260]:
+              - link "SHONGRE., accueil" [ref=e261] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e266]: Le bon plan, plus proche de vous.
+              - generic [ref=e268]: Marché France
+            - navigation "Informations légales" [ref=e276]:
+              - list [ref=e277]:
+                - listitem [ref=e278]:
+                  - link "À propos" [ref=e279] [cursor=pointer]:
+                    - /url: /a-propos
+                - listitem [ref=e280]:
+                  - link "CGU" [ref=e281] [cursor=pointer]:
+                    - /url: /conditions-utilisation
+                - listitem [ref=e282]:
+                  - link "Politique de confidentialité" [ref=e283] [cursor=pointer]:
+                    - /url: /confidentialite
+                - listitem [ref=e284]:
+                  - link "Mentions légales" [ref=e285] [cursor=pointer]:
+                    - /url: /mentions-legales
+                - listitem [ref=e286]:
+                  - link "Accessibilité (WCAG 2.2 AA)" [ref=e287] [cursor=pointer]:
+                    - /url: /accessibilite
+                - listitem [ref=e288]:
+                  - button "Gestion des cookies" [ref=e289] [cursor=pointer]
+          - generic [ref=e290]:
+            - generic [ref=e291]: © 2026 Shongre SAS. Tous droits réservés.
+            - 'button "Langue et préférences régionales : Français" [ref=e293] [cursor=pointer]':
+              - generic [ref=e299]: fr
+  - region "Notifications"
+  - button "Open Next.js Dev Tools" [ref=e346] [cursor=pointer]:
+    - generic [ref=e349]:
+      - text: Compiling
+      - generic [ref=e350]:
+        - generic [ref=e351]: .
+        - generic [ref=e352]: .
+        - generic [ref=e353]: .
+  - alert [ref=e312]

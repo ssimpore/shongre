@@ -13,6 +13,7 @@ export const HomeProCtaSection: React.FC<{ section: HomepageSectionView }> = ({
   return (
     <Container
       as="section"
+      width="results"
       aria-labelledby="home-pro-title"
       className={homepageVisibilityClass(section)}
     >

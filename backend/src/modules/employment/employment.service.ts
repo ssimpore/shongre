@@ -189,10 +189,35 @@ export class EmploymentService {
       jobId: job.id,
       employerId: job.employer.id,
     });
+    const taxonomy = await taxonomyV1Service.snapshot();
+    const workingTime = taxonomy
+      .getReferences("employment_dictionary_entries", job.marketCode, true)
+      .find((entry) => entry.id === job.workingTimeId)?.label;
     return {
       ...publicEmployer(job),
-      taxonomy: (await taxonomyV1Service.snapshot()).projectIdentity(
+      taxonomy: taxonomy.projectDomainListing(
         CANONICAL_TAXONOMY_IDS.jobs,
+        job.marketCode,
+        {
+          city: job.primaryLocation.label,
+          profession: job.professionId,
+          job_sector: job.industryId,
+          remote_work: job.workingArrangementId,
+          contract_type: job.contractTypeId,
+          working_time: job.workingTimeId,
+          positions_count: job.positionsCount,
+          contract_duration: job.contractDuration,
+          weekly_hours: job.weeklyHours,
+          desired_start_date: job.desiredStartDate,
+          application_deadline: job.applicationDeadline,
+        },
+        {
+          profession: { "fr-FR": job.professionLabel },
+          job_sector: { "fr-FR": job.industryLabel },
+          remote_work: { "fr-FR": job.workingArrangementLabel },
+          contract_type: { "fr-FR": job.contractTypeLabel },
+          ...(workingTime ? { working_time: { "fr-FR": workingTime } } : {}),
+        },
       ),
     };
   }

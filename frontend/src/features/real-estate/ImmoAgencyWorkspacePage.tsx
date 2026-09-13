@@ -257,7 +257,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`flex min-w-max items-center gap-2 rounded-control px-3 py-2 text-xs font-semibold ${tab === id ? "bg-primary text-text-inverse" : "text-text-secondary hover:bg-bg-subtle"}`}
+            className={`flex min-w-max items-center gap-2 rounded-control px-3 py-2 text-xs font-semibold ${tab === id ? "bg-primary text-on-primary" : "text-text-secondary hover:bg-bg-subtle"}`}
           >
             <Icon className="h-4 w-4" />
             {label}

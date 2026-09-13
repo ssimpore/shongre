@@ -240,6 +240,17 @@ commands require `APP_ENV=local` plus a proven local database target. They
 refuse hosted and production targets even when an operator sets a permissive
 flag.
 
+Local PostgreSQL and isolated browser scenarios share `createSeedListing`.
+It preserves seller pricing in `attributes.price_type` and explicit reservation
+eligibility in each market publication's `availableServices`, including its
+reservation type. Listing detail actions consume those public API fields;
+missing eligibility must never be inferred from price or payment availability.
+Local placement examples also persist deterministic `admin_grant` records in
+`listing_promotions`, scoped to the listing's market and fixture schedule.
+Database triggers derive the effective publication and opaque public proof;
+listing flags alone cannot activate a placement. Re-running `make db-seed`
+reuses these grant identities without creating purchases or charging providers.
+
 Storage uses environment-local Supabase Storage. Public listing derivatives and
 avatars are separate from upload staging/quarantine. KYC/KYB and other sensitive
 documents stay private behind RLS and signed, short-lived access. The

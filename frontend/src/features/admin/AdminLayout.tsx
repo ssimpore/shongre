@@ -482,7 +482,7 @@ export const AdminLayout: React.FC = () => {
                           className={({ isActive }) =>
                             `flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-colors ${
                               isActive
-                                ? "bg-primary-light text-primary font-bold"
+                                ? "bg-primary-light text-text-main font-bold"
                                 : "text-text-emphasis hover:bg-bg-subtle"
                             }`
                           }
@@ -564,7 +564,7 @@ export const AdminLayout: React.FC = () => {
                           className={({ isActive }) =>
                             `motion-interactive flex items-center gap-2.5 rounded-control px-3 py-2.5 text-xs font-medium ${
                               isActive
-                                ? "bg-primary text-text-inverse font-bold shadow-xs"
+                                ? "bg-primary text-on-primary font-bold shadow-xs"
                                 : "text-text-emphasis hover:bg-surface-muted hover:text-text-main"
                             }`
                           }

@@ -35,16 +35,20 @@ for (const width of [1408, 390]) {
     await expect(page).toHaveTitle(/Shongre/i);
     const panel = page.locator("[data-listing-characteristics]");
     await panel.scrollIntoViewIfNeeded();
+    const disclosure = panel.locator("[data-detail-disclosure]");
+    for (const button of await disclosure.all()) await button.click();
     for (const group of data.groups) {
-      await expect(
-        panel.getByRole("heading", { name: group.label, exact: true }),
-      ).toBeVisible();
       for (const item of group.items) {
-        const row = panel
-          .locator("dt")
-          .and(panel.getByText(item.label, { exact: true }))
-          .locator("..");
-        await expect(row.locator("dd")).toHaveText(item.value);
+        const row = panel.locator(
+          `[data-detail-${item.presentation === "feature" ? "feature" : "fact"}="${item.code}"]`,
+        );
+        await expect(row).toContainText(item.label);
+        if (item.presentation !== "feature")
+          await expect(row.locator("dd")).toHaveText(item.value);
+        await expect(row.locator("[data-fact-icon]")).toHaveAttribute(
+          "data-fact-icon",
+          item.icon,
+        );
       }
     }
     await expect(
@@ -91,3 +95,51 @@ test("listing characteristics retry an API failure without replacing the listing
   await expect(page.locator("[data-listing-characteristics]")).toBeVisible();
   await expect(error).toHaveCount(0);
 });
+
+for (const width of [1408, 390]) {
+  test(`vehicle facts follow API icons and expand with the keyboard at ${width}px`, async ({
+    page,
+    request,
+  }, testInfo) => {
+    await useEstablishedConsent(page);
+    await page.setViewportSize({ width, height: 900 });
+    const response = await request.get("/api/v1/auto/vehicles/vehicle_bmw_x3", {
+      params: { marketCode: "FR" },
+    });
+    expect(response.ok()).toBe(true);
+    const vehicle = await response.json();
+    const fields = vehicle.taxonomy.detailCharacteristics;
+    expect(fields.length).toBeGreaterThan(8);
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`/auto/vehicule/${vehicle.slug}`);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      vehicle.title,
+    );
+    const panel = page.locator("[data-listing-characteristics]");
+    const visibleFacts = panel.locator("[data-detail-fact]:visible");
+    await expect(visibleFacts).toHaveCount(8);
+    const button = panel.locator("[data-detail-disclosure]").first();
+    await expect(button).toHaveAttribute("aria-expanded", "false");
+    await button.focus();
+    await page.keyboard.press("Enter");
+    await expect(button).toHaveAttribute("aria-expanded", "true");
+    for (const field of fields) {
+      const row = panel.locator(`[data-detail-fact="${field.code}"]`);
+      await expect(row).toBeVisible();
+      await expect(row.locator("[data-fact-icon]")).toHaveAttribute(
+        "data-fact-icon",
+        field.icon,
+      );
+      await expect(row.locator("dd")).toHaveText(field.values["fr-FR"]);
+    }
+    await button.press("Enter");
+    await expect(visibleFacts).toHaveCount(8);
+    await expect(button).toBeFocused();
+    await expectNoHorizontalOverflow(page, `vehicle facts ${width}`);
+    await panel.screenshot({
+      path: testInfo.outputPath(`vehicle-facts-${width}.png`),
+    });
+    expect(errors).toEqual([]);
+  });
+}

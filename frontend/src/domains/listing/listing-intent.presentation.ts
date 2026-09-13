@@ -1,4 +1,5 @@
 import type { TaxonomyPrimaryCta } from "../taxonomy/taxonomy.types";
+import type { TaxonomyV1ListingIntent } from "@shongre/contracts/taxonomy";
 
 export type ListingSafetyVariant =
   | "payment"
@@ -8,10 +9,53 @@ export type ListingSafetyVariant =
   | "exchange"
   | "in_person";
 
+/** Preserve the publication intent when a listing uses the generic page. */
+export function primaryCtaForListingIntent(
+  intent: TaxonomyV1ListingIntent | undefined,
+): TaxonomyPrimaryCta {
+  switch (intent) {
+    case "JOB_OFFER":
+      return "apply";
+    case "SERVICE_OFFER":
+    case "SERVICE_REQUEST":
+      return "request_quote";
+    case "COURSE_OFFER":
+      return "request_lesson";
+    case "RENT_OUT":
+    case "RENT_SEEK":
+    case "BOOK":
+      return "check_availability";
+    case "EXCHANGE":
+      return "propose_exchange";
+    default:
+      return "contact_seller";
+  }
+}
+
 export function resolveListingIntentPresentation(
   primaryCta: TaxonomyPrimaryCta | undefined,
   isOnlinePaymentAvailable: boolean,
 ) {
+  const actionLabelKey = (() => {
+    switch (primaryCta) {
+      case "apply":
+        return "listings.listingDetailPage.postuler" as const;
+      case "request_quote":
+        return "listings.listingDetailPage.demanderUnDevis" as const;
+      case "request_visit":
+        return "listings.listingDetailPage.demanderUneVisite" as const;
+      case "request_test_drive":
+        return "listings.listingDetailPage.demanderUnEssai" as const;
+      case "request_lesson":
+        return "listings.listingDetailPage.demanderUnCours" as const;
+      case "check_availability":
+        return "listings.listingDetailPage.verifierLaDisponibilite" as const;
+      case "propose_exchange":
+        return "listings.listingDetailPage.proposerUnEchange" as const;
+      default:
+        return "listings.listingDetailPage.message" as const;
+    }
+  })();
   const priceLabelKey = (() => {
     switch (primaryCta) {
       case "apply":
@@ -46,5 +90,5 @@ export function resolveListingIntentPresentation(
     safetyVariant = "appointment";
   else if (primaryCta === "propose_exchange") safetyVariant = "exchange";
 
-  return { priceLabelKey, safetyVariant };
+  return { actionLabelKey, priceLabelKey, safetyVariant };
 }

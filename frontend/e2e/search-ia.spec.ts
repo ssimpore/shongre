@@ -37,6 +37,10 @@ test.describe('search page information architecture', () => {
       );
 
       if (width >= 1024) {
+        await expect(page.locator('#search-filter-panel-desktop')).toBeHidden();
+        await page
+          .getByRole('button', { name: 'Afficher les filtres' })
+          .click();
         await expect(page.locator('#search-filter-panel-desktop')).toBeVisible();
         await expect(page.locator('#desktop-category-select')).toBeVisible();
         await expect(

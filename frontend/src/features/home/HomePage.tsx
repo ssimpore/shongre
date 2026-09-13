@@ -91,7 +91,7 @@ export const HomePage: React.FC = () => {
       : null;
   if (!visibleExperience) {
     return (
-      <Container className="py-12 sm:py-20">
+      <Container width="results" className="py-12 sm:py-20">
         {failed ? (
           <StatePanel
             variant="offline"
@@ -127,7 +127,7 @@ export const HomePage: React.FC = () => {
         return (
           <Suspense
             key={section.key}
-            fallback={<div className="mx-auto min-h-64 max-w-page px-4" />}
+            fallback={<Container width="results" className="min-h-64" />}
           >
             <HomeBelowFold
               sections={[section]}

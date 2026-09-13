@@ -273,6 +273,7 @@ export function projectListingCharacteristics(
       definition.dataType === "boolean" && value === true ? "feature" : "fact";
     projected.items.push({
       code: definition.code,
+      icon: definition.iconName,
       label,
       value: formatted,
       presentation,
@@ -306,6 +307,10 @@ export function projectLocalizedListingCharacteristics(
     string,
     {
       code: string;
+      icon?: TaxonomyV1Attribute["iconName"];
+      groupId: string;
+      groupLabels: Record<string, string> & { "fr-FR": string };
+      presentation?: "fact" | "feature";
       labels: Record<string, string> & { "fr-FR": string };
       values: Record<string, string> & { "fr-FR": string };
     }
@@ -317,11 +322,18 @@ export function projectLocalizedListingCharacteristics(
     );
     for (const group of projection.groups)
       for (const item of group.items) {
-        const row = rows.get(item.code) ?? {
+        const row: NonNullable<ReturnType<typeof rows.get>> = rows.get(
+          item.code,
+        ) ?? {
           code: item.code,
+          icon: item.icon,
+          groupId: group.id,
+          groupLabels: { "fr-FR": "" },
+          presentation: item.presentation,
           labels: { "fr-FR": "" },
           values: { "fr-FR": "" },
         };
+        row.groupLabels[locale] = group.label;
         row.labels[locale] = item.label;
         row.values[locale] = item.value;
         rows.set(item.code, row);

@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import { officialProviderColors } from "@shongre/design-tokens";
 
 type BrandIconProps = SVGProps<SVGSVGElement>;
 
@@ -23,8 +24,20 @@ export function GooglePlayBrandIcon(props: BrandIconProps) {
   return (
     <svg {...commonProps} {...props}>
       <path
-        fill="currentColor"
-        d="M4.6 3.2a1.4 1.4 0 0 0-.4 1v15.6c0 .4.2.8.5 1l9-8.8-9.1-8.8Zm10.2 9.9-2.3 2.3-6.1 5.9c.3 0 .7-.1 1-.3l10.8-6.2-3.4-1.7Zm3.4-3.9L7.4 3c-.3-.2-.7-.3-1-.3l8.4 8.2 3.4-1.7Zm1.2.7-3.5 2.1 3.5 2.1c.9.5.9 1.3.9 2.1s0-5 0-4.2c0-.8 0-1.6-.9-2.1Z"
+        fill={officialProviderColors.google.blue}
+        d="M4.6 3.2a1.4 1.4 0 0 0-.4 1v15.6c0 .4.2.8.5 1l9-8.8-9.1-8.8Z"
+      />
+      <path
+        fill={officialProviderColors.google.green}
+        d="M7.4 3c-.3-.2-.7-.3-1-.3l8.4 8.2 3.4-1.7L7.4 3Z"
+      />
+      <path
+        fill={officialProviderColors.google.yellow}
+        d="m18.2 9.2-3.4 1.7-1.1 1.1 1.1 1.1 3.4 1.7 1.2-.7c.6-.3.9-.8.9-1.4v-1.4c0-.6-.3-1.1-.9-1.4l-1.2-.7Z"
+      />
+      <path
+        fill={officialProviderColors.google.red}
+        d="m14.8 13.1-2.3 2.3-6.1 5.9c.3 0 .7-.1 1-.3l10.8-6.2-3.4-1.7Z"
       />
     </svg>
   );

@@ -1120,7 +1120,7 @@ export const PublishWizard: React.FC = () => {
                   aria-disabled={isLocked || undefined}
                   className={`w-full text-left flex items-start gap-2 px-2.5 py-2 rounded-xl font-semibold transition-colors cursor-pointer ${
                     isCurrent
-                      ? "bg-primary-light text-primary ring-1 ring-primary"
+                      ? "bg-primary-light text-text-main ring-1 ring-primary"
                       : isDone
                         ? "text-success hover:bg-surface-soft"
                         : isLocked
@@ -1131,7 +1131,7 @@ export const PublishWizard: React.FC = () => {
                   <span
                     className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold shrink-0 mt-px ${
                       isCurrent
-                        ? "bg-primary text-text-inverse"
+                        ? "bg-primary text-on-primary"
                         : isDone
                           ? "bg-success text-text-inverse"
                           : "bg-surface-disabled text-text-emphasis"
@@ -1220,7 +1220,7 @@ export const PublishWizard: React.FC = () => {
                         key={intent}
                         className={`relative flex min-h-control-md cursor-pointer items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
                           draft.listingIntent === intent
-                            ? "border-primary bg-primary-light text-primary font-semibold"
+                            ? "border-primary bg-primary-light text-text-main font-semibold"
                             : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
                         }`}
                       >
@@ -1235,7 +1235,7 @@ export const PublishWizard: React.FC = () => {
                         <span
                           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
                             draft.listingIntent === intent
-                              ? "bg-primary text-text-inverse"
+                              ? "bg-primary text-on-primary"
                               : "bg-primary-light text-primary"
                           }`}
                         >
@@ -1353,7 +1353,7 @@ export const PublishWizard: React.FC = () => {
                             }}
                             className={`flex min-h-control-md items-center justify-between gap-3 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
                               isSelected
-                                ? "border-primary bg-primary-light font-semibold text-primary"
+                                ? "border-primary bg-primary-light font-semibold text-text-main"
                                 : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
                             }`}
                           >
@@ -1626,7 +1626,7 @@ export const PublishWizard: React.FC = () => {
                   </div>
                 </div>
                 {photo.isCover && (
-                  <div className="absolute top-2 left-2 bg-primary text-text-inverse text-micro font-bold px-1.5 py-0.5 rounded shadow-xs">
+                  <div className="absolute top-2 left-2 bg-primary text-on-primary text-micro font-bold px-1.5 py-0.5 rounded shadow-xs">
                     Couverture
                   </div>
                 )}
@@ -1677,7 +1677,7 @@ export const PublishWizard: React.FC = () => {
           <div className="p-4 bg-gradient-to-r from-primary-light via-primary-surface-faint to-rating-surface/80 rounded-2xl border border-primary-border space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-primary text-text-inverse flex items-center justify-center shadow-xs">
+                <div className="w-7 h-7 rounded-lg bg-primary text-on-primary flex items-center justify-center shadow-xs">
                   <Sparkles className="w-icon-md h-icon-md" />
                 </div>
                 <div>
@@ -2269,7 +2269,7 @@ export const PublishWizard: React.FC = () => {
                           aria-hidden="true"
                           className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors duration-fast ${
                             isSelected
-                              ? "border-primary bg-primary text-text-inverse"
+                              ? "border-primary bg-primary text-on-primary"
                               : "border-border-prominent bg-bg-surface text-transparent"
                           }`}
                         >
@@ -2280,7 +2280,7 @@ export const PublishWizard: React.FC = () => {
                       {/* Market Badges & Rules */}
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {isPrimary && (
-                          <span className="text-micro bg-primary text-text-inverse font-bold px-2 py-0.5 rounded-full">
+                          <span className="text-micro bg-primary text-on-primary font-bold px-2 py-0.5 rounded-full">
                             {t(
                               "publishing.publishWizard.marcheDOriginePrincipal",
                             )}
@@ -2545,7 +2545,6 @@ export const PublishWizard: React.FC = () => {
             ) : (
               <Button
                 variant="primary"
-                size="lg"
                 onClick={handleFinalPublish}
                 isLoading={isPublishing}
                 leftIcon={<CheckCircle2 className="w-icon-lg h-icon-lg" />}

@@ -96,7 +96,7 @@ const activityPresentation: Record<
   },
   STAGE_CHANGED: {
     label: "Étape modifiée",
-    tone: "bg-primary-light text-primary",
+    tone: "bg-primary-light text-text-main",
     icon: Target,
   },
   OPPORTUNITY_WON: {
@@ -525,7 +525,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     />
                   )}
                   <span
-                    className={`relative z-raised inline-flex h-6 w-6 items-center justify-center rounded-pill border-2 text-micro font-bold ${current ? "border-primary bg-primary text-text-inverse ring-4 ring-primary-ring" : complete ? "border-primary bg-primary text-text-inverse" : "border-border-inverse-muted bg-surface-inverse text-text-disabled"}`}
+                    className={`relative z-raised inline-flex h-6 w-6 items-center justify-center rounded-pill border-2 text-micro font-bold ${current ? "border-primary bg-primary text-on-primary ring-4 ring-primary-ring" : complete ? "border-primary bg-primary text-on-primary" : "border-border-inverse-muted bg-surface-inverse text-text-disabled"}`}
                   >
                     {complete ? (
                       <Check

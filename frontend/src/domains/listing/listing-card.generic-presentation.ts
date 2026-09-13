@@ -26,7 +26,7 @@ export function getGenericListingCardCharacteristicPresentation(
 ): GenericListingCardCharacteristic[] {
   return (listing.taxonomy?.cardCharacteristics ?? [])
     .map((item) => ({
-      icon: "tag" as const,
+      icon: item.icon ?? ("tag" as const),
       label: localizeTaxonomyLabels(item.values, locale),
     }))
     .filter(

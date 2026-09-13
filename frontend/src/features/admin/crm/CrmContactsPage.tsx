@@ -297,7 +297,7 @@ export const CrmContactsPage: React.FC = () => {
                       </td>
                       <td className="px-4 py-3.5">
                         <span
-                          className={`rounded-pill px-2 py-1 text-micro font-bold ${contact.doNotContact ? "bg-danger-surface text-danger" : contact.lifecycle === "customer" ? "bg-success-surface text-success" : contact.lifecycle === "qualified" ? "bg-primary-light text-primary" : "bg-warning-surface text-warning"}`}
+                          className={`rounded-pill px-2 py-1 text-micro font-bold ${contact.doNotContact ? "bg-danger-surface text-danger" : contact.lifecycle === "customer" ? "bg-success-surface text-success" : contact.lifecycle === "qualified" ? "bg-primary-light text-text-main" : "bg-warning-surface text-warning"}`}
                         >
                           {contact.doNotContact
                             ? "Ne pas contacter"

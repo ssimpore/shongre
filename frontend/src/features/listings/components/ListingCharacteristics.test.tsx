@@ -38,7 +38,7 @@ describe("listing characteristics presentation", () => {
     const html = render("ready");
     expect(html).toContain("Les informations clés");
     expect(html).toContain("<dl");
-    expect(html).toContain("Année modèle</dt>");
+    expect(html).toContain(">Année modèle</span></dt>");
     expect(html).toContain("2022</dd>");
     // A short list is the key set; there is nothing to defer and so no button.
     expect(html).not.toContain("data-detail-disclosure");

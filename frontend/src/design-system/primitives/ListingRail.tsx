@@ -4,6 +4,8 @@ import { ScrollRail } from "./ScrollRail";
 export interface ListingRailProps {
   /** `ListingCard`s. Each is wrapped in the fixed-width, snapping rail cell. */
   children: React.ReactNode;
+  heading?: React.ReactNode;
+  action?: React.ReactNode;
   /** Accessible name for the scroll controls — normally the section heading. */
   label?: string;
   /** Extra classes for the scrolling track. */
@@ -27,11 +29,15 @@ export interface ListingRailProps {
  */
 export const ListingRail: React.FC<ListingRailProps> = ({
   children,
+  heading,
+  action,
   label = "annonces",
   className = "",
 }) => (
   <ScrollRail
     snap
+    heading={heading}
+    action={action}
     label={label}
     controlClassName="listing-rail-control top-1/2"
     className={`-mx-4 max-w-viewport-full px-4 pt-1.5 pb-4 sm:mx-0 sm:max-w-full sm:px-0 ${className}`}

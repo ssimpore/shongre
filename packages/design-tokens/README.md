@@ -15,13 +15,20 @@ only non-themeable colour exception; their typed registries are also derived
 from `src/theme.ts` so they do not become a second source.
 
 Shongre Orange is defined once as the generated canonical `brandPalette.orange`.
-The private `src/brand-orange.ts` recipe deterministically derives the
-accessible primary, hover, active, disabled, border, subtle-surface, inverse,
-fill, focus, and approved orange-category roles from that swatch plus official
-Ink and White. Consumers cannot import the recipe or a raw orange ramp; they use
-typed semantic roles. The mutation proof in `make tokens-check` changes the
-canonical input in memory and confirms every derived role changes without a
-component override.
+The private `src/brand-orange.ts` recipe accepts only that swatch. Solid primary,
+hover, active, fill, emphasis, inverse accents, and approved orange-category
+roles stay identical to the logo. Subtle surfaces, borders, disabled fills,
+and shadows vary only its alpha. Filled controls use the logo-white `on-primary`
+foreground, exposed natively as `colors.action.onPrimary`; labels on subtle
+orange surfaces use the main text foreground. Inverse and danger
+controls retain their own foregrounds. Consumers cannot import the recipe or
+override an orange shade. The mutation proof in `make tokens-check` changes the
+canonical input in memory and verifies every orange role still has exactly
+that RGB value, with optional alpha.
+
+The exact logo-white/orange pairing falls below the normal-text contrast
+threshold. Contrast assertions continue to report this; component overrides
+must not substitute another foreground or darken the canonical orange.
 
 - Web consumes the generated Tailwind v4 adapter at `@shongre/design-tokens/tokens.css`.
 - The Web adapter exposes `--font-family-sans` as the single application-family

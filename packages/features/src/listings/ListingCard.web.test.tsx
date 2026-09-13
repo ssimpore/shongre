@@ -46,6 +46,10 @@ const baseListing: ListingCardView = {
 
 const labels: ListingCardLabels = {
   boosted: "Boosté",
+  sponsored: "Sponsorisé",
+  featured: "À la une",
+  urgent: "Urgent",
+  promotion: "En promotion",
   delivery: "Livraison",
   digitalFulfillment: "Accès numérique",
   free: "Gratuit",
@@ -78,6 +82,55 @@ function renderCard(listing: ListingCardView = baseListing) {
 }
 
 describe("canonical web listing card", () => {
+  it.each(["grid", "compact", "showcase", "list", "hero"] as const)(
+    "keeps category-aware capabilities in the content area (%s)",
+    (variant) => {
+      const html = renderToStaticMarkup(
+        <ListingCard
+          listing={{
+            ...baseListing,
+            imageUrl: undefined,
+            photoCount: 1,
+            fulfillmentTypes: ["FILE_DOWNLOAD"],
+            requiresPhysicalDelivery: false,
+          }}
+          href="/annonce/listing-card-test"
+          variant={variant}
+          labels={labels}
+          identityLabels={identityLabels}
+        />,
+      );
+      const contentStart = html.indexOf('data-listing-card-content="true"');
+      const media = html.slice(
+        html.indexOf('data-listing-card-media="true"'),
+        contentStart,
+      );
+      const body = html.slice(contentStart);
+      const horizontal = variant === "list" || variant === "hero";
+      const expectedLabels = horizontal
+        ? ["Paiement en ligne", "Livraison", "Négociable", "Accès numérique"]
+        : ["Paiement en ligne", "Accès numérique"];
+
+      for (const label of expectedLabels) {
+        expect(body).toContain(`aria-label="${label}"`);
+        expect(body).toContain(`title="${label}"`);
+        expect(body).toContain(`>${label}</span>`);
+      }
+      expect(media).not.toContain("data-listing-capability=");
+      expect(body.match(/data-listing-capability=/g)).toHaveLength(
+        horizontal ? 4 : 2,
+      );
+      expect(body.includes('data-listing-card-footer-facts="true"')).toBe(
+        !horizontal,
+      );
+      expect(media).not.toContain("data-listing-card-photo-count=");
+      expect(media).toContain('aria-label="Image indisponible"');
+      expect(html).toMatch(
+        /aria-label="[^"]*Paiement en ligne, Livraison, Accès numérique, Négociable/,
+      );
+    },
+  );
+
   it.each(["grid", "list", "compact", "showcase", "hero"] as const)(
     "uses a payment-card glyph with the online-payment label in the %s variant",
     (variant) => {
@@ -97,6 +150,49 @@ describe("canonical web listing card", () => {
     },
   );
 
+  it.each(["grid", "list", "compact", "showcase", "hero"] as const)(
+    "announces and renders coexisting feature and sale badges in %s cards",
+    (variant) => {
+      const html = renderToStaticMarkup(
+        <ListingCard
+          listing={{
+            ...baseListing,
+            originalPrice: { amountMinor: 30000, currency: "EUR" },
+          }}
+          href="/annonce/listing-card-test"
+          variant={variant}
+          labels={labels}
+          identityLabels={identityLabels}
+        />,
+      );
+      expect(html).toContain('data-listing-badge="featured"');
+      expect(html).toContain('data-listing-badge="promotion"');
+      expect(html).toContain("lucide-flame");
+      expect(html).toContain("lucide-tag");
+      expect(html).toMatch(/aria-label="[^"]*À la une, En promotion/);
+      expect(html).not.toContain('data-listing-badge="boosted"');
+    },
+  );
+
+  it.each([
+    ["search_bump", "boosted", "Boosté", "rocket"],
+    ["sponsored_search", "sponsored", "Sponsorisé", "rocket"],
+    ["urgent_badge", "urgent", "Urgent", "zap"],
+  ] as const)(
+    "renders %s with its own label and icon",
+    (type, kind, label, icon) => {
+      const html = renderCard({
+        ...baseListing,
+        promotion: { ...baseListing.promotion!, type },
+      });
+      expect(html).toContain(`data-listing-badge="${kind}"`);
+      expect(html).toContain(label);
+      expect(html).toContain(`lucide-${icon}`);
+      expect(html).not.toContain('data-listing-badge="featured"');
+      expect(html).not.toContain('data-listing-badge="promotion"');
+    },
+  );
+
   it("renders the compact shared anatomy in the specified order", () => {
     const dateNow = vi
       .spyOn(Date, "now")
@@ -112,7 +208,7 @@ describe("canonical web listing card", () => {
     expect(category).toBeGreaterThan(-1);
     expect(category).toBeLessThan(price);
     expect(price).toBeLessThan(title);
-    expect(title).toBeLessThan(meta);
+    expect(price).toBeLessThan(meta);
     expect(html).toContain("Maison");
     expect(html).toContain("IKEA");
     expect(html).toContain("250 €");
@@ -122,44 +218,84 @@ describe("canonical web listing card", () => {
     expect(html).toContain("Lyon 3e");
     expect(html).toContain("il y a 2 h");
     expect(html).toMatch(/aria-label="[^"]*il y a 2 h/);
-    expect(html).toContain("Boosté");
-    expect(html).toContain("lucide-zap");
-    expect(html).toContain("lucide-star");
-    expect(html).toContain('data-listing-card-capabilities="true"');
+    expect(html).toContain("À la une");
+    expect(html).toContain('data-listing-badge="featured"');
+    expect(html).toContain("lucide-flame");
+    expect(html).toContain('data-listing-card-footer-facts="true"');
     expect(html).toContain('data-listing-capability="online_payment"');
     expect(html).toContain('data-listing-capability="delivery"');
-    expect(html).toContain('data-listing-capability="negotiable"');
+    expect(html).not.toContain('data-listing-capability="negotiable"');
     expect(html).toContain('data-listing-card-photo-count="true"');
     expect(html).toContain('aria-label="4 photos"');
     expect(html).toContain("fill-primary text-primary");
     expect(html).toContain('aria-label="Retirer des favoris"');
     expect(html).toContain("listing-card-media");
     expect(html).toContain("focus-within:ring-inset");
+    expect(html).toContain('data-ui-pro-badge="true"');
     expect(html).not.toContain('data-ui-verification-badge="true"');
     expect(html).not.toContain("Vendeur vérifié");
   });
 
-  it("keeps vertical cards compact without exposing the full seller identity", () => {
+  it("keeps seller trust compact and scales long vertical titles to two lines", () => {
     const html = renderCard();
     const titleStart = html.indexOf('data-listing-card-title="true"');
     const titleEnd = html.indexOf("</h3>", titleStart);
     const titleMarkup = html.slice(titleStart, titleEnd);
 
-    expect(html).not.toContain("Agence Canopée");
+    expect(html).toContain("Agence Canopée");
     expect(html).not.toContain('data-listing-card-characteristics="true"');
     expect(html).toContain('data-listing-card-photo-count="true"');
     expect(html).not.toContain('data-listing-card-delivery-overlay="true"');
     expect(html).not.toContain('data-listing-card-seller-avatar="true"');
+    expect(html).toContain('data-listing-card-seller-summary="true"');
     expect(html).not.toContain('data-listing-card-original-price="true"');
-    expect(html).toContain('data-listing-capability="negotiable"');
-    expect(html).toContain("py-1.5");
-    expect(titleMarkup).not.toContain("line-clamp");
+    expect(html).not.toContain('data-listing-capability="negotiable"');
+    expect(html).toContain("py-2");
     expect(titleMarkup).toContain(baseListing.title);
-    expect(titleMarkup).toContain("text-xs");
+    expect(titleMarkup).toContain("text-sm");
     expect(titleMarkup).toContain("listing-card-title-vertical");
     expect(titleMarkup).toContain("font-semibold");
     expect(titleMarkup).not.toContain("truncate");
   });
+
+  it.each(["grid", "compact", "showcase"] as const)(
+    "places professional trust after metadata with one real rating in %s cards",
+    (variant) => {
+      const html = renderToStaticMarkup(
+        <ListingCard
+          listing={baseListing}
+          href="/annonce/test"
+          variant={variant}
+          labels={labels}
+          identityLabels={identityLabels}
+        />,
+      );
+      const summary = html.indexOf('data-listing-card-seller-summary="true"');
+      const price = html.indexOf('data-listing-card-price-row="true"');
+      const priceRowMarkup = html.slice(
+        html.lastIndexOf("<div", price),
+        html.indexOf(">", price),
+      );
+      expect(html).not.toContain('data-listing-card-seller-identity="true"');
+      expect(summary).toBeGreaterThan(
+        html.indexOf('data-listing-card-meta="true"'),
+      );
+      expect(summary).toBeGreaterThan(price);
+      expect(html.indexOf('data-ui-pro-badge="true"')).toBeGreaterThan(price);
+      expect(html).not.toContain('data-ui-verification-badge="true"');
+      expect(html.match(/data-listing-card-rating="true"/g)).toHaveLength(1);
+      expect(html.indexOf('data-listing-card-rating="true"')).toBeGreaterThan(
+        price,
+      );
+      const summaryMarkup = html.slice(
+        html.lastIndexOf("<span", summary),
+        html.indexOf(">", summary),
+      );
+      expect(summaryMarkup).not.toContain("ml-auto");
+      expect(summaryMarkup).toContain("min-h-control-target");
+      expect(priceRowMarkup).toContain("flex-wrap");
+    },
+  );
 
   it("shows a brand separator only when a real brand exists", () => {
     const withBrand = renderCard();
@@ -191,7 +327,7 @@ describe("canonical web listing card", () => {
     expect(priceMarkup).toContain("flex-auto");
     expect(priceMarkup).toContain("break-words");
     expect(priceMarkup).not.toContain("truncate");
-    expect(summaryMarkup).toContain("flex-wrap");
+    expect(summaryMarkup).toContain("min-h-control-target");
     expect(summaryMarkup).not.toContain("overflow-hidden");
   });
 
@@ -210,13 +346,17 @@ describe("canonical web listing card", () => {
     });
 
     expect(html).not.toContain('data-ui-pro-badge="true"');
+    expect(html).not.toContain('data-ui-verification-badge="true"');
+    expect(html).not.toContain("Particulier");
     expect(html).toContain('data-listing-card-rating="true"');
     expect(html).toContain("4,9");
     expect(html).toContain("1 234");
-    expect(html.match(/lucide-star/g)).toHaveLength(1);
+    expect(html.match(/aria-label="Note 4,9 sur 5, 1 234 avis"/g)).toHaveLength(
+      1,
+    );
   });
 
-  it("places private-seller verification beside rating instead of over media", () => {
+  it("places verified status in the trust row for an individual seller", () => {
     const html = renderCard({
       ...baseListing,
       publisherType: "private",
@@ -229,18 +369,19 @@ describe("canonical web listing card", () => {
     });
     const media = html.indexOf('data-listing-card-media="true"');
     const content = html.indexOf('data-listing-card-content="true"');
-    const priceRow = html.indexOf('data-listing-card-price-row="true"');
+    const meta = html.indexOf('data-listing-card-meta="true"');
     const verificationBadge = html.indexOf('data-ui-verification-badge="true"');
-    const title = html.indexOf('data-listing-card-title="true"');
-
-    expect(verificationBadge).toBeGreaterThan(priceRow);
-    expect(verificationBadge).toBeLessThan(title);
+    const summary = html.indexOf('data-listing-card-seller-summary="true"');
+    expect(summary).toBeGreaterThan(meta);
+    expect(verificationBadge).toBeGreaterThan(summary);
+    expect(html).not.toContain('data-ui-verified-icon="true"');
+    expect(html).not.toContain('data-listing-card-seller-identity="true"');
     expect(html.slice(media, content)).not.toContain(
-      'data-ui-verification-badge="true"',
+      'data-ui-verified-icon="true"',
     );
     expect(html).toContain("Vendeur vérifié");
     expect(html).toContain(">Vérifié<");
-    expect(html).toContain("text-overline");
+    expect(html).not.toContain("Particulier");
     expect(html).not.toContain('data-ui-pro-badge="true"');
   });
 
@@ -267,6 +408,7 @@ describe("canonical web listing card", () => {
 
     expect(html).toContain('data-ui-pro-badge="true"');
     expect(html).not.toContain('data-listing-card-rating="true"');
+    expect(html).not.toContain('data-ui-verification-badge="true"');
   });
 
   it("hides rating when the seller has no reviews without inventing a score", () => {
@@ -409,6 +551,7 @@ describe("canonical web listing card", () => {
   it("omits capability and media-detail zones when no applicable data exists", () => {
     const html = renderCard({
       ...baseListing,
+      characteristics: [],
       photoCount: 1,
       deliveryAvailable: false,
       fulfillmentTypes: ["PHYSICAL"],
@@ -423,8 +566,44 @@ describe("canonical web listing card", () => {
     });
 
     expect(html).not.toContain('data-listing-card-capabilities="true"');
+    expect(html).not.toContain('data-listing-card-footer-facts="true"');
     expect(html).not.toContain('data-listing-card-media-details="true"');
     expect(html).not.toContain('data-listing-card-photo-count="true"');
+  });
+
+  it("fills the vertical footer with category characteristics when commerce capabilities are absent", () => {
+    const html = renderCard({
+      ...baseListing,
+      deliveryAvailable: false,
+      onlinePaymentAvailable: false,
+      isNegotiable: false,
+      seller: {
+        ...baseListing.seller!,
+        isIdentityVerified: false,
+        isBusinessVerified: false,
+      },
+    });
+
+    expect(html).toContain('data-listing-card-footer-facts="true"');
+    expect(html).toContain('data-listing-characteristic="Velours"');
+    expect(html).toContain('data-listing-characteristic="Trois places"');
+    expect(html).not.toContain("data-listing-capability=");
+  });
+
+  it("does not expose an internal monetary storage unit as a category fact", () => {
+    const html = renderCard({
+      ...baseListing,
+      characteristics: ["Bricolage & rénovation", "65 currency_minor"],
+      deliveryAvailable: false,
+      onlinePaymentAvailable: false,
+      isNegotiable: false,
+      seller: undefined,
+    });
+
+    expect(html).toContain(
+      'data-listing-characteristic="Bricolage &amp; rénovation"',
+    );
+    expect(html).not.toContain("currency_minor");
   });
 
   it("keeps the richer decision fields and seller identity in hero mode", () => {

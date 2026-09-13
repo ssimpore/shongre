@@ -356,7 +356,7 @@ export const HomepageConfigurationPanel: React.FC<
               data-testid={`homepage-admin-section-${section.key}`}
             >
               <div className="mb-4 flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-pill bg-primary-light text-xs font-bold text-primary">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-pill bg-primary-light text-xs font-bold text-text-main">
                   {index + 1}
                 </span>
                 <h2 className="min-w-0 flex-1 text-sm font-bold text-text-main">

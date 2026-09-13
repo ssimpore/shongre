@@ -406,7 +406,7 @@ export function InvoicingWorkspacePage() {
                 href={href}
                 className={`inline-flex min-h-control-sm shrink-0 items-center gap-2 rounded-control px-3 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary lg:flex ${
                   index === 1
-                    ? "bg-primary-light text-primary"
+                    ? "bg-primary-light text-text-main"
                     : "text-text-secondary hover:bg-bg-subtle hover:text-text-main"
                 }`}
               >

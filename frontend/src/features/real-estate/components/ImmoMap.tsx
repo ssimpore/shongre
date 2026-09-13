@@ -101,16 +101,12 @@ export const ImmoMap: React.FC<{
   }, [isMapReady, properties, selectedId]);
 
   return (
-    // The wrapper carries the hook every search surface publishes for its map
-    // panel; the canvas inside it is the map itself and stays layout-neutral.
-    <div data-search-results-map className="h-full min-h-112 w-full">
-      <MapContainer
-        surface="immo-results"
-        center={{ latitude: 45.764, longitude: 4.8357, zoom: 12 }}
-        ariaLabel="Carte des biens immobiliers"
-        className="h-full w-full bg-bg-subtle"
-        onReady={attachHandlers}
-      />
-    </div>
+    <MapContainer
+      surface="immo-results"
+      center={{ latitude: 45.764, longitude: 4.8357, zoom: 12 }}
+      ariaLabel="Carte des biens immobiliers"
+      className="h-full min-h-112 w-full bg-bg-subtle"
+      onReady={attachHandlers}
+    />
   );
 };

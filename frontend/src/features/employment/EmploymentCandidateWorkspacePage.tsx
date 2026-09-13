@@ -425,7 +425,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`flex min-h-control-md min-w-max items-center gap-2 rounded-control px-3 text-xs font-semibold ${tab === id ? "bg-primary text-text-inverse" : "text-text-secondary hover:bg-bg-subtle"}`}
+            className={`flex min-h-control-md min-w-max items-center gap-2 rounded-control px-3 text-xs font-semibold ${tab === id ? "bg-primary text-on-primary" : "text-text-secondary hover:bg-bg-subtle"}`}
           >
             {icon}
             {label}

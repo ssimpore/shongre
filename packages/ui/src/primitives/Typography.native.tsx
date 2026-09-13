@@ -21,6 +21,8 @@ type TextTone =
 export interface TextProps {
   children: ReactNode;
   size?:
+    | "card-title"
+    | "card-price"
     | "body-lg"
     | "body-md"
     | "body-sm"
@@ -88,6 +90,14 @@ export function Heading({
 }
 
 const textSizes = StyleSheet.create({
+  "card-title": {
+    fontSize: nativeTypography.size.cardTitle,
+    lineHeight: nativeTypography.lineHeight.cardTitle,
+  },
+  "card-price": {
+    fontSize: nativeTypography.size.cardPrice,
+    lineHeight: nativeTypography.lineHeight.cardPrice,
+  },
   "body-lg": {
     fontSize: nativeTypography.size.bodyLg,
     lineHeight: nativeTypography.lineHeight.bodyLg,

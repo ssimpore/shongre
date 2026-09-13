@@ -79,6 +79,11 @@ export function ListingCardViewCard({
   const displayedListing: ListingCardView = {
     ...listing,
     price: priceProjection?.display,
+    originalPrice:
+      listing.originalPrice &&
+      listing.originalPrice.currency === listing.price?.currency
+        ? convertMoney(listing.originalPrice).display
+        : undefined,
     priceLabel:
       listing.priceLabel ||
       (priceProjection?.estimated
@@ -165,6 +170,10 @@ export function ListingCardViewCard({
       }
       labels={{
         boosted: t("ui.listingCard.boosted"),
+        sponsored: t("ui.listingCard.sponsored"),
+        featured: t("ui.listingCard.featured"),
+        urgent: t("ui.listingCard.urgent"),
+        promotion: t("ui.listingCard.promotion"),
         delivery: t("ui.listingCard.delivery"),
         digitalFulfillment: t("ui.listingCard.digitalFulfillment"),
         free: t("ui.listingCard.free"),

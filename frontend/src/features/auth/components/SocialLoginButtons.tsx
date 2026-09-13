@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useId, useRef, useState } from "react";
 import { officialProviderColors } from "@shongre/design-tokens";
 import { services } from "../../../api/client/service-registry";
 import type {
@@ -60,20 +59,36 @@ function FacebookMark() {
 }
 
 const PROVIDERS = [
-  { id: "google" as const, icon: <GoogleMark /> },
-  { id: "apple" as const, icon: <AppleMark /> },
-  { id: "facebook" as const, icon: <FacebookMark /> },
+  { id: "google" as const, name: "Google", icon: <GoogleMark /> },
+  { id: "apple" as const, name: "Apple", icon: <AppleMark /> },
+  { id: "facebook" as const, name: "Facebook", icon: <FacebookMark /> },
 ];
 
-export function SocialLoginButtons(
-  props: Pick<SocialAuthStartInput, "intent" | "returnTo" | "accountType">,
-) {
+type SocialLoginButtonsProps = Pick<
+  SocialAuthStartInput,
+  "returnTo" | "accountType"
+> & {
+  disabled?: boolean;
+  onPendingChange?: (pending: boolean) => void;
+};
+
+export function SocialLoginButtons({
+  returnTo,
+  accountType,
+  disabled = false,
+  onPendingChange,
+}: SocialLoginButtonsProps) {
   const { t } = useTranslation();
+  const statusId = useId();
+  const starting = useRef(false);
   const [pending, setPending] = useState<SocialAuthProvider | null>(null);
   const [error, setError] = useState("");
-  const [availability, setAvailability] = useState<
-    (Record<SocialAuthProvider, boolean> & { linking: boolean }) | null
-  >(null);
+  const [availability, setAvailability] = useState<Record<
+    SocialAuthProvider,
+    boolean
+  > | null>(null);
+  const [availabilityFailed, setAvailabilityFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -83,87 +98,118 @@ export function SocialLoginButtons(
         if (active) setAvailability(result);
       })
       .catch(() => {
-        if (active)
-          setAvailability({
-            google: false,
-            apple: false,
-            facebook: false,
-            linking: false,
-          });
+        if (active) setAvailabilityFailed(true);
       });
     return () => {
       active = false;
     };
-  }, []);
+  }, [attempt]);
 
-  const visibleProviders = PROVIDERS.filter(
-    (provider) =>
-      availability?.[provider.id] !== false &&
-      !(props.intent === "link" && availability?.linking === false),
-  );
+  const status = availabilityFailed
+    ? t("auth.social.availabilityFailed")
+    : availability === null
+      ? t("auth.social.checking")
+      : null;
 
   const start = async (provider: SocialAuthProvider) => {
-    if (pending) return;
+    if (disabled || starting.current || availability?.[provider] !== true)
+      return;
+    starting.current = true;
     setPending(provider);
     setError("");
+    onPendingChange?.(true);
     try {
       const { authorizationUrl } = await services.auth.startSocialAuth({
         provider,
-        ...props,
+        intent: "sign_in",
+        returnTo,
+        accountType,
       });
       window.location.assign(authorizationUrl);
     } catch {
       setError(t("auth.social.failed"));
+      starting.current = false;
       setPending(null);
+      onPendingChange?.(false);
     }
   };
 
-  if (availability && visibleProviders.length === 0) return null;
-
   return (
-    <div className="space-y-3">
+    <div className="mb-5 space-y-4">
+      <div
+        role="group"
+        aria-label={t("auth.social.heading")}
+        className="space-y-3"
+      >
+        <p className="text-center text-sm font-semibold text-text-main">
+          {t("auth.social.heading")}
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {PROVIDERS.map((provider) => (
+            <Button
+              key={provider.id}
+              type="button"
+              variant="outline"
+              size="compact"
+              className="w-full gap-1 px-1 py-0 text-micro sm:gap-1.5 sm:px-2 sm:text-xs"
+              aria-label={t(`auth.social.${provider.id}`)}
+              leftIcon={provider.icon}
+              isLoading={pending === provider.id}
+              disabled={
+                disabled ||
+                availability?.[provider.id] !== true ||
+                pending !== null
+              }
+              aria-describedby={
+                status && availability?.[provider.id] !== true
+                  ? statusId
+                  : undefined
+              }
+              onClick={() => void start(provider.id)}
+            >
+              {provider.name}
+            </Button>
+          ))}
+        </div>
+        {status ? (
+          <div
+            id={statusId}
+            role="status"
+            className="text-center text-xs leading-relaxed text-text-supporting"
+          >
+            {status}
+            {availabilityFailed ? (
+              <div className="mt-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={disabled}
+                  onClick={() => {
+                    setAvailabilityFailed(false);
+                    setAvailability(null);
+                    setAttempt((current) => current + 1);
+                  }}
+                >
+                  {t("auth.social.retry")}
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+        {error ? (
+          <p role="alert" className="text-xs font-semibold text-danger">
+            {error}
+          </p>
+        ) : null}
+      </div>
       <div className="flex items-center gap-3" aria-hidden="true">
         <span className="h-px flex-1 bg-border-subtle" />
-        <span className="text-micro font-semibold uppercase tracking-wide text-text-tertiary">
-          {t("auth.social.or")}
+        <span className="text-xs text-text-supporting">
+          {t("auth.social.email")}
         </span>
         <span className="h-px flex-1 bg-border-subtle" />
       </div>
-      <div className="grid gap-2">
-        {visibleProviders.map((provider) => (
-          <Button
-            key={provider.id}
-            type="button"
-            variant="outline"
-            size="md"
-            className="w-full bg-bg-surface"
-            leftIcon={provider.icon}
-            isLoading={pending === provider.id}
-            disabled={
-              availability === null ||
-              (pending !== null && pending !== provider.id)
-            }
-            onClick={() => void start(provider.id)}
-          >
-            {t(`auth.social.${provider.id}`)}
-          </Button>
-        ))}
-      </div>
-      {error ? (
-        <p role="alert" className="text-xs font-semibold text-danger">
-          {error}
-        </p>
-      ) : null}
-      <p className="text-center text-micro leading-relaxed text-text-tertiary">
-        {t("auth.social.privacy")}{" "}
-        <Link className="font-semibold underline" to="/conditions-utilisation">
-          CGU
-        </Link>{" "}
-        ·{" "}
-        <Link className="font-semibold underline" to="/confidentialite">
-          Confidentialité
-        </Link>
-      </p>
     </div>
   );
 }

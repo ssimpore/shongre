@@ -30663,6 +30663,7 @@ export type Database = {
           display_order: number;
           field_role: string;
           help_text: string | null;
+          icon_name: string | null;
           id: string;
           immutable_after_publication: boolean;
           is_comparable: boolean;
@@ -30702,6 +30703,7 @@ export type Database = {
           display_order?: number;
           field_role?: string;
           help_text?: string | null;
+          icon_name?: string | null;
           id: string;
           immutable_after_publication?: boolean;
           is_comparable?: boolean;
@@ -30741,6 +30743,7 @@ export type Database = {
           display_order?: number;
           field_role?: string;
           help_text?: string | null;
+          icon_name?: string | null;
           id?: string;
           immutable_after_publication?: boolean;
           is_comparable?: boolean;

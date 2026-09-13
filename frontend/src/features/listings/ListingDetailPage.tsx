@@ -67,7 +67,10 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { analyticsService } from "../../services/analytics.service";
 import { isProSeller } from "../../domains/user/user.domain";
 import { DropdownMenu } from "../../design-system/primitives/DropdownMenu";
-import { resolveListingIntentPresentation } from "../../domains/listing/listing-intent.presentation";
+import {
+  primaryCtaForListingIntent,
+  resolveListingIntentPresentation,
+} from "../../domains/listing/listing-intent.presentation";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { getListingCategoryLabel } from "../../domains/taxonomy/listing-category.display";
 import { projectGenericListingCardView } from "../../domains/listing/listing-card.generic-presentation";
@@ -326,6 +329,7 @@ export const ListingDetailPage: React.FC = () => {
   // Form Fields
   const [messageText, setMessageText] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
+  const [isSendingOffer, setIsSendingOffer] = useState(false);
   const [reportReason, setReportReason] = useState("suspicious");
   const [reportDetails, setReportDetails] = useState("");
   const trackedListingId = useRef<string | null>(null);
@@ -351,13 +355,15 @@ export const ListingDetailPage: React.FC = () => {
     [activeMarket.code, convertMoney, currentLocale, listing],
   );
   useListingPromotionRefresh(listingCardProjection?.promotion);
-  const activePromotionVisible = Boolean(
-    listingCardProjection &&
-    getListingPromotionBadges(
-      listingCardProjection,
-      t("ui.listingCard.boosted"),
-    ).length > 0,
-  );
+  const promotionBadges = listingCardProjection
+    ? getListingPromotionBadges(listingCardProjection, {
+        boosted: t("ui.listingCard.boosted"),
+        sponsored: t("ui.listingCard.sponsored"),
+        featured: t("ui.listingCard.featured"),
+        urgent: t("ui.listingCard.urgent"),
+        promotion: t("ui.listingCard.promotion"),
+      })
+    : [];
   // One definition of where a seller's public page is, used by the identity
   // link beside the price and by the "see more" on the seller's rail.
   const sellerPublicUrlFor = (profile: PublicSellerProfile) =>
@@ -585,16 +591,46 @@ export const ListingDetailPage: React.FC = () => {
     });
   }, [listing, currentUser, seller, transactionCaps]);
 
-  const contactActionLabel = t("listings.listingDetailPage.message");
+  const openBuyerAction = (intent: "contact" | "offer" | "reserve") => {
+    const eligible = {
+      contact: actions.canContact,
+      offer: actions.canMakeOffer,
+      reserve: actions.canReserve,
+    }[intent];
+    if (!listing || !eligible || isReadOnlyStaff) return;
+    if (!currentUser) {
+      navigate(
+        routes.auth.login(`${routes.listing.detail(listing.id)}?${intent}=1`),
+      );
+      return;
+    }
+    if (intent === "contact") setIsContactModalOpen(true);
+    if (intent === "offer") setIsOfferModalOpen(true);
+    if (intent === "reserve") setIsReservationModalOpen(true);
+  };
+
+  const closeBuyerAction = (intent: "contact" | "offer" | "reserve") => {
+    if (intent === "contact") setIsContactModalOpen(false);
+    if (intent === "offer") setIsOfferModalOpen(false);
+    if (intent === "reserve") setIsReservationModalOpen(false);
+    if (!["contact", "offer", "reserve"].some((key) => searchParams.has(key)))
+      return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("contact");
+    next.delete("offer");
+    next.delete("reserve");
+    setSearchParams(next, { replace: true });
+  };
 
   const intentPresentation = useMemo(
     () =>
       resolveListingIntentPresentation(
-        undefined,
+        primaryCtaForListingIntent(listing?.listingIntent),
         Boolean(listing?.isOnlinePaymentAvailable),
       ),
-    [listing?.isOnlinePaymentAvailable],
+    [listing?.isOnlinePaymentAvailable, listing?.listingIntent],
   );
+  const contactActionLabel = t(intentPresentation.actionLabelKey);
 
   /**
    * Publishes the action bar's real height so the layout can reserve room below
@@ -746,14 +782,35 @@ export const ListingDetailPage: React.FC = () => {
     if (!listing || !currentUser || isReadOnlyStaff) return;
     const shouldContact = searchParams.get("contact") === "1";
     const shouldOffer = searchParams.get("offer") === "1";
-    if (!shouldContact && !shouldOffer) return;
-    if (shouldContact) setIsContactModalOpen(true);
-    if (shouldOffer) setIsOfferModalOpen(true);
+    const shouldReserve = searchParams.get("reserve") === "1";
+    if (!shouldContact && !shouldOffer && !shouldReserve) return;
+    // Keep the return intent until dismissal: authentication and route hydration
+    // can remount this page before a just-opened dialog becomes visible.
+    if (shouldContact && actions.canContact) {
+      setIsContactModalOpen(true);
+      return;
+    }
+    if (shouldOffer && actions.canMakeOffer) {
+      setIsOfferModalOpen(true);
+      return;
+    }
+    if (shouldReserve && actions.canReserve) {
+      setIsReservationModalOpen(true);
+      return;
+    }
     const next = new URLSearchParams(searchParams);
     next.delete("contact");
     next.delete("offer");
+    next.delete("reserve");
     setSearchParams(next, { replace: true });
-  }, [currentUser, isReadOnlyStaff, listing, searchParams, setSearchParams]);
+  }, [
+    currentUser,
+    isReadOnlyStaff,
+    listing,
+    actions,
+    searchParams,
+    setSearchParams,
+  ]);
 
   useEffect(() => {
     let active = true;
@@ -889,9 +946,16 @@ export const ListingDetailPage: React.FC = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!listing || !messageText.trim()) return;
-    const buyerId = currentUser ? currentUser.id : "guest-user";
-    const buyerName = currentUser ? currentUser.name : "Visiteur";
+    if (
+      !listing ||
+      !currentUser ||
+      !actions.canContact ||
+      isReadOnlyStaff ||
+      !messageText.trim()
+    )
+      return;
+    const buyerId = currentUser.id;
+    const buyerName = currentUser.name;
 
     const conversation = await services.messaging.createOrGetConversation({
       listingId: listing.id,
@@ -909,33 +973,49 @@ export const ListingDetailPage: React.FC = () => {
   };
 
   const handleSendOffer = async () => {
-    if (!listing) return;
+    if (
+      !listing ||
+      !currentUser ||
+      !actions.canMakeOffer ||
+      isReadOnlyStaff ||
+      isSendingOffer
+    )
+      return;
     const numPrice = Number(offerPrice);
-    if (isNaN(numPrice) || numPrice <= 0) {
+    if (!Number.isFinite(numPrice) || numPrice <= 0) {
       toast.error("Veuillez entrer un montant valide.");
       return;
     }
 
-    const buyerId = currentUser ? currentUser.id : "user-thomas";
-    const buyerName = currentUser ? currentUser.name : "Thomas Laurent";
+    setIsSendingOffer(true);
+    try {
+      const conv = await services.messaging.createOrGetConversation({
+        listingId: listing.id,
+        buyerId: currentUser.id,
+        buyerName: currentUser.name,
+        sellerId: listing.sellerId,
+        sellerName: listing.sellerName,
+        initialMessage: `Proposition d'offre de prix : ${formatPrice(numPrice, { sourceCurrency: listing.currency })} (Prix initial : ${formatPrice(listing.price, { sourceCurrency: listing.currency })})`,
+      });
 
-    const conv = await services.messaging.createOrGetConversation({
-      listingId: listing.id,
-      buyerId,
-      buyerName,
-      sellerId: listing.sellerId,
-      sellerName: listing.sellerName,
-      initialMessage: `Proposition d'offre de prix : ${formatPrice(numPrice, { sourceCurrency: listing.currency })} (Prix initial : ${formatPrice(listing.price, { sourceCurrency: listing.currency })})`,
-    });
+      await services.messaging.makeOffer(
+        conv.id,
+        currentUser.id,
+        currentUser.name,
+        numPrice,
+      );
 
-    await services.messaging.makeOffer(conv.id, buyerId, buyerName, numPrice);
-
-    setIsOfferModalOpen(false);
-    setOfferPrice("");
-    toast.success(
-      `Votre offre de ${formatPrice(numPrice, { sourceCurrency: listing.currency })} a été transmise au vendeur.`,
-    );
-    navigate(routes.workspace.messages(conv.id));
+      setIsOfferModalOpen(false);
+      setOfferPrice("");
+      toast.success(
+        `Votre offre de ${formatPrice(numPrice, { sourceCurrency: listing.currency })} a été transmise au vendeur.`,
+      );
+      navigate(routes.workspace.messages(conv.id));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("common.error"));
+    } finally {
+      setIsSendingOffer(false);
+    }
   };
 
   // Loading skeleton state
@@ -1033,7 +1113,7 @@ export const ListingDetailPage: React.FC = () => {
       variant="primary"
       size="md"
       fullWidth
-      onClick={() => setIsReservationModalOpen(true)}
+      onClick={() => openBuyerAction("reserve")}
       leftIcon={<Clock className="h-icon-sm w-icon-sm" />}
     >
       {t("listings.listingDetailPage.reserverLArticle")}
@@ -1044,15 +1124,7 @@ export const ListingDetailPage: React.FC = () => {
       variant="primary"
       size="md"
       fullWidth
-      onClick={() => {
-        if (!currentUser) {
-          navigate(
-            routes.auth.login(`${routes.listing.detail(listing.id)}?contact=1`),
-          );
-          return;
-        }
-        setIsContactModalOpen(true);
-      }}
+      onClick={() => openBuyerAction("contact")}
       leftIcon={<MessageSquare className="h-icon-sm w-icon-sm" />}
     >
       {contactActionLabel}
@@ -1142,7 +1214,7 @@ export const ListingDetailPage: React.FC = () => {
 
             <div className="flex items-start gap-4 relative z-raised">
               <div className="space-y-2 flex-1">
-                {/* Badges strip: Category, Pro, Boosted */}
+                {/* Category, publisher type and eligible listing promotions. */}
                 <div className="flex items-center gap-2 flex-wrap mb-2">
                   <Badge variant="primary" size="md">
                     {displayCategoryLabel}
@@ -1154,23 +1226,27 @@ export const ListingDetailPage: React.FC = () => {
                       accessibilityLabel={t("ui.identityStatus.pro.seller")}
                     />
                   )}
-                  {activePromotionVisible && (
-                    <Badge
-                      variant={
-                        listingCardProjection?.promotion?.type ===
-                          "urgent_badge" ||
-                        listingCardProjection?.discovery?.promotionType ===
-                          "urgent_badge"
-                          ? "urgent"
-                          : "featured"
-                      }
+                  {promotionBadges.map((badge) => (
+                    <SharedBadge
+                      key={badge.kind}
+                      data-listing-badge={badge.kind}
+                      variant={badge.variant}
                       size="md"
-                      icon
+                      icon={
+                        <SemanticIcon
+                          name={badge.icon}
+                          filled={
+                            badge.kind === "featured" ||
+                            badge.kind === "promotion"
+                          }
+                          size="xs"
+                        />
+                      }
+                      className="rounded-pill"
                     >
-                      {listingCardProjection?.promotion?.label ||
-                        t("ui.listingCard.boosted")}
-                    </Badge>
-                  )}
+                      {badge.label}
+                    </SharedBadge>
+                  ))}
                 </div>
 
                 {/* Main H1 Title */}
@@ -1285,6 +1361,37 @@ export const ListingDetailPage: React.FC = () => {
                 <PurchasePriceDisclosure listing={listing} />
               ) : null}
               {inlineMobilePrimaryAction}
+              {(actions.canMakeOffer ||
+                (actions.canReserve &&
+                  actions.primaryAction !== "reservation")) && (
+                <div className="flex flex-wrap gap-2">
+                  {actions.canMakeOffer && (
+                    <Button
+                      data-marketplace-action="offer.create"
+                      variant="outline"
+                      size="md"
+                      className="grow"
+                      onClick={() => openBuyerAction("offer")}
+                      leftIcon={<DollarSign className="h-icon-sm w-icon-sm" />}
+                    >
+                      {t("listings.listingDetailPage.offreDePrix")}
+                    </Button>
+                  )}
+                  {actions.canReserve &&
+                    actions.primaryAction !== "reservation" && (
+                      <Button
+                        data-marketplace-action="reservation.start"
+                        variant="outline"
+                        size="md"
+                        className="grow"
+                        onClick={() => openBuyerAction("reserve")}
+                        leftIcon={<Clock className="h-icon-sm w-icon-sm" />}
+                      >
+                        {t("listings.listingDetailPage.reserver")}
+                      </Button>
+                    )}
+                </div>
+              )}
             </div>
 
             {/* Metadata Footer: Location, Publication Date */}
@@ -1309,6 +1416,7 @@ export const ListingDetailPage: React.FC = () => {
           {/* 3. GROUPED TECHNICAL CHARACTERISTICS */}
           <React.Suspense fallback={<DetailSectionFallback />}>
             <ListingCharacteristics
+              key={listing.id}
               data={characteristics}
               state={characteristicsState}
               onRetry={() =>
@@ -1596,10 +1704,8 @@ export const ListingDetailPage: React.FC = () => {
                     }
                     size="md"
                     fullWidth
-                    onClick={() => setIsReservationModalOpen(true)}
-                    leftIcon={
-                      <Clock className="w-icon-lg h-icon-lg text-warning" />
-                    }
+                    onClick={() => openBuyerAction("reserve")}
+                    leftIcon={<Clock className="w-icon-lg h-icon-lg" />}
                   >
                     {t("listings.listingDetailPage.reserverLArticle")}
                   </Button>
@@ -1613,20 +1719,8 @@ export const ListingDetailPage: React.FC = () => {
                       variant="outline"
                       size="md"
                       fullWidth
-                      onClick={() => {
-                        if (!currentUser) {
-                          navigate(
-                            routes.auth.login(
-                              `${routes.listing.detail(listing.id)}?offer=1`,
-                            ),
-                          );
-                          return;
-                        }
-                        setIsOfferModalOpen(true);
-                      }}
-                      leftIcon={
-                        <DollarSign className="w-icon-md h-icon-md text-warning" />
-                      }
+                      onClick={() => openBuyerAction("offer")}
+                      leftIcon={<DollarSign className="w-icon-md h-icon-md" />}
                     >
                       {t("listings.listingDetailPage.offreDePrix")}
                     </Button>
@@ -1643,17 +1737,7 @@ export const ListingDetailPage: React.FC = () => {
                       }
                       size="md"
                       fullWidth
-                      onClick={() => {
-                        if (!currentUser) {
-                          navigate(
-                            routes.auth.login(
-                              `${routes.listing.detail(listing.id)}?contact=1`,
-                            ),
-                          );
-                          return;
-                        }
-                        setIsContactModalOpen(true);
-                      }}
+                      onClick={() => openBuyerAction("contact")}
                       leftIcon={
                         <MessageSquare className="w-icon-md h-icon-md" />
                       }
@@ -1728,7 +1812,7 @@ export const ListingDetailPage: React.FC = () => {
         {isReservationModalOpen && (
           <ReservationCheckoutModal
             isOpen={isReservationModalOpen}
-            onClose={() => setIsReservationModalOpen(false)}
+            onClose={() => closeBuyerAction("reserve")}
             listing={listing}
             currentUser={currentUser}
             onReservationComplete={(_tx: Transaction) => {
@@ -1746,7 +1830,7 @@ export const ListingDetailPage: React.FC = () => {
       {/* 3. Contact Seller Modal */}
       <Modal
         isOpen={isContactModalOpen}
-        onClose={() => setIsContactModalOpen(false)}
+        onClose={() => closeBuyerAction("contact")}
         title={`Contacter ${seller?.name || listing.sellerName}`}
         description={`À propos de "${listing.title}" (${formatPrice(listing.price, { sourceCurrency: listing.currency })})`}
       >
@@ -1769,7 +1853,7 @@ export const ListingDetailPage: React.FC = () => {
             <Button
               variant="outline"
               fullWidth
-              onClick={() => setIsContactModalOpen(false)}
+              onClick={() => closeBuyerAction("contact")}
             >
               Annuler
             </Button>
@@ -1789,7 +1873,7 @@ export const ListingDetailPage: React.FC = () => {
       {/* 4. Price Offer Modal */}
       <Modal
         isOpen={isOfferModalOpen}
-        onClose={() => setIsOfferModalOpen(false)}
+        onClose={() => closeBuyerAction("offer")}
         title={t("listings.listingDetailPage.faireUneOffreDePrix")}
         description={`Prix actuel : ${formatPrice(listing.price, { sourceCurrency: listing.currency })}`}
       >
@@ -1810,7 +1894,7 @@ export const ListingDetailPage: React.FC = () => {
             <Button
               variant="outline"
               fullWidth
-              onClick={() => setIsOfferModalOpen(false)}
+              onClick={() => closeBuyerAction("offer")}
             >
               Annuler
             </Button>
@@ -1819,6 +1903,8 @@ export const ListingDetailPage: React.FC = () => {
               variant="primary"
               fullWidth
               onClick={handleSendOffer}
+              isLoading={isSendingOffer}
+              disabled={isSendingOffer}
             >
               Transmettre l'offre
             </Button>
@@ -1959,21 +2045,9 @@ export const ListingDetailPage: React.FC = () => {
                     variant="outline"
                     size="md"
                     className={`w-full sm:w-auto ${mobileActionClass("offer")}`}
-                    onClick={() => {
-                      if (!currentUser) {
-                        navigate(
-                          routes.auth.login(
-                            `${routes.listing.detail(listing.id)}?offer=1`,
-                          ),
-                        );
-                        return;
-                      }
-                      setIsOfferModalOpen(true);
-                    }}
+                    onClick={() => openBuyerAction("offer")}
                     aria-label={t("listings.listingDetailPage.offreDePrix")}
-                    leftIcon={
-                      <DollarSign className="w-icon-sm h-icon-sm text-warning" />
-                    }
+                    leftIcon={<DollarSign className="w-icon-sm h-icon-sm" />}
                   >
                     {t("listings.listingDetailPage.offreCompact")}
                   </Button>
@@ -1988,10 +2062,8 @@ export const ListingDetailPage: React.FC = () => {
                     }
                     size="md"
                     className={`w-full sm:w-auto ${mobileActionClass("reservation")}`}
-                    onClick={() => setIsReservationModalOpen(true)}
-                    leftIcon={
-                      <Clock className="w-icon-sm h-icon-sm text-warning" />
-                    }
+                    onClick={() => openBuyerAction("reserve")}
+                    leftIcon={<Clock className="w-icon-sm h-icon-sm" />}
                   >
                     {t("listings.listingDetailPage.reserver")}
                   </Button>
@@ -2006,17 +2078,7 @@ export const ListingDetailPage: React.FC = () => {
                     }
                     size="md"
                     className={`w-full sm:w-auto ${mobileActionClass("contact")}`}
-                    onClick={() => {
-                      if (!currentUser) {
-                        navigate(
-                          routes.auth.login(
-                            `${routes.listing.detail(listing.id)}?contact=1`,
-                          ),
-                        );
-                        return;
-                      }
-                      setIsContactModalOpen(true);
-                    }}
+                    onClick={() => openBuyerAction("contact")}
                     leftIcon={<MessageSquare className="w-icon-sm h-icon-sm" />}
                   >
                     {contactActionLabel}
@@ -2033,7 +2095,9 @@ export const ListingDetailPage: React.FC = () => {
                     size="md"
                     className={`w-full sm:w-auto ${mobileActionClass("direct_purchase")}`}
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
-                    aria-label={t("listings.listingDetailPage.acheterMaintenant")}
+                    aria-label={t(
+                      "listings.listingDetailPage.acheterMaintenant",
+                    )}
                     leftIcon={<CreditCard className="h-icon-sm w-icon-sm" />}
                   >
                     {t("listings.listingDetailPage.acheterCompact")}

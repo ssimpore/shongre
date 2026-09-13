@@ -361,7 +361,7 @@ export const AccountLayout: React.FC = () => {
                 className={({ isActive }) =>
                   `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                     isActive
-                      ? "bg-primary text-text-inverse shadow-xs"
+                      ? "bg-primary text-on-primary shadow-xs"
                       : "bg-bg-subtle text-text-emphasis hover:bg-bg-muted hover:text-text-main"
                   }`
                 }
@@ -384,7 +384,7 @@ export const AccountLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                       isActive
-                        ? "bg-primary text-text-inverse shadow-xs"
+                        ? "bg-primary text-on-primary shadow-xs"
                         : "bg-warning-surface text-warning border border-warning-border hover:bg-warning-surface"
                     }`
                   }
@@ -412,7 +412,7 @@ export const AccountLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                       isActive
-                        ? "bg-primary text-text-inverse shadow-xs"
+                        ? "bg-primary text-on-primary shadow-xs"
                         : "bg-bg-subtle text-text-emphasis hover:bg-bg-muted"
                     }`
                   }
@@ -487,7 +487,7 @@ export const AccountLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                       isActive
-                        ? "border-l-2 border-primary bg-primary-light text-primary shadow-2xs"
+                        ? "border-l-2 border-primary bg-primary-light text-text-main shadow-2xs"
                         : "text-text-emphasis hover:bg-bg-subtle hover:text-text-main"
                     }`
                   }
@@ -534,7 +534,7 @@ export const AccountLayout: React.FC = () => {
                         className={({ isActive }) =>
                           `flex min-h-control-sm items-center gap-2.5 rounded-control px-3 text-xs font-semibold motion-interactive ${
                             isActive
-                              ? "border-l-2 border-primary bg-primary-light text-primary shadow-2xs"
+                              ? "border-l-2 border-primary bg-primary-light text-text-main shadow-2xs"
                               : "text-text-emphasis hover:bg-bg-subtle"
                           }`
                         }
@@ -560,7 +560,7 @@ export const AccountLayout: React.FC = () => {
                       className={({ isActive }) =>
                         `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                           isActive
-                            ? "border-l-2 border-primary bg-primary-light text-primary shadow-2xs"
+                            ? "border-l-2 border-primary bg-primary-light text-text-main shadow-2xs"
                             : "text-text-emphasis hover:bg-bg-subtle hover:text-text-main"
                         }`
                       }

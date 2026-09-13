@@ -1,26 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Briefcase,
   ChevronDown,
   ChevronRight,
-  LayoutGrid,
-  Mail,
-  ShieldCheck,
+  Globe2,
+  LifeBuoy,
+  ShoppingBag,
+  Tag,
+  UsersRound,
+  type LucideIcon,
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
-import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts/taxonomy";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
-import { services } from "../../api/client/service-registry";
-import { LanguageSelector } from "../../design-system/primitives/LanguageSelector";
-import { CountryFlag } from "../../design-system/primitives/CountryFlag";
-import { NewsletterSignup } from "../../features/newsletter/components/NewsletterSignup";
 import { useConsent } from "../providers/ConsentProvider";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { BrandHeaderSignature, Container } from "../../design-system";
 import { routes } from "../../configuration/routes";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { usePublishCta } from "../../security/usePublishCta";
 import {
   MOBILE_STORE_LINKS,
   SOCIAL_LINKS,
@@ -41,57 +38,51 @@ import {
 } from "../../design-system/utils/controlMetrics";
 import { applicationHref } from "../../platform/applications/use-application-href";
 
-const PANEL =
-  "rounded-card border border-border-inverse/80 bg-surface-inverse/40";
-const EXTERNAL_CONTROL = `inline-flex items-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`;
-
 type BrandIcon = ComponentType<SVGProps<SVGSVGElement>>;
+const FOOTER_FOCUS = `${CONTROL_FOCUS_CLASS} focus-visible:outline-primary-on-dark`;
+const EXTERNAL_CONTROL = `inline-flex items-center ${CONTROL_MOTION_CLASS} ${FOOTER_FOCUS}`;
+const FOOTER_LINK = `inline-flex min-h-control-touch w-full items-center justify-between gap-3 rounded-sm py-0.5 text-sm leading-snug text-text-inverse-muted transition-colors hover:text-text-inverse ${FOOTER_FOCUS}`;
+const LEGAL_CONTROL = `inline-flex min-h-control-touch items-center rounded-sm text-xs text-text-inverse-muted transition-colors hover:text-text-inverse ${FOOTER_FOCUS}`;
 
 const STORE_ICONS: Record<MobileStoreId, BrandIcon> = {
   "app-store": AppleBrandIcon,
   "google-play": GooglePlayBrandIcon,
 };
-
 const SOCIAL_ICONS: Record<SocialNetworkId, BrandIcon> = {
   instagram: InstagramBrandIcon,
   facebook: FacebookBrandIcon,
   linkedin: LinkedInBrandIcon,
   youtube: YouTubeBrandIcon,
 };
-
 const LEGAL_LINKS = [
-  { to: routes.about(), labelKey: "footer.about" },
   { to: "/conditions-utilisation", labelKey: "footer.terms" },
   { to: "/confidentialite", labelKey: "footer.privacy" },
-  { to: "/mentions-legales", labelKey: "footer.legalNotices" },
   { to: "/accessibilite", labelKey: "footer.accessibility" },
+  { to: "/mentions-legales", labelKey: "footer.legalNotices" },
 ] as const;
 
 const FooterLink: React.FC<{
   to: string;
-  title?: string;
   reloadDocument?: boolean;
   children: React.ReactNode;
-}> = ({ to, title, reloadDocument = false, children }) => {
+}> = ({ to, reloadDocument = false, children }) => {
   const content = (
     <>
-      <span>{children}</span>
+      <span className="min-w-0">{children}</span>
       <ChevronRight
-        className="h-icon-sm w-icon-sm shrink-0 text-text-supporting transition-all duration-fast group-hover:translate-x-0.5 group-hover:text-primary-on-dark"
+        className="h-icon-sm w-icon-sm shrink-0 text-text-inverse-subtle"
         aria-hidden="true"
       />
     </>
   );
-  const className =
-    "group touch-row flex items-center justify-between gap-2 py-1.5 font-medium text-text-inverse-subtle transition-colors hover:text-text-inverse";
   return (
     <li>
       {reloadDocument ? (
-        <a href={to} title={title} className={className}>
+        <a href={to} className={FOOTER_LINK}>
           {content}
         </a>
       ) : (
-        <Link to={to} title={title} className={className}>
+        <Link to={to} className={FOOTER_LINK}>
           {content}
         </Link>
       )}
@@ -100,34 +91,39 @@ const FooterLink: React.FC<{
 };
 
 const StoreBadge: React.FC<{
+  id: MobileStoreId;
   name: string;
   url: string | null;
   Icon: BrandIcon;
   statusLabel: string;
   accessibleLabel: string;
   unavailableLabel: string;
-}> = ({ name, url, Icon, statusLabel, accessibleLabel, unavailableLabel }) => {
+}> = ({
+  id,
+  name,
+  url,
+  Icon,
+  statusLabel,
+  accessibleLabel,
+  unavailableLabel,
+}) => {
   const content = (
     <>
-      <Icon className="h-5 w-5 shrink-0" />
+      <Icon className="h-icon-xl w-icon-xl shrink-0" />
       <span className="min-w-0 text-left leading-tight">
-        <span className="block text-micro font-medium text-text-inverse-subtle">
+        <span className="block text-micro font-semibold uppercase tracking-wide text-text-inverse-muted">
           {statusLabel}
         </span>
-        <span className="block truncate text-xs font-bold text-text-inverse">
+        <span className="block whitespace-nowrap text-sm font-bold text-text-inverse">
           {name}
         </span>
       </span>
     </>
   );
-  const className = `${EXTERNAL_CONTROL} h-control-touch min-w-0 gap-1 overflow-hidden rounded-control border px-1.5 sm:min-w-36 sm:gap-2 sm:px-3.5 ${
-    url
-      ? "border-border-inverse-subtle bg-surface-inverse-deep text-text-inverse hover:border-border-neutral hover:bg-surface-inverse"
-      : "border-border-inverse bg-surface-inverse-deep/60 text-text-inverse-subtle"
-  }`;
-
+  const className = `${EXTERNAL_CONTROL} h-control-lg min-w-32 flex-1 gap-2 rounded-control border border-border-inverse-muted bg-surface-inverse-deep px-3 text-text-inverse shadow-xs ${url ? "hover:border-border-on-inverse hover:bg-surface-inverse-hover" : ""}`;
   return url ? (
     <a
+      data-store-badge={id}
       href={url}
       target="_blank"
       rel="noopener noreferrer"
@@ -137,7 +133,13 @@ const StoreBadge: React.FC<{
       {content}
     </a>
   ) : (
-    <span aria-disabled="true" title={unavailableLabel} className={className}>
+    <span
+      data-store-badge={id}
+      aria-label={unavailableLabel}
+      aria-disabled="true"
+      title={unavailableLabel}
+      className={className}
+    >
       {content}
     </span>
   );
@@ -150,13 +152,8 @@ const SocialLink: React.FC<{
   accessibleLabel: string;
   unavailableLabel: string;
 }> = ({ name, url, Icon, accessibleLabel, unavailableLabel }) => {
-  const content = <Icon className="h-5 w-5" />;
-  const className = `${EXTERNAL_CONTROL} h-control-touch w-control-touch justify-center rounded-control border ${
-    url
-      ? "border-border-inverse-subtle bg-surface-inverse-deep text-text-inverse-muted hover:border-primary-on-dark hover:text-primary-on-dark"
-      : "border-border-inverse bg-surface-inverse-deep/60 text-text-supporting"
-  }`;
-
+  const content = <Icon className="h-icon-lg w-icon-lg" />;
+  const className = `${EXTERNAL_CONTROL} h-control-md w-control-md justify-center rounded-full bg-surface-inverse-hover text-text-inverse-muted ${url ? "hover:bg-surface-inverse hover:text-primary-on-dark" : ""}`;
   return url ? (
     <a
       href={url}
@@ -184,43 +181,45 @@ const SocialLink: React.FC<{
 const FooterColumn: React.FC<{
   id: string;
   title: string;
-  Icon: typeof LayoutGrid;
+  Icon: LucideIcon;
   isOpen: boolean;
   onToggle: (id: string) => void;
   children: React.ReactNode;
 }> = ({ id, title, Icon, isOpen, onToggle, children }) => {
   const panelId = `footer-panel-${id}`;
-
+  const heading = (
+    <span className="flex items-center gap-3">
+      <Icon
+        className="h-icon-lg w-icon-lg shrink-0 text-primary-on-dark"
+        aria-hidden="true"
+      />
+      <span>{title}</span>
+    </span>
+  );
   return (
-    <div className="min-w-0 border-b border-border-inverse/60 py-3.5 md:border-b-0 md:py-0 lg:border-l lg:px-5 lg:first:border-l-0 lg:first:pl-0">
-      <h2>
+    <div
+      data-footer-column={id}
+      className="min-w-0 border-b border-border-inverse-subtle py-1 md:border-b-0 md:border-l md:px-4 md:first:border-l-0 md:first:pl-0 md:last:pr-0 lg:first:border-l lg:first:pl-4 xl:px-6 xl:first:pl-6"
+    >
+      <h2 className="text-sm font-bold text-text-inverse">
         <button
           type="button"
           onClick={() => onToggle(id)}
-          className="group flex min-h-6 w-full cursor-pointer items-center justify-between gap-2 py-1 text-left text-xs font-semibold uppercase tracking-wider text-text-inverse transition-colors hover:text-primary-on-dark md:pointer-events-none md:mb-5 md:min-h-0 md:cursor-default md:py-0 md:hover:text-text-inverse"
+          className={`flex min-h-control-lg w-full items-center justify-between gap-3 rounded-sm text-left md:hidden ${FOOTER_FOCUS}`}
           aria-expanded={isOpen}
           aria-controls={panelId}
         >
-          <span className="flex min-w-0 flex-1 items-center gap-2">
-            <Icon
-              className="h-icon-md w-icon-md shrink-0 text-primary-on-dark"
-              aria-hidden="true"
-            />
-            <span className="min-w-0 break-words">{title}</span>
-          </span>
+          {heading}
           <ChevronDown
-            className={`h-icon-md w-icon-md shrink-0 transition-transform duration-normal md:hidden ${
-              isOpen
-                ? "rotate-180 text-primary-on-dark"
-                : "text-text-inverse-subtle"
-            }`}
+            className={`h-icon-md w-icon-md transition-transform ${isOpen ? "rotate-180" : ""}`}
             aria-hidden="true"
           />
         </button>
+        <span className="hidden md:block">{heading}</span>
       </h2>
       <ul
         id={panelId}
-        className={`mt-3 space-y-1 md:mt-0 ${isOpen ? "block" : "hidden md:block"}`}
+        className={`pb-3 md:mt-5 md:pb-0 ${isOpen ? "block" : "hidden md:block"}`}
       >
         {children}
       </ul>
@@ -230,220 +229,39 @@ const FooterColumn: React.FC<{
 
 export const Footer: React.FC = () => {
   const { openPreferences } = useConsent();
-  const { activeMarket, marketContext } = useMarketLocation();
-  const { t, locale } = useTranslation();
+  const { activeMarket, openPreferencesModal } = useMarketLocation();
+  const { t } = useTranslation();
+  const publishCta = usePublishCta();
   const isDesktop = useMediaQuery("(min-width: 768px)");
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    categories: false,
-    professionals: false,
-    help: false,
-  });
-  const [footerCategories, setFooterCategories] = useState<
-    TaxonomyHeaderCategoryItem[]
-  >([]);
-  useEffect(() => {
-    if (!marketContext) return;
-    let cancelled = false;
-    void services.taxonomy
-      .getHeaderNavigation(marketContext)
-      .then((configuration) => {
-        if (!cancelled) {
-          setFooterCategories(
-            [...configuration.items]
-              .sort((left, right) => left.displayOrder - right.displayOrder)
-              .slice(0, 6),
-          );
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setFooterCategories([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [marketContext]);
-  const toggleSection = (sectionKey: string) => {
-    setOpenSections((previousSections) => ({
-      ...previousSections,
-      [sectionKey]: !previousSections[sectionKey],
-    }));
-  };
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  const toggleSection = (id: string) =>
+    setOpenSections((previous) => ({ ...previous, [id]: !previous[id] }));
 
   return (
-    <footer className="border-t border-border-inverse bg-surface-inverse-deep pb-36 pt-10 text-xs text-text-inverse-muted lg:pb-10">
-      <Container className="space-y-6">
-        <Link
-          to="/securite"
-          data-footer-trust="true"
-          className={`${PANEL} group flex min-h-control-touch min-w-0 items-center gap-3 px-4 py-3 font-medium text-text-inverse-subtle transition-colors hover:border-primary-on-dark hover:text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark`}
-          aria-label={`${t("footer.trustSummary")}. ${t("footer.trustLearnMore")}`}
-        >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-surface-inverse-deep text-primary-on-dark">
-            <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
-          </span>
-          <span className="min-w-0 flex-1 truncate">
-            {t("footer.trustSummary")}
-          </span>
-          <span className="inline-flex shrink-0 items-center gap-1 font-bold text-primary-on-dark">
-            <span className="hidden sm:inline">
-              {t("footer.trustLearnMore")}
-            </span>
-            <ChevronRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
-          </span>
-        </Link>
-
-        <div className={`${PANEL} p-5 sm:p-7`}>
-          <div className="grid min-w-0 gap-x-6 md:grid-cols-2 md:gap-y-8 lg:grid-cols-footer lg:gap-x-0 lg:gap-y-0">
-            <FooterColumn
-              id="categories"
-              title={t("footer.sectionCategories")}
-              Icon={LayoutGrid}
-              isOpen={isDesktop || openSections.categories}
-              onToggle={toggleSection}
-            >
-              {footerCategories.map((category) => (
-                <FooterLink
-                  key={category.categoryId}
-                  to={routes.category(category.slug)}
-                  title={getTaxonomyLabel(category, {
-                    compact: true,
-                    locale,
-                  })}
-                >
-                  {getTaxonomyLabel(category, { compact: true, locale })}
-                </FooterLink>
-              ))}
-              {footerCategories.length === 0 && (
-                <FooterLink to={routes.categories()}>
-                  {t("footer.sectionCategories")}
-                </FooterLink>
-              )}
-            </FooterColumn>
-
-            <FooterColumn
-              id="professionals"
-              title={t("footer.sectionProfessionals")}
-              Icon={Briefcase}
-              isOpen={isDesktop || openSections.professionals}
-              onToggle={toggleSection}
-            >
-              <FooterLink to={applicationHref("solutions")} reloadDocument>
-                {t("footer.shongreSolutions")}
-              </FooterLink>
-              <FooterLink to="/solutions-pro">
-                {t("footer.proSolutions")}
-              </FooterLink>
-              <FooterLink to={applicationHref("prospects")} reloadDocument>
-                {t("footer.shongreProspects")}
-              </FooterLink>
-              <FooterLink to={applicationHref("facturation")} reloadDocument>
-                {t("footer.shongreFacturation")}
-              </FooterLink>
-              <FooterLink to="/professionnels">
-                {t("footer.storeDirectory")}
-              </FooterLink>
-              <FooterLink to="/tarifs">{t("footer.boostGrid")}</FooterLink>
-            </FooterColumn>
-
-            <FooterColumn
-              id="help"
-              title={t("footer.sectionHelp")}
-              Icon={ShieldCheck}
-              isOpen={isDesktop || openSections.help}
-              onToggle={toggleSection}
-            >
-              <FooterLink to="/aide">{t("footer.helpCenter")}</FooterLink>
-              <FooterLink to="/contact">
-                {t("footer.contactSupport")}
-              </FooterLink>
-              <FooterLink to={routes.delivery.marketplace()}>
-                {t("delivery.nav")}
-              </FooterLink>
-              <FooterLink to={routes.deals()}>
-                {t("footer.currentDeals")}
-              </FooterLink>
-            </FooterColumn>
-
-            <aside
-              aria-label={t("footer.newsletterHeading")}
-              className="min-w-0 pt-6 md:pt-0 lg:border-l lg:border-border-inverse/60 lg:pl-6"
-            >
-              <h2 className="flex items-center gap-2 text-sm font-bold text-text-inverse">
-                <Mail
-                  className="h-icon-md w-icon-md shrink-0 text-primary-on-dark"
-                  aria-hidden="true"
-                />
-                <span>{t("footer.newsletterHeading")}</span>
-              </h2>
-              <p className="mb-4 mt-2 max-w-sm leading-relaxed text-text-inverse-subtle">
-                {t("footer.newsletterPitch")}
-              </p>
-              <NewsletterSignup variant="footer" source="footer" />
-            </aside>
-          </div>
-        </div>
-
+    <footer className="bg-surface-inverse pb-28 pt-10 text-text-inverse-muted sm:pt-12 lg:pb-0">
+      <Container width="full" data-footer-container>
         <div
-          className={`${PANEL} flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between`}
+          data-footer-main
+          className="grid gap-8 pb-10 md:gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12 2xl:pb-12"
         >
-          <section
-            aria-labelledby="footer-mobile-apps-heading"
-            className="min-w-0 flex-1"
-          >
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <h2
-                  id="footer-mobile-apps-heading"
-                  className="text-sm font-bold text-text-inverse"
-                >
-                  {t("footer.mobileAppsHeading")}
-                </h2>
-                <p className="mt-1 leading-relaxed text-text-inverse-subtle">
-                  {t("footer.appPitch")}
-                </p>
-              </div>
-              {/* A single mobile column gives each store badge enough inline
-                  space when text is enlarged to 200%. Two rem-scaled icons,
-                  gaps and labels otherwise outgrow the narrow footer card even
-                  though the unzoomed two-column layout fits. */}
-              <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
-                {MOBILE_STORE_LINKS.map((store) => {
-                  const isAvailable = Boolean(store.url);
-                  return (
-                    <StoreBadge
-                      key={store.id}
-                      name={store.name}
-                      url={store.url}
-                      Icon={STORE_ICONS[store.id]}
-                      statusLabel={t(
-                        isAvailable
-                          ? "footer.downloadFrom"
-                          : "footer.comingToStore",
-                      )}
-                      accessibleLabel={t("footer.downloadApp", {
-                        store: store.name,
-                      })}
-                      unavailableLabel={t("footer.comingSoon", {
-                        name: store.name,
-                      })}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-
-          <section
-            aria-labelledby="footer-social-heading"
-            className="border-t border-border-inverse/60 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0"
-          >
-            <h2
-              id="footer-social-heading"
-              className="text-sm font-bold text-text-inverse"
+          <div className="min-w-0 lg:col-span-3">
+            <Link
+              to={routes.home()}
+              aria-label={t("footer.home")}
+              className={`inline-flex max-w-full rounded-sm ${FOOTER_FOCUS}`}
             >
-              {t("footer.followHeading")}
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-2">
+              <BrandHeaderSignature variant="reverse" decorative />
+            </Link>
+            <p className="mt-4 text-sm font-bold leading-relaxed text-text-inverse">
+              {t("footer.brandTagline")}
+            </p>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-text-inverse-muted">
+              {t("footer.brandDescription")}
+            </p>
+            <section
+              aria-label={t("footer.followHeading")}
+              className="mt-4 flex flex-wrap gap-3"
+            >
               {SOCIAL_LINKS.map((social) => (
                 <SocialLink
                   key={social.id}
@@ -458,67 +276,167 @@ export const Footer: React.FC = () => {
                   })}
                 />
               ))}
-            </div>
-          </section>
+            </section>
+            <section
+              aria-label={t("footer.mobileAppsHeading")}
+              className="mt-4 flex w-full max-w-xs flex-wrap gap-3"
+            >
+              {MOBILE_STORE_LINKS.map((store) => (
+                <StoreBadge
+                  key={store.id}
+                  id={store.id}
+                  name={store.name}
+                  url={store.url}
+                  Icon={STORE_ICONS[store.id]}
+                  statusLabel={t(
+                    store.url ? "footer.downloadFrom" : "footer.comingToStore",
+                  )}
+                  accessibleLabel={t("footer.downloadApp", {
+                    store: store.name,
+                  })}
+                  unavailableLabel={t("footer.comingSoon", {
+                    name: store.name,
+                  })}
+                />
+              ))}
+            </section>
+            <p className="mt-3 text-xs leading-relaxed text-text-inverse-subtle">
+              {t("footer.mobileAppsTagline")}
+            </p>
+          </div>
+          <div className="grid min-w-0 md:grid-cols-4 lg:col-span-9 lg:pt-2">
+            <FooterColumn
+              id="buy"
+              title={t("footer.buy")}
+              Icon={ShoppingBag}
+              isOpen={isDesktop || Boolean(openSections.buy)}
+              onToggle={toggleSection}
+            >
+              <FooterLink to={routes.search()}>
+                {t("footer.allListings")}
+              </FooterLink>
+              <FooterLink to={routes.categories()}>
+                {t("footer.categories")}
+              </FooterLink>
+              <FooterLink to={routes.deals()}>{t("footer.deals")}</FooterLink>
+              <FooterLink to={routes.collections.list()}>
+                {t("footer.collections")}
+              </FooterLink>
+              <FooterLink to={routes.search({ sortBy: "date_desc" })}>
+                {t("footer.newListings")}
+              </FooterLink>
+              <FooterLink to="/professionnels">
+                {t("footer.professionalSellers")}
+              </FooterLink>
+            </FooterColumn>
+            <FooterColumn
+              id="sell"
+              title={t("footer.sell")}
+              Icon={Tag}
+              isOpen={isDesktop || Boolean(openSections.sell)}
+              onToggle={toggleSection}
+            >
+              <FooterLink to={publishCta.to}>
+                {t(publishCta.labelKey)}
+              </FooterLink>
+              <FooterLink to="/tarifs">{t("footer.pricingOptions")}</FooterLink>
+              <FooterLink to={routes.workspace.listings()}>
+                {t("footer.sellerWorkspace")}
+              </FooterLink>
+              <FooterLink to="/solutions-pro">
+                {t("footer.proSolutions")}
+              </FooterLink>
+              <FooterLink to={applicationHref("solutions")} reloadDocument>
+                {t("footer.shongreSolutions")}
+              </FooterLink>
+            </FooterColumn>
+            <FooterColumn
+              id="help"
+              title={t("footer.help")}
+              Icon={LifeBuoy}
+              isOpen={isDesktop || Boolean(openSections.help)}
+              onToggle={toggleSection}
+            >
+              <FooterLink to={routes.help()}>
+                {t("footer.helpCenter")}
+              </FooterLink>
+              <FooterLink to={routes.safety()}>{t("footer.safety")}</FooterLink>
+              <FooterLink to={routes.delivery.marketplace()}>
+                {t("delivery.nav")}
+              </FooterLink>
+              <FooterLink to={routes.contact()}>
+                {t("footer.contact")}
+              </FooterLink>
+            </FooterColumn>
+            <FooterColumn
+              id="about"
+              title={t("footer.about")}
+              Icon={UsersRound}
+              isOpen={isDesktop || Boolean(openSections.about)}
+              onToggle={toggleSection}
+            >
+              <FooterLink to={routes.about()}>
+                {t("footer.whoWeAre")}
+              </FooterLink>
+              <FooterLink to={`${routes.about()}#about-mission`}>
+                {t("about.missionTitle")}
+              </FooterLink>
+              <FooterLink to={`${routes.about()}#about-trust`}>
+                {t("about.trustTitle")}
+              </FooterLink>
+              <FooterLink to={`${routes.about()}#about-markets`}>
+                {t("about.marketsTitle")}
+              </FooterLink>
+              <FooterLink to="/newsletter">
+                {t("footer.newsletterHeading")}
+              </FooterLink>
+            </FooterColumn>
+          </div>
         </div>
-
-        <div className="pt-1 text-xs text-text-inverse-subtle">
-          <div
-            data-footer-primary-row
-            className="flex flex-col gap-5 border-b border-border-inverse/60 pb-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8"
+        <div
+          data-footer-bottom
+          className="flex flex-col gap-4 border-t border-border-inverse-subtle py-6 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-8 2xl:py-8"
+        >
+          <button
+            id="footer-market-button"
+            type="button"
+            onClick={openPreferencesModal}
+            aria-label={t("footer.marketPreferences", {
+              market: activeMarket.name,
+            })}
+            aria-haspopup="dialog"
+            className={`inline-flex min-h-control-touch w-fit shrink-0 items-center gap-2 rounded-sm text-sm text-text-inverse-muted transition-colors hover:text-text-inverse lg:border-r lg:border-border-inverse-subtle lg:pr-8 ${FOOTER_FOCUS}`}
           >
-            <div className="flex flex-wrap items-center gap-4 sm:gap-5">
-              <Link
-                to={routes.home()}
-                aria-label="SHONGRE., accueil"
-                className="rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
-              >
-                <BrandHeaderSignature variant="reverse" decorative />
-              </Link>
-              <span
-                className="hidden h-10 w-px bg-border-inverse-subtle sm:block"
-                aria-hidden="true"
-              />
-              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <CountryFlag countryCode={activeMarket.code} size="sm" />
-                {t("footer.marketLabel", { market: activeMarket.name })}
-              </span>
-            </div>
-
-            <nav aria-label={t("footer.legalHeading")}>
-              <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 lg:justify-end">
-                {LEGAL_LINKS.map(({ to, labelKey }) => (
-                  <li key={to}>
-                    <Link
-                      to={to}
-                      className="inline-flex min-h-6 items-center py-1 transition-colors hover:text-text-inverse"
-                    >
-                      {t(labelKey)}
-                    </Link>
-                  </li>
-                ))}
-                <li>
-                  <button
-                    type="button"
-                    onClick={openPreferences}
-                    className="inline-flex min-h-6 cursor-pointer items-center py-1 transition-colors hover:text-text-inverse"
-                  >
-                    {t("footer.cookies")}
-                  </button>
+            <Globe2 className="h-icon-lg w-icon-lg" aria-hidden="true" />
+            {activeMarket.name}
+            <ChevronDown className="h-icon-md w-icon-md" aria-hidden="true" />
+          </button>
+          <nav
+            aria-label={t("footer.legalHeading")}
+            className="min-w-0 lg:flex-1"
+          >
+            <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 xl:gap-x-6">
+              {LEGAL_LINKS.map(({ to, labelKey }) => (
+                <li key={to}>
+                  <Link to={to} className={LEGAL_CONTROL}>
+                    {t(labelKey)}
+                  </Link>
                 </li>
-              </ul>
-            </nav>
-          </div>
-
-          <div
-            data-footer-secondary-row
-            className="flex flex-col gap-4 pt-5 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <span>
-              {t("footer.copyright", { year: new Date().getFullYear() })}
-            </span>
-            <LanguageSelector variant="footer" idPrefix="footer-lang" />
-          </div>
+              ))}
+              <li>
+                <button
+                  type="button"
+                  onClick={openPreferences}
+                  className={LEGAL_CONTROL}
+                >
+                  {t("footer.cookies")}
+                </button>
+              </li>
+            </ul>
+          </nav>
+          <span className="inline-flex min-h-control-touch items-center text-xs leading-relaxed text-text-inverse-subtle">
+            {t("footer.copyright", { year: new Date().getFullYear() })}
+          </span>
         </div>
       </Container>
     </footer>

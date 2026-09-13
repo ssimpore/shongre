@@ -194,6 +194,12 @@ describe("structured category listing-card presentation", () => {
         rootLabels: { "fr-FR": "Véhicules", "en-US": "Vehicles" },
         cardCharacteristics: [
           {
+            code: "brand",
+            icon: "car",
+            labels: { "fr-FR": "Marque" },
+            values: { "fr-FR": "Peugeot" },
+          },
+          {
             code: "model_year",
             labels: { "fr-FR": "Année" },
             values: { "fr-FR": "2022" },

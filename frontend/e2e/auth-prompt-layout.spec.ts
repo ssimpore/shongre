@@ -6,7 +6,7 @@ const expect = baseExpect.configure({ timeout: 30_000 });
 const protectedPath = "/compte/messages?tab=unread#latest";
 test.setTimeout(90_000);
 
-for (const width of [1408, 390]) {
+for (const width of [1408, 390, 320]) {
   test(`guest authentication actions have equal widths at ${width}px`, async ({
     page,
   }, testInfo) => {
@@ -24,6 +24,7 @@ for (const width of [1408, 390]) {
     await expect(page).toHaveTitle(/Shongre/i);
     const prompt = page
       .getByRole("heading", { name: "Authentification requise", exact: true })
+      .locator("..")
       .locator("..");
     const login = prompt.getByRole("link", {
       name: "Se connecter",
@@ -37,6 +38,13 @@ for (const width of [1408, 390]) {
     await expect(register).toBeVisible();
     const first = (await login.boundingBox())!;
     const second = (await register.boundingBox())!;
+    const panel = (await prompt.boundingBox())!;
+    const actions = (await page
+      .locator("[data-auth-prompt-actions]")
+      .boundingBox())!;
+    expect(panel.width).toBeCloseTo(Math.min(width - 32, 512), 0);
+    expect(actions.width).toBeLessThan(panel.width - 64);
+    expect(Math.abs(actions.x + actions.width / 2 - width / 2)).toBeLessThan(1);
     expect(Math.abs(first.width - second.width)).toBeLessThan(1);
     expect(first.height).toBe(second.height);
     if (width >= 640) expect(first.y).toBe(second.y);
@@ -64,6 +72,41 @@ for (const width of [1408, 390]) {
     await expect(
       page.getByRole("main").getByRole("heading").first(),
     ).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+}
+
+for (const width of [1408, 390]) {
+  test(`guest publication skips the authentication interstitial at ${width}px`, async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => {
+      if (["error", "warning"].includes(message.type())) {
+        errors.push(message.text());
+      }
+    });
+    await useEstablishedConsent(page);
+    await page.setViewportSize({ width, height: 795 });
+    await page.goto("/deposer");
+
+    await expect(page).toHaveURL(/\/connexion\?/);
+    expect(new URL(page.url()).searchParams.get("redirect")).toBe("/deposer");
+    await expect(
+      page.getByRole("heading", {
+        name: "Authentification requise",
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    await expect(page.locator("[data-auth-card]")).toBeVisible();
+    await expectNoHorizontalOverflow(page, `publish login ${width}`);
+
+    await page
+      .getByRole("link", { name: "Créer un compte", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/inscription\?/);
+    expect(new URL(page.url()).searchParams.get("redirect")).toBe("/deposer");
     expect(errors).toEqual([]);
   });
 }

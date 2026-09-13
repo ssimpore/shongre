@@ -31,6 +31,7 @@ import {
   StatePanel,
   ViewModeToggle,
   countActiveSearchParams,
+  useSearchFilterDisclosure,
 } from "../../design-system";
 import type {
   FilterPanelPresentation,
@@ -329,8 +330,13 @@ export const CoursesSearchPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const {
+    desktopFiltersExpanded: showDesktopFilters,
+    mobileFiltersExpanded: isFilterOpen,
+    toggleDesktopFilters,
+    openMobileFilters,
+    closeMobileFilters,
+  } = useSearchFilterDisclosure();
   const requestedView = params.get("view");
   const viewMode =
     requestedView === "list" || requestedView === "map"
@@ -705,10 +711,8 @@ export const CoursesSearchPage: React.FC = () => {
             desktopFiltersExpanded={showDesktopFilters}
             mobileFiltersExpanded={isFilterOpen}
             activeFilterCount={activeFilterCount}
-            onToggleDesktopFilters={() =>
-              setShowDesktopFilters(!showDesktopFilters)
-            }
-            onOpenMobileFilters={() => setIsFilterOpen(true)}
+            onToggleDesktopFilters={toggleDesktopFilters}
+            onOpenMobileFilters={openMobileFilters}
             viewControls={
               <ViewModeToggle
                 viewMode={viewMode}
@@ -716,7 +720,7 @@ export const CoursesSearchPage: React.FC = () => {
                   updateParam("view", mode === "grid" ? undefined : mode)
                 }
                 showMap
-                size="sm"
+                size="md"
               />
             }
             sortControl={
@@ -725,7 +729,7 @@ export const CoursesSearchPage: React.FC = () => {
                   ariaLabel="Trier les professeurs"
                   headerTitle="Trier par"
                   placement="bottom-right"
-                  size="sm"
+                  size="md"
                   value={query.sort}
                   onChange={(value) => updateParam("sort", value)}
                   options={[
@@ -962,7 +966,7 @@ export const CoursesSearchPage: React.FC = () => {
       {catalog && (
         <Drawer
           isOpen={isFilterOpen}
-          onClose={() => setIsFilterOpen(false)}
+          onClose={closeMobileFilters}
           title="Filtrer les professeurs"
         >
           <CourseFilters
@@ -973,7 +977,7 @@ export const CoursesSearchPage: React.FC = () => {
             updateLocation={updateLocation}
             locationSelectorId="education-location-selector-mobile"
             onReset={resetFilters}
-            onApplyMobile={() => setIsFilterOpen(false)}
+            onApplyMobile={closeMobileFilters}
             presentation="drawer"
           />
         </Drawer>

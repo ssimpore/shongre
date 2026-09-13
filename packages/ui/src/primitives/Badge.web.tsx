@@ -4,6 +4,7 @@ import { createVariants } from "../utils/variants";
 export type BadgeVariant =
   | "neutral"
   | "primary"
+  | "boosted"
   | "inverse"
   | "urgent"
   | "deal"
@@ -35,7 +36,9 @@ const badgeClasses = createVariants({
       neutral:
         "bg-surface-muted text-text-emphasis border border-border-disabled",
       primary:
-        "bg-primary-light text-primary border border-primary-border font-bold",
+        "bg-primary-light text-text-main border border-primary-border font-bold",
+      boosted:
+        "bg-bg-surface text-primary border border-primary-border font-bold",
       inverse:
         "border border-border-inverse-strong bg-surface-inverse text-text-inverse",
       urgent:
@@ -45,8 +48,7 @@ const badgeClasses = createVariants({
         "bg-warning-surface text-warning border border-warning-border font-semibold",
       success:
         "bg-success-surface text-success border border-success-border font-semibold",
-      featured:
-        "bg-primary text-text-inverse font-bold uppercase tracking-wider shadow-sm",
+      featured: "bg-primary text-on-primary font-bold shadow-sm",
     },
   },
   defaultVariants: { size: "sm", variant: "neutral" },

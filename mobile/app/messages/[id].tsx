@@ -35,6 +35,8 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import { majorToMinorAmount } from "@shongre/shared/money";
+import { useConversationPresence } from "@/features/messaging/useConversationPresence";
+import { PresenceStatus } from "@/features/messaging/PresenceStatus";
 
 export default function MessageThreadScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -47,6 +49,7 @@ export default function MessageThreadScreen() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const presence = useConversationPresence(id ? [id] : [], activeMarket.code);
 
   const load = useCallback(async () => {
     if (!user || !id) return;
@@ -153,6 +156,11 @@ export default function MessageThreadScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["bottom"]}>
       <Stack.Screen options={{ title: "Conversation" }} />
+      {id ? (
+        <View style={styles.presenceBar}>
+          <PresenceStatus presence={presence[id]} lastSeen />
+        </View>
+      ) : null}
       {/*
        * The composer is pinned below the transcript, which is exactly where the
        * iOS keyboard opens. Without this the field a person is typing into is
@@ -252,6 +260,13 @@ export default function MessageThreadScreen() {
 }
 
 const styles = StyleSheet.create({
+  presenceBar: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surface,
+    borderBottomWidth: nativeBorders.hairline,
+    borderBottomColor: colors.border,
+  },
   fill: { flex: 1 },
   safe: { flex: 1, backgroundColor: colors.background },
   messages: { flexGrow: 1, padding: spacing.lg, gap: spacing.sm },

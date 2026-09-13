@@ -58,7 +58,6 @@ export const ProDirectoryPage: React.FC = () => {
         <Button
           to="/inscription/professionnel"
           variant="primary"
-          size="lg"
           className="shrink-0 font-semibold"
         >
           Ouvrir ma boutique Pro

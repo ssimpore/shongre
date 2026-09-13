@@ -16,6 +16,12 @@ import type { AdminMessageKey } from "./admin.catalogue.fr";
  *     of rule that must not be hand-written per call site.
  */
 export const messagesFr = {
+  "messaging.presence.online": "En ligne",
+  "messaging.presence.away": "Absent",
+  "messaging.presence.offline": "Hors ligne",
+  "messaging.presence.unknown": "Statut indisponible",
+  "messaging.presence.lastSeen": "Vu le {date}",
+
   "reviews.loading": "Chargement des avis…",
   "reviews.loadError": "Les avis n’ont pas pu être chargés.",
   "reviews.report": "Signaler cet avis",
@@ -223,6 +229,7 @@ export const messagesFr = {
     "Action indisponible pour les comptes Staff",
   "staffMarketplace.actionBlocked.description":
     "Les comptes Staff peuvent parcourir la marketplace, mais ne peuvent pas effectuer cette action. Aucune opération n’a été lancée.",
+  "product.header.chooseProduct": "Choisir un produit Shongre",
   "solutions.header.chooseSolution": "Choisir une solution Shongre",
   "solutions.header.seeAll": "Voir toutes les solutions",
   "solutions.header.homeLabel": "Accueil Shongre Solutions",
@@ -387,38 +394,43 @@ export const messagesFr = {
   "footer.about": "À propos",
   "footer.offerCourses": "Proposer des cours",
   "footer.legalHeading": "Informations légales",
-  "footer.terms": "CGU",
+  "footer.terms": "Conditions d’utilisation",
   "footer.privacy": "Politique de confidentialité",
   "footer.cookies": "Gestion des cookies",
   "footer.legalNotices": "Mentions légales",
-  "footer.accessibility": "Accessibilité (WCAG 2.2 AA)",
+  "footer.accessibility": "Accessibilité",
   "footer.copyright": "© {year} Shongre SAS. Tous droits réservés.",
-  "footer.sectionCategories": "Catégories phares",
-  "footer.sectionProfessionals": "Espace professionnels",
-  "footer.sectionHelp": "Aide & Confiance",
   "footer.proSolutions": "Solutions & Tarifs Pro",
-  "footer.shongreProspects": "Shongre Prospects",
   "footer.shongreSolutions": "Toutes les solutions Shongre",
-  "footer.shongreFacturation": "Shongre Facturation",
   "footer.helpCenter": "Centre d’aide & FAQ",
   "footer.newsletterHeading": "Newsletter Shongre",
-  "footer.marketLabel": "Marché {market}",
   "footer.sectionCities": "Villes & Régions",
   "footer.createProAccount": "Créer un compte Pro",
-  "footer.storeDirectory": "Annuaire des boutiques",
-  "footer.boostGrid": "Grille des options & boosts",
-  "footer.trustSummary":
-    "Paiement suivi · Remise claire · Statuts vendeur explicites",
-  "footer.trustLearnMore": "En savoir plus",
   "footer.contactSupport": "Contacter le support",
-  "footer.currentDeals": "Promotions",
   "footer.comingSoon": "{name} — bientôt disponible",
-  "footer.newsletterPitch":
-    "Recevez notre sélection hebdomadaire d’annonces et de nouveautés.",
   "footer.marketContext": "Marché France",
   "footer.privacyControls": "Consentement modifiable",
   "footer.mobileAppsHeading": "Applications mobiles Shongre",
-  "footer.appPitch": "Emportez Shongre partout avec vous.",
+  "footer.mobileAppsTagline": "Vos bonnes affaires, partout avec vous.",
+  "footer.brandTagline": "Le bon plan, plus proche de vous.",
+  "footer.home": "SHONGRE., accueil",
+  "footer.brandDescription":
+    "Shongre vous connecte aux bonnes affaires près de chez vous. Achetez, vendez, échangez en toute confiance.",
+  "footer.buy": "Acheter",
+  "footer.sell": "Vendre",
+  "footer.help": "Aide",
+  "footer.allListings": "Toutes les annonces",
+  "footer.categories": "Catégories",
+  "footer.deals": "Bons plans",
+  "footer.collections": "Collections du moment",
+  "footer.newListings": "Nouveautés",
+  "footer.professionalSellers": "Vendeurs professionnels",
+  "footer.pricingOptions": "Tarifs et options",
+  "footer.sellerWorkspace": "Espace vendeur",
+  "footer.safety": "Sécurité et bonnes pratiques",
+  "footer.contact": "Nous contacter",
+  "footer.whoWeAre": "Qui sommes-nous ?",
+  "footer.marketPreferences": "Préférences régionales : {market}",
   "footer.downloadFrom": "Télécharger sur",
   "footer.comingToStore": "Bientôt sur",
   "about.eyebrow": "Notre identité",
@@ -689,6 +701,10 @@ export const messagesFr = {
   "ui.listingCard.favorisViderErreur":
     "Impossible de vider vos favoris pour le moment.",
   "ui.listingCard.boosted": "Boosté",
+  "ui.listingCard.sponsored": "Sponsorisé",
+  "ui.listingCard.featured": "À la une",
+  "ui.listingCard.urgent": "Urgent",
+  "ui.listingCard.promotion": "En promotion",
   "ui.listingCard.delivery": "Livraison",
   "ui.listingCard.digitalFulfillment": "Accès numérique",
   "ui.listingCard.free": "Gratuit",
@@ -741,8 +757,6 @@ export const messagesFr = {
 
   // --- auth.forgotPasswordPage ---
   "auth.forgotPasswordPage.votreEmailExempleFr": "votre.email@exemple.fr",
-  "auth.forgotPasswordPage.collezLeTokenRecuPar":
-    "Collez le token reçu par email",
   "auth.forgotPasswordPage.nouveauMotDePasse": "Nouveau mot de passe",
 
   // --- auth.loginPage ---
@@ -752,14 +766,21 @@ export const messagesFr = {
     "Rester connecté sur cet appareil",
   "auth.loginPage.acheteurVendeur": "Acheteur / Vendeur",
   "auth.loginPage.siretVitrineVerifiee": "SIRET & Vitrine vérifiée",
-  "auth.social.or": "ou continuer avec",
+  "auth.social.heading": "Connexion ou inscription",
+  "auth.social.email": "ou avec votre adresse email",
+  "auth.social.checking": "Vérification des modes de connexion…",
+  "auth.social.availabilityFailed":
+    "Impossible de vérifier les modes de connexion. Réessayez ou continuez par email.",
+  "auth.social.retry": "Réessayer",
+  "auth.social.privacy": "En continuant, vous acceptez nos",
+  "auth.social.terms": "Conditions d’utilisation",
+  "auth.social.privacyAcknowledgement": "et prenez connaissance de notre",
+  "auth.social.privacyPolicy": "Politique de confidentialité",
   "auth.social.google": "Continuer avec Google",
   "auth.social.apple": "Continuer avec Apple",
   "auth.social.facebook": "Continuer avec Facebook",
   "auth.social.failed":
     "Cette méthode de connexion est temporairement indisponible.",
-  "auth.social.privacy":
-    "En continuant, vous acceptez les Conditions d’utilisation et reconnaissez la Politique de confidentialité.",
   "auth.callback.loading": "Validation sécurisée de votre connexion…",
   "auth.callback.success": "Connexion confirmée. Redirection…",
   "auth.callback.linked": "Compte connecté avec succès.",
@@ -859,7 +880,6 @@ export const messagesFr = {
   "auth.registerPages.creezVotreCompteGratuitEn":
     "Créez votre compte gratuit en 1 minute pour acheter et vendre en toute sérénité",
   "auth.registerPages.14RueDesAntiquaires": "14 rue des Antiquaires",
-  "auth.registerPages.evolutionDeCompteSouple": "Évolution de compte souple :",
   "auth.registerPages.vendeurProfessionnel": "Vendeur Professionnel",
   "auth.registerPages.identiteDuGerant": "Identité du gérant",
 
@@ -867,30 +887,39 @@ export const messagesFr = {
   "auth.verifyEmailPage.verificationDAdresseEmail":
     "Vérification d'adresse email",
   "auth.verifyEmailPage.confirmezVotreAdresseEmailPour":
-    "Confirmez votre adresse email pour sécuriser votre compte et activer toutes les fonctionnalités",
+    "Confirmez votre adresse email pour continuer à utiliser votre compte Shongre.",
   "auth.verifyEmailPage.collezIciVotreJetonDe":
-    "Collez ici votre jeton de validation",
+    "Saisissez le code reçu par email",
   "auth.verifyEmailPage.renvoyerUnEmailDeValidation":
     "Renvoyer un email de validation",
 
   // --- auth.accountTypeSelector ---
   "auth.accountTypeSelector.depotDAnnoncesGratuitEt":
-    "Dépôt d'annonces gratuit et instantané",
+    "Publiez et gérez vos annonces",
   "auth.accountTypeSelector.paiementSecuriseAvecSequestre":
-    "Paiement en ligne sécurisé via Stripe",
-  "auth.accountTypeSelector.messagerieInstantaneeDirecte":
-    "Messagerie instantanée directe",
+    "Paiement en ligne éligible",
+  "auth.accountTypeSelector.messagerieInstantaneeDirecte": "Messagerie directe",
   "auth.accountTypeSelector.badgeOfficielVendeurProVerifie":
-    "Badge officiel Vendeur Pro Vérifié",
+    "Vérification sur justificatifs",
   "auth.accountTypeSelector.vitrineDeBoutiquePersonnalisable":
-    "Vitrine de boutique personnalisable",
+    "Vitrine personnalisable",
   "auth.accountTypeSelector.facturationAutomatiqueAvecTva":
-    "Facturation automatique avec TVA",
+    "Outils de facturation",
+  "auth.accountTypeSelector.recommended": "Recommandé",
+  "auth.accountTypeSelector.selectProfile": "Choisir ce profil",
 
-  // --- auth.authLayout ---
-  "auth.authLayout.conformiteRgpdFranceUe":
-    "Préférences de confidentialité intégrées",
-  "auth.authLayout.protectionAcheteurVendeur": "Protection Acheteur & Vendeur",
+  // --- Shared authentication frame ---
+  "auth.frame.privateAccount": "Espace personnel",
+  "auth.frame.identityControl": "Vérification de votre identité",
+  "auth.frame.privacyControl": "Confidentialité à votre main",
+  "auth.frame.alreadyMember": "Vous avez déjà un compte ?",
+  "auth.frame.signIn": "Se connecter",
+  "auth.frame.individual": "Particulier",
+  "auth.frame.professional": "Professionnel",
+  "auth.frame.registrationSteps": "Étapes de l’inscription professionnelle",
+  "auth.frame.createPro": "Créer mon compte Pro",
+  "auth.frame.companyStep": "Votre entreprise",
+  "auth.frame.required": "Authentification requise",
 
   // --- auth.mFAModal ---
   "auth.mFAModal.copierLaCleSecrete": "Copier la clé secrète",
@@ -1123,6 +1152,14 @@ export const messagesFr = {
   "listings.listingDetailPage.tarifDuCours": "Tarif du cours",
   "listings.listingDetailPage.tarif": "Tarif",
   "listings.listingDetailPage.valeurIndicative": "Valeur indicative",
+  "listings.listingDetailPage.postuler": "Postuler",
+  "listings.listingDetailPage.demanderUnDevis": "Demander un devis",
+  "listings.listingDetailPage.demanderUneVisite": "Demander une visite",
+  "listings.listingDetailPage.demanderUnEssai": "Demander un essai",
+  "listings.listingDetailPage.demanderUnCours": "Demander un cours",
+  "listings.listingDetailPage.verifierLaDisponibilite":
+    "Vérifier la disponibilité",
+  "listings.listingDetailPage.proposerUnEchange": "Proposer un échange",
 
   // --- listings.listingSellerTrustSection ---
 
@@ -1240,7 +1277,6 @@ export const messagesFr = {
     "Se désabonner en 1 clic",
 
   // --- newsletter.newsletterSignup ---
-  "newsletter.newsletterSignup.votreEmailCom": "votre@email.com",
   "newsletter.newsletterSignup.votreAdresseEmail": "Votre adresse email",
   "newsletter.newsletterSignup.saisissezVotreAdresseEmail":
     "Saisissez votre adresse email",
@@ -1364,6 +1400,12 @@ export const messagesFr = {
   "search.searchPage.etat": "État",
   "search.searchPage.queryHeading": "Recherche : {query}",
   "search.searchPage.allListings": "Toutes les annonces",
+  "search.searchPage.allResultsDescription":
+    "Trouvez la bonne affaire parmi les annonces disponibles.",
+  "search.searchPage.categoryResultsDescription":
+    "Explorez les annonces de la catégorie « {category} ».",
+  "search.searchPage.refineResultsDescription":
+    "Affinez les résultats avec les filtres pour trouver ce qui vous correspond.",
   "search.resultsHeading": "Résultats de recherche",
   "search.exploreMapView.recadrerSurLesAnnonces": "Recadrer sur les annonces",
   "search.exploreMapView.regionLabel": "Carte des annonces à explorer",
@@ -1706,8 +1748,8 @@ export const messagesFr = {
   "security.requirePermission.compteSuspendu": "Compte suspendu",
 
   // --- admin.adminAuditLogsPage ---
-  "shell.environment.collapseToolbar": "Réduire la barre d’environnement",
-  "shell.environment.expandToolbar": "Développer la barre d’environnement",
+  "shell.environment.hideToolbar": "Masquer la barre d’environnement",
+  "shell.environment.showToolbar": "Afficher la barre d’environnement",
   "shell.environment.label": "{environment}",
   "shell.environment.apiSummary": "Données fournies par l’API Shongre",
 
@@ -1770,8 +1812,6 @@ export const messagesFr = {
     "Adresse email de votre compte",
   "auth.forgotPasswordPage.envoyerLeLienDeReinitialisation":
     "Envoyer le lien de réinitialisation",
-  "auth.forgotPasswordPage.jetonDeValidationToken":
-    "Jeton de validation (Token)",
   "auth.forgotPasswordPage.confirmerLeNouveauMotDe":
     "Confirmer le nouveau mot de passe",
   "auth.forgotPasswordPage.mettreAJourMonMot": "Mettre à jour mon mot de passe",
@@ -1791,9 +1831,12 @@ export const messagesFr = {
   // --- auth.registerPages ---
   "auth.registerPages.creerVotreCompteShongre": "Créer votre compte Shongre",
   "auth.registerPages.rejoignezLaCommunauteDeCommerce":
-    "Rejoignez la communauté de commerce circulaire sécurisé en France et en Europe.",
+    "Choisissez le profil qui vous correspond pour acheter, vendre et échanger sur Shongre.",
   "auth.registerPages.1SelectionnezVotreProfilD":
     "1. Sélectionnez votre profil d'activité",
+  "auth.registerPages.chooseProfile": "Choisissez votre profil",
+  "auth.registerPages.chooseProfileDescription":
+    "Sélectionnez le type de compte qui vous correspond pour continuer.",
   "auth.registerPages.nomEtPrenomOuPseudonyme": "Nom et prénom ou pseudonyme",
   "auth.registerPages.conditionsGeneralesDUtilisation":
     "Conditions Générales d'Utilisation",
@@ -1806,7 +1849,7 @@ export const messagesFr = {
   "auth.registerPages.ouvrirUnCompteProfessionnel":
     "Ouvrir un compte Professionnel",
   "auth.registerPages.accedezALaVitrineOfficielle":
-    "Accédez à la vitrine officielle, au badge Pro Vérifié et à la facturation TVA automatisée.",
+    "Présentez votre activité et accédez aux outils dédiés aux professionnels.",
   "auth.registerPages.nomEtPrenomDuResponsable":
     "Nom et prénom du responsable / contact",
   "auth.registerPages.telephoneCommercial": "Téléphone commercial",
@@ -1821,14 +1864,13 @@ export const messagesFr = {
   "auth.verifyEmailPage.votreCompteEstDesormaisSecurise":
     'Votre compte est désormais sécurisé et votre badge "Email Vérifié" est actif sur votre profil.',
   "auth.verifyEmailPage.accederAMonEspace": "Accéder à mon espace",
-  "auth.verifyEmailPage.jetonDeValidationOuCode":
-    "Jeton de validation ou Code de vérification",
+  "auth.verifyEmailPage.jetonDeValidationOuCode": "Code de confirmation",
 
   // --- auth.accountTypeSelector ---
   "auth.accountTypeSelector.pourAcheterEnTouteSecurite":
-    "Pour acheter en toute sécurité et vendre vos objets du quotidien sans frais d'inscription.",
+    "Achetez et vendez simplement, sans frais d'inscription.",
   "auth.accountTypeSelector.pourLesEntreprisesArtisansBoutiques":
-    "Pour les entreprises, artisans, boutiques et commerçants immatriculés.",
+    "Pour les entreprises, artisans et commerçants immatriculés.",
 
   // --- auth.mFAModal ---
   "auth.mFAModal.activerLaDoubleAuthentification2fa":
@@ -1938,11 +1980,12 @@ export const messagesFr = {
   "home.homePage.sansTracas": "sans tracas.",
   "home.homePage.achetezEtVendezEnToute":
     "Achetez et vendez avec un paiement suivi, des options de remise claires et des statuts vendeur explicites.",
-  "home.homePage.trustedMarketplace": "Plateforme de confiance",
   "home.homePage.garantiesShongre": "Garanties Shongre",
-  "home.homePage.paiementsSecurises": "Paiements sécurisés",
   "home.homePage.livraisonIntegree": "Remise et expédition claires",
-  "home.homePage.vendeursVerifies": "Statuts vendeur explicites",
+  "home.homePage.explicitSellerStatusesShort": "Statuts explicites",
+  "home.homePage.trackedPayment": "Paiement suivi",
+  "home.homePage.deliveryAvailable": "Livraison possible",
+  "home.homePage.individualsAndPros": "Particuliers et pros",
   "home.homePage.annoncesRecentes": "Annonces récentes",
   "home.homePage.lesDernieresOffresPublieesPres":
     "Les dernières offres publiées près de chez vous",

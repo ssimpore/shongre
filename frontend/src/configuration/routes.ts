@@ -279,7 +279,10 @@ export const routes = {
       withQuery("/inscription/particulier", { redirect: returnTo }),
     registerProfessional: (returnTo?: string) =>
       withQuery("/inscription/professionnel", { redirect: returnTo }),
-    verifyEmail: () => "/verification-email",
+    forgotPassword: (returnTo?: string) =>
+      withQuery("/mot-de-passe-oublie", { redirect: returnTo }),
+    verifyEmail: (returnTo?: string) =>
+      withQuery("/verification-email", { redirect: returnTo }),
   },
   legal: {
     terms: () => "/conditions-utilisation",

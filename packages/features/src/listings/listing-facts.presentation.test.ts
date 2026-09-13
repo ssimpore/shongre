@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ListingCharacteristicsData } from "./listing-facts.presentation";
 import {
   buildListingFactPresentation,
-  iconForFact,
+  localizeListingCharacteristics,
   KEY_FACT_LIMIT,
 } from "./listing-facts.presentation";
 
@@ -31,7 +31,7 @@ const characteristics = (
 ): ListingCharacteristicsData => ({ groups });
 
 describe("listing fact presentation", () => {
-  it("promotes identifying groups ahead of the rest, whatever order they arrive in", () => {
+  it("preserves the order published by the API", () => {
     const result = buildListingFactPresentation(
       characteristics([
         { id: "grp.regulatory", label: "Conformité", items: [fact("critair")] },
@@ -48,10 +48,10 @@ describe("listing fact presentation", () => {
       ]),
     );
     expect(result.keyFacts.map((entry) => entry.code)).toEqual([
+      "critair",
       "brand",
       "model",
       "mileage",
-      "critair",
     ]);
   });
 
@@ -143,21 +143,45 @@ describe("listing fact presentation", () => {
     }
   });
 
-  describe("icons", () => {
-    it("chooses by what the fact means, not by which vertical published it", () => {
-      // The same meaning gets the same icon across categories.
-      expect(iconForFact("grp.holiday_specs", "capacity")).toBe(
-        iconForFact("grp.vehicle_technical", "seats"),
-      );
-      expect(iconForFact("grp.property_specs", "living_area")).toBe("ruler");
-      expect(iconForFact("grp.vehicle_technical", "mileage")).toBe("gauge");
-      expect(iconForFact("grp.vehicle_technical", "fuel_type")).toBe("fuel");
-      expect(iconForFact("grp.job_compensation", "salary_min")).toBe("payment");
+  it("uses the API icon even when a field code suggests a different meaning", () => {
+    const result = buildListingFactPresentation({
+      groups: [
+        {
+          id: "unfamiliar",
+          label: "Custom",
+          items: [{ ...fact("model_year"), icon: "leaf" }],
+        },
+      ],
     });
-
-    it("falls back to the group, then to a neutral mark", () => {
-      expect(iconForFact("grp.property_energy", "unmapped_code")).toBe("zap");
-      expect(iconForFact("grp.not_a_real_group", "unmapped_code")).toBe("tag");
+    expect(result.keyFacts[0].icon).toBe("leaf");
+    expect(
+      buildListingFactPresentation({
+        groups: [
+          { id: "unfamiliar", label: "Custom", items: [fact("model_year")] },
+        ],
+      }).keyFacts[0].icon,
+    ).toBe("tag");
+  });
+  it("retains localized grouping, capabilities and icons from vertical APIs", () => {
+    const data = localizeListingCharacteristics(
+      [
+        {
+          code: "one",
+          labels: { "fr-FR": "Un", "en-US": "One" },
+          values: { "fr-FR": "Oui", "en-US": "Yes" },
+          icon: "wifi",
+          groupId: "custom",
+          groupLabels: { "fr-FR": "Groupe", "en-US": "Group" },
+          presentation: "feature",
+        },
+      ],
+      "en-US",
+    );
+    expect(data.groups[0].label).toBe("Group");
+    expect(buildListingFactPresentation(data).features[0]).toMatchObject({
+      label: "One",
+      value: "Yes",
+      icon: "wifi",
     });
   });
 });

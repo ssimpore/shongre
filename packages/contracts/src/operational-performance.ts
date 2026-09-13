@@ -84,6 +84,15 @@ export const SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS = {
     authenticationTimeoutMs: 5_000,
     maximumSubscriptionsPerConnection: 50,
   },
+  presence: {
+    heartbeatIntervalMs: 25_000,
+    refreshIntervalMs: 25_000,
+    awayAfterMs: 120_000,
+    leaseDurationMs: 90_000,
+    lastSeenRetentionMs: 2_592_000_000,
+    maximumClientsPerUser: 32,
+    maximumConversationsPerRead: 100,
+  },
   frontend: {
     queryStaleTimeMs: 180_000,
     queryGcTimeMs: 900_000,

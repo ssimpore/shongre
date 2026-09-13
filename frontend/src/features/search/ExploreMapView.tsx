@@ -115,7 +115,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
         }">
           <div class="px-2.5 py-1 rounded-full font-bold text-xs shadow-md border flex items-center gap-1 cursor-pointer select-none transition-colors ${
             isSelected
-              ? "bg-primary text-text-inverse border-primary-hover ring-3 ring-primary-border"
+              ? "bg-primary text-on-primary border-primary-hover ring-3 ring-primary-border"
               : isHovered
                 ? "bg-surface-inverse text-text-inverse border-border-inverse"
                 : "bg-bg-surface text-text-main border-border-base hover:border-border-strong"
@@ -222,7 +222,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   return (
     <div
       data-search-results-map
-      className={`relative w-full overflow-hidden rounded-2xl border border-border-base bg-bg-base shadow-xs ${
+      className={`relative w-full overflow-hidden rounded-listing-card border border-border-base bg-bg-base shadow-xs ${
         fillHeight ? "flex h-full min-h-0 flex-col" : ""
       }`}
     >
@@ -249,7 +249,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               onClick={() => handleFlyToCity(city)}
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors shrink-0 ${
                 selectedCity === city
-                  ? "bg-primary text-text-inverse shadow-xs"
+                  ? "bg-primary text-on-primary shadow-xs"
                   : "bg-bg-base text-text-emphasis hover:bg-surface-disabled/80 border border-border-base"
               }`}
             >

@@ -94,7 +94,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
             leftIcon={
               <ShieldCheck className="w-icon-sm h-icon-sm text-success" />
             }
-            className="w-full min-w-0 !whitespace-normal text-xs sm:w-auto"
+            className="w-full min-w-0 text-xs sm:w-auto"
           >
             {t("messaging.conversationContextBar.suiviDeCommande")}
           </Button>
@@ -108,7 +108,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 leftIcon={
                   <DollarSign className="w-icon-sm h-icon-sm text-warning" />
                 }
-                className="w-full min-w-0 !whitespace-normal text-xs sm:w-auto"
+                className="w-full min-w-0 text-xs sm:w-auto"
               >
                 {t("messaging.conversationContextBar.faireUneOffre")}
               </Button>
@@ -121,7 +121,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 leftIcon={
                   <Calendar className="w-icon-sm h-icon-sm text-primary" />
                 }
-                className="w-full min-w-0 !whitespace-normal text-xs sm:w-auto"
+                className="w-full min-w-0 text-xs sm:w-auto"
               >
                 {t("messaging.conversationContextBar.fixerRendezVous")}
               </Button>

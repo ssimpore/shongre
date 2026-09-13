@@ -1,4 +1,8 @@
 import { Conversation, Message } from "../../types";
+import type {
+  PresenceHeartbeat,
+  ConversationPresencePage,
+} from "@shongre/shared/presence";
 
 export const MESSAGE_INPUT_CONSTRAINTS = {
   maxLength: 2000,
@@ -22,6 +26,14 @@ export interface CreateOrGetConversationInput {
 }
 
 export interface MessagingServiceContract {
+  updatePresence(
+    heartbeat: PresenceHeartbeat,
+    signal?: AbortSignal,
+  ): Promise<{ updated: boolean }>;
+  getPresence(
+    conversationIds: readonly string[],
+    signal?: AbortSignal,
+  ): Promise<ConversationPresencePage>;
   getUserConversations(userId: string): Promise<Conversation[]>;
   getConversationById(id: string): Promise<Conversation | null>;
   getMessages(conversationId: string, cursor?: string): Promise<Message[]>;

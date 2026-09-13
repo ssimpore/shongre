@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { listingCharacteristicIconSchema } from "./listings";
 import { marketCodeSchema } from "./primitives";
 
 export const TAXONOMY_ADMIN_CONSTRAINTS = {
@@ -201,6 +202,7 @@ export const taxonomyV1ListingTypeSchema = z.object({
 });
 
 export const taxonomyV1AttributeSchema = z.object({
+  iconName: listingCharacteristicIconSchema.optional(),
   id: z.string().min(1),
   code: z.string().min(1),
   labels: taxonomyLocalizedLabelsSchema,
@@ -697,6 +699,10 @@ const listingTaxonomyLabelsSchema = z
   .catchall(z.string());
 
 const taxonomyLocalizedCharacteristicSchema = z.object({
+  icon: listingCharacteristicIconSchema.optional(),
+  groupId: z.string().optional(),
+  groupLabels: listingTaxonomyLabelsSchema.optional(),
+  presentation: z.enum(["fact", "feature"]).optional(),
   code: z.string(),
   labels: listingTaxonomyLabelsSchema,
   values: listingTaxonomyLabelsSchema,

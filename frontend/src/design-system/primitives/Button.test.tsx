@@ -74,6 +74,23 @@ describe("Button display utilities", () => {
 });
 
 describe("Button form behavior", () => {
+  it("lets compact compositions set spacing without competing size utilities", () => {
+    const classes = classesOf(
+      <Button size="compact" className="px-2 py-0 gap-1">
+        Google
+      </Button>,
+    ).split(/\s+/);
+    expect(classes).toEqual(expect.arrayContaining(["px-2", "py-0", "gap-1"]));
+    expect(classes).not.toContain("px-4");
+    expect(classes).not.toContain("py-1.5");
+    expect(classes).not.toContain("gap-2");
+  });
+
+  it("preserves default spacing below responsive composition overrides", () => {
+    const classes = classesOf(<Button className="sm:px-2">Continuer</Button>);
+    expect(classes.split(/\s+/)).toContain("px-4");
+  });
+
   it("does not submit an enclosing form unless submission is explicit", () => {
     expect(renderButton(<Button>Continuer</Button>).props.type).toBe("button");
   });

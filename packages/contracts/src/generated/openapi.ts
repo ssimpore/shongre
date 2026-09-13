@@ -6723,6 +6723,30 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/messaging/presence": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Read presence for authorized conversation counterparts
+         * @description Private, no-store presence snapshots. Only conversation participants may read them. Blocking in either direction conceals presence. Missing or unavailable activity is unknown, never proof of offline status.
+         */
+        readonly get: operations["getMessagingPresence"];
+        readonly put?: never;
+        /**
+         * Update the authenticated session presence lease
+         * @description Identity and session come exclusively from the principal. A per-client UUID and increasing sequence reject stale updates. Server time owns activity timestamps; clients never set last-seen times.
+         */
+        readonly post: operations["postMessagingPresence"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/messaging/read": {
         readonly parameters: {
             readonly query?: never;
@@ -9126,6 +9150,12 @@ export interface components {
             /** @enum {string} */
             readonly synchronizationStatus: "missing" | "pending" | "synchronized" | "mismatch" | "disabled";
         };
+        readonly ConversationPresencePage: {
+            readonly items: readonly {
+                readonly conversationId: string;
+                readonly presence: components["schemas"]["UserPresence"];
+            }[];
+        };
         readonly CountryConfig: {
             readonly addressFormat?: string;
             readonly basePath: string;
@@ -11277,11 +11307,17 @@ export interface components {
         readonly JsonValue: null | boolean | number | string | readonly unknown[] | {
             readonly [key: string]: unknown;
         };
+        /**
+         * @description Semantic icon selected by the published taxonomy field definition. Clients render this role without guessing from field codes or labels.
+         * @enum {string}
+         */
+        readonly ListingCharacteristicIcon: "bath" | "battery" | "bed" | "book-open" | "briefcase" | "calendar" | "camera" | "car" | "check" | "clock" | "cpu" | "database" | "door" | "file" | "file-check" | "fuel" | "gauge" | "globe" | "heart" | "home" | "laptop" | "layers" | "layout-grid" | "leaf" | "map-pin" | "message" | "music" | "package" | "palette" | "paw" | "payment" | "plug" | "ruler" | "settings" | "shield" | "shield-alert" | "shirt" | "sofa" | "star" | "tag" | "thermometer" | "ticket" | "truck" | "user" | "users" | "wifi" | "wrench" | "zap";
         readonly ListingCharacteristics: {
             readonly groups: readonly {
                 readonly id: string;
                 readonly items: readonly {
                     readonly code: string;
+                    readonly icon?: components["schemas"]["ListingCharacteristicIcon"];
                     readonly label: string;
                     /**
                      * @description How the value should be shown. 'feature' marks a capability the listing has (an affirmative boolean), which surfaces as a labelled amenity rather than a label/value row. Absent means 'fact'.
@@ -12107,6 +12143,13 @@ export interface components {
             readonly toProductId: string;
             /** @enum {string} */
             readonly treatment: "customer_choice_required" | "grandfather_existing" | "contract_migration" | "no_replacement";
+        };
+        readonly PresenceHeartbeat: {
+            /** @enum {string} */
+            readonly activity: "active" | "idle" | "background" | "offline";
+            /** Format: uuid */
+            readonly clientId: string;
+            readonly sequence: number;
         };
         readonly PriceProtectionPolicy: {
             readonly campaignId?: string;
@@ -13177,7 +13220,12 @@ export interface components {
         };
         readonly TaxonomyLocalizedCharacteristic: {
             readonly code: string;
+            readonly groupId?: string;
+            readonly groupLabels?: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly icon?: components["schemas"]["ListingCharacteristicIcon"];
             readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            /** @enum {string} */
+            readonly presentation?: "fact" | "feature";
             readonly values: components["schemas"]["TaxonomyV1LocalizedLabels"];
         };
         readonly TaxonomyReviewIssue: {
@@ -13238,6 +13286,7 @@ export interface components {
             readonly helpText: {
                 readonly [key: string]: string;
             };
+            readonly iconName?: components["schemas"]["ListingCharacteristicIcon"];
             readonly id: string;
             readonly immutableAfterPublication: boolean;
             readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
@@ -13692,6 +13741,16 @@ export interface components {
             readonly frequency?: components["schemas"]["WatchFrequency"];
             /** @enum {string} */
             readonly status?: "active" | "paused";
+        };
+        readonly UserPresence: {
+            /** Format: date-time */
+            readonly lastSeenAt: string | null;
+            /** Format: date-time */
+            readonly observedAt: string;
+            /** @enum {string} */
+            readonly status: "online" | "away" | "offline" | "unknown";
+            /** Format: date-time */
+            readonly validUntil: string;
         };
         readonly UserProfileUpdateRequest: {
             /** Format: uri */
@@ -29086,6 +29145,79 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getMessagingPresence: {
+        readonly parameters: {
+            readonly query: {
+                /** @description Comma-separated conversation identifiers, at most 100. */
+                readonly conversationIds: string;
+            };
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Current private presence projections. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ConversationPresencePage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postMessagingPresence: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PresenceHeartbeat"];
+            };
+        };
+        readonly responses: {
+            /** @description Presence lease update result. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": {
+                        readonly updated: boolean;
+                    };
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

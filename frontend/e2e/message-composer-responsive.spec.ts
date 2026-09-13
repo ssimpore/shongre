@@ -3,10 +3,59 @@ import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
 
 const CONVERSATION_URL = "/compte/messages?convId=conv-02";
+const PRESENCE_CONVERSATION_URL = "/compte/messages?convId=conv_1";
 
 test.beforeEach(async ({ page }) => {
   await useEstablishedConsent(page);
   await usePersona(page, "individual_seller");
+});
+
+test.describe("presence", () => {
+  test.describe.configure({ timeout: 180_000 });
+  test("@serial shows a conversation participant online across authenticated browser sessions", async ({
+    browser,
+    page,
+  }, testInfo) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    const buyerContext = await browser.newContext({
+      baseURL: process.env.E2E_BASE_URL,
+    });
+    try {
+      const buyerPage = await buyerContext.newPage();
+      await useEstablishedConsent(buyerPage);
+      await usePersona(buyerPage, "individual_buyer");
+      await buyerPage.goto(PRESENCE_CONVERSATION_URL, {
+        waitUntil: "domcontentloaded",
+      });
+      await expect(
+        buyerPage.getByRole("textbox", {
+          name: "Votre message",
+          exact: true,
+        }),
+      ).toBeVisible({ timeout: 30_000 });
+
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.goto(PRESENCE_CONVERSATION_URL, {
+        waitUntil: "domcontentloaded",
+      });
+      await expect(page).toHaveURL(/\/compte\/messages\?convId=conv_1$/);
+      await expect(page).toHaveTitle(/Shongre/i);
+      const online = page.locator('[data-presence-status="online"]');
+      await expect(online.first()).toContainText("En ligne", {
+        timeout: 30_000,
+      });
+      if (process.env.NODE_ENV === "production")
+        await expect(page.locator("nextjs-portal")).toHaveCount(0);
+      expect(errors).toEqual([]);
+      await page.screenshot({
+        path: testInfo.outputPath("presence-online.png"),
+        fullPage: false,
+      });
+    } finally {
+      await buyerContext.close().catch(() => undefined);
+    }
+  });
 });
 
 test("message composer keeps touch targets and grows with multiline text", async ({

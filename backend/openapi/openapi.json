@@ -40262,6 +40262,162 @@
         "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/modules/geo/api/geo.routes.ts"
       }
+    },
+    "/messaging/presence": {
+      "get": {
+        "operationId": "getMessagingPresence",
+        "tags": ["messaging"],
+        "summary": "Read presence for authorized conversation counterparts",
+        "description": "Private, no-store presence snapshots. Only conversation participants may read them. Blocking in either direction conceals presence. Missing or unavailable activity is unknown, never proof of offline status.",
+        "parameters": [
+          {
+            "name": "conversationIds",
+            "in": "query",
+            "required": true,
+            "description": "Comma-separated conversation identifiers, at most 100.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 6500
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current private presence projections.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationPresencePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/modules/messaging/api/messaging.routes.ts",
+        "x-shongre-permission": "message.read.own"
+      },
+      "post": {
+        "operationId": "postMessagingPresence",
+        "tags": ["messaging"],
+        "summary": "Update the authenticated session presence lease",
+        "description": "Identity and session come exclusively from the principal. A per-client UUID and increasing sequence reject stale updates. Server time owns activity timestamps; clients never set last-seen times.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PresenceHeartbeat"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Presence lease update result.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["updated"],
+                  "properties": {
+                    "updated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/modules/messaging/api/messaging.routes.ts",
+        "x-shongre-permission": "message.read.own"
+      }
     }
   },
   "components": {
@@ -46709,6 +46865,9 @@
                         "type": "string",
                         "enum": ["fact", "feature"],
                         "description": "How the value should be shown. 'feature' marks a capability the listing has (an affirmative boolean), which surfaces as a labelled amenity rather than a label/value row. Absent means 'fact'."
+                      },
+                      "icon": {
+                        "$ref": "#/components/schemas/ListingCharacteristicIcon"
                       }
                     }
                   }
@@ -47854,6 +48013,9 @@
             "additionalProperties": {
               "type": "string"
             }
+          },
+          "iconName": {
+            "$ref": "#/components/schemas/ListingCharacteristicIcon"
           }
         }
       },
@@ -61571,6 +61733,19 @@
           },
           "values": {
             "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
+          },
+          "icon": {
+            "$ref": "#/components/schemas/ListingCharacteristicIcon"
+          },
+          "groupId": {
+            "type": "string"
+          },
+          "groupLabels": {
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
+          },
+          "presentation": {
+            "type": "string",
+            "enum": ["fact", "feature"]
           }
         }
       },
@@ -62075,6 +62250,73 @@
           }
         }
       },
+      "UserPresence": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status", "lastSeenAt", "observedAt", "validUntil"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["online", "away", "offline", "unknown"]
+          },
+          "lastSeenAt": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "observedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PresenceHeartbeat": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["clientId", "sequence", "activity"],
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "activity": {
+            "type": "string",
+            "enum": ["active", "idle", "background", "offline"]
+          }
+        }
+      },
+      "ConversationPresencePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["conversationId", "presence"],
+              "properties": {
+                "conversationId": {
+                  "type": "string"
+                },
+                "presence": {
+                  "$ref": "#/components/schemas/UserPresence"
+                }
+              }
+            }
+          }
+        }
+      },
       "ListingDeliveryMethod": {
         "type": "string",
         "enum": [
@@ -62085,6 +62327,60 @@
           "express",
           "digital"
         ]
+      },
+      "ListingCharacteristicIcon": {
+        "type": "string",
+        "enum": [
+          "bath",
+          "battery",
+          "bed",
+          "book-open",
+          "briefcase",
+          "calendar",
+          "camera",
+          "car",
+          "check",
+          "clock",
+          "cpu",
+          "database",
+          "door",
+          "file",
+          "file-check",
+          "fuel",
+          "gauge",
+          "globe",
+          "heart",
+          "home",
+          "laptop",
+          "layers",
+          "layout-grid",
+          "leaf",
+          "map-pin",
+          "message",
+          "music",
+          "package",
+          "palette",
+          "paw",
+          "payment",
+          "plug",
+          "ruler",
+          "settings",
+          "shield",
+          "shield-alert",
+          "shirt",
+          "sofa",
+          "star",
+          "tag",
+          "thermometer",
+          "ticket",
+          "truck",
+          "user",
+          "users",
+          "wifi",
+          "wrench",
+          "zap"
+        ],
+        "description": "Semantic icon selected by the published taxonomy field definition. Clients render this role without guessing from field codes or labels."
       }
     },
     "responses": {

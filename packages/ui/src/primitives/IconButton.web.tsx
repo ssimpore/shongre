@@ -8,7 +8,7 @@ import {
 
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md";
   ariaLabel: string;
 }
 
@@ -44,11 +44,10 @@ const iconButtonClasses = createVariants({
     size: {
       sm: "w-control-sm h-control-sm p-1.5 text-xs",
       md: "w-control-md h-control-md p-2 text-sm",
-      lg: "w-control-lg h-control-lg p-3 text-base",
     },
     variant: {
       primary:
-        "bg-primary text-text-inverse hover:-translate-y-0.5 hover:bg-primary-hover active:bg-primary-active shadow-xs hover:shadow-sm",
+        "bg-primary text-on-primary hover:-translate-y-0.5 hover:bg-primary-hover active:bg-primary-active shadow-xs hover:shadow-sm",
       secondary:
         "bg-bg-subtle text-text-main hover:bg-bg-muted active:bg-surface-selected",
       outline:

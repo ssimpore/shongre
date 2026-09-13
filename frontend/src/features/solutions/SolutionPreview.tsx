@@ -52,7 +52,7 @@ export function SolutionPreview({
               {t(previewTitleKeys[icon])}
             </span>
             {icon !== "pilotage" ? (
-              <span className="rounded bg-primary px-2 py-1 text-micro font-bold text-text-inverse">
+              <span className="rounded bg-primary px-2 py-1 text-micro font-bold text-on-primary">
                 + {t("solutions.preview.new")}
               </span>
             ) : null}

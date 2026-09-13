@@ -132,7 +132,7 @@ export interface BrandHeaderSignatureProps extends AccessibleBrandImageProps {
 }
 
 /**
- * Compact signature with independently governed icon and wordmark sizes.
+ * Signature with independently governed icon and wordmark sizes.
  * The mask-safe PWA icon accepts only the restrained design-system radius and
  * stays legible without stretching or modifying either approved artwork asset.
  */

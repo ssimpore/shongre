@@ -42,6 +42,7 @@ export const RequireRoutePolicy: React.FC<{
   const { currentUser, isRestoring } = useAuth();
   const location = useLocation();
   const policy: RoutePolicy = ROUTE_POLICIES[policyId];
+  const returnTo = `${location.pathname}${location.search}${location.hash}`;
 
   if (isRestoring) {
     return (
@@ -58,6 +59,9 @@ export const RequireRoutePolicy: React.FC<{
     );
   }
   if (!currentUser) {
+    if (policy.path.startsWith("/deposer")) {
+      return <Navigate to={routes.auth.login(returnTo)} replace />;
+    }
     return <RequireAuth>{children}</RequireAuth>;
   }
 
@@ -92,12 +96,7 @@ export const RequireRoutePolicy: React.FC<{
     if (policy.access === "professional") {
       return <Navigate to={routes.proPlans()} replace />;
     }
-    return (
-      <Navigate
-        to={routes.auth.login(`${location.pathname}${location.search}`)}
-        replace
-      />
-    );
+    return <Navigate to={routes.auth.login(returnTo)} replace />;
   }
 
   if (canAccessRoutePolicy(currentUser, policyId)) {

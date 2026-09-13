@@ -893,11 +893,12 @@ async function main(): Promise<void> {
     path.join(repositoryRoot, "frontend/src/app/layouts/Footer.tsx"),
     "utf8",
   ).catch(() => "");
+  const normalizedFooterSource = footerSource.replace(/\s+/g, " ");
   for (const requiredFooterSignature of [
     '<BrandHeaderSignature variant="reverse"',
     "decorative",
   ]) {
-    if (!footerSource.includes(requiredFooterSignature)) {
+    if (!normalizedFooterSource.includes(requiredFooterSignature)) {
       failures.push(
         `The dark footer signature is missing ${requiredFooterSignature}.`,
       );

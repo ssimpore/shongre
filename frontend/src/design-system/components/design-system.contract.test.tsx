@@ -9,11 +9,27 @@ import {
   SearchResultsToolbar,
   SearchSortControl,
   countActiveSearchParams,
+  useSearchFilterDisclosure,
 } from "../primitives/SearchPageControls";
 import { Surface } from "../primitives/Layout";
 import { EmptyState, Notice } from "./Feedback";
 import { OnboardingPreparationPage } from "./OnboardingPreparationPage";
 import { ListingCardSkeleton } from "./Skeleton";
+
+function DefaultSearchFilterDisclosureToolbar() {
+  const disclosure = useSearchFilterDisclosure();
+  return (
+    <SearchResultsToolbar
+      resultLabel="12 annonces"
+      desktopFilterPanelId="desktop-filters"
+      mobileFilterPanelId="mobile-filters"
+      desktopFiltersExpanded={disclosure.desktopFiltersExpanded}
+      mobileFiltersExpanded={disclosure.mobileFiltersExpanded}
+      onToggleDesktopFilters={disclosure.toggleDesktopFilters}
+      onOpenMobileFilters={disclosure.openMobileFilters}
+    />
+  );
+}
 
 describe("design-system representative states", () => {
   it("renders control variants through typed APIs", () => {
@@ -75,7 +91,7 @@ describe("design-system representative states", () => {
       />,
     );
 
-    expect(html).toContain("h-control-touch");
+    expect(html).toContain("min-h-control-md");
     expect(html).not.toContain("h-control-lg");
   });
 
@@ -138,6 +154,7 @@ describe("design-system representative states", () => {
     expect(drawer).toContain('aria-controls="vehicle-filter-drawer"');
     expect(drawer).toContain('aria-expanded="false"');
     expect(drawer).toContain("Ouvrir les filtres de recherche");
+    expect(drawer).toContain("sr-only sm:not-sr-only");
     expect(drawer).toContain(">3<");
   });
 
@@ -148,7 +165,9 @@ describe("design-system representative states", () => {
           <span>Paris</span>
         </SearchActiveFiltersBar>
         <SearchResultsToolbar
+          title="Toutes les annonces"
           resultLabel="12 annonces"
+          resultDescription="Découvrez les annonces disponibles."
           desktopFilterPanelId="desktop-filters"
           mobileFilterPanelId="mobile-filters"
           desktopFiltersExpanded
@@ -169,11 +188,22 @@ describe("design-system representative states", () => {
 
     expect(html).toContain("data-search-active-filters");
     expect(html).toContain("data-search-results-toolbar");
-    expect(html.match(/rounded-listing-card/g)).toHaveLength(2);
+    expect(html).toContain("Toutes les annonces</h1>");
+    expect(html).toContain("Découvrez les annonces disponibles.");
+    expect(html).toContain('role="status"');
     expect(html).toContain('aria-controls="desktop-filters"');
     expect(html).toContain('aria-controls="mobile-filters"');
     expect(html).toContain("Sauvegarder");
     expect(html).toContain("Plus récentes");
+    expect(html).toContain("overflow-x-auto");
+    expect(html).toContain("order-4");
+  });
+
+  it("keeps shared search filters closed by default", () => {
+    const html = renderToStaticMarkup(<DefaultSearchFilterDisclosureToolbar />);
+
+    expect(html.match(/aria-expanded="false"/g)).toHaveLength(2);
+    expect(html).toContain("Afficher les filtres");
   });
 
   it("counts only configured non-empty search parameters", () => {

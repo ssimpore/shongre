@@ -353,7 +353,7 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
                   key={item.kind === "category" ? item.categoryId : item.target}
                   className="flex flex-col gap-3 rounded-control border border-border-base p-3 sm:flex-row sm:items-center"
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-primary-light text-xs font-bold text-primary">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-primary-light text-xs font-bold text-text-main">
                     {index + 1}
                   </span>
                   <span className="min-w-0 flex-1">

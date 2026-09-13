@@ -92,7 +92,7 @@ export function SearchResultsMap({
   return (
     <div
       data-search-results-map
-      className={`overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs ${
+      className={`overflow-hidden rounded-listing-card border border-border-base bg-bg-surface shadow-xs ${
         layout === "split" ? "flex h-full min-h-0 flex-col" : ""
       }`}
     >

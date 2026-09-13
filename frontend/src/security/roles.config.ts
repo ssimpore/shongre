@@ -116,7 +116,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     shortLabel: "Professionnel",
     accountType: "professional",
     hierarchyLevel: 30,
-    badgeColor: "bg-primary-light text-primary border-primary-border",
+    badgeColor: "bg-primary-light text-text-main border-primary-border",
     description:
       "Entreprise avec socle Pro et outils métier déterminés par sa verticale.",
     defaultPermissions: permissionsFor("pro_seller"),

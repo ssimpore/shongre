@@ -75,7 +75,7 @@ test.describe("horizontal overflow", () => {
 });
 
 test.describe("text resizing", () => {
-  test("search chrome reflows at 200% on the narrowest viewport", async ({
+  test("search and footer reflow at 200% on the narrowest viewport", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 320, height: 844 });
@@ -89,6 +89,8 @@ test.describe("text resizing", () => {
     await waitForStableLayout(page);
 
     await expectNoHorizontalOverflow(page, "search chrome at 200% text");
+    await page.locator("footer").scrollIntoViewIfNeeded();
+    await expectNoHorizontalOverflow(page, "footer at 200% text");
   });
 });
 
@@ -106,7 +108,7 @@ test.describe("open dropdowns stay on screen", () => {
     { name: "375-iphone-se", width: 375, height: 812 },
     { name: "1280-laptop", width: 1280, height: 800 },
   ]) {
-    test(`the language picker fits at ${viewport.name}`, async ({ page }) => {
+    test(`regional preferences fit at ${viewport.name}`, async ({ page }) => {
       await page.setViewportSize({
         width: viewport.width,
         height: viewport.height,
@@ -128,7 +130,7 @@ test.describe("open dropdowns stay on screen", () => {
       await page.goto("/", { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
-      const trigger = page.locator("#footer-lang-button");
+      const trigger = page.locator("#footer-market-button");
       await trigger.scrollIntoViewIfNeeded();
       await trigger.click();
 
@@ -279,10 +281,8 @@ test.describe("toolbar controls align", () => {
 });
 
 /**
- * The compact footer keeps its legally important controls reachable without
- * recreating the former app-badge/sitemap block. App download badges were
- * removed because no store destinations are configured in this demo; dead
- * promotional controls would add noise and imply unavailable downloads.
+ * Legal and regional controls remain reachable alongside the footer's mobile
+ * accordions, including on the narrowest supported screens.
  */
 test.describe("compact footer", () => {
   for (const viewport of [
@@ -309,12 +309,12 @@ test.describe("compact footer", () => {
       await expect(
         legal.getByRole("button", { name: /gestion des cookies/i }),
       ).toBeVisible();
-      await expect(legal.getByRole("link")).toHaveCount(5);
+      await expect(legal.getByRole("link")).toHaveCount(4);
       await expectNoHorizontalOverflow(page, `footer @ ${viewport.name}`);
     });
   }
 
-  test("separates identity and legal links from copyright controls on desktop", async ({
+  test("aligns footer regional, legal and copyright controls on desktop", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -324,31 +324,28 @@ test.describe("compact footer", () => {
 
     const footer = page.locator("footer");
     await footer.scrollIntoViewIfNeeded();
-    const primaryRow = footer.locator("[data-footer-primary-row]");
-    const secondaryRow = footer.locator("[data-footer-secondary-row]");
-    const language = footer.locator("#footer-lang-button");
+    const bottomRow = footer.locator("[data-footer-bottom]");
+    const market = bottomRow.getByRole("button", {
+      name: "Préférences régionales : France",
+    });
+    const legal = bottomRow.getByRole("navigation");
+    const copyright = bottomRow.getByText(/Tous droits réservés/);
 
-    await expect(primaryRow).toBeVisible();
-    await expect(secondaryRow).toBeVisible();
-    await expect(
-      primaryRow.getByText("Marché France", { exact: true }),
-    ).toBeVisible();
-    await expect(secondaryRow.getByText(/Tous droits réservés/)).toBeVisible();
-    await expect(language).toBeVisible();
+    await expect(market).toBeVisible();
+    await expect(legal).toBeVisible();
+    await expect(copyright).toBeVisible();
 
     const geometry = await Promise.all([
-      primaryRow.boundingBox(),
-      secondaryRow.boundingBox(),
-      language.boundingBox(),
+      market.boundingBox(),
+      legal.boundingBox(),
+      copyright.boundingBox(),
     ]);
     expect(geometry.every(Boolean)).toBe(true);
-    expect(geometry[0]!.y + geometry[0]!.height).toBeLessThanOrEqual(
-      geometry[1]!.y,
-    );
-    expect(geometry[2]!.x).toBeGreaterThan(
-      geometry[1]!.x + geometry[1]!.width / 2,
-    );
-    await expectNoHorizontalOverflow(page, "desktop footer legal rows");
+    const centers = geometry.map((box) => box!.y + box!.height / 2);
+    expect(Math.max(...centers) - Math.min(...centers)).toBeLessThanOrEqual(1);
+    expect(geometry[0]!.x + geometry[0]!.width).toBeLessThan(geometry[1]!.x);
+    expect(geometry[1]!.x + geometry[1]!.width).toBeLessThan(geometry[2]!.x);
+    await expectNoHorizontalOverflow(page, "desktop footer legal row");
   });
 });
 

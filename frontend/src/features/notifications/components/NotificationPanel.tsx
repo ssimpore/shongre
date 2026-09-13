@@ -72,7 +72,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-bold text-text-main">Notifications</h3>
           {unreadCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full text-micro font-bold bg-primary text-text-inverse">
+            <span className="px-2 py-0.5 rounded-full text-micro font-bold bg-primary text-on-primary">
               {unreadCount}
             </span>
           )}

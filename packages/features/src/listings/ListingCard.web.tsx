@@ -14,15 +14,22 @@ import {
   getListingCardPriceText,
   getListingCapabilityPresentation,
   getListingPromotionBadges,
+  getListingSellerTrustPresentation,
   getListingSellerRatingPresentation,
+  getListingVerticalFacts,
   listingAccessibilityLabel,
-  type ListingCapabilityPresentation,
+  type ListingNonVerificationCapability,
+  type ListingVerticalFactPresentation,
 } from "./presentation";
 import { useListingPromotionRefresh } from "./use-listing-promotion-refresh";
 export { useListingPromotionRefresh } from "./use-listing-promotion-refresh";
 
 export interface ListingCardLabels {
   boosted: string;
+  sponsored: string;
+  featured: string;
+  urgent: string;
+  promotion: string;
   delivery: string;
   digitalFulfillment: string;
   free: string;
@@ -58,28 +65,34 @@ export interface ListingCardProps {
   }) => ReactNode;
 }
 
-type ListingNonVerificationCapability = Exclude<
-  ListingCapabilityPresentation,
-  { kind: "verified_seller" }
->;
-
 function joinLabels(parts: Array<string | undefined>) {
   return parts.map((part) => part?.trim()).filter(Boolean) as string[];
 }
 
 function ListingMeta({
   city,
+  isHero = false,
+  vertical = false,
   published,
 }: {
   city: string;
+  isHero?: boolean;
+  vertical?: boolean;
   published?: string;
 }) {
   const parts = joinLabels([city, published]);
   return (
     <span
       data-listing-card-meta="true"
-      className="flex min-w-0 items-center gap-1 text-micro leading-tight text-text-muted"
+      className={`flex min-w-0 items-center gap-1 leading-tight text-text-muted ${vertical ? "text-xs" : "text-micro"} ${isHero ? "2xl:text-sm" : ""}`}
     >
+      {!isHero && city ? (
+        <SemanticIcon
+          name="map-pin"
+          size={vertical ? "sm" : "xs"}
+          className="shrink-0"
+        />
+      ) : null}
       {parts.map((part, index) => (
         <span key={`${index}:${part}`} className="contents">
           {index > 0 ? <span aria-hidden="true">·</span> : null}
@@ -117,7 +130,7 @@ function ListingDecisionDetails({
       {listing.characteristics.slice(0, 3).map((characteristic, index) => (
         <span
           key={`${index}:${characteristic}`}
-          className="inline-flex min-h-control-sm min-w-0 flex-1 items-center justify-center gap-semantic-xs rounded-control border border-border-subtle bg-bg-subtle px-semantic-xs text-micro font-medium text-text-secondary"
+          className={`inline-flex min-h-control-sm min-w-0 flex-1 items-center justify-center gap-semantic-xs rounded-control border border-border-subtle bg-bg-subtle px-semantic-xs text-micro font-medium text-text-secondary ${isHero ? "2xl:text-xs" : ""}`}
           title={characteristic}
         >
           <SemanticIcon
@@ -134,60 +147,77 @@ function ListingDecisionDetails({
 
 function ListingCapabilityStrip({
   capabilities,
-  compact = false,
 }: {
   capabilities: readonly ListingNonVerificationCapability[];
-  compact?: boolean;
 }) {
-  const visibleCapabilities = compact ? capabilities.slice(0, 3) : capabilities;
-  if (!visibleCapabilities.length) return null;
-
+  if (!capabilities.length) return null;
   return (
     <span
       data-listing-card-capabilities="true"
       className="flex min-w-0 flex-wrap items-center gap-1"
     >
-      {visibleCapabilities.map((capability) =>
-        compact ? (
-          <Badge
-            key={capability.kind}
-            data-listing-capability={capability.kind}
-            variant="inverse"
-            size="xs"
-            aria-label={capability.label}
-            title={capability.label}
-            icon={<SemanticIcon name={capability.icon} size="xs" />}
-            className="h-control-sm w-control-sm justify-center rounded-pill p-0 shadow-sm"
-          >
-            <span className="sr-only">{capability.label}</span>
-          </Badge>
-        ) : (
-          <Badge
-            key={capability.kind}
-            data-listing-capability={capability.kind}
-            variant="neutral"
-            size="sm"
-            title={capability.label}
-            icon={<SemanticIcon name={capability.icon} size="xs" />}
-            className="max-w-full rounded-pill"
-          >
-            <span className="truncate">{capability.label}</span>
-          </Badge>
-        ),
-      )}
+      {capabilities.map((capability) => (
+        <Badge
+          key={capability.kind}
+          data-listing-capability={capability.kind}
+          variant="neutral"
+          size="sm"
+          title={capability.label}
+          aria-label={capability.label}
+          icon={<SemanticIcon name={capability.icon} size="xs" />}
+          className="max-w-full rounded-control"
+        >
+          <span className="truncate">{capability.label}</span>
+        </Badge>
+      ))}
     </span>
+  );
+}
+
+function ListingVerticalFactStrip({
+  facts,
+}: {
+  facts: readonly ListingVerticalFactPresentation[];
+}) {
+  if (!facts.length) return null;
+
+  return (
+    <div
+      data-listing-card-footer-facts="true"
+      className="flex min-h-control-sm min-w-0 items-stretch border-t border-border-subtle pt-2"
+    >
+      {facts.map((fact, index) => (
+        <span
+          key={fact.key}
+          data-listing-card-footer-fact={fact.key}
+          data-listing-capability={
+            fact.key.startsWith("characteristic-") ? undefined : fact.key
+          }
+          data-listing-characteristic={
+            fact.key.startsWith("characteristic-") ? fact.label : undefined
+          }
+          aria-label={fact.label}
+          title={fact.label}
+          className={`flex min-w-0 flex-auto items-center gap-1 text-micro font-semibold text-text-secondary ${index > 0 ? "border-l border-border-subtle pl-1.5" : "pr-1.5"}`}
+        >
+          <SemanticIcon name={fact.icon} size="xs" className="shrink-0" />
+          <span className="min-w-0 truncate">{fact.label}</span>
+        </span>
+      ))}
+    </div>
   );
 }
 
 function ListingSellerIdentity({
   seller,
   isHero,
+  supportingLabel,
 }: {
+  supportingLabel?: string;
   seller: NonNullable<ListingCardView["seller"]>;
   isHero: boolean;
 }) {
   const sellerName = seller.organizationName ?? seller.name;
-  const supportingLabel = seller.responseTimeLabel ?? seller.branchName;
 
   return (
     <div
@@ -195,7 +225,7 @@ function ListingSellerIdentity({
       className={
         isHero
           ? "listing-card-hero-seller hidden min-w-0 items-center gap-2 lg:flex"
-          : "hidden min-w-0 shrink items-center gap-2 sm:flex"
+          : "flex min-w-0 shrink items-center gap-2"
       }
     >
       <Avatar
@@ -204,16 +234,18 @@ function ListingSellerIdentity({
         size="sm"
         data-listing-card-seller-avatar="true"
       />
-      <span className="flex min-w-0 max-w-listing-card flex-col leading-tight">
-        <span
-          className="truncate text-label-sm font-semibold text-text-main"
-          title={sellerName}
-        >
-          {sellerName}
+      <span className="flex max-w-listing-card min-w-0 flex-1 flex-col leading-tight">
+        <span className="flex min-w-0 items-center gap-1">
+          <span
+            className={`min-w-0 truncate text-label-sm font-semibold text-text-main ${isHero ? "2xl:text-sm" : ""}`}
+            title={sellerName}
+          >
+            {sellerName}
+          </span>
         </span>
         {supportingLabel ? (
           <span
-            className="truncate text-micro text-text-muted"
+            className={`truncate text-micro text-text-muted ${isHero ? "2xl:text-xs" : ""}`}
             title={supportingLabel}
           >
             {supportingLabel}
@@ -239,13 +271,18 @@ export function ListingCard({
 }: ListingCardProps) {
   useListingPromotionRefresh(listing.promotion);
   const price = getListingCardPriceText(listing, locale, labels);
+  const compactVerticalPrice =
+    variant !== "list" &&
+    variant !== "hero" &&
+    Boolean(listing.priceLabel) &&
+    Boolean(price && price.length > 18);
   const published = listing.publishedAt
     ? formatRelativeTime(listing.publishedAt, {
         locale,
         style: "short",
       })
     : undefined;
-  const badges = getListingPromotionBadges(listing, labels.boosted);
+  const badges = getListingPromotionBadges(listing, labels);
   const capabilities = getListingCapabilityPresentation(listing, labels);
   const verifiedCapability = capabilities.find(
     (capability) => capability.kind === "verified_seller",
@@ -256,6 +293,7 @@ export function ListingCard({
   );
   const isHero = variant === "hero";
   const horizontal = variant === "list" || isHero;
+  const compactVerticalTitle = !horizontal && listing.title.trim().length > 48;
   const categoryParts = joinLabels([listing.categoryLabel, listing.brandLabel]);
   const rating = getListingSellerRatingPresentation(
     listing.seller?.rating,
@@ -265,17 +303,16 @@ export function ListingCard({
   const ratingLabel = rating
     ? labels.rating(rating.rating, rating.reviewCount)
     : undefined;
-  const isProfessional =
-    listing.publisherType === "professional" ||
-    listing.seller?.sellerType === "pro";
-  const showVerifiedBadge = !isProfessional && Boolean(verifiedCapability);
+  const { isProfessional, showVerifiedBadge } =
+    getListingSellerTrustPresentation(listing);
   const sellerSummaryVisible =
     isProfessional || showVerifiedBadge || Boolean(rating);
+  const verticalFacts = getListingVerticalFacts(listing, capabilityBadges);
   const baseAriaLabel = listingAccessibilityLabel(
     listing,
     price,
     ratingLabel,
-    badges[0]?.label,
+    badges.map(({ label }) => label).join(", "),
     isProfessional ? identityLabels.proAccessibility : undefined,
     published,
     [
@@ -288,17 +325,110 @@ export function ListingCard({
         : []),
     ],
   );
-  const ariaLabel = horizontal
-    ? joinLabels([
-        baseAriaLabel,
-        ...listing.characteristics.slice(0, 3),
-        listing.seller?.organizationName ?? listing.seller?.name,
-      ]).join(", ")
-    : baseAriaLabel;
+  const ariaLabel = joinLabels([
+    baseAriaLabel,
+    ...(horizontal ? listing.characteristics.slice(0, 3) : []),
+    listing.seller?.organizationName ?? listing.seller?.name,
+  ]).join(", ");
   const linkClassName = `focus-visible:outline-none ${
     horizontal ? "listing-card-list-link flex w-full" : "flex h-full flex-col"
   }`;
   const effectiveFavoriteAction = interactive ? favoriteAction : undefined;
+  const title = (
+    <h3
+      data-listing-card-title="true"
+      title={listing.title}
+      className={`text-text-main group-hover:text-primary ${
+        isHero
+          ? "truncate text-card-title font-bold lg:text-heading-xs 2xl:text-heading-sm"
+          : horizontal
+            ? "truncate text-card-title font-bold"
+            : `listing-card-title-vertical ${
+                compactVerticalTitle
+                  ? "text-sm font-semibold"
+                  : "text-card-title font-medium"
+              }`
+      }`}
+    >
+      {listing.title}
+    </h3>
+  );
+  const sellerSummary = sellerSummaryVisible ? (
+    <span
+      data-listing-card-seller-summary="true"
+      className={
+        horizontal
+          ? "ml-auto inline-flex min-w-0 max-w-full flex-wrap items-center justify-end gap-1"
+          : "flex min-h-control-target w-full min-w-0 items-center gap-1"
+      }
+    >
+      {isProfessional ? (
+        <ProBadge
+          label={identityLabels.pro}
+          accessibilityLabel={identityLabels.proAccessibility}
+          size="xs"
+          tone="primary"
+        />
+      ) : null}
+      {showVerifiedBadge && verifiedCapability ? (
+        <VerificationBadge
+          label={labels.verifiedSellerShort}
+          accessibilityLabel={verifiedCapability.label}
+          size="xs"
+          showIcon={false}
+        />
+      ) : null}
+      {rating ? (
+        <span
+          data-listing-card-rating="true"
+          role="img"
+          aria-label={ratingLabel}
+          title={ratingLabel}
+          className="inline-flex min-w-0 shrink items-center gap-0.5 overflow-hidden text-micro font-semibold text-text-main"
+        >
+          <SemanticIcon
+            name="star"
+            size="xs"
+            className="fill-primary text-primary"
+          />
+          <span className="shrink-0">{rating.rating}</span>
+          <span className="min-w-0 truncate font-normal text-text-muted">
+            ({rating.visualReviewCount})
+          </span>
+        </span>
+      ) : null}
+      {!horizontal ? (
+        <SemanticIcon
+          name="chevron-right"
+          size="sm"
+          className="ml-auto text-text-muted"
+        />
+      ) : null}
+    </span>
+  ) : null;
+  const priceRow = (
+    <div
+      data-listing-card-price-row="true"
+      className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1"
+    >
+      {price ? (
+        <Text
+          as="span"
+          size={horizontal || compactVerticalPrice ? "body-lg" : "card-price"}
+          weight="bold"
+          tone="primary"
+          data-listing-card-current-price="true"
+          className={`min-w-0 max-w-full flex-auto break-words leading-tight tracking-tight ${
+            isHero ? "lg:text-heading-sm 2xl:text-2xl" : ""
+          }`}
+          title={price}
+        >
+          {price}
+        </Text>
+      ) : null}
+      {horizontal ? sellerSummary : null}
+    </div>
+  );
   const linkContent = (
     <>
       <div
@@ -323,42 +453,34 @@ export function ListingCard({
               <SemanticIcon name="image-off" size="lg" />
             </div>
           ))}
-        {(!horizontal && capabilityBadges.length > 0) ||
-        (listing.photoCount !== undefined && listing.photoCount > 1) ? (
+        {listing.photoCount !== undefined && listing.photoCount > 1 ? (
           <div
             data-listing-card-media-details="true"
-            className={`pointer-events-none absolute inset-x-2.5 bottom-2.5 flex min-w-0 items-end gap-2 ${
-              !horizontal && capabilityBadges.length > 0
-                ? "justify-between"
-                : "justify-end"
-            }`}
+            className={`absolute flex min-w-0 items-end justify-end gap-2 ${horizontal ? "inset-x-2.5 bottom-2.5" : "inset-x-3 bottom-3"}`}
           >
-            {!horizontal ? (
-              <ListingCapabilityStrip capabilities={capabilityBadges} compact />
-            ) : null}
-            {listing.photoCount !== undefined && listing.photoCount > 1 ? (
-              <Badge
-                data-listing-card-photo-count="true"
-                variant="inverse"
-                size="xs"
-                aria-label={labels.photos(listing.photoCount)}
-                title={labels.photos(listing.photoCount)}
-                icon={<SemanticIcon name="camera" size="xs" />}
-                className="shrink-0 rounded-pill shadow-sm"
-              >
-                {new Intl.NumberFormat(locale).format(listing.photoCount)}
-              </Badge>
-            ) : null}
+            <Badge
+              data-listing-card-photo-count="true"
+              variant="inverse"
+              size="xs"
+              aria-label={labels.photos(listing.photoCount)}
+              title={labels.photos(listing.photoCount)}
+              icon={
+                <SemanticIcon name="camera" size={horizontal ? "xs" : "sm"} />
+              }
+              className={`ml-auto shrink-0 rounded-pill shadow-sm ${horizontal ? "" : "min-h-control-sm px-2"}`}
+            >
+              {new Intl.NumberFormat(locale).format(listing.photoCount)}
+            </Badge>
           </div>
         ) : null}
       </div>
       <div
         data-listing-card-content="true"
-        className={`${horizontal ? "listing-card-list-content py-2" : "py-1.5"} flex min-w-0 flex-1 flex-col gap-1 px-3`}
+        className={`${horizontal ? "listing-card-list-content gap-1 py-2" : "listing-card-content-vertical gap-1 py-2"} flex min-w-0 flex-1 flex-col px-3`}
       >
         <div
           data-listing-card-category-row="true"
-          className="flex min-w-0 items-center gap-1 text-micro font-medium leading-tight text-text-muted"
+          className={`flex min-w-0 items-center gap-1 font-medium leading-tight text-text-muted ${horizontal ? "text-micro" : "text-xs"} ${isHero ? "2xl:text-sm" : ""}`}
         >
           {categoryParts.map((part, index) => (
             <span key={`${index}:${part}`} className="contents">
@@ -370,80 +492,13 @@ export function ListingCard({
           ))}
         </div>
 
-        <div
-          data-listing-card-price-row="true"
-          className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1"
-        >
-          {price ? (
-            <Text
-              as="span"
-              size={horizontal ? "body-lg" : "body-md"}
-              weight="bold"
-              data-listing-card-current-price="true"
-              className={`min-w-0 max-w-full flex-auto break-words leading-tight tracking-tight ${
-                isHero ? "lg:text-heading-sm" : ""
-              }`}
-              title={price}
-            >
-              {price}
-            </Text>
-          ) : null}
-          {sellerSummaryVisible ? (
-            <span
-              data-listing-card-seller-summary="true"
-              className="ml-auto inline-flex min-w-0 max-w-full flex-wrap items-center justify-end gap-1"
-            >
-              {isProfessional ? (
-                <ProBadge
-                  label={identityLabels.pro}
-                  accessibilityLabel={identityLabels.proAccessibility}
-                  size="xs"
-                  tone="primary"
-                />
-              ) : null}
-              {showVerifiedBadge && verifiedCapability ? (
-                <VerificationBadge
-                  label={labels.verifiedSellerShort}
-                  accessibilityLabel={verifiedCapability.label}
-                  size="xs"
-                />
-              ) : null}
-              {rating ? (
-                <span
-                  data-listing-card-rating="true"
-                  role="img"
-                  aria-label={ratingLabel}
-                  title={ratingLabel}
-                  className="inline-flex min-w-0 shrink items-center gap-0.5 overflow-hidden text-overline font-semibold text-text-main"
-                >
-                  <SemanticIcon
-                    name="star"
-                    size="xs"
-                    className="fill-primary text-primary"
-                  />
-                  <span className="shrink-0">{rating.rating}</span>
-                  <span className="min-w-0 truncate font-normal text-text-muted">
-                    ({rating.visualReviewCount})
-                  </span>
-                </span>
-              ) : null}
-            </span>
-          ) : null}
-        </div>
+        {!horizontal ? priceRow : null}
 
-        <h3
-          data-listing-card-title="true"
-          title={listing.title}
-          className={`text-text-main group-hover:text-primary ${
-            isHero
-              ? "truncate text-card-title font-bold lg:text-heading-xs"
-              : horizontal
-                ? "truncate text-card-title font-bold"
-                : "listing-card-title-vertical text-xs font-semibold"
-          }`}
-        >
-          {listing.title}
-        </h3>
+        {!isHero ? title : null}
+
+        {horizontal ? priceRow : null}
+
+        {isHero ? title : null}
 
         {horizontal ? (
           <ListingDecisionDetails listing={listing} isHero={isHero} />
@@ -460,18 +515,36 @@ export function ListingCard({
         {isHero ? (
           <>
             <div className="min-w-0">
-              <ListingMeta city={listing.city} published={published} />
+              <ListingMeta city={listing.city} isHero published={published} />
             </div>
             {listing.seller ? (
-              <ListingSellerIdentity seller={listing.seller} isHero />
+              <ListingSellerIdentity
+                seller={listing.seller}
+                isHero
+                supportingLabel={
+                  listing.seller.responseTimeLabel ?? listing.seller.branchName
+                }
+              />
             ) : null}
           </>
-        ) : (
-          <div className="mt-auto flex min-w-0 items-end justify-between gap-3">
+        ) : horizontal ? (
+          <div className="mt-auto flex min-w-0 items-end justify-between gap-2">
             <ListingMeta city={listing.city} published={published} />
-            {variant === "list" && listing.seller ? (
-              <ListingSellerIdentity seller={listing.seller} isHero={false} />
+            {listing.seller ? (
+              <ListingSellerIdentity
+                seller={listing.seller}
+                isHero={false}
+                supportingLabel={
+                  listing.seller.responseTimeLabel ?? listing.seller.branchName
+                }
+              />
             ) : null}
+          </div>
+        ) : (
+          <div className="mt-auto flex min-w-0 flex-col gap-1">
+            <ListingMeta city={listing.city} published={published} vertical />
+            {sellerSummary}
+            <ListingVerticalFactStrip facts={verticalFacts} />
           </div>
         )}
       </div>
@@ -492,7 +565,7 @@ export function ListingCard({
       } ${
         horizontal
           ? "listing-card-list flex"
-          : `listing-card-standard ${variant === "showcase" ? "listing-card-showcase" : ""} flex h-full flex-col`
+          : `listing-card-standard ${variant === "showcase" ? "listing-card-showcase" : ""} flex flex-col`
       } ${className ?? ""}`}
     >
       {!interactive ? (
@@ -515,29 +588,46 @@ export function ListingCard({
       {badges.length || effectiveFavoriteAction ? (
         <div
           data-listing-card-top-overlay="true"
-          className={`pointer-events-none absolute inset-x-2.5 top-2.5 flex min-w-0 items-start justify-between gap-2 ${
-            horizontal ? "listing-card-list-overlay sm:px-2.5" : ""
+          className={`pointer-events-none absolute flex min-w-0 items-start justify-between gap-2 ${
+            horizontal
+              ? "listing-card-list-overlay inset-x-2.5 top-2.5 sm:px-2.5"
+              : "inset-x-3 top-3"
           }`}
         >
           {badges.length ? (
             <div
               data-listing-card-promotion="true"
-              className="flex min-w-0 flex-1"
+              className="flex min-w-0 flex-1 flex-col items-start gap-1"
             >
-              <Badge
-                variant="primary"
-                size="sm"
-                icon={<SemanticIcon name="zap" size="xs" />}
-                className="listing-card-promotion-badge max-w-full min-w-0 rounded-pill shadow-sm"
-              >
-                <span className="truncate">{badges[0]?.label}</span>
-              </Badge>
+              {badges.map((badge) => (
+                <Badge
+                  key={badge.kind}
+                  data-listing-badge={badge.kind}
+                  variant={badge.variant}
+                  size="sm"
+                  icon={
+                    <SemanticIcon
+                      name={badge.icon}
+                      filled={
+                        badge.kind === "featured" || badge.kind === "promotion"
+                      }
+                      size="xs"
+                      className="shrink-0"
+                    />
+                  }
+                  className="max-w-full min-w-0 rounded-pill shadow-sm"
+                >
+                  <span className="min-w-0 whitespace-normal break-words leading-tight">
+                    {badge.label}
+                  </span>
+                </Badge>
+              ))}
             </div>
           ) : null}
           {effectiveFavoriteAction ? (
             <div
               data-listing-card-actions="true"
-              className="pointer-events-auto flex shrink-0 items-center gap-1"
+              className="pointer-events-auto ml-auto flex shrink-0 items-center gap-1"
             >
               {effectiveFavoriteAction}
             </div>

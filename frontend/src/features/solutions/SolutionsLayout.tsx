@@ -291,7 +291,7 @@ function SolutionsHeader() {
           </a>
           <a
             href={`${rootHref}#catalogue`}
-            className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-xs font-bold text-text-inverse shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-xs font-bold text-on-primary shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {t("solutions.header.discover")}
           </a>

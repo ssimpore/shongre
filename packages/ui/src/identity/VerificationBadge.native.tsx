@@ -1,7 +1,7 @@
 import { Badge } from "../primitives/Badge.native";
 import type {
-  IdentityBadgeProps,
   IdentityBadgeSize,
+  VerificationBadgeProps,
   VerifiedIconSize,
 } from "./identity-status.types";
 import { VerifiedIcon } from "./VerifiedIcon.native";
@@ -17,12 +17,13 @@ export function VerificationBadge({
   label,
   size = "sm",
   accessibilityLabel,
-}: IdentityBadgeProps) {
+  showIcon = true,
+}: VerificationBadgeProps) {
   return (
     <Badge
       variant="success"
       size={size}
-      icon={<VerifiedIcon size={iconSizes[size]} />}
+      icon={showIcon ? <VerifiedIcon size={iconSizes[size]} /> : undefined}
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="image"
       testID="ui-verification-badge"

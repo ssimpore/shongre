@@ -11,6 +11,9 @@ import { themeInteraction } from "@shongre/design-tokens";
 
 export interface ScrollRailProps {
   children: React.ReactNode;
+  /** Places the heading and action together above the track. */
+  heading?: React.ReactNode;
+  action?: React.ReactNode;
   /** Applied to the scrolling track, alongside the overflow handling. */
   className?: string;
   /** Accessible name for the scroll controls (e.g. "onglets", "catégories"). */
@@ -64,6 +67,8 @@ export interface ScrollRailState {
  */
 export const ScrollRail: React.FC<ScrollRailProps> = ({
   children,
+  heading,
+  action,
   className = "",
   label = "contenu",
   snap = false,
@@ -122,59 +127,69 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           themeInteraction.railNudgeMinimumPx,
           el.clientWidth * themeInteraction.railNudgeViewportRatio,
         ),
-      behavior: "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth",
     });
   };
   const controlToneClass =
     controlTone === "surface"
       ? "rounded-pill bg-bg-surface text-primary border border-border-base shadow-md hover:bg-primary-light hover:border-primary-border hover:text-primary-hover"
-      : "rounded-pill bg-surface-inverse text-text-inverse border border-border-inverse-strong shadow-lg hover:bg-primary hover:border-primary hover:text-text-inverse";
+      : "rounded-pill bg-surface-inverse text-text-inverse border border-border-inverse-strong shadow-lg hover:bg-primary hover:border-primary hover:text-on-primary";
 
   return (
     <div className="scroll-rail-shell relative w-full max-w-full min-w-0">
-      {/* The track is focusable only while it actually overflows. A scroll
+      {heading ? (
+        <div className="mb-4 flex items-end justify-between gap-3 sm:mb-5">
+          <div className="min-w-0">{heading}</div>
+          <div className="shrink-0">{action}</div>
+        </div>
+      ) : null}
+      <div className="relative">
+        {/* The track is focusable only while it actually overflows. A scroll
           region that fits its content is not a region a keyboard user needs to
           enter, and giving it a permanent tab stop adds a dead stop to every
           page that uses a rail. When it does overflow, arrow keys work here and
           the two nudge buttons are reachable by Tab. */}
-      <div
-        ref={trackRef}
-        tabIndex={overflow.left || overflow.right ? 0 : -1}
-        role={overflow.left || overflow.right ? "region" : undefined}
-        aria-label={overflow.left || overflow.right ? label : undefined}
-        className={`overflow-x-auto no-scrollbar focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-          snap ? "snap-x snap-mandatory scroll-px-4 sm:scroll-px-0" : ""
-        } ${className}`}
-      >
-        {children}
-      </div>
+        <div
+          ref={trackRef}
+          tabIndex={overflow.left || overflow.right ? 0 : -1}
+          role={overflow.left || overflow.right ? "region" : undefined}
+          aria-label={overflow.left || overflow.right ? label : undefined}
+          className={`overflow-x-auto no-scrollbar focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+            snap ? "snap-x snap-mandatory scroll-px-4 sm:scroll-px-0" : ""
+          } ${className}`}
+        >
+          {children}
+        </div>
 
-      {/* No gradient fades. They read as a shadow smeared across the edge of
+        {/* No gradient fades. They read as a shadow smeared across the edge of
           the content rather than as a hint, and over a card rail they dimmed the
           artwork of whichever card sat at the boundary. The scroll buttons are
           the affordance; snapping (see `snap`) is what stops an item being
           stranded half-clipped in the first place. */}
-      {overflow.left && (
-        <button
-          type="button"
-          onClick={() => nudge(-1)}
-          aria-label={t("common.scrollRailLeft", { label })}
-          className={`absolute left-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
-        >
-          <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
-        </button>
-      )}
+        {overflow.left && (
+          <button
+            type="button"
+            onClick={() => nudge(-1)}
+            aria-label={t("common.scrollRailLeft", { label })}
+            className={`absolute left-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
+          >
+            <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
+          </button>
+        )}
 
-      {overflow.right && (
-        <button
-          type="button"
-          onClick={() => nudge(1)}
-          aria-label={t("common.scrollRailRight", { label })}
-          className={`absolute right-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
-        >
-          <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
-        </button>
-      )}
+        {overflow.right && (
+          <button
+            type="button"
+            onClick={() => nudge(1)}
+            aria-label={t("common.scrollRailRight", { label })}
+            className={`absolute right-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
+          >
+            <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
+          </button>
+        )}
+      </div>
     </div>
   );
 };

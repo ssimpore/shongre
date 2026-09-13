@@ -218,7 +218,7 @@ function PipelineBoard({
                 onClick={() => setSelectedStageId(stage.id)}
                 className={`inline-flex h-control-sm shrink-0 items-center gap-1.5 rounded-control border px-3 text-micro font-semibold ${
                   selectedStage.id === stage.id
-                    ? "border-primary bg-primary-light text-primary"
+                    ? "border-primary bg-primary-light text-text-main"
                     : "border-transparent text-text-secondary hover:bg-bg-muted"
                 }`}
               >
@@ -597,7 +597,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
       detail: "Voir les entreprises",
       view: "companies" as const,
       icon: UsersRound,
-      tone: "bg-primary-light text-primary",
+      tone: "bg-primary-light text-text-main",
     },
     {
       label: "Opportunités ouvertes",

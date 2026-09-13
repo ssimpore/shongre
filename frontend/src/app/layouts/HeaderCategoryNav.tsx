@@ -1,4 +1,4 @@
-import { breakpoints, motionDurationMs } from "@shongre/design-tokens";
+import { breakpoints, colors, motionDurationMs } from "@shongre/design-tokens";
 import type { MarketContext } from "@shongre/contracts/market-country";
 import type {
   TaxonomyHeaderCategoryItem,
@@ -12,7 +12,14 @@ import React, {
   useState,
 } from "react";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
+  MoreHorizontal,
+  Percent,
+} from "lucide-react";
 import { services } from "../../api/client/service-registry";
 import { routes } from "../../configuration/routes";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
@@ -117,7 +124,7 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
   maxDepth,
   onNavigate,
 }) => {
-  const { locale, t } = useTranslation();
+  const { locale } = useTranslation();
   const descendants = collectDescendants(node, 1, maxDepth);
   const headingId = `category-mega-menu-group-${node.id.replaceAll(".", "-")}`;
 
@@ -126,51 +133,53 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
       role="group"
       aria-labelledby={headingId}
       data-category-id={node.id}
-      className="min-w-0"
+      className="min-w-0 rounded-xl border border-border-subtle p-2"
     >
       <h3
         id={headingId}
         role="presentation"
-        className="text-sm font-bold text-text-deep"
+        className="text-sm font-bold text-text-main"
       >
         <Link
           role="menuitem"
           to={getTaxonomyDestination(root, node)}
           onClick={onNavigate}
-          className={`inline-flex max-w-full rounded-sm hover:text-primary ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+          className={`group flex min-h-control-md w-full items-center justify-between gap-3 rounded-control px-3 py-2 hover:bg-primary-surface-soft focus-visible:bg-primary-surface-soft ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
         >
-          <span className="truncate">
+          <span className="min-w-0 leading-5">
             {getTaxonomyLabel(node, { compact: true, locale })}
           </span>
+          <ArrowRight
+            aria-hidden="true"
+            className="h-icon-sm w-icon-sm shrink-0 text-text-muted group-hover:text-primary group-focus-visible:text-primary"
+          />
         </Link>
       </h3>
 
       {descendants.length > 0 && (
-        <ul role="none" className="mt-2 space-y-1">
+        <ul
+          role="none"
+          className="mt-1 space-y-0.5 border-t border-border-soft pt-1"
+        >
           {descendants.map(({ node: child, depth }) => (
             <li role="none" key={child.id}>
               <Link
                 role="menuitem"
                 to={getTaxonomyDestination(root, child)}
                 onClick={onNavigate}
-                className={`block min-h-7 rounded-control py-1 pr-2 text-sm font-medium leading-5 text-text-supporting hover:bg-bg-subtle hover:text-primary ${depth > 1 ? "pl-4" : "pl-2"} ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+                className={`group flex min-h-8 items-center justify-between gap-2 rounded-control py-1.5 pr-3 text-sm leading-5 text-text-muted hover:bg-primary-surface-soft hover:text-text-main focus-visible:bg-primary-surface-soft focus-visible:text-text-main ${depth > 1 ? "pl-6" : "pl-3"} ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
               >
-                {getTaxonomyLabel(child, { compact: true, locale })}
+                <span className="min-w-0">
+                  {getTaxonomyLabel(child, { compact: true, locale })}
+                </span>
+                <ChevronRight
+                  aria-hidden="true"
+                  className="h-icon-sm w-icon-sm shrink-0 text-primary opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100"
+                />
               </Link>
             </li>
           ))}
         </ul>
-      )}
-
-      {descendants.length > 0 && (
-        <Link
-          role="menuitem"
-          to={getTaxonomyDestination(root, node)}
-          onClick={onNavigate}
-          className={`mt-2 inline-flex min-h-7 items-center rounded-control px-2 py-1 text-xs font-bold text-primary hover:bg-primary-light hover:text-primary-hover ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
-        >
-          {t("categories.categoriesPage.voirTout")}
-        </Link>
       )}
     </section>
   );
@@ -192,22 +201,31 @@ const CategoryMegaMenuSidebar: React.FC<CategoryMegaMenuSidebarProps> = ({
     <div
       role="group"
       aria-label={label}
-      className="min-w-0 border-l-4 border-primary bg-bg-subtle p-5 xl:p-6"
+      className="min-w-0 border-r border-border-subtle bg-primary-surface-faint p-6"
     >
-      <p className="text-micro font-bold uppercase tracking-wider text-text-emphasis">
+      <p className="text-micro font-bold uppercase tracking-wider text-text-muted">
         {t("nav.category.active")}
       </p>
-      <div className="mt-3 flex items-center gap-3">
-        <CategoryIcon category={root} size="md" withBackground />
+      <div className="mt-5 flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary"
+        >
+          <CategoryIcon
+            category={root}
+            size="lg"
+            color={colors.action.onPrimary}
+          />
+        </span>
         <h2
           role="presentation"
-          className="min-w-0 text-base font-bold text-text-deep"
+          className="min-w-0 text-lg font-bold leading-snug text-text-main"
         >
           {label}
         </h2>
       </div>
       {root.description && (
-        <p className="mt-4 text-xs leading-relaxed text-text-supporting">
+        <p className="mt-4 text-sm leading-relaxed text-text-muted">
           {root.description}
         </p>
       )}
@@ -215,9 +233,13 @@ const CategoryMegaMenuSidebar: React.FC<CategoryMegaMenuSidebarProps> = ({
         role="menuitem"
         to={getTaxonomyDestination(root)}
         onClick={onNavigate}
-        className={`mt-5 inline-flex min-h-8 items-center rounded-control bg-bg-surface px-3 py-1.5 text-xs font-bold text-primary shadow-2xs hover:bg-primary-light hover:text-primary-hover ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+        className={`mt-6 flex min-h-control-md items-center justify-between gap-2 rounded-control bg-surface-inverse px-3 py-2 text-xs font-bold text-text-inverse shadow-2xs hover:bg-surface-inverse-hover ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
       >
         {t("categories.categoriesPage.voirToutesLesAnnonces")}
+        <ArrowRight
+          className="h-icon-sm w-icon-sm shrink-0"
+          aria-hidden="true"
+        />
       </Link>
     </div>
   );
@@ -250,14 +272,11 @@ const CategoryMegaMenu: React.FC<CategoryMegaMenuProps> = ({
       onKeyDown={onKeyDown}
       className="absolute inset-x-0 top-full z-dropdown block max-h-menu-max min-w-0 overflow-y-auto overscroll-contain rounded-b-card border border-t-0 border-border-base bg-bg-surface shadow-dropdown"
     >
-      <div
-        role="presentation"
-        className="grid min-w-0 grid-cols-sidebar-compact"
-      >
+      <div role="presentation" className="grid min-w-0 grid-cols-sidebar">
         <CategoryMegaMenuSidebar root={root} onNavigate={onNavigate} />
         <div
           role="presentation"
-          className="grid min-w-0 grid-cols-2 content-start gap-x-8 gap-y-6 p-6 xl:grid-cols-3 xl:p-7"
+          className="grid min-w-0 grid-cols-2 content-start items-start gap-4 p-5 xl:grid-cols-3 xl:p-6"
         >
           {(root.children ?? []).map((node) => (
             <CategoryGroup
@@ -302,21 +321,24 @@ const CategoryOverviewMenu: React.FC<CategoryOverviewMenuProps> = ({
       onKeyDown={onKeyDown}
       className="absolute inset-x-0 top-full z-dropdown block max-h-menu-max min-w-0 overflow-y-auto overscroll-contain rounded-b-card border border-t-0 border-border-base bg-bg-surface shadow-dropdown"
     >
-      <div
-        role="presentation"
-        className="grid min-w-0 grid-cols-sidebar-compact"
-      >
+      <div role="presentation" className="grid min-w-0 grid-cols-sidebar">
         <div
           role="group"
           aria-label={label}
-          className="min-w-0 border-l-4 border-primary bg-bg-subtle p-5 xl:p-6"
+          className="min-w-0 border-r border-border-subtle bg-primary-surface-faint p-6"
         >
-          <p className="text-micro font-bold uppercase tracking-wider text-text-emphasis">
+          <p className="text-micro font-bold uppercase tracking-wider text-text-muted">
             {headingLabel}
           </p>
+          <span
+            aria-hidden="true"
+            className="mt-5 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-on-primary"
+          >
+            <Layers className="h-icon-xl w-icon-xl" />
+          </span>
           <h2
             role="presentation"
-            className="mt-3 text-base font-bold text-text-deep"
+            className="mt-4 text-lg font-bold leading-snug text-text-main"
           >
             {label}
           </h2>
@@ -324,14 +346,18 @@ const CategoryOverviewMenu: React.FC<CategoryOverviewMenuProps> = ({
             role="menuitem"
             to={routes.categories()}
             onClick={onNavigate}
-            className={`mt-5 inline-flex min-h-8 items-center rounded-control bg-bg-surface px-3 py-1.5 text-xs font-bold text-primary shadow-2xs hover:bg-primary-light hover:text-primary-hover ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+            className={`mt-6 flex min-h-control-md items-center justify-between gap-2 rounded-control bg-surface-inverse px-3 py-2 text-xs font-bold text-text-inverse shadow-2xs hover:bg-surface-inverse-hover ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
           >
             {t("categories.categoriesPage.voirTout")}
+            <ArrowRight
+              className="h-icon-sm w-icon-sm shrink-0"
+              aria-hidden="true"
+            />
           </Link>
         </div>
         <div
           role="presentation"
-          className="grid min-w-0 grid-cols-2 content-start gap-x-8 gap-y-6 p-6 xl:grid-cols-3 xl:p-7"
+          className="grid min-w-0 grid-cols-2 content-start items-start gap-4 p-5 xl:grid-cols-3 xl:p-6"
         >
           {roots.map((root) => (
             <CategoryGroup
@@ -863,14 +889,14 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
           aria-label={t("nav.categoryNavigation")}
           className="no-scrollbar overflow-x-auto scroll-smooth"
         >
-          <ul className="flex min-h-control-md w-max min-w-full items-stretch justify-start sm:justify-center">
+          <ul className="flex min-h-control-touch w-max min-w-full items-stretch justify-start sm:justify-center">
             {headerLoadFailed ? (
               <li className="flex items-center gap-2 text-xs text-text-muted">
                 <span role="status">{t("nav.category.unavailable")}</span>
                 <button
                   type="button"
                   onClick={() => void loadHeaderConfiguration()}
-                  className={`min-h-control-md rounded-control px-2 font-semibold text-primary ${CONTROL_FOCUS_CLASS}`}
+                  className={`min-h-control-md rounded-control px-2 font-semibold text-text-main underline decoration-primary underline-offset-4 ${CONTROL_FOCUS_CLASS}`}
                 >
                   {t("common.retry")}
                 </button>
@@ -910,15 +936,9 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                 <React.Fragment
                   key={item.kind === "category" ? item.categoryId : item.target}
                 >
-                  {index > 0 && (
-                    <li
-                      aria-hidden="true"
-                      className="flex items-center px-1.5 text-sm font-bold text-text-emphasis"
-                    >
-                      ·
-                    </li>
-                  )}
-                  <li className="flex shrink-0">
+                  <li
+                    className={`flex shrink-0 ${item.kind === "link" && item.target === "promotions" && index > 0 ? "ml-2 border-l border-border-subtle pl-2" : ""}`}
+                  >
                     <Link
                       ref={(element) => {
                         if (!menuKey) return;
@@ -963,13 +983,22 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                       aria-haspopup={hasMenu ? "menu" : undefined}
                       aria-controls={hasMenu ? CATEGORY_MENU_ID : undefined}
                       aria-expanded={hasMenu ? isExpanded : undefined}
-                      className={`relative inline-flex min-h-control-md items-center whitespace-nowrap rounded-control px-1.5 text-sm tracking-tight ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary-ring ${
+                      className={`relative inline-flex min-h-control-touch items-center gap-2 whitespace-nowrap rounded-control px-2.5 text-sm tracking-tight lg:px-3 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary-ring ${
                         isActive || isExpanded
-                          ? "bg-primary-light font-bold text-primary after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-primary md:after:inset-x-2"
-                          : "font-medium text-text-strong hover:bg-bg-subtle hover:text-primary"
+                          ? "bg-primary-light font-bold text-text-main after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-primary md:after:inset-x-2"
+                          : "font-medium text-text-strong hover:bg-bg-subtle hover:text-text-main"
                       }`}
                     >
-                      {label}
+                      <span aria-hidden="true" className="shrink-0">
+                        {item.kind === "category" ? (
+                          <CategoryIcon category={item} size="md" />
+                        ) : item.target === "promotions" ? (
+                          <Percent className="h-icon-md w-icon-md text-primary" />
+                        ) : (
+                          <MoreHorizontal className="h-icon-md w-icon-md" />
+                        )}
+                      </span>
+                      <span>{label}</span>
                     </Link>
                   </li>
                 </React.Fragment>

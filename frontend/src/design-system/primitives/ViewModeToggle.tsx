@@ -28,6 +28,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
   size = "md",
 }) => {
   const isSm = size === "sm";
+  const iconClassName = isSm ? "h-icon-sm w-icon-sm" : "h-icon-md w-icon-md";
   const supportedModes =
     modes ?? (showMap ? ["grid", "list", "map"] : ["grid", "list"]);
 
@@ -35,10 +36,6 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
     <div
       role="group"
       aria-label="Mode d'affichage des annonces"
-      /* Pinned to the shared control heights rather than sized by its own
-         padding. It rendered 28px while the filter button and the sort control
-         beside it were 32px, so the toolbar had one item sitting 2px inset from
-         its neighbours — visible as a stagger on every listing surface. */
       className={`inline-flex items-center ${
         isSm ? "h-control-sm" : "h-control-md"
       } bg-bg-muted/90 border border-border-base ${CONTROL_RADIUS_CLASS} p-0.5 shadow-2xs shrink-0 select-none ${className}`}
@@ -50,7 +47,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
           onClick={() => onChange("grid")}
           size={size}
         >
-          <LayoutGrid className="w-icon-sm h-icon-sm" />
+          <LayoutGrid className={iconClassName} />
           <span className="hidden sm:inline">Grille</span>
         </ViewModeButton>
       ) : null}
@@ -62,7 +59,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
           onClick={() => onChange("list")}
           size={size}
         >
-          <List className="w-icon-sm h-icon-sm" />
+          <List className={iconClassName} />
           <span className="hidden sm:inline">Liste</span>
         </ViewModeButton>
       ) : null}
@@ -74,7 +71,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
           onClick={() => onChange("map")}
           size={size}
         >
-          <MapIcon className="w-icon-sm h-icon-sm" />
+          <MapIcon className={iconClassName} />
           <span className="hidden sm:inline">Carte</span>
         </ViewModeButton>
       ) : null}
@@ -104,13 +101,14 @@ const ViewModeButton: React.FC<ViewModeButtonProps> = ({
     onClick={onClick}
     className={cn(
       "h-full flex items-center gap-1.5 font-semibold cursor-pointer",
-      "px-1.5 sm:px-2 text-micro sm:text-xs",
+      size === "md"
+        ? "px-2 text-xs sm:px-3 sm:text-sm"
+        : "px-1.5 text-micro sm:px-2 sm:text-xs",
       CONTROL_MOTION_CLASS,
       CONTROL_FOCUS_CLASS,
       active
-        ? "rounded-lg bg-primary text-text-inverse shadow-xs"
+        ? "rounded-lg bg-primary text-on-primary shadow-xs"
         : "rounded-sm bg-transparent text-text-secondary hover:text-text-main hover:bg-bg-surface/70",
-      size === "md" && "sm:px-2.5",
     )}
   >
     {children}

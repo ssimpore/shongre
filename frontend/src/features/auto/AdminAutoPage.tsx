@@ -443,7 +443,7 @@ export const AdminAutoPage: React.FC = () => {
     ) : (
       <section className="rounded-card border border-border-base bg-bg-surface p-6 shadow-xs">
         <div className="flex gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-card bg-primary-light text-primary">
+          <span className="grid h-10 w-10 place-items-center rounded-card bg-primary-light text-text-main">
             {tab === "Modération" ? (
               <ShieldCheck className="h-icon-md w-icon-md" />
             ) : tab === "Journaux" ? (

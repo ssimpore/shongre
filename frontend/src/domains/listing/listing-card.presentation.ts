@@ -48,9 +48,8 @@ function presentPublishedDecisionDetails(
   return (taxonomy?.cardCharacteristics ?? [])
     .map((field) => ({
       label: `${localizeTaxonomyLabels(field.labels, locale)} : ${localizeTaxonomyLabels(field.values, locale)}`,
-      icon: "tag" as const,
-    }))
-    .slice(0, 3);
+      icon: field.icon ?? ("tag" as const),
+    }));
 }
 
 function presentEmploymentDecisionDetails(
@@ -165,7 +164,7 @@ export function presentPropertyListingCard(
     marketCode,
   );
   const decisionDetails = decisionDetailsProjection(
-    presentPublishedDecisionDetails(property.taxonomy, locale),
+    presentPublishedDecisionDetails(property.taxonomy, locale).slice(0, 3),
   );
   return {
     id: property.id,
@@ -221,7 +220,12 @@ export function presentVehicleListingCard(
     marketCode,
   );
   const decisionDetails = decisionDetailsProjection(
-    presentPublishedDecisionDetails(vehicle.taxonomy, locale),
+    presentPublishedDecisionDetails(vehicle.taxonomy, locale).filter(
+      ({ label }) =>
+        !label
+          .toLocaleLowerCase(locale)
+          .endsWith(`: ${vehicle.makeLabel.toLocaleLowerCase(locale)}`),
+    ).slice(0, 3),
   );
   return {
     id: vehicle.id,

@@ -10,9 +10,12 @@ import { useTranslation } from "../../../i18n/I18nProvider";
 import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
 import { FilterChip } from "../../../design-system/primitives/FilterChip";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import type { UserPresence } from "@shongre/shared/presence";
+import { PresenceStatus } from "./PresenceStatus";
 
 interface ConversationListProps {
   conversations: ConversationPreview[];
+  presence: Readonly<Record<string, UserPresence>>;
   activeConversationId: string | null;
   onSelectConversation: (id: string) => void;
   selectedFilter: InboxFilterTab;
@@ -24,6 +27,7 @@ interface ConversationListProps {
 
 export const ConversationList: React.FC<ConversationListProps> = ({
   conversations,
+  presence,
   activeConversationId,
   onSelectConversation,
   selectedFilter,
@@ -203,6 +207,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     </span>
                   </div>
 
+                  <PresenceStatus presence={presence[conv.id]} />
+
                   {/* Listing Title Context */}
                   {listingContext && (
                     <div className="text-micro font-semibold text-primary truncate mb-1">
@@ -220,7 +226,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     </p>
 
                     {hasUnread && (
-                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-micro font-bold bg-primary text-text-inverse">
+                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-micro font-bold bg-primary text-on-primary">
                         {conv.unreadCount}
                       </span>
                     )}

@@ -1,18 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Select } from "../../design-system";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   User,
-  Briefcase,
   ArrowRight,
-  ShieldCheck,
   Check,
   Building2,
   MapPin,
   Mail,
   Phone,
   AlertCircle,
-  Sparkles,
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -61,10 +58,10 @@ export const RegisterChoicePage: React.FC = () => {
   const returnTo = useRegistrationReturn(routes.workspace.overview());
   const [selectedType, setSelectedType] = useState<
     "individual" | "professional"
-  >("individual");
+  >("professional");
 
-  const handleContinue = () => {
-    if (selectedType === "individual") {
+  const handleContinue = (accountType: "individual" | "professional") => {
+    if (accountType === "individual") {
       navigate(routes.auth.registerIndividual(returnTo));
     } else {
       navigate(routes.auth.registerProfessional(returnTo));
@@ -72,76 +69,30 @@ export const RegisterChoicePage: React.FC = () => {
   };
 
   return (
-    // 3.5rem is the FocusedLayout header. The brand mark it already shows is
-    // why there is no logo repeated here.
-    <div className="min-h-auth-shell-min flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-surface-soft/70 via-bg-surface to-surface-soft/50">
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold mb-3">
-            <Sparkles className="w-icon-sm h-icon-sm" />
-            <span>Inscription gratuite</span>
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl font-bold text-text-main tracking-tight">
-            {t("auth.registerPages.creerVotreCompteShongre")}
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm text-text-supporting max-w-md mx-auto">
-            {t("auth.registerPages.rejoignezLaCommunauteDeCommerce")}
-          </p>
-        </div>
-
-        <div className="bg-bg-surface rounded-2xl border border-border-disabled/90 shadow-xl shadow-border-disabled/40 p-6 sm:p-8 space-y-6">
-          <div>
-            <label className="block text-xs font-semibold text-text-main uppercase tracking-wider mb-3">
-              {t("auth.registerPages.1SelectionnezVotreProfilD")}
-            </label>
-            <AccountTypeSelector
-              selectedType={selectedType}
-              onChange={setSelectedType}
-            />
-          </div>
-
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border-soft">
-            <div className="text-xs text-text-tertiary text-center sm:text-left">
-              Vous avez déjà un compte ?{" "}
-              <Link
-                to={routes.auth.login(returnTo)}
-                className="font-bold text-primary hover:underline"
-              >
-                Se connecter
-              </Link>
-            </div>
-
-            <Button
-              type="button"
-              variant={selectedType === "professional" ? "pro" : "primary"}
-              size="md"
-              className="w-full sm:w-auto"
-              onClick={handleContinue}
-              rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
-            >
-              Continuer en{" "}
-              {selectedType === "professional"
-                ? "Professionnel"
-                : "Particulier"}
-            </Button>
-          </div>
-        </div>
-
-        {/* FAQ note */}
-        <div className="mt-6 p-4 rounded-xl bg-surface-muted/60 border border-border-disabled text-xs text-text-supporting flex items-start gap-3">
-          <ShieldCheck className="w-icon-lg h-icon-lg text-success shrink-0 mt-0.5" />
-          <div>
-            <strong className="text-text-main">
-              {t("auth.registerPages.evolutionDeCompteSouple")}
-            </strong>{" "}
-            Vous commencez en tant que particulier et souhaitez ouvrir une
-            boutique plus tard ? Vous pourrez passer en compte professionnel en
-            1 clic depuis vos paramètres.
-          </div>
-        </div>
-      </div>
-    </div>
+    <AuthLayout
+      showLegalNotice
+      width="wide"
+      contentFrame="open"
+      title={t("auth.registerPages.chooseProfile")}
+      subtitle={t("auth.registerPages.chooseProfileDescription")}
+      footerLink={{
+        text: t("auth.frame.alreadyMember"),
+        linkText: t("auth.frame.signIn"),
+        to: routes.auth.login(returnTo),
+      }}
+    >
+      <fieldset>
+        <legend className="sr-only">
+          {t("auth.registerPages.1SelectionnezVotreProfilD")}
+        </legend>
+        <AccountTypeSelector
+          selectedType={selectedType}
+          onChange={setSelectedType}
+          onContinue={handleContinue}
+          layout="columns"
+        />
+      </fieldset>
+    </AuthLayout>
   );
 };
 
@@ -169,10 +120,12 @@ export const RegisterIndividualPage: React.FC = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [socialPending, setSocialPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (socialPending || isLoading) return;
     setErrorMessage(null);
 
     if (!termsAccepted) {
@@ -219,194 +172,203 @@ export const RegisterIndividualPage: React.FC = () => {
 
   return (
     <AuthLayout
+      width="compact"
+      showLegalNotice
       title="Inscription Particulier"
       subtitle={t("auth.registerPages.creezVotreCompteGratuitEn")}
-      badgeText="Compte Particulier Gratuit"
       footerLink={{
-        text: "Vous êtes un professionnel ?",
-        linkText: "Créer un compte Pro",
-        to: routes.auth.registerProfessional(returnTo),
+        text: t("auth.frame.alreadyMember"),
+        linkText: t("auth.frame.signIn"),
+        to: routes.auth.login(returnTo),
       }}
     >
+      <SocialLoginButtons
+        accountType="individual"
+        returnTo={returnTo}
+        disabled={isLoading}
+        onPendingChange={setSocialPending}
+      />
       {errorMessage && (
-        <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
+        <div
+          role="alert"
+          className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5"
+        >
           <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0 mt-0.5" />
           <div className="leading-relaxed">{errorMessage}</div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label
-            htmlFor="reg-name"
-            className="block text-xs font-semibold text-text-strong mb-1.5"
-          >
-            {t("auth.registerPages.nomEtPrenomOuPseudonyme")}
-            <span className="text-primary">*</span>
-          </label>
-          <div className="relative">
-            <input
-              id="reg-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="ex: Thomas Laurent"
-              required
-              autoComplete="name"
-              className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-            />
-            <User className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-          </div>
-        </div>
-
-        <div>
-          <label
-            htmlFor="reg-email"
-            className="block text-xs font-semibold text-text-strong mb-1.5"
-          >
-            Adresse email <span className="text-primary">*</span>
-          </label>
-          <div className="relative">
-            <input
-              id="reg-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="thomas.laurent@exemple.fr"
-              required
-              autoComplete="email"
-              className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-            />
-            <Mail className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <form onSubmit={handleSubmit}>
+        <fieldset disabled={socialPending || isLoading} className="space-y-4">
           <div>
             <label
-              htmlFor="reg-country"
-              className="block text-xs font-semibold text-text-strong mb-1.5"
+              htmlFor="reg-name"
+              className="block text-sm font-semibold text-text-strong mb-1.5"
             >
-              Pays <span className="text-primary">*</span>
+              {t("auth.registerPages.nomEtPrenomOuPseudonyme")}
+              <span className="text-primary">*</span>
             </label>
-            <Select
-              className="w-full"
-              id="reg-country"
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-            >
-              {availableMarkets.map((m) => (
-                <option key={m.code} value={m.code}>
-                  {m.flag} {m.name}
-                </option>
-              ))}
-            </Select>
+            <div className="relative">
+              <input
+                id="reg-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="ex: Thomas Laurent"
+                required
+                autoComplete="name"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+              <User className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
           </div>
 
           <div>
             <label
-              htmlFor="reg-code-postal"
-              className="block text-xs font-semibold text-text-strong mb-1.5"
+              htmlFor="reg-email"
+              className="block text-sm font-semibold text-text-strong mb-1.5"
             >
-              Code Postal <span className="text-primary">*</span>
+              Adresse email <span className="text-primary">*</span>
             </label>
-            <input
-              id="reg-code-postal"
-              type="text"
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
-              placeholder="Code postal"
-              required
-              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-            />
+            <div className="relative">
+              <input
+                id="reg-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="thomas.laurent@exemple.fr"
+                required
+                autoComplete="email"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+              <Mail className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="reg-ville"
-              className="block text-xs font-semibold text-text-strong mb-1.5"
-            >
-              Ville <span className="text-primary">*</span>
-            </label>
-            <input
-              id="reg-ville"
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="ex: Paris"
-              required
-              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-            />
-          </div>
-        </div>
-
-        <div>
-          <PasswordField
-            id="reg-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            showStrength
-            required
-            autoComplete="new-password"
-          />
-        </div>
-
-        {/* Consents */}
-        <div className="space-y-2.5 pt-2 border-t border-border-soft">
-          <label className="flex items-start gap-2 text-xs text-text-emphasis cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={termsAccepted}
-              onChange={(e) => setTermsAccepted(e.target.checked)}
-              required
-              className="w-4 h-4 mt-0.5 rounded border-border-prominent text-primary focus:ring-primary shrink-0"
-            />
-            <span>
-              J'ai lu et j'accepte les{" "}
-              <Link
-                to="/conditions-utilisation"
-                target="_blank"
-                className="font-bold text-primary hover:underline"
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label
+                htmlFor="reg-country"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
               >
-                {t("auth.registerPages.conditionsGeneralesDUtilisation")}
-              </Link>{" "}
-              et la{" "}
-              <Link
-                to="/confidentialite"
-                target="_blank"
-                className="font-bold text-primary hover:underline"
+                Pays <span className="text-primary">*</span>
+              </label>
+              <Select
+                className="w-full"
+                id="reg-country"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
               >
-                {t("auth.registerPages.politiqueDeConfidentialite")}
-              </Link>{" "}
-              de Shongre. <span className="text-primary">*</span>
-            </span>
-          </label>
+                {availableMarkets.map((m) => (
+                  <option key={m.code} value={m.code}>
+                    {m.flag} {m.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
 
-          <label className="flex items-start gap-2 text-xs text-text-supporting cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={marketingConsent}
-              onChange={(e) => setMarketingConsent(e.target.checked)}
-              className="w-4 h-4 mt-0.5 rounded border-border-prominent text-primary focus:ring-primary shrink-0"
+            <div>
+              <label
+                htmlFor="reg-code-postal"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
+              >
+                Code Postal <span className="text-primary">*</span>
+              </label>
+              <input
+                id="reg-code-postal"
+                type="text"
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                placeholder="Code postal"
+                required
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="reg-ville"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
+              >
+                Ville <span className="text-primary">*</span>
+              </label>
+              <input
+                id="reg-ville"
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="ex: Paris"
+                required
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+            </div>
+          </div>
+
+          <div>
+            <PasswordField
+              id="reg-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              showStrength
+              required
+              autoComplete="new-password"
             />
-            <span>{t("auth.registerPages.jeSouhaiteRecevoirParEmail")}</span>
-          </label>
-        </div>
+          </div>
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="md"
-          className="w-full mt-2"
-          isLoading={isLoading}
-          rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
-        >
-          {t("auth.registerPages.creerMonCompteParticulier")}
-        </Button>
+          {/* Consents */}
+          <div className="space-y-2.5 pt-2 border-t border-border-soft">
+            <label className="flex items-start gap-2 text-xs text-text-emphasis cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                required
+                className="w-4 h-4 mt-0.5 rounded border-border-prominent text-primary focus:ring-primary shrink-0"
+              />
+              <span>
+                J'ai lu et j'accepte les{" "}
+                <Link
+                  to="/conditions-utilisation"
+                  target="_blank"
+                  className="font-bold text-text-main underline decoration-primary underline-offset-4"
+                >
+                  {t("auth.registerPages.conditionsGeneralesDUtilisation")}
+                </Link>{" "}
+                et la{" "}
+                <Link
+                  to="/confidentialite"
+                  target="_blank"
+                  className="font-bold text-text-main underline decoration-primary underline-offset-4"
+                >
+                  {t("auth.registerPages.politiqueDeConfidentialite")}
+                </Link>{" "}
+                de Shongre. <span className="text-primary">*</span>
+              </span>
+            </label>
+
+            <label className="flex items-start gap-2 text-xs text-text-supporting cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={marketingConsent}
+                onChange={(e) => setMarketingConsent(e.target.checked)}
+                className="w-4 h-4 mt-0.5 rounded border-border-prominent text-primary focus:ring-primary shrink-0"
+              />
+              <span>{t("auth.registerPages.jeSouhaiteRecevoirParEmail")}</span>
+            </label>
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            className="w-full mt-2"
+            isLoading={isLoading}
+            rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
+          >
+            {t("auth.registerPages.creerMonCompteParticulier")}
+          </Button>
+        </fieldset>
       </form>
-      <div className="mt-6">
-        <SocialLoginButtons accountType="individual" returnTo={returnTo} />
-      </div>
     </AuthLayout>
   );
 };
@@ -436,6 +398,15 @@ export const RegisterProPage: React.FC = () => {
   const { activeMarket, availableMarkets } = useMarketLocation();
 
   const [step, setStep] = useState<1 | 2>(1);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const previousStep = useRef(step);
+  useEffect(() => {
+    if (previousStep.current !== step) {
+      previousStep.current = step;
+      headingRef.current?.focus();
+      headingRef.current?.scrollIntoView({ block: "center" });
+    }
+  }, [step]);
 
   // Step 1: Contact & Account
   const [name, setName] = useState("");
@@ -457,10 +428,12 @@ export const RegisterProPage: React.FC = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [socialPending, setSocialPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
+    if (socialPending || isLoading) return;
     setErrorMessage(null);
 
     if (!name.trim() || !email.trim()) {
@@ -478,6 +451,7 @@ export const RegisterProPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (socialPending || isLoading) return;
     setErrorMessage(null);
 
     if (!companyName.trim()) {
@@ -544,421 +518,431 @@ export const RegisterProPage: React.FC = () => {
   };
 
   return (
-    // 3.5rem is the FocusedLayout header, which already carries the brand mark.
-    <div className="min-h-auth-shell-min flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-surface-soft/70 via-bg-surface to-surface-soft/50">
-      <div className="w-full max-w-xl mx-auto">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-inverse text-text-inverse text-xs font-bold mb-3">
-            <Briefcase className="w-icon-sm h-icon-sm" />
-            <span>
-              {isFacturationRegistration
-                ? "Shongre Facturation"
-                : t("auth.registerPages.vendeurProfessionnel")}
-            </span>
-          </div>
-
-          <h1 className="text-2xl sm:text-3xl font-bold text-text-main tracking-tight">
-            {isFacturationRegistration
-              ? "Créez votre espace Facturation"
-              : t("auth.registerPages.ouvrirUnCompteProfessionnel")}
-          </h1>
-          <p className="mt-2 text-xs sm:text-sm text-text-supporting max-w-md mx-auto">
-            {isFacturationRegistration
-              ? "Un compte Shongre partagé, une organisation et uniquement les outils de facturation dont vous avez besoin."
-              : t("auth.registerPages.accedezALaVitrineOfficielle")}
-          </p>
-        </div>
-
-        {/* Step progress bar */}
-        <div className="mb-6 flex items-center justify-center gap-3 text-xs font-bold">
-          <div
-            className={`flex items-center gap-1.5 ${step === 1 ? "text-primary" : "text-success"}`}
-          >
-            <span
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 1 ? "bg-primary text-text-inverse" : "bg-success-surface text-success"}`}
+    <AuthLayout
+      width="compact"
+      showLegalNotice
+      title={
+        isFacturationRegistration
+          ? "Créez votre espace Facturation"
+          : t("auth.registerPages.ouvrirUnCompteProfessionnel")
+      }
+      subtitle={
+        isFacturationRegistration
+          ? "Un compte Shongre partagé, une organisation et uniquement les outils de facturation dont vous avez besoin."
+          : t("auth.registerPages.accedezALaVitrineOfficielle")
+      }
+      headingRef={headingRef}
+      footerLink={{
+        text: t("auth.frame.alreadyMember"),
+        linkText: t("auth.frame.signIn"),
+        to: routes.auth.login(returnTo),
+      }}
+      progress={
+        <ol
+          aria-label={t("auth.frame.registrationSteps")}
+          className="mb-6 flex items-center justify-center gap-3 text-xs font-semibold sm:text-sm"
+        >
+          {[
+            t("auth.registerPages.identiteDuGerant"),
+            t("auth.frame.companyStep"),
+          ].map((label, index) => (
+            <li
+              key={label}
+              aria-current={step === index + 1 ? "step" : undefined}
+              className="flex items-center gap-2 text-text-supporting"
             >
-              {step > 1 ? <Check className="w-icon-sm h-icon-sm" /> : "1"}
-            </span>
-            <span>{t("auth.registerPages.identiteDuGerant")}</span>
-          </div>
-          <ChevronRight className="w-icon-md h-icon-md text-text-inverse-muted" />
-          <div
-            className={`flex items-center gap-1.5 ${step === 2 ? "text-text-deep font-bold" : "text-text-tertiary"}`}
-          >
-            <span
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 2 ? "bg-surface-inverse text-text-inverse" : "bg-surface-disabled text-text-supporting"}`}
-            >
-              2
-            </span>
-            <span>Entreprise & SIRET</span>
-          </div>
+              {index > 0 && (
+                <ChevronRight
+                  className="mr-1 h-icon-sm w-icon-sm text-text-muted"
+                  aria-hidden="true"
+                />
+              )}
+              <span
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${step >= index + 1 ? "bg-primary text-on-primary" : "bg-surface-disabled text-text-supporting"}`}
+                aria-hidden="true"
+              >
+                {step > index + 1 ? (
+                  <Check className="h-icon-sm w-icon-sm" />
+                ) : (
+                  index + 1
+                )}
+              </span>
+              <span
+                className={
+                  step === index + 1 ? "font-bold text-text-main" : undefined
+                }
+              >
+                {label}
+              </span>
+            </li>
+          ))}
+        </ol>
+      }
+    >
+      {errorMessage && (
+        <div
+          role="alert"
+          className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5"
+        >
+          <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0 mt-0.5" />
+          <div className="leading-relaxed">{errorMessage}</div>
         </div>
+      )}
 
-        <div className="bg-bg-surface rounded-2xl border border-border-disabled/90 shadow-xl shadow-border-disabled/40 p-6 sm:p-8">
-          {errorMessage && (
-            <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
-              <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0 mt-0.5" />
-              <div className="leading-relaxed">{errorMessage}</div>
-            </div>
-          )}
-
-          {step === 1 ? (
-            <>
-              <form onSubmit={handleNextStep} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="reg-pro-name"
-                    className="block text-xs font-semibold text-text-strong mb-1.5"
-                  >
-                    {t("auth.registerPages.nomEtPrenomDuResponsable")}
-                    <span className="text-primary">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="reg-pro-name"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="ex: Sophie Marchand"
-                      required
-                      className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                    />
-                    <User className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="reg-email-professionnel"
-                    className="block text-xs font-semibold text-text-strong mb-1.5"
-                  >
-                    Email professionnel <span className="text-primary">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="reg-email-professionnel"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="contact@boutiquedeco.fr"
-                      required
-                      className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                    />
-                    <Mail className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="reg-telephonecommercial"
-                    className="block text-xs font-semibold text-text-strong mb-1.5"
-                  >
-                    {t("auth.registerPages.telephoneCommercial")}
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="reg-telephonecommercial"
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="01 42 68 90 12"
-                      className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                    />
-                    <Phone className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-                  </div>
-                </div>
-
-                <div>
-                  <PasswordField
-                    id="pro-reg-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    showStrength
+      {step === 1 ? (
+        <>
+          <SocialLoginButtons
+            accountType="professional"
+            returnTo={returnTo}
+            disabled={isLoading}
+            onPendingChange={setSocialPending}
+          />
+          <form onSubmit={handleNextStep}>
+            <fieldset
+              disabled={socialPending || isLoading}
+              className="space-y-4"
+            >
+              <div>
+                <label
+                  htmlFor="reg-pro-name"
+                  className="block text-sm font-semibold text-text-strong mb-1.5"
+                >
+                  {t("auth.registerPages.nomEtPrenomDuResponsable")}
+                  <span className="text-primary">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="reg-pro-name"
+                    autoComplete="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="ex: Sophie Marchand"
                     required
-                    autoComplete="new-password"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />
+                  <User className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
+              </div>
 
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="md"
-                    className="w-full"
-                    rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
-                  >
-                    {t(
-                      "auth.registerPages.continuerVersLesInformationsEntreprise",
-                    )}
-                  </Button>
+              <div>
+                <label
+                  htmlFor="reg-email-professionnel"
+                  className="block text-sm font-semibold text-text-strong mb-1.5"
+                >
+                  Email professionnel <span className="text-primary">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="reg-email-professionnel"
+                    autoComplete="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="contact@boutiquedeco.fr"
+                    required
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                  />
+                  <Mail className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
-              </form>
-              <div className="mt-6">
-                <SocialLoginButtons
-                  accountType="professional"
-                  returnTo={returnTo}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="reg-telephonecommercial"
+                  className="block text-sm font-semibold text-text-strong mb-1.5"
+                >
+                  {t("auth.registerPages.telephoneCommercial")}
+                </label>
+                <div className="relative">
+                  <input
+                    id="reg-telephonecommercial"
+                    autoComplete="tel"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="01 42 68 90 12"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                  />
+                  <Phone className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
+              <div>
+                <PasswordField
+                  id="pro-reg-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  showStrength
+                  required
+                  autoComplete="new-password"
                 />
               </div>
-            </>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="reg-activite-professionnelle"
-                  className="block text-xs font-semibold text-text-strong mb-1.5"
-                >
-                  Activité professionnelle{" "}
-                  <span className="text-primary">*</span>
-                </label>
-                <Select
-                  className="w-full"
-                  id="reg-activite-professionnelle"
-                  value={professionalVertical}
-                  onChange={(event) =>
-                    setProfessionalVertical(
-                      event.target.value as ProfessionalVertical,
-                    )
-                  }
-                  required
-                >
-                  {PROFESSIONAL_VERTICAL_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.value === "education"
-                        ? t("verticals.education.training")
-                        : option.label}
-                    </option>
-                  ))}
-                </Select>
-                <p className="mt-1.5 text-xs text-text-tertiary">
-                  {isFacturationRegistration
-                    ? "Ce renseignement adapte la configuration de votre organisation. Il ne vous inscrit à aucun autre produit Shongre."
-                    : "Ce choix active uniquement les outils métier correspondant à votre activité. Il pourra être vérifié lors de l'onboarding."}
-                </p>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label
-                    htmlFor="reg-pays-d-immatriculation"
-                    className="block text-xs font-semibold text-text-strong mb-1.5"
-                  >
-                    Pays d'immatriculation{" "}
-                    <span className="text-primary">*</span>
-                  </label>
-                  <Select
-                    className="w-full"
-                    id="reg-pays-d-immatriculation"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                  >
-                    {availableMarkets.map((m) => (
-                      <option key={m.code} value={m.code}>
-                        {m.flag} {m.name}
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="reg-forme-juridique"
-                    className="block text-xs font-semibold text-text-strong mb-1.5"
-                  >
-                    Forme juridique <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    id="reg-forme-juridique"
-                    value={legalForm}
-                    onChange={(event) => setLegalForm(event.target.value)}
-                    required
-                    autoComplete="organization-title"
-                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="reg-raison-sociale-enseigne-commerciale"
-                  className="block text-xs font-semibold text-text-strong mb-1.5"
-                >
-                  Raison sociale / Enseigne commerciale{" "}
-                  <span className="text-primary">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    id="reg-raison-sociale-enseigne-commerciale"
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="ex: Atelier Nordique SAS"
-                    required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                  />
-                  <Building2 className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label
-                    htmlFor="reg-currentmarket-businessidentifierlabel"
-                    className="block text-xs font-semibold text-text-strong mb-1.5"
-                  >
-                    Identifiant légal de l’entreprise{" "}
-                    <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    id="reg-currentmarket-businessidentifierlabel"
-                    type="text"
-                    value={sirenSiret}
-                    onChange={(e) => setSirenSiret(e.target.value)}
-                    placeholder="Numéro d’immatriculation"
-                    required
-                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="reg-tva-intracommunautaire"
-                    className="block text-xs font-semibold text-text-strong mb-1.5"
-                  >
-                    TVA Intracommunautaire
-                  </label>
-                  <input
-                    id="reg-tva-intracommunautaire"
-                    type="text"
-                    value={vatNumber}
-                    onChange={(e) => setVatNumber(e.target.value)}
-                    placeholder="Numéro de TVA"
-                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="reg-adressedusiegesocialmagasin"
-                  className="block text-xs font-semibold text-text-strong mb-1.5"
-                >
-                  {t("auth.registerPages.adresseDuSiegeSocialMagasin")}
-                  <span className="text-primary">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    id="reg-adressedusiegesocialmagasin"
-                    type="text"
-                    value={businessAddress}
-                    onChange={(e) => setBusinessAddress(e.target.value)}
-                    placeholder={t("auth.registerPages.14RueDesAntiquaires")}
-                    required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                  />
-                  <MapPin className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label
-                    htmlFor="reg-code-postal-2"
-                    className="block text-xs font-semibold text-text-strong mb-1.5"
-                  >
-                    Code Postal <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    id="reg-code-postal-2"
-                    type="text"
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    placeholder="Code postal"
-                    required
-                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="reg-ville-2"
-                    className="block text-xs font-semibold text-text-strong mb-1.5"
-                  >
-                    Ville <span className="text-primary">*</span>
-                  </label>
-                  <input
-                    id="reg-ville-2"
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Bordeaux"
-                    required
-                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-                  />
-                </div>
-              </div>
-
-              {/* Declarations */}
-              <div className="pt-2 border-t border-border-soft">
-                <label className="flex items-start gap-2 text-xs text-text-emphasis cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={termsAccepted}
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                    required
-                    className="w-4 h-4 mt-0.5 rounded border-border-prominent text-primary focus:ring-primary shrink-0"
-                  />
-                  <span>
-                    Je certifie sur l'honneur l'exactitude des informations
-                    d'immatriculation de mon entreprise et j'accepte les{" "}
-                    <Link
-                      to="/conditions-utilisation"
-                      target="_blank"
-                      className="font-bold text-primary hover:underline"
-                    >
-                      {t(
-                        "auth.registerPages.conditionsGeneralesDeVenteProfessionnelles",
-                      )}
-                    </Link>{" "}
-                    Shongre. <span className="text-primary">*</span>
-                  </span>
-                </label>
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="md"
-                  onClick={() => setStep(1)}
-                  disabled={isLoading}
-                >
-                  ← Retour
-                </Button>
+              <div className="pt-2">
                 <Button
                   type="submit"
-                  variant="pro"
+                  variant="primary"
                   size="md"
-                  className="flex-1"
-                  isLoading={isLoading}
+                  className="w-full"
                   rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
                 >
-                  Valider mon inscription Pro
+                  {t(
+                    "auth.registerPages.continuerVersLesInformationsEntreprise",
+                  )}
                 </Button>
               </div>
-            </form>
-          )}
-
-          <div className="mt-6 pt-6 border-t border-border-soft text-center text-xs text-text-tertiary">
-            Vous avez déjà un compte ?{" "}
-            <Link
-              to={routes.auth.login(returnTo)}
-              className="font-bold text-primary hover:underline"
+            </fieldset>
+          </form>
+        </>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="reg-activite-professionnelle"
+              className="block text-sm font-semibold text-text-strong mb-1.5"
             >
-              Se connecter
-            </Link>
+              Activité professionnelle <span className="text-primary">*</span>
+            </label>
+            <Select
+              className="w-full"
+              id="reg-activite-professionnelle"
+              value={professionalVertical}
+              onChange={(event) =>
+                setProfessionalVertical(
+                  event.target.value as ProfessionalVertical,
+                )
+              }
+              required
+            >
+              {PROFESSIONAL_VERTICAL_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.value === "education"
+                    ? t("verticals.education.training")
+                    : option.label}
+                </option>
+              ))}
+            </Select>
+            <p className="mt-1.5 text-xs text-text-tertiary">
+              {isFacturationRegistration
+                ? "Ce renseignement adapte la configuration de votre organisation. Il ne vous inscrit à aucun autre produit Shongre."
+                : "Ce choix active uniquement les outils métier correspondant à votre activité. Il pourra être vérifié lors de l'onboarding."}
+            </p>
           </div>
-        </div>
-      </div>
-    </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="reg-pays-d-immatriculation"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
+              >
+                Pays d'immatriculation <span className="text-primary">*</span>
+              </label>
+              <Select
+                className="w-full"
+                id="reg-pays-d-immatriculation"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+              >
+                {availableMarkets.map((m) => (
+                  <option key={m.code} value={m.code}>
+                    {m.flag} {m.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+
+            <div>
+              <label
+                htmlFor="reg-forme-juridique"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
+              >
+                Forme juridique <span className="text-primary">*</span>
+              </label>
+              <input
+                id="reg-forme-juridique"
+                value={legalForm}
+                onChange={(event) => setLegalForm(event.target.value)}
+                required
+                autoComplete="organization-title"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="reg-raison-sociale-enseigne-commerciale"
+              className="block text-sm font-semibold text-text-strong mb-1.5"
+            >
+              Raison sociale / Enseigne commerciale{" "}
+              <span className="text-primary">*</span>
+            </label>
+            <div className="relative">
+              <input
+                id="reg-raison-sociale-enseigne-commerciale"
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="ex: Atelier Nordique SAS"
+                required
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+              <Building2 className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="reg-currentmarket-businessidentifierlabel"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
+              >
+                Identifiant légal de l’entreprise{" "}
+                <span className="text-primary">*</span>
+              </label>
+              <input
+                id="reg-currentmarket-businessidentifierlabel"
+                type="text"
+                value={sirenSiret}
+                onChange={(e) => setSirenSiret(e.target.value)}
+                placeholder="Numéro d’immatriculation"
+                required
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="reg-tva-intracommunautaire"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
+              >
+                TVA Intracommunautaire
+              </label>
+              <input
+                id="reg-tva-intracommunautaire"
+                type="text"
+                value={vatNumber}
+                onChange={(e) => setVatNumber(e.target.value)}
+                placeholder="Numéro de TVA"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="reg-adressedusiegesocialmagasin"
+              className="block text-sm font-semibold text-text-strong mb-1.5"
+            >
+              {t("auth.registerPages.adresseDuSiegeSocialMagasin")}
+              <span className="text-primary">*</span>
+            </label>
+            <div className="relative">
+              <input
+                id="reg-adressedusiegesocialmagasin"
+                type="text"
+                value={businessAddress}
+                onChange={(e) => setBusinessAddress(e.target.value)}
+                placeholder={t("auth.registerPages.14RueDesAntiquaires")}
+                required
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+              <MapPin className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="reg-code-postal-2"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
+              >
+                Code Postal <span className="text-primary">*</span>
+              </label>
+              <input
+                id="reg-code-postal-2"
+                type="text"
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                placeholder="Code postal"
+                required
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="reg-ville-2"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
+              >
+                Ville <span className="text-primary">*</span>
+              </label>
+              <input
+                id="reg-ville-2"
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Bordeaux"
+                required
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              />
+            </div>
+          </div>
+
+          {/* Declarations */}
+          <div className="pt-2 border-t border-border-soft">
+            <label className="flex items-start gap-2 text-xs text-text-emphasis cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                required
+                className="w-4 h-4 mt-0.5 rounded border-border-prominent text-primary focus:ring-primary shrink-0"
+              />
+              <span>
+                Je certifie sur l'honneur l'exactitude des informations
+                d'immatriculation de mon entreprise et j'accepte les{" "}
+                <Link
+                  to="/conditions-utilisation"
+                  target="_blank"
+                  className="font-bold text-text-main underline decoration-primary underline-offset-4"
+                >
+                  {t(
+                    "auth.registerPages.conditionsGeneralesDeVenteProfessionnelles",
+                  )}
+                </Link>{" "}
+                Shongre. <span className="text-primary">*</span>
+              </span>
+            </label>
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center">
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={() => {
+                setErrorMessage(null);
+                setStep(1);
+              }}
+              disabled={isLoading}
+            >
+              ← Retour
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              className="w-full sm:flex-1"
+              isLoading={isLoading}
+              rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
+            >
+              {t("auth.frame.createPro")}
+            </Button>
+          </div>
+        </form>
+      )}
+    </AuthLayout>
   );
 };

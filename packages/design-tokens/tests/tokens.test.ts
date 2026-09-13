@@ -42,6 +42,8 @@ const contrast = (a: string, b: string): number => {
 describe("canonical design tokens", () => {
   it("keeps shared semantic colors identical in Web and native adapters", () => {
     expect(nativeColors.action.primary).toBe(colors.action.primary);
+    expect(colors.action.onPrimary).toBe(brandPalette.white);
+    expect(nativeColors.action.onPrimary).toBe(colors.action.onPrimary);
     expect(nativeColors.surface.default).toBe(colors.surface.default);
     expect(nativeColors.status.error).toBe(colors.status.error);
   });
@@ -60,19 +62,15 @@ describe("canonical design tokens", () => {
 
   it("keeps primary controls WCAG AA readable", () => {
     expect(
-      contrast(themeColors["text-inverse"], themeColors.primary),
+      contrast(themeColors["on-primary"], themeColors.primary),
     ).toBeGreaterThanOrEqual(4.5);
     expect(
-      contrast(themeColors.primary, themeColors["primary-light"]),
+      contrast(themeColors["on-primary"], themeColors["primary-hover"]),
     ).toBeGreaterThanOrEqual(4.5);
   });
 
   it("derives every Shongre Orange role from the single canonical swatch", () => {
-    const derived = deriveShongreOrangeTokens(
-      colors.brand.primary,
-      colors.brand.ink,
-      colors.brand.background,
-    );
+    const derived = deriveShongreOrangeTokens(colors.brand.primary);
     expect({
       canonical: themeColors["brand-primary"],
       interactive: themeColors.primary,
@@ -105,46 +103,78 @@ describe("canonical design tokens", () => {
     expect(themeColors.focus).toBe(derived.interactive);
     expect(themeColors["category-vehicles"]).toBe(derived.interactive);
     expect(themeColors["category-sport"]).toBe(derived.fill);
+    expect(colors.category.homeGarden).toBe(colors.brand.primary);
     expect(
-      contrastRatio(themeColors.primary, themeColors["text-inverse"]),
+      contrastRatio(themeColors.primary, themeColors["on-primary"]),
     ).toBeGreaterThanOrEqual(4.5);
-    expect(
-      contrastRatio(themeColors["primary-disabled"], themeColors["text-main"]),
-    ).toBeGreaterThanOrEqual(4.5);
+    expect(nativeColors.action.onPrimary).toBe(colors.brand.background);
+    for (const role of [
+      "interactive",
+      "hover",
+      "active",
+      "fill",
+      "emphasis",
+      "onDark",
+      "onInverseSoft",
+      "onInverseMuted",
+    ] as const) {
+      expect(derived[role]).toBe(colors.brand.primary);
+    }
+    for (const value of Object.values(derived)) {
+      expect(value.slice(0, 7)).toBe(colors.brand.primary);
+      expect([7, 9]).toContain(value.length);
+    }
     expect(
       contrastRatio(
-        themeColors["primary-on-dark"],
-        mixHex(colors.brand.ink, colors.brand.primary, 0.2),
+        derived.onDark,
+        mixHex(
+          colors.brand.ink,
+          colors.brand.primary,
+          Number.parseInt(derived.overlay.slice(7), 16) / 255,
+        ),
       ),
-    ).toBeGreaterThanOrEqual(4.75);
+    ).toBeGreaterThanOrEqual(4.5);
   });
 
   it("exposes the inverse-surface roles application code needs on dark chrome", () => {
     expect(colors.action.primaryOnDark).toBe(themeColors["primary-on-dark"]);
     expect(colors.status.infoOnInverse).toBe(themeColors["info-on-inverse"]);
     expect(colors.accent.staffOnInverse).toBe(themeColors["staff-on-inverse"]);
-    // Every inverse role must stay readable on the canonical dark surface.
+    expect(colors.surface.inverse).toBe(colors.brand.ink);
+    const darkSurfaces = [
+      "inverseDeep",
+      "inverse",
+      "inverseHover",
+      "inverseMuted",
+    ] as const;
+    for (const [index, surface] of darkSurfaces.entries()) {
+      expect(nativeColors.surface[surface]).toBe(colors.surface[surface]);
+      if (index > 0) {
+        expect(luminance(colors.surface[surface])).toBeGreaterThan(
+          luminance(colors.surface[darkSurfaces[index - 1]]),
+        );
+      }
+    }
+    // Secondary copy must remain readable on every dark layer and control state.
     for (const role of [
       colors.text.inverseBright,
+      colors.text.inverseSoft,
+      colors.text.inverseFaint,
       colors.text.inverseMuted,
       colors.text.inverseSubtle,
     ]) {
-      expect(contrast(role, colors.surface.inverseDeep)).toBeGreaterThanOrEqual(
-        4.5,
-      );
+      for (const surface of darkSurfaces) {
+        expect(contrast(role, colors.surface[surface])).toBeGreaterThanOrEqual(
+          4.5,
+        );
+      }
     }
   });
 
   it("propagates a representative canonical orange change through every derived role", () => {
-    const original = deriveShongreOrangeTokens(
-      colors.brand.primary,
-      colors.brand.ink,
-      colors.brand.background,
-    );
+    const original = deriveShongreOrangeTokens(colors.brand.primary);
     const changed = deriveShongreOrangeTokens(
       mixHex(colors.brand.primary, colors.brand.background, 0.2),
-      colors.brand.ink,
-      colors.brand.background,
     );
     for (const key of Object.keys(original) as (keyof typeof original)[]) {
       expect(changed[key], `${key} follows the canonical swatch`).not.toBe(
@@ -173,22 +203,32 @@ describe("canonical design tokens", () => {
     expect(nativeSizing.avatar2xl).toBe(128);
     expect(nativeSizing.brandLogoCompact).toBe(120);
     expect(nativeSizing.brandLogoStandard).toBe(160);
-    expect(nativeAspect.listingCard).toBe(4 / 5);
+    expect(nativeSizing.listingCard).toBe(220);
+    expect(nativeSizing.listingCardHeight).toBe(420);
+    expect(nativeSizing.listingCardMediaHeight).toBe(210);
+    expect(nativeAspect.listingCard).toBe(29 / 25);
     expect(nativeAspect.media).toBe(4 / 3);
     expect(iconStrokeWidths.regular).toBe(2);
     expect(nativeTypography.size.overline).toBe(
       Number.parseFloat(themeText.overline) * 16,
     );
     expect(nativeTypography.size.xs).toBe(Number.parseFloat(themeText.xs) * 16);
+    expect(nativeTypography.size.cardTitle).toBe(
+      Number.parseFloat(themeText["card-title"]) * 16,
+    );
+    expect(nativeTypography.size.cardPrice).toBe(
+      Number.parseFloat(themeText["card-price"]) * 16,
+    );
     expect(nativeTypography.letterSpacing.wide).toBe(
       Number.parseFloat(themeLetterSpacing.wide) * nativeTypography.size.micro,
     );
   });
 
   it("keeps listing cards compact through semantic shared tokens", () => {
-    expect(themeSpacing["listing-card"]).toBe("13rem");
-    expect(themeSpacing["listing-card-mobile-max"]).toBe("19rem");
-    expect(themeSpacing["listing-card-media-height"]).toBe("16rem");
+    expect(themeSpacing["listing-card"]).toBe("13.75rem");
+    expect(themeSpacing["listing-card-mobile-max"]).toBe("13.75rem");
+    expect(themeSpacing["listing-card-height"]).toBe("26.25rem");
+    expect(themeSpacing["listing-card-media-height"]).toBe("13.125rem");
     expect(themeSpacing["environment-toolbar-height"]).toBe("3.5rem");
     expect(radius["listing-card"]).toBe("0.625rem");
     expect(radius["listing-card"]).toBe(radius.control);

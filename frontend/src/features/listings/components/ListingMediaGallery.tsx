@@ -324,7 +324,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   type="button"
                   onClick={handlePrev}
                   aria-label={t("listings.listingMediaGallery.photoPrecedente")}
-                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center transition-colors cursor-pointer shadow-lg"
+                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-control-md h-control-md rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
                   <ChevronLeft className="w-icon-xl h-icon-xl" />
                 </button>
@@ -332,7 +332,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   type="button"
                   onClick={handleNext}
                   aria-label={t("listings.listingMediaGallery.photoSuivante")}
-                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center transition-colors cursor-pointer shadow-lg"
+                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-control-md h-control-md rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
                   <ChevronRight className="w-icon-xl h-icon-xl" />
                 </button>

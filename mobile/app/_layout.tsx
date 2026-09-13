@@ -8,6 +8,7 @@ import { Inter_500Medium } from "@expo-google-fonts/inter/500Medium";
 import { Inter_600SemiBold } from "@expo-google-fonts/inter/600SemiBold";
 import { Inter_700Bold } from "@expo-google-fonts/inter/700Bold";
 import { useEffect } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/features/auth/AuthProvider";
@@ -15,6 +16,10 @@ import { FavoritesProvider } from "@/features/favorites/FavoritesProvider";
 import { MarketProvider, useMarket } from "@/features/market/MarketProvider";
 import { mobileColors as colors } from "@shongre/design-tokens/native";
 import { resolveDeliveryNotificationRoute } from "@/services/notifications/notification-deep-link";
+import {
+  notifyNativePresenceActivity,
+  UserPresenceBridge,
+} from "@/features/messaging/UserPresenceBridge";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -23,6 +28,8 @@ function NotificationDeepLinkBridge() {
   const { user } = useAuth();
   const { activeMarket } = useMarket();
   useEffect(() => {
+    if (Platform.OS === "web") return undefined;
+
     const open = (response: Notifications.NotificationResponse | null) => {
       if (!response) return;
       const route = resolveDeliveryNotificationRoute({
@@ -55,10 +62,14 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView
+      style={{ flex: 1 }}
+      onTouchStart={notifyNativePresenceActivity}
+    >
       <SafeAreaProvider>
         <MarketProvider>
           <AuthProvider>
+            <UserPresenceBridge />
             <FavoritesProvider>
               <NotificationDeepLinkBridge />
               <StatusBar style="dark" />

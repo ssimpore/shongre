@@ -9,6 +9,12 @@ import { MessageCatalogue } from "./messages.fr";
  * catalogue only ever declares the forms and never the rule.
  */
 export const messagesEn: MessageCatalogue = {
+  "messaging.presence.online": "Online",
+  "messaging.presence.away": "Away",
+  "messaging.presence.offline": "Offline",
+  "messaging.presence.unknown": "Status unavailable",
+  "messaging.presence.lastSeen": "Last seen {date}",
+
   "reviews.loading": "Loading reviews…",
   "reviews.loadError": "Reviews could not be loaded.",
   "reviews.report": "Report this review",
@@ -212,6 +218,7 @@ export const messagesEn: MessageCatalogue = {
     "Action unavailable for Staff accounts",
   "staffMarketplace.actionBlocked.description":
     "Staff accounts can browse the marketplace but cannot perform this action. No operation was started.",
+  "product.header.chooseProduct": "Choose a Shongre product",
   "solutions.header.chooseSolution": "Choose a Shongre solution",
   "solutions.header.seeAll": "See all solutions",
   "solutions.header.homeLabel": "Shongre Solutions home",
@@ -394,34 +401,39 @@ export const messagesEn: MessageCatalogue = {
   "footer.privacy": "Privacy policy",
   "footer.cookies": "Cookie settings",
   "footer.legalNotices": "Legal notice",
-  "footer.accessibility": "Accessibility (WCAG 2.2 AA)",
+  "footer.accessibility": "Accessibility",
   "footer.copyright": "© {year} Shongre SAS. All rights reserved.",
-  "footer.sectionCategories": "Top categories",
-  "footer.sectionProfessionals": "For professionals",
-  "footer.sectionHelp": "Help & trust",
   "footer.proSolutions": "Pro solutions & pricing",
-  "footer.shongreProspects": "Shongre Prospects",
   "footer.shongreSolutions": "All Shongre solutions",
-  "footer.shongreFacturation": "Shongre Invoicing",
   "footer.helpCenter": "Help center & FAQ",
   "footer.newsletterHeading": "Shongre newsletter",
-  "footer.marketLabel": "{market} market",
   "footer.sectionCities": "Cities & regions",
   "footer.createProAccount": "Create a Pro account",
-  "footer.storeDirectory": "Store directory",
-  "footer.boostGrid": "Options & boosts pricing",
-  "footer.trustSummary":
-    "Tracked payments · Clear handover · Explicit seller statuses",
-  "footer.trustLearnMore": "Learn more",
   "footer.contactSupport": "Contact support",
-  "footer.currentDeals": "Reduced-price offers",
   "footer.comingSoon": "{name} — coming soon",
-  "footer.newsletterPitch":
-    "Get our weekly selection of listings and product updates.",
   "footer.marketContext": "France market",
   "footer.privacyControls": "Adjustable consent",
   "footer.mobileAppsHeading": "Shongre mobile apps",
-  "footer.appPitch": "Take Shongre with you everywhere.",
+  "footer.mobileAppsTagline": "Your great finds, wherever you go.",
+  "footer.brandTagline": "The right deal, closer to you.",
+  "footer.home": "SHONGRE., home",
+  "footer.brandDescription":
+    "Shongre connects you with great finds nearby. Buy, sell and trade with confidence.",
+  "footer.buy": "Buy",
+  "footer.sell": "Sell",
+  "footer.help": "Help",
+  "footer.allListings": "All listings",
+  "footer.categories": "Categories",
+  "footer.deals": "Deals",
+  "footer.collections": "Current collections",
+  "footer.newListings": "New arrivals",
+  "footer.professionalSellers": "Professional sellers",
+  "footer.pricingOptions": "Pricing and options",
+  "footer.sellerWorkspace": "Seller workspace",
+  "footer.safety": "Safety and best practices",
+  "footer.contact": "Contact us",
+  "footer.whoWeAre": "Who are we?",
+  "footer.marketPreferences": "Regional preferences: {market}",
   "footer.downloadFrom": "Download from",
   "footer.comingToStore": "Coming soon to",
   "about.eyebrow": "Our identity",
@@ -657,6 +669,10 @@ export const messagesEn: MessageCatalogue = {
     "Favorites were reloaded. Check them before clearing the list.",
   "ui.listingCard.favorisViderErreur": "Favorites cannot be cleared right now.",
   "ui.listingCard.boosted": "Boosted",
+  "ui.listingCard.sponsored": "Sponsored",
+  "ui.listingCard.featured": "Featured",
+  "ui.listingCard.urgent": "Urgent",
+  "ui.listingCard.promotion": "On sale",
   "ui.listingCard.delivery": "Delivery",
   "ui.listingCard.digitalFulfillment": "Digital access",
   "ui.listingCard.free": "Free",
@@ -699,8 +715,6 @@ export const messagesEn: MessageCatalogue = {
   "ui.sellerIdentity.openProfessional": "Visit {name}'s store",
   "ui.sellerIdentity.avatar": "Avatar for {name}",
   "auth.forgotPasswordPage.votreEmailExempleFr": "your.email@example.com",
-  "auth.forgotPasswordPage.collezLeTokenRecuPar":
-    "Paste the token you received by email",
   "auth.forgotPasswordPage.nouveauMotDePasse": "New password",
   "auth.loginPage.ex123456Ou84921049": "e.g. 123456 or 8492-1049",
   "auth.loginPage.votreEmailExempleFr": "your.email@example.com",
@@ -708,13 +722,20 @@ export const messagesEn: MessageCatalogue = {
     "Stay signed in on this device",
   "auth.loginPage.acheteurVendeur": "Buyer / Seller",
   "auth.loginPage.siretVitrineVerifiee": "Business number & verified store",
-  "auth.social.or": "or continue with",
+  "auth.social.heading": "Sign in or create an account",
+  "auth.social.email": "or with your email address",
+  "auth.social.checking": "Checking sign-in options…",
+  "auth.social.availabilityFailed":
+    "Unable to check sign-in options. Try again or continue with email.",
+  "auth.social.retry": "Try again",
+  "auth.social.privacy": "By continuing, you agree to our",
+  "auth.social.terms": "Terms of use",
+  "auth.social.privacyAcknowledgement": "and acknowledge our",
+  "auth.social.privacyPolicy": "Privacy policy",
   "auth.social.google": "Continue with Google",
   "auth.social.apple": "Continue with Apple",
   "auth.social.facebook": "Continue with Facebook",
   "auth.social.failed": "This sign-in method is temporarily unavailable.",
-  "auth.social.privacy":
-    "By continuing, you agree to the Terms of use and acknowledge the Privacy policy.",
   "auth.callback.loading": "Securely validating your sign-in…",
   "auth.callback.success": "Sign-in confirmed. Redirecting…",
   "auth.callback.linked": "Account connected successfully.",
@@ -811,30 +832,38 @@ export const messagesEn: MessageCatalogue = {
   "auth.registerPages.creezVotreCompteGratuitEn":
     "Create your free account in a minute and buy and sell with confidence",
   "auth.registerPages.14RueDesAntiquaires": "14 Antique Row",
-  "auth.registerPages.evolutionDeCompteSouple": "Flexible account upgrades:",
   "auth.registerPages.vendeurProfessionnel": "Professional seller",
   "auth.registerPages.identiteDuGerant": "Director's identity",
   "auth.verifyEmailPage.verificationDAdresseEmail":
     "Email address verification",
   "auth.verifyEmailPage.confirmezVotreAdresseEmailPour":
-    "Confirm your email address to secure your account and unlock every feature",
+    "Confirm your email address to continue using your Shongre account.",
   "auth.verifyEmailPage.collezIciVotreJetonDe":
-    "Paste your validation token here",
+    "Enter the code from your email",
   "auth.verifyEmailPage.renvoyerUnEmailDeValidation": "Resend validation email",
   "auth.accountTypeSelector.depotDAnnoncesGratuitEt":
-    "Free, instant listing publication",
+    "Publish and manage your listings",
   "auth.accountTypeSelector.paiementSecuriseAvecSequestre":
-    "Secure online payment via Stripe",
-  "auth.accountTypeSelector.messagerieInstantaneeDirecte":
-    "Direct instant messaging",
+    "Eligible online payments",
+  "auth.accountTypeSelector.messagerieInstantaneeDirecte": "Direct messaging",
   "auth.accountTypeSelector.badgeOfficielVendeurProVerifie":
-    "Official Verified Pro Seller badge",
+    "Document-based verification",
   "auth.accountTypeSelector.vitrineDeBoutiquePersonnalisable":
-    "Customisable storefront",
-  "auth.accountTypeSelector.facturationAutomatiqueAvecTva":
-    "Automatic invoicing with VAT",
-  "auth.authLayout.conformiteRgpdFranceUe": "Built-in privacy controls",
-  "auth.authLayout.protectionAcheteurVendeur": "Buyer & seller protection",
+    "Custom storefront",
+  "auth.accountTypeSelector.facturationAutomatiqueAvecTva": "Invoicing tools",
+  "auth.accountTypeSelector.recommended": "Recommended",
+  "auth.accountTypeSelector.selectProfile": "Choose this profile",
+  "auth.frame.privateAccount": "Personal account",
+  "auth.frame.identityControl": "Identity verification",
+  "auth.frame.privacyControl": "Privacy controls",
+  "auth.frame.alreadyMember": "Already have an account?",
+  "auth.frame.signIn": "Sign in",
+  "auth.frame.individual": "Individual",
+  "auth.frame.professional": "Professional",
+  "auth.frame.registrationSteps": "Professional registration steps",
+  "auth.frame.createPro": "Create Pro account",
+  "auth.frame.companyStep": "Your company",
+  "auth.frame.required": "Sign in required",
   "auth.mFAModal.copierLaCleSecrete": "Copy secret key",
   "auth.mFAModal.copierLesCodesDeSecours": "Copy backup codes",
   "auth.passwordField.robustesseDuMotDePasse": "Password strength:",
@@ -1031,6 +1060,13 @@ export const messagesEn: MessageCatalogue = {
   "listings.listingDetailPage.tarifDuCours": "Lesson rate",
   "listings.listingDetailPage.tarif": "Rate",
   "listings.listingDetailPage.valeurIndicative": "Indicative value",
+  "listings.listingDetailPage.postuler": "Apply",
+  "listings.listingDetailPage.demanderUnDevis": "Request a quote",
+  "listings.listingDetailPage.demanderUneVisite": "Request a viewing",
+  "listings.listingDetailPage.demanderUnEssai": "Request a test drive",
+  "listings.listingDetailPage.demanderUnCours": "Request a lesson",
+  "listings.listingDetailPage.verifierLaDisponibilite": "Check availability",
+  "listings.listingDetailPage.proposerUnEchange": "Propose an exchange",
   "messaging.messagingPage.cetUtilisateurNePourraPlus":
     "This user will no longer be able to message you or interact with your listings.",
   "messaging.messagingPage.signalerLaConversation": "Report conversation",
@@ -1118,7 +1154,6 @@ export const messagesEn: MessageCatalogue = {
     "Manage my preferences",
   "newsletter.newsletterPreviewModal.seDesabonnerEn1Clic":
     "Unsubscribe in one click",
-  "newsletter.newsletterSignup.votreEmailCom": "you@email.com",
   "newsletter.newsletterSignup.votreAdresseEmail": "Your email address",
   "newsletter.newsletterSignup.saisissezVotreAdresseEmail":
     "Enter your email address",
@@ -1258,6 +1293,12 @@ export const messagesEn: MessageCatalogue = {
   "search.searchPage.etat": "Condition",
   "search.searchPage.queryHeading": "Search: {query}",
   "search.searchPage.allListings": "All listings",
+  "search.searchPage.allResultsDescription":
+    "Find your next great deal among the available listings.",
+  "search.searchPage.categoryResultsDescription":
+    "Explore listings in the “{category}” category.",
+  "search.searchPage.refineResultsDescription":
+    "Refine your results with filters to find what suits you.",
   "search.resultsHeading": "Search results",
   "search.exploreMapView.recadrerSurLesAnnonces": "Recentre on the listings",
   "search.exploreMapView.regionLabel": "Map of listings to explore",
@@ -2214,8 +2255,8 @@ export const messagesEn: MessageCatalogue = {
     "e.g. Buy and sell your {category} items with secure online payment...",
 
   // --- migrated surfaces ---
-  "shell.environment.collapseToolbar": "Collapse environment toolbar",
-  "shell.environment.expandToolbar": "Expand environment toolbar",
+  "shell.environment.hideToolbar": "Hide environment toolbar",
+  "shell.environment.showToolbar": "Show environment toolbar",
   "shell.environment.label": "{environment}",
   "shell.environment.apiSummary": "Data supplied by the Shongre API",
   "shell.header.tableauDeBordCompte": "Account dashboard",
@@ -2578,7 +2619,6 @@ export const messagesEn: MessageCatalogue = {
     "Your account email address",
   "auth.forgotPasswordPage.envoyerLeLienDeReinitialisation":
     "Send the reset link",
-  "auth.forgotPasswordPage.jetonDeValidationToken": "Validation token",
   "auth.forgotPasswordPage.confirmerLeNouveauMotDe": "Confirm the new password",
   "auth.forgotPasswordPage.mettreAJourMonMot": "Update my password",
   "auth.forgotPasswordPage.renvoyerUnNouvelEmail": "← Send a new email",
@@ -2593,6 +2633,9 @@ export const messagesEn: MessageCatalogue = {
   "auth.registerPages.rejoignezLaCommunauteDeCommerce":
     "Join the secure circular-commerce community in France and across Europe.",
   "auth.registerPages.1SelectionnezVotreProfilD": "1. Choose your account type",
+  "auth.registerPages.chooseProfile": "Choose your profile",
+  "auth.registerPages.chooseProfileDescription":
+    "Select the account type that suits you to continue.",
   "auth.registerPages.nomEtPrenomOuPseudonyme": "Full name or username",
   "auth.registerPages.conditionsGeneralesDUtilisation": "Terms of Use",
   "auth.registerPages.politiqueDeConfidentialite": "Privacy Policy",
@@ -2602,7 +2645,7 @@ export const messagesEn: MessageCatalogue = {
   "auth.registerPages.ouvrirUnCompteProfessionnel":
     "Open a professional account",
   "auth.registerPages.accedezALaVitrineOfficielle":
-    "Get the official storefront, the Verified Pro badge and automated VAT invoicing.",
+    "Introduce your business and access tools designed for professionals.",
   "auth.registerPages.nomEtPrenomDuResponsable":
     "Full name of the manager / contact",
   "auth.registerPages.telephoneCommercial": "Business phone",
@@ -2615,12 +2658,11 @@ export const messagesEn: MessageCatalogue = {
   "auth.verifyEmailPage.votreCompteEstDesormaisSecurise":
     "Your account is now secured and the “Email verified” badge is live on your profile.",
   "auth.verifyEmailPage.accederAMonEspace": "Go to my account",
-  "auth.verifyEmailPage.jetonDeValidationOuCode":
-    "Validation token or verification code",
+  "auth.verifyEmailPage.jetonDeValidationOuCode": "Confirmation code",
   "auth.accountTypeSelector.pourAcheterEnTouteSecurite":
-    "To buy safely and sell your everyday items with no signup fee.",
+    "Buy and sell simply, with no signup fee.",
   "auth.accountTypeSelector.pourLesEntreprisesArtisansBoutiques":
-    "For registered companies, craftspeople, stores and traders.",
+    "For registered companies, craftspeople and traders.",
   "auth.mFAModal.activerLaDoubleAuthentification2fa":
     "Enable two-factor authentication (2FA)",
   "auth.mFAModal.protegezVotreCompteEtVos":
@@ -2704,11 +2746,12 @@ export const messagesEn: MessageCatalogue = {
   "home.homePage.sansTracas": "hassle-free.",
   "home.homePage.achetezEtVendezEnToute":
     "Buy and sell with tracked payments, clear handover options and explicit seller statuses.",
-  "home.homePage.trustedMarketplace": "A platform built on trust",
   "home.homePage.garantiesShongre": "Shongre guarantees",
-  "home.homePage.paiementsSecurises": "Secure payments",
   "home.homePage.livraisonIntegree": "Clear handover and shipping",
-  "home.homePage.vendeursVerifies": "Explicit seller statuses",
+  "home.homePage.explicitSellerStatusesShort": "Explicit statuses",
+  "home.homePage.trackedPayment": "Tracked payment",
+  "home.homePage.deliveryAvailable": "Delivery available",
+  "home.homePage.individualsAndPros": "Individuals and pros",
   "home.homePage.annoncesRecentes": "Recent listings",
   "home.homePage.lesDernieresOffresPublieesPres":
     "The latest listings posted near you",

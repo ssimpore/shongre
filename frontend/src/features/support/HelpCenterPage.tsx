@@ -156,7 +156,7 @@ export const HelpCenterPage: React.FC = () => {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
       {/* 1. Hero Search Header */}
       <div className="text-center max-w-2xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-text-main text-xs font-bold">
           <Headphones className="w-icon-sm h-icon-sm" />
           <span>Centre d'aide Shongre</span>
         </div>
@@ -271,7 +271,6 @@ export const HelpCenterPage: React.FC = () => {
         <Button
           to="/contact"
           variant="primary"
-          size="lg"
           className="shrink-0 font-semibold"
         >
           Contacter l'assistance Shongre

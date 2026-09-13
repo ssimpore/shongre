@@ -65,6 +65,7 @@ describe("listingActionsResolver", () => {
     expect(result.ownerActions).toEqual(["edit", "manage", "boost", "stats"]);
     expect(result.canDirectPurchase).toBe(false);
     expect(result.canReserve).toBe(false);
+    expect(result.canMakeOffer).toBe(false);
   });
 
   it("uses only listing capabilities explicitly returned by the API", () => {
@@ -82,12 +83,20 @@ describe("listingActionsResolver", () => {
     expect(result.primaryAction).toBe("direct_purchase");
     expect(result.canDirectPurchase).toBe(true);
     expect(result.canReserve).toBe(true);
+    expect(result.canMakeOffer).toBe(true);
     expect(withoutReservation.canReserve).toBe(false);
   });
 
-  it("removes buyer mutations from inactive listings", () => {
+  it.each([
+    "sold",
+    "reserved",
+    "draft",
+    "pending_review",
+    "archived",
+    "expired",
+  ] as const)("removes buyer mutations from %s listings", (status) => {
     const result = listingActionsResolver.resolve({
-      listing: { ...listing, status: "sold" },
+      listing: { ...listing, status },
       viewer: buyer,
       transactionCapabilities: capabilities,
     });
@@ -95,6 +104,29 @@ describe("listingActionsResolver", () => {
     expect(result.primaryAction).toBe("none");
     expect(result.canDirectPurchase).toBe(false);
     expect(result.canReserve).toBe(false);
-    expect(result.statusNotice?.type).toBe("sold");
+    expect(result.canMakeOffer).toBe(false);
+    expect(result.statusNotice).not.toBeNull();
+  });
+
+  it.each([
+    { isNegotiable: false, isReservable: false },
+    { price: 0 },
+    { isFreeDonation: true },
+  ])("hides ineligible offer and reservation actions: %j", (overrides) => {
+    const result = listingActionsResolver.resolve({
+      listing: { ...listing, ...overrides },
+      transactionCapabilities: capabilities,
+    });
+    expect(result.canMakeOffer).toBe(false);
+    expect(result.canReserve).toBe(false);
+  });
+
+  it("shows eligible actions to guests before sign-in", () => {
+    const result = listingActionsResolver.resolve({
+      listing,
+      transactionCapabilities: capabilities,
+    });
+    expect(result.canMakeOffer).toBe(true);
+    expect(result.canReserve).toBe(true);
   });
 });

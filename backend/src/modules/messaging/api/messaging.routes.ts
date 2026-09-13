@@ -3,6 +3,7 @@ import {
   permission,
 } from "../../../api/v1/route-contract.js";
 import { messagingService } from "../messaging.service.js";
+import { presenceService } from "../presence.service.js";
 import { requireApiRequestMarket } from "../../markets/request-market-context.js";
 import {
   assertConversationParticipant,
@@ -10,6 +11,19 @@ import {
 } from "./access-policy.js";
 
 export function registerMessagingRoutes(routes: RouteRegistrar): void {
+  routes.addRoute(
+    "POST",
+    "/messaging/presence",
+    permission("message.read.own"),
+    async ({ principal, body }) => presenceService.heartbeat(principal, body),
+  );
+  routes.addRoute(
+    "GET",
+    "/messaging/presence",
+    permission("message.read.own"),
+    async ({ principal, query }) =>
+      presenceService.read(principal, query.get("conversationIds")),
+  );
   routes.addRoute(
     "GET",
     "/messaging/conversations",

@@ -115,7 +115,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                 if (block.type === "BUTTON")
                   return (
                     <div key={block.id} className="py-2 text-center">
-                      <span className="inline-flex min-h-control-md items-center rounded-control bg-primary px-5 font-bold text-text-inverse">
+                      <span className="inline-flex min-h-control-md items-center rounded-control bg-primary px-5 font-bold text-on-primary">
                         {block.label}
                       </span>
                     </div>

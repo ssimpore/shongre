@@ -526,7 +526,7 @@ export const ProPlansPage: React.FC = () => {
     <div className="pb-16">
       <section className="border-b border-border-subtle bg-bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary-border bg-primary-light px-3 py-1 text-xs font-bold text-primary">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary-border bg-primary-light px-3 py-1 text-xs font-bold text-text-main">
             <Sparkles className="w-icon-sm h-icon-sm" aria-hidden="true" />
             Solutions Shongre Pro
           </div>
@@ -551,7 +551,7 @@ export const ProPlansPage: React.FC = () => {
                 onClick={() => setSelectedVertical(vertical.id)}
                 className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                   selectedVertical === vertical.id
-                    ? "border-primary bg-primary text-text-inverse"
+                    ? "border-primary bg-primary text-on-primary"
                     : "border-border-base bg-bg-surface text-text-secondary hover:border-primary-border hover:text-text-main"
                 }`}
               >
@@ -582,7 +582,7 @@ export const ProPlansPage: React.FC = () => {
               aria-pressed={interval === "year"}
               className={`rounded-control px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 interval === "year"
-                  ? "bg-primary text-text-inverse shadow-xs"
+                  ? "bg-primary text-on-primary shadow-xs"
                   : "text-text-secondary hover:text-text-main"
               }`}
             >
@@ -746,7 +746,7 @@ export const ProPlansPage: React.FC = () => {
                       }`}
                     >
                       {plan.recommended && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-micro font-bold uppercase tracking-wide text-text-inverse shadow-xs">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-micro font-bold uppercase tracking-wide text-on-primary shadow-xs">
                           Recommandé
                         </span>
                       )}

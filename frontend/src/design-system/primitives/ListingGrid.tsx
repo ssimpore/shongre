@@ -5,7 +5,7 @@ export interface ListingGridProps {
   className?: string;
   /** One full-width result per row; pair with list-variant listing cards. */
   variant?: "grid" | "list";
-  /** Fill the available row with responsive columns instead of rail-width cards. */
+  /** Fill the row with as many canonical card tracks as the viewport allows. */
   fluid?: boolean;
 }
 
@@ -14,8 +14,8 @@ export interface ListingGridProps {
  *
  * Mobile keeps one readable column. The default desktop layout uses the same
  * fixed width as rail cards. Result-heavy surfaces can opt into `fluid`, which
- * fills each row with as many token-sized columns as the available space can
- * hold without shrinking the card below the shared dense-grid minimum.
+ * fills each row with as many canonical token-sized columns as the available
+ * space can hold without stretching an individual card.
  */
 export const ListingGrid: React.FC<ListingGridProps> = ({
   children,

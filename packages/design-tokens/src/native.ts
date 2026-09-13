@@ -9,6 +9,7 @@ import {
   themeSpaceScale,
   themeSpacing,
   themeText,
+  themeTextLineHeights,
   themeZIndex,
 } from "./theme";
 
@@ -78,6 +79,7 @@ export const nativeSizing = {
   controlSm: remToPx(themeSpacing["control-sm"]),
   controlMd: remToPx(themeSpacing["control-md"]),
   controlTouch: remToPx(themeSpacing["control-touch"]),
+  controlTarget: remToPx(themeSpacing["control-target"]),
   controlLg: remToPx(themeSpacing["control-lg"]),
   controlFab: remToPx(themeSpacing["control-fab"]),
   iconXs: remToPx(themeSpacing["icon-xs"]),
@@ -91,6 +93,9 @@ export const nativeSizing = {
   avatarLg: remToPx(themeSpacing["avatar-lg"]),
   avatarXl: remToPx(themeSpacing["avatar-xl"]),
   avatar2xl: remToPx(themeSpacing["avatar-2xl"]),
+  listingCard: remToPx(themeSpacing["listing-card"]),
+  listingCardHeight: remToPx(themeSpacing["listing-card-height"]),
+  listingCardMediaHeight: remToPx(themeSpacing["listing-card-media-height"]),
   listingCardListImageSm: remToPx(themeSpacing["listing-card-list-image-sm"]),
   fieldMultilineMin: remToPx(themeSpacing["field-multiline-min"]),
   skeletonPanelMin: remToPx(themeSpacing["skeleton-panel-min"]),
@@ -113,6 +118,8 @@ export const nativeAspect = {
 export const iconStrokeWidths = themeIconStrokeWidths;
 
 const nativeFontSizes = {
+  cardTitle: remToPx(themeText["card-title"]),
+  cardPrice: remToPx(themeText["card-price"]),
   overline: remToPx(themeText.overline),
   micro: remToPx(themeText.micro),
   xs: remToPx(themeText.xs),
@@ -142,6 +149,10 @@ export const nativeTypography = {
   },
   size: nativeFontSizes,
   lineHeight: {
+    cardTitle:
+      nativeFontSizes.cardTitle * Number(themeTextLineHeights["card-title"]),
+    cardPrice:
+      nativeFontSizes.cardPrice * Number(themeTextLineHeights["card-price"]),
     caption: 17,
     bodySm: 21,
     body: 24,

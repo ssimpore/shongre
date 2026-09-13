@@ -129,7 +129,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
               <strong className="text-text-main font-bold">
                 {currentUser?.name}
               </strong>
-              <span className="bg-primary text-text-inverse text-micro font-bold px-2 py-1 rounded-pill">
+              <span className="bg-primary text-on-primary text-micro font-bold px-2 py-1 rounded-pill">
                 {roleLabel(presentedRole)}
               </span>
             </div>
@@ -284,7 +284,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                       scope="col"
                       key={r}
                       className={`p-2.5 text-center min-w-22.5 border-l border-border-inverse ${
-                        isCurrent ? "bg-primary-hover text-text-inverse" : ""
+                        isCurrent ? "bg-primary-hover text-on-primary" : ""
                       }`}
                       title={`${def.title} (niveau ${def.hierarchyLevel})`}
                     >

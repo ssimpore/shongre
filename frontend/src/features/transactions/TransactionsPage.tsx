@@ -343,8 +343,8 @@ export const TransactionsPage: React.FC = () => {
           onClick={() => setStatusFilter("in_progress")}
           className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
             statusFilter === "in_progress"
-              ? "bg-primary text-text-inverse"
-              : "bg-primary-light text-primary hover:bg-primary-surface-soft"
+              ? "bg-primary text-on-primary"
+              : "bg-primary-light text-text-main hover:bg-primary-surface-soft"
           }`}
         >
           En cours & Réservées (
@@ -457,7 +457,7 @@ export const TransactionsPage: React.FC = () => {
                       {/* Delivery badge */}
                       <div className="flex items-center gap-2 mt-1.5 text-micro">
                         {tx.deliveryMethod === "digital" ? (
-                          <span className="inline-flex items-center gap-1 rounded bg-primary-light px-2 py-0.5 font-semibold text-primary">
+                          <span className="inline-flex items-center gap-1 rounded bg-primary-light px-2 py-0.5 font-semibold text-text-main">
                             <FileKey2 className="h-icon-xs w-icon-xs" />
                             {t("digital.common.noShipping")}
                           </span>

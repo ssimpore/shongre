@@ -41,11 +41,18 @@ export const ListingCardSkeleton: React.FC<{ className?: string }> = ({
     )}
   >
     <Skeleton shape="media" className="w-full rounded-none" />
-    <div className="flex flex-col gap-1 px-3 py-2">
+    <div className="flex flex-col gap-2 px-3 py-3">
       <Skeleton shape="line" className="h-3 w-2/3" />
       <Skeleton shape="line" className="h-6 w-full" />
       <Skeleton shape="line" className="h-4 w-5/6" />
       <Skeleton shape="line" className="h-3 w-1/2" />
+      <div className="flex items-center gap-2">
+        <Skeleton shape="circle" className="w-avatar-sm shrink-0" />
+        <div className="flex flex-1 flex-col gap-1">
+          <Skeleton shape="line" className="h-3 w-2/3" />
+          <Skeleton shape="line" className="h-3 w-5/6" />
+        </div>
+      </div>
     </div>
   </div>
 );

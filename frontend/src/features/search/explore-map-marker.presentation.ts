@@ -1,7 +1,10 @@
-import type { Money, MoneyConversionProjection } from "@shongre/contracts";
+import {
+  isActiveMarketResolvedListingPromotion,
+  type Money,
+  type MoneyConversionProjection,
+} from "@shongre/contracts";
 import {
   getListingCardPriceText,
-  getListingPromotionBadges,
   type ListingCardPriceLabels,
 } from "@shongre/features";
 import type { Listing } from "../../types";
@@ -23,6 +26,9 @@ export function presentExploreMapMarker(
   );
   return {
     priceText: getListingCardPriceText(card, locale, priceLabels),
-    isBoosted: getListingPromotionBadges(card).length > 0,
+    isBoosted: isActiveMarketResolvedListingPromotion(
+      card.promotion,
+      card.marketCode,
+    ),
   };
 }

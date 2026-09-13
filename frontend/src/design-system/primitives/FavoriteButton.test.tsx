@@ -47,13 +47,21 @@ describe("FavoriteButton", () => {
   it("keeps the painted size independent of the touch target", () => {
     // Growing the box itself turned the 24px rail heart into a 44px opaque disc
     // sitting on the listing title. The 44px target is a pseudo-element instead.
-    const classes = classAttr(render({ size: "sm" }));
-    expect(classes).toContain("w-6");
-    expect(classes).toContain("h-6");
-    expect(classes).not.toMatch(
+    const compactMarkup = render({ size: "sm" });
+    const cardMarkup = render({ size: "md" });
+    const compactClasses = classAttr(compactMarkup);
+    const cardClasses = classAttr(cardMarkup);
+    expect(compactClasses).toContain("w-control-target");
+    expect(compactClasses).toContain("h-control-target");
+    expect(cardClasses).toContain("w-control-favorite");
+    expect(cardClasses).toContain("h-control-favorite");
+    expect(cardMarkup).toContain("w-icon-md");
+    expect(cardMarkup).toContain("h-icon-md");
+    expect(compactClasses).not.toMatch(
       /(?:^|\s)pointer-coarse:w-control-touch(?:\s|$)/,
     );
-    expect(classes).toContain("favorite-touch-target");
+    expect(compactClasses).toContain("favorite-touch-target");
+    expect(cardClasses).toContain("favorite-touch-target");
   });
 
   it("names its state for assistive technology", () => {

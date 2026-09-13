@@ -50,7 +50,7 @@ const lifecycleLabel: Record<CrmAccount["lifecycle"], string> = {
 const lifecycleTone: Record<CrmAccount["lifecycle"], string> = {
   lead: "bg-info-surface text-info",
   prospect: "bg-warning-surface text-warning",
-  qualified: "bg-primary-light text-primary",
+  qualified: "bg-primary-light text-text-main",
   customer: "bg-success-surface text-success",
   partner: "bg-staff-surface text-staff-strong",
   do_not_contact: "bg-danger-surface text-danger",

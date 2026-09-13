@@ -41,7 +41,7 @@ export const ListingFulfillmentSummary: React.FC<
         className={`rounded-3xl border border-primary-border bg-primary-surface-faint p-6 shadow-sm sm:p-8 ${className}`}
       >
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-text-inverse">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-on-primary">
             <FileKey2 className="h-icon-md w-icon-md" aria-hidden="true" />
           </div>
           <div>

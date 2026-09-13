@@ -133,10 +133,21 @@ scripts/ + Makefile    repository-level tooling
 - The active kit's `08_Design_Tokens/` files are the only editable source for
   official SHONGRE. palette values. `packages/design-tokens/` is the only
   application token system: its generated brand adapter feeds the existing
-  semantic tokens. Shongre Orange is defined exactly once in the active kit and
-  all orange UI roles are computed by the private typed derivation recipe;
-  never author a second orange, hover, active, disabled, focus, border, or
-  surface value. Raw colour primitives are private to
+  semantic tokens. Shongre Orange is defined exactly once in the active kit.
+  Every solid orange role, including primary, hover, active, fill, emphasis,
+  and orange category accents, must equal the logo swatch exactly. The private
+  typed recipe may change only alpha for subtle surfaces, borders, shadows,
+  and disabled roles; never blend another orange or override it locally.
+  Filled orange controls use `on-primary` / `colors.action.onPrimary` for the
+  official logo-white text and icons, with no component foreground overrides.
+  Keep contrast failures visible for this exact brand pairing; never silence
+  the accessibility checks or introduce local color corrections.
+  Inverse and danger controls retain their own foregrounds.
+  Small labels on subtle orange surfaces use the shared main text foreground.
+  Inverse surfaces, borders, and text derive from the official
+  ink; shared footers and the Pro button use the same `surface-inverse` base,
+  with distinct ink-derived hover, muted, and deep states.
+  Raw colour primitives are private to
   `packages/design-tokens/src/theme.ts`; application and shared UI code must use
   typed semantic roles and must never request Tailwind hue/shade ramps, literal
   HEX/RGB/HSL/OKLCH or named white/black/orange colours, define local colour
@@ -723,7 +734,11 @@ France-only happy path is insufficient for market-sensitive work.
   rather than category condition trees. Existing-listing characteristics use
   the public, market-scoped listing read projection, never the publication
   eligibility resolver. Public detail bindings and recorded values determine
-  output; broader stored categories must not be silently replaced with a
+  output. Field icons are authored in taxonomy attribute definitions and travel
+  in the public characteristics projection; clients must not infer them from
+  codes, localized labels, or category-specific maps. Long detail lists keep
+  every published fact available through an accessible disclosure.
+  Broader stored categories must not be silently replaced with a
   guessed publishable leaf. Existing-listing edits share the v1 validator, retain
   unchanged historical answers and validate changed fields and their dependents.
   Discovery expands the published parent hierarchy rather than inferring it
@@ -742,6 +757,12 @@ France-only happy path is insufficient for market-sensitive work.
   record alone does not prove availability. Backend services own lifecycle
   transitions across draft, review, published, reserved, sold, expired,
   suspended, rejected, removed, and archived states.
+  Vertical discovery writers must persist the explicit source-market publication
+  in the same transaction as their shared listing projection, preserve existing
+  market moderation restrictions, and retain the canonical publisher ownership
+  checks. Professional seed inventory must retain its source organization links.
+  Validate projection changes with
+  `make discovery-db-test`; the local database suite rolls back its mutations.
 - Publication should be progressive and preserve non-sensitive draft state
   across authentication, verification, payment/promotion flow, navigation,
   refresh, and temporary failure. Never persist KYC or payment secrets with a
@@ -790,10 +811,17 @@ France-only happy path is insufficient for market-sensitive work.
   replacement to be selectable and must reject a snapshot where its migration
   source remains selectable.
 - Use consistent public purchase/detail terms: **Urgent**, **Remonter
-  l’annonce**, and **À la une**. The compact listing-card indicator summarizes
-  any currently active placement as **Boosté**; it must use the resolved
-  market-scoped discovery/promotion state and its schedule, never a stale
-  boolean.
+  l’annonce**, and **À la une**. Shared Web/native cards and listing details
+  distinguish **Urgent** for urgent placements, **Boosté** for search bumps or
+  sponsored search, and **À la une** for featured/top/spotlight placements. Use
+  only the resolved market-scoped promotion and its active schedule, never stale
+  booleans or standalone ranking metadata. **En promotion** is an independent
+  badge for a positive amount below a valid reference price in the same currency;
+  it may coexist with paid placement but must never affect sponsored ordering.
+  Missing, invalid, free, unpriced or on-request amounts do not imply a sale.
+  Local seed placement examples must persist deterministic market-scoped
+  `listing_promotions` grant evidence and let database triggers derive the
+  effective publication; setting listing flags alone does not activate them.
 - Payment, escrow, refund, payout, reservation, pickup, handover, cancellation,
   dispute, digital entitlement, credential assignment, download, reveal, and
   provisioning state are backend-authoritative and concurrency-safe. Digital
@@ -806,6 +834,12 @@ France-only happy path is insufficient for market-sensitive work.
   support explicit permission, loading, empty, error, retry, and blocked states.
   New UGC surfaces must reuse reporting/blocking controls and add abuse and
   ownership tests.
+- User presence is an ephemeral Redis projection of authenticated session leases,
+  not durable account truth. Only conversation participants may read a
+  counterpart's online, away, offline, or last-seen state. Blocking in either
+  direction, inactive accounts, retained Staff membership, revoked sessions,
+  stale snapshots, or unavailable presence infrastructure must conceal presence
+  as unknown. Clients never submit timestamps or treat unknown as offline.
 - Marketplace review submissions require a completed order and a verified
   participant principal. Derive the recipient, author, and listing context on
   the backend; allow one review per order and author, including the seller's
@@ -833,20 +867,43 @@ France-only happy path is insufficient for market-sensitive work.
 - Reuse `@shongre/design-tokens`, `@shongre/ui`, `@shongre/features`, and the
   existing design-system compatibility entrypoints before creating a new
   primitive, token, or variant. Add variants only for recurring semantic use.
+- Standard buttons match the header's `control-md` height (40px on Web with a
+  fine pointer, 44px on touch); native buttons retain the 44px `controlTouch`
+  floor at every density. Use shared sizes rather than page-specific height
+  overrides; compact compositions may adjust internal spacing. Keep dense
+  desktop actions, navigation rows, media thumbnails, and the raised mobile
+  publish action appropriate to their role.
+  Allow long or enlarged labels to increase button height without clipping.
+- Web authentication entry screens share `AuthLayout`; guest access guards
+  share `AuthRequiredPrompt`. Their enclosing shell owns the header. Preserve
+  the safe destination, including query and fragment, through sign-in,
+  registration, recovery, and email verification links. Account selection uses
+  native radio controls; provider availability and verification remain
+  backend-authoritative.
 - Verified identity marks, verification facts, and professional-account markers
   use only `VerifiedIcon`, `VerificationBadge`, and `ProBadge` from
-  `@shongre/ui`. Their typed size and accessibility props are the supported
-  variation points; applications must not recreate them with generic badge
-  variants, direct `BadgeCheck` icons, copied SVGs, local wrappers, or CSS
-  overrides.
-- The canonical `ListingCardView` anatomy is media with applicable promotion,
-  capability, and multi-photo evidence; category/universe with optional real
-  brand; price with independent Pro and seller-rating facts; title; and
-  location/date. The shared Web/native listing card derives payment, delivery,
+  `@shongre/ui`. Their typed size, icon-visibility, and accessibility props are
+  the supported variation points; applications must not recreate them with
+  generic badge variants, direct `BadgeCheck` icons, copied SVGs, local
+  wrappers, or CSS overrides.
+- The canonical `ListingCardView` anatomy is media with applicable promotion
+  and multi-photo evidence; category/universe with optional real
+  brand; price; a two-line title; location/date; independent seller trust and
+  rating; then up to two category-aware capability or characteristic facts.
+  Vertical Web and native cards use the shared token-backed 220 by 420 footprint
+  with a 210 media well, shared card title/price typography, and brand-orange
+  price role. A professional listing shows only `Pro`; a verified private
+  seller shows the icon-free `VerificationBadge`; an unverified private seller
+  shows no redundant `Particulier` marker. Rating remains an independent real
+  fact. Horizontal cards retain their price-row seller summary and available
+  public seller identity. If public seller identity is absent, retain any
+  explicit professional status beside the price. The shared
+  Web/native listing card derives payment, delivery,
   digital fulfillment, negotiability, and seller-verification presentation only
-  from explicit public listing and seller projections: cards use concise labels
-  where they fit and may condense them to accessible icons, while horizontal
-  cards may show the existing decision and seller summaries. Listing detail
+  from explicit public listing and seller projections. Vertical cards place
+  up to two labeled facts in the divided footer and keep only multi-photo
+  evidence on the media. Horizontal cards retain labeled capabilities and may
+  show the existing decision and seller summaries. Listing detail
   expands every available card fact and category attribute. Missing brand,
   reviews, active promotion, price, capability, or photo stays absent or uses
   the shared neutral media fallback; applications must never invent a
@@ -858,9 +915,20 @@ France-only happy path is insufficient for market-sensitive work.
 - Web shells use `EnvironmentHeaderStack` to keep the environment toolbar and
   their application header in one sticky chrome stack. The Next.js development
   launcher uses only its supported `devIndicators` corner configuration; the
-  application toolbar keeps its compact token-backed height in every
-  environment. Never manipulate the launcher's shadow DOM or let development
+  application toolbar keeps its compact token-backed height when visible and
+  takes no layout space when hidden. Persist its visibility as a browser
+  preference, keep its runtime utilities mounted, and provide an accessible
+  restore control. Never manipulate the launcher's shadow DOM or let development
   tooling determine production chrome geometry.
+- Homepage sections use the same shared Web `Container` with `width="results"`
+  and standard responsive gutters as the search page, including hero, discovery,
+  collection, universe, recent-search, Pro, loading, and error surfaces. Keep
+  their responsive widths and content edges aligned; the marketplace header
+  and footer use `width="full"` so desktop chrome spans the viewport independently
+  of homepage content.
+  The marketplace footer uses the header's compact `BrandHeaderSignature`
+  geometry with reverse artwork and the same `text-sm`/`text-xs` typography
+  scale; wide breakpoints must not enlarge its logo, icons, or text.
 - Shared Web/native APIs must preserve behavior and accessibility while allowing
   narrow platform adapters. Do not use a WebView as a code-sharing shortcut or
   widen a Next.js client boundary merely to share presentation.
@@ -870,10 +938,14 @@ France-only happy path is insufficient for market-sensitive work.
   records to `ListingCardView`; generic listings resolve the universe label and
   optional brand from the canonical taxonomy and listing attributes. Do not add
   category-specific card markup or conditional fields in page components.
-  Listing rails use the shared Web `ListingRail` primitive: widths remain
-  token-owned and CSS aligns natural card heights within each rail, preserving
-  full titles and seller facts. Never stretch unrelated rails to a shared maximum
-  height; longer content in another section must not add blank space to cards.
+  Listing rails use the shared Web `ListingRail` primitive: the canonical card
+  width and height remain token-owned, while narrow rails scroll instead of
+  shrinking content below the supported footprint. Longer values clamp or use
+  the compact typography defined by the shared card rather than stretching a
+  rail or creating page-specific dimensions. Search and other result grids use
+  the shared fluid `ListingGrid`: equal flexible tracks distribute fixed-size
+  cards across the complete row, including its outer remainder, while homepage
+  rails retain their independent content-sized scrolling layout.
   Keep deferred section rendering intact.
   Profile results, hero media slides, operational rows, and map popups may
   remain specialized when they are not listing-card equivalents.

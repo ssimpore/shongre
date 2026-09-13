@@ -10,6 +10,9 @@ import { useAuthorization } from "../../security/useAuthorization";
 import type { ShongreProductId } from "../../types";
 import { applicationHref } from "../../platform/applications/use-application-href";
 import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
+import type { ShongreApplicationId } from "../../platform/applications/application-registry";
+import { DropdownMenu } from "../../design-system/primitives/DropdownMenu";
+import { useTranslation } from "../../i18n/I18nProvider";
 import {
   BrandHeaderSignature,
   BrandIcon,
@@ -40,6 +43,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
   navigation,
   workspacePolicyId,
 }) => {
+  const { t } = useTranslation();
   const { currentUser, isAuthenticated } = useAuth();
   const { canAccessRoute } = useAuthorization();
   const location = useLocation();
@@ -128,15 +132,40 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
             </span>
           </a>
           <span className="h-8 w-px bg-border-base" aria-hidden="true" />
-          <a
-            href={productDestination}
-            className="truncate rounded-control text-sm font-bold text-text-main transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:text-base"
-            aria-label={`${productName}, ${
-              isProductOnly ? "ouvrir l’application" : "accueil du produit"
-            }`}
-          >
-            {productName}
-          </a>
+          {showProductNavigation && showPlatformNavigation ? (
+            <DropdownMenu<ShongreApplicationId>
+              ariaLabel={t("product.header.chooseProduct")}
+              value={productId}
+              options={[
+                { value: "prospects", label: "Prospects" },
+                { value: "facturation", label: "Facturation" },
+                {
+                  value: "solutions",
+                  label: t("solutions.header.seeAll"),
+                },
+              ]}
+              onChange={(applicationId) =>
+                window.location.assign(
+                  new URL(
+                    applicationHref(applicationId),
+                    applications[applicationId].origin,
+                  ).href,
+                )
+              }
+              size="touch"
+              panelWidth="w-56"
+            />
+          ) : (
+            <a
+              href={productDestination}
+              className="truncate rounded-control text-sm font-bold text-text-main transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:text-base"
+              aria-label={`${productName}, ${
+                isProductOnly ? "ouvrir l’application" : "accueil du produit"
+              }`}
+            >
+              {productName}
+            </a>
+          )}
         </div>
 
         {showProductNavigation ? (
@@ -179,7 +208,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
             {showWorkspaceAction ? (
               <a
                 href={workspaceDestination}
-                className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-4 text-xs font-bold text-text-inverse shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-4 text-xs font-bold text-on-primary shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {canOpenWorkspace
                   ? "Ouvrir l’application"
@@ -264,7 +293,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
             {showWorkspaceAction ? (
               <a
                 href={workspaceDestination}
-                className="mt-3 inline-flex min-h-control-touch w-full items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="mt-3 inline-flex min-h-control-touch w-full items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {isAuthenticated
                   ? "Ouvrir l’application"

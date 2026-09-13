@@ -47,6 +47,7 @@ import { trendingService } from "../../src/modules/trending/trending.service.js"
 import { importBaselineCommercialCatalog } from "../monetization/import-baseline.js";
 import { runPsql } from "../database/psql.js";
 import { localSeedUuid } from "./local-seed-identity.js";
+import type { Database } from "../../src/generated/database.types.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -1067,15 +1068,57 @@ function listingPromotionType(
 
 function listingCategory(
   source: Record<string, any>,
-  taxonomy: Pick<TaxonomyV1Service, "findCategory" | "projectIdentity">,
-): { id: string; path: string[] } {
+  taxonomy: Pick<
+    TaxonomyV1Service,
+    "findCategory" | "getBundle" | "isDescendant" | "projectIdentity"
+  >,
+): {
+  id: string;
+  path: string[];
+  listingTypeId: string;
+  listingIntent: NonNullable<Listing["listingIntent"]>;
+} {
   const identity = source.subCategorySlug || source.categorySlug;
-  const category = taxonomy.findCategory(identity);
-  if (!category)
+  const requestedCategory = taxonomy.findCategory(identity);
+  if (!requestedCategory)
     throw new Error(`No database category is compatible with ${identity}.`);
+  const candidates = taxonomy
+    .getBundle()
+    .listingTypes.filter(
+      (listingType) => listingType.categoryId === requestedCategory.id,
+    );
+  const listingType = source.listingTypeId
+    ? taxonomy
+        .getBundle()
+        .listingTypes.find(
+          (candidate) => candidate.id === String(source.listingTypeId),
+        )
+    : candidates.length === 1
+      ? candidates[0]
+      : undefined;
+  if (!listingType) {
+    throw new Error(
+      `Fixture ${source.id || "listing"} must select one canonical listingTypeId for ${identity}.`,
+    );
+  }
+  const category = taxonomy.findCategory(listingType.categoryId);
+  if (
+    !category ||
+    (category.id !== requestedCategory.id &&
+      !taxonomy.isDescendant(category.id, requestedCategory.id))
+  ) {
+    throw new Error(
+      `Listing type ${listingType.id} is outside fixture category ${identity}.`,
+    );
+  }
   const projection = taxonomy.projectIdentity(category.id);
   if (!projection) throw new Error(`Missing taxonomy path for ${identity}.`);
-  return { id: category.id, path: projection.path.map((node) => node.id) };
+  return {
+    id: category.id,
+    path: projection.path.map((node) => node.id),
+    listingTypeId: listingType.id,
+    listingIntent: listingType.intent,
+  };
 }
 
 async function removeLegacyMarketplaceSeed(): Promise<void> {
@@ -1095,7 +1138,10 @@ export function createSeedListing(
   options: {
     listingId: string;
     profileId: (sourceId: string) => string;
-    taxonomy: Pick<TaxonomyV1Service, "findCategory" | "projectIdentity">;
+    taxonomy: Pick<
+      TaxonomyV1Service,
+      "findCategory" | "getBundle" | "isDescendant" | "projectIdentity"
+    >;
     images: readonly string[];
     marketplaceOrganizationId?: string;
   },
@@ -1142,6 +1188,13 @@ export function createSeedListing(
           .map((option: Record<string, any>) => [option.type, true]),
       ),
       online_payment: Boolean(source.isOnlinePaymentAvailable),
+      reservation: source.isReservable === true,
+      ...(source.isReservable === true &&
+      (source.reservationType === "instant" ||
+        source.reservationType === "request")
+        ? { reservation_type: source.reservationType }
+        : {}),
+      ...publication.availableServices,
     },
     publishedAt: publication.publishedAt || source.createdAt,
     sortDate: publication.publishedAt || source.createdAt,
@@ -1149,6 +1202,35 @@ export function createSeedListing(
   const promotionType = listingPromotionType(
     source.promotionType || source.boostType,
   );
+  const priceType =
+    source.attributes?.price_type ??
+    (source.isFreeDonation
+      ? "free"
+      : source.isNegotiable
+        ? "negotiable"
+        : "fixed");
+  const listingIntentOption: Partial<
+    Record<NonNullable<Listing["listingIntent"]>, string>
+  > = {
+    SELL: "sell",
+    WANTED: "wanted",
+    DONATE: "give",
+    EXCHANGE: "exchange",
+    RENT_OUT: "rent",
+    RENT_SEEK: "rent",
+    SERVICE_OFFER: "offer_service",
+    JOB_OFFER: "job_offer",
+  };
+  const deliveryMethods = (source.deliveryOptions || [])
+    .filter((option: Record<string, any>) => option.available)
+    .map((option: Record<string, any>) =>
+      option.type === "hand_delivery" ? "pickup" : option.type,
+    )
+    .filter((type: string) =>
+      ["pickup", "relay_point", "home_delivery", "carrier", "digital"].includes(
+        type,
+      ),
+    );
   const listing: Listing = {
     id: mappedId,
     sellerId: options.profileId(source.sellerId),
@@ -1170,6 +1252,8 @@ export function createSeedListing(
           ? "identity_verified"
           : "unverified"),
     categoryId: category.id,
+    listingTypeId: category.listingTypeId,
+    listingIntent: category.listingIntent,
     title: source.title,
     description: source.description,
     price,
@@ -1193,6 +1277,17 @@ export function createSeedListing(
       .filter((option: Record<string, any>) => option.available)
       .map((option: Record<string, any>) => option.type)
       .filter((type: string) => type !== "custom_carrier"),
+    fulfillmentModel: source.fulfillmentModel || "PHYSICAL",
+    ...(source.fulfillmentModel && source.fulfillmentModel !== "PHYSICAL"
+      ? {
+          digitalFulfillmentVersionId: localSeedUuid(
+            "digital-fulfillment-version",
+            source.id,
+          ),
+          productVersion:
+            source.productVersion || source.attributes?.version || "1",
+        }
+      : {}),
     shippingCost: Number(
       (source.deliveryOptions || []).find(
         (option: Record<string, any>) => option.available && option.price,
@@ -1224,12 +1319,30 @@ export function createSeedListing(
     viewCount: Number(source.viewsCount ?? source.viewCount ?? 0),
     favoriteCount: Number(source.favoritesCount ?? 0),
     attributes: {
+      ...(listingIntentOption[category.listingIntent]
+        ? { listing_intent: listingIntentOption[category.listingIntent] }
+        : {}),
+      seller_type: source.sellerType === "pro" ? "professional" : "individual",
+      ...(source.condition && source.condition !== "not_applicable"
+        ? { condition: source.condition }
+        : {}),
+      availability_status:
+        source.status === "reserved" ? "reserved" : "available",
+      currency,
+      negotiable: Boolean(source.isNegotiable),
+      ...(deliveryMethods.length ? { delivery_methods: deliveryMethods } : {}),
+      pickup_available: deliveryMethods.includes("pickup"),
+      shipping_cost: Number(
+        (source.deliveryOptions || []).find(
+          (option: Record<string, any>) => option.available && option.price,
+        )?.price || 0,
+      ),
+      messaging_enabled: true,
       ...(source.attributes || {}),
       categoryPath: category.path,
       legacyCategorySlug: source.categorySlug,
       legacySubCategorySlug: source.subCategorySlug,
-      isNegotiable: Boolean(source.isNegotiable),
-      isFreeDonation: Boolean(source.isFreeDonation),
+      price_type: priceType,
       contactCount: Number(source.contactCount || 0),
     },
     createdAt: source.createdAt,
@@ -1237,6 +1350,49 @@ export function createSeedListing(
     expiresAt: FIXED_EXPIRES_AT,
   };
   return listing;
+}
+
+/** Persist local grant evidence; database triggers own the effective projection. */
+export function createSeedListingPromotion(
+  listing: Listing,
+): Database["public"]["Tables"]["listing_promotions"]["Insert"] | undefined {
+  if (
+    listing.status !== "published" ||
+    listing.promotionState !== "active" ||
+    listing.promotionSource !== "admin_grant" ||
+    !listing.promotionType ||
+    !listing.promotionStartAt ||
+    !listing.promotionEndAt ||
+    !listing.marketPublications?.some(
+      (publication) =>
+        publication.marketCode === listing.marketCode &&
+        publication.status === "active" &&
+        publication.complianceState === "approved",
+    )
+  )
+    return undefined;
+
+  const reference = `local-seed:${listing.id}:${listing.marketCode}`;
+  return {
+    id: localSeedUuid("listing-market-promotion", reference),
+    listing_id: listing.id,
+    market_code: listing.marketCode,
+    placement_type: listing.promotionType,
+    source_type: "admin_grant",
+    admin_grant_reference: reference,
+    status: "active",
+    label:
+      listing.promotionLabel ||
+      (listing.promotionType === "urgent_badge"
+        ? "Urgent"
+        : listing.promotionType === "sponsored_search"
+          ? "Sponsorisé"
+          : listing.promotionType === "search_bump"
+            ? "Boosté"
+            : "À la une"),
+    starts_at: listing.promotionStartAt,
+    ends_at: listing.promotionEndAt,
+  };
 }
 
 async function seedGenericListings(
@@ -1257,7 +1413,78 @@ async function seedGenericListings(
       taxonomy,
       marketplaceOrganizationId,
     });
-    await repository.save(listing);
+    const isDigital =
+      listing.fulfillmentModel && listing.fulfillmentModel !== "PHYSICAL";
+    // The fulfillment version references its listing while the listing's
+    // digital state references that version. Persist the neutral physical row
+    // first, then the version, then replace the listing projection.
+    // This is local seed ordering only; production publication uses the domain
+    // workflow and never bypasses its policy checks.
+    await repository.save(
+      isDigital
+        ? {
+            ...listing,
+            fulfillmentModel: "PHYSICAL",
+            digitalFulfillmentVersionId: undefined,
+            productVersion: undefined,
+          }
+        : listing,
+    );
+    if (isDigital) {
+      const policyResult = await client
+        .from("digital_market_policies")
+        .select("id,version")
+        .eq("market_code", listing.marketCode)
+        .order("version", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (policyResult.error) throw policyResult.error;
+      if (!policyResult.data) {
+        throw new Error(
+          `Missing fail-closed digital policy for ${listing.marketCode}.`,
+        );
+      }
+      const fulfillmentResult = await client
+        .from("digital_fulfillment_versions")
+        .upsert(
+          {
+            id: listing.digitalFulfillmentVersionId,
+            listing_id: listing.id,
+            seller_id: listing.sellerId,
+            market_code: listing.marketCode,
+            policy_id: policyResult.data.id,
+            policy_version: policyResult.data.version,
+            version: 1,
+            product_version: listing.productVersion,
+            fulfillment_types: [listing.fulfillmentModel],
+            primary_fulfillment_type: listing.fulfillmentModel,
+            buyer_facing_description:
+              "Licence transférée par le vendeur après confirmation de la transaction.",
+            compatibility: ["macOS", "Windows"],
+            requirements: ["Compte éditeur requis pour activer la licence"],
+            public_terms_label:
+              "Vérifiez les conditions de transfert avant la transaction.",
+            product_access_class: "SOFTWARE_LICENSE",
+            credential_kinds: [],
+            provisioning_time_hours: 24,
+            entitlement_duration_days: 3650,
+            download_limit: 1,
+            reveal_limit: 1,
+            status: "DRAFT",
+            moderation_status: "PENDING",
+          },
+          { onConflict: "id" },
+        );
+      if (fulfillmentResult.error) throw fulfillmentResult.error;
+      await repository.save(listing);
+    }
+    const promotion = createSeedListingPromotion(listing);
+    if (promotion) {
+      const result = await getSupabaseAdminClient()
+        .from("listing_promotions")
+        .upsert(promotion, { onConflict: "id" });
+      if (result.error) throw result.error;
+    }
     const deleteResult = await client
       .from("listing_media")
       .delete()
@@ -1769,11 +1996,36 @@ async function seedEmployment(employerLogoUrl: string): Promise<void> {
       EMPLOYMENT_DEMO_JOBS.map((job) => [job.employer.id, job.employer]),
     ).values(),
   );
+  const employerOrganizations = new Map<string, string>();
   for (const employer of employers) {
     const ownerLegacyId = employer.publisherUserId || employer.id;
+    const publisher = allSeedProfiles().find(
+      (profile) => profile.legacyId === ownerLegacyId,
+    );
+    if (!publisher) throw new Error(`Unknown local employer ${employer.id}.`);
+    if (publisher.accountType === "professional") {
+      const employerOrganizationId = organizationId(employer.id);
+      const location = EMPLOYMENT_DEMO_JOBS.find(
+        (job) => job.employer.id === employer.id,
+      )!.primaryLocation;
+      const organizationResult = await client.from("organizations").upsert({
+        id: employerOrganizationId,
+        owner_id: profileId(ownerLegacyId),
+        legal_name: employer.name,
+        trade_name: employer.name,
+        registered_address: "Adresse synthétique — France",
+        city: location.city,
+        postal_code: location.postalCode || "00000",
+        country: "FR",
+        status: "active",
+        professional_vertical: "employment",
+      });
+      if (organizationResult.error) throw organizationResult.error;
+      employerOrganizations.set(employer.id, employerOrganizationId);
+    }
     const result = await client.from("employment_employer_profiles").upsert({
       id: localSeedUuid("employment-employer", employer.id),
-      organization_id: null,
+      organization_id: employerOrganizations.get(employer.id) || null,
       owner_user_id: profileId(ownerLegacyId),
       employer_type_id: employer.employerTypeId,
       slug: `${employer.slug}-local`,
@@ -1800,7 +2052,7 @@ async function seedEmployment(employerLogoUrl: string): Promise<void> {
         ...source.employer,
         id: localSeedUuid("employment-employer", source.employer.id),
         publisherUserId: profileId(ownerLegacyId),
-        organizationId: undefined,
+        organizationId: employerOrganizations.get(source.employer.id),
         branchId: undefined,
         logoUrl: employerLogoUrl,
       },

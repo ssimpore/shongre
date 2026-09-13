@@ -28,41 +28,75 @@ const items = (input = vehicle) =>
   projectListingCharacteristics(input).groups.flatMap((group) => group.items);
 
 describe("backend listing characteristics", () => {
+  it("projects authored icons for every reusable field and honors a published override", () => {
+    for (const field of TAXONOMY_V1_PRIVATE_BUNDLE.attributes)
+      expect(field.iconName, field.code).toBeTruthy();
+    const override = {
+      ...TAXONOMY_V1_PRIVATE_BUNDLE,
+      attributes: TAXONOMY_V1_PRIVATE_BUNDLE.attributes.map((field) =>
+        field.code === "model_year"
+          ? { ...field, iconName: "leaf" as const }
+          : field,
+      ),
+    };
+    expect(
+      project(vehicle, override)
+        .groups.flatMap((group) => group.items)
+        .find((item) => item.code === "model_year")?.icon,
+    ).toBe("leaf");
+    const detail = projectLocalizedListingCharacteristics(
+      vehicle,
+      TAXONOMY_V1_PRIVATE_BUNDLE,
+      "detail",
+    );
+    expect(detail.find((item) => item.code === "model_year")).toMatchObject({
+      icon: "calendar",
+      groupId: "grp.vehicle_identity",
+      presentation: "fact",
+    });
+  });
+
   it("projects recorded vehicle values without choosing a publishable child category", () => {
     expect(items()).toEqual(
       expect.arrayContaining([
         {
           code: "brand",
+          icon: "tag",
           label: "Marque",
           value: "Peugeot",
           presentation: "fact",
         },
         {
           code: "model_year",
+          icon: "calendar",
           label: "Année modèle",
           value: "2022",
           presentation: "fact",
         },
         {
           code: "mileage",
+          icon: "gauge",
           label: "Kilométrage / Heures",
           value: "28\u202f500 km",
           presentation: "fact",
         },
         {
           code: "fuel_type",
+          icon: "fuel",
           label: "Énergie / Carburant",
           value: "Essence",
           presentation: "fact",
         },
         {
           code: "transmission",
+          icon: "settings",
           label: "Boîte de vitesses",
           value: "Manuelle",
           presentation: "fact",
         },
         {
           code: "critair_class",
+          icon: "leaf",
           label: "Classe Crit’Air",
           value: "Crit’Air 1",
           presentation: "fact",
@@ -88,6 +122,7 @@ describe("backend listing characteristics", () => {
     }).groups.flatMap((group) => group.items);
     expect(result).toContainEqual({
       code: "model_year",
+      icon: "calendar",
       label: "Année modèle",
       value: "2024",
       presentation: "fact",
@@ -141,12 +176,14 @@ describe("backend listing characteristics", () => {
     });
     expect(result).toContainEqual({
       code: "fuel_type",
+      icon: "fuel",
       label: "Fuel / Energy",
       value: "Petrol",
       presentation: "fact",
     });
     expect(result).toContainEqual({
       code: "mileage",
+      icon: "gauge",
       label: "Mileage / Hours",
       value: "0 km",
       presentation: "fact",
@@ -193,6 +230,7 @@ describe("backend listing characteristics", () => {
     const withLift = project({ living_area: 65, elevator: true });
     expect(withLift).toContainEqual({
       code: "elevator",
+      icon: "door",
       label: "Ascenseur",
       value: "Oui",
       presentation: "feature",

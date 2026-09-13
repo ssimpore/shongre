@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { interaction } from "@shongre/design-tokens";
 import {
   ActivityIndicator,
   Pressable,
@@ -24,7 +25,7 @@ export interface ButtonProps {
   label?: string;
   onPress: () => void;
   variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "pro";
-  size?: "sm" | "compact" | "md" | "lg";
+  size?: "sm" | "compact" | "md";
   disabled?: boolean;
   loading?: boolean;
   isLoading?: boolean;
@@ -83,10 +84,12 @@ export function Button({
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
-        sizeStyles[size],
+        size === "sm" && styles.small,
         variantStyles[variant],
         fullWidth && styles.fullWidth,
-        pressed && !unavailable && styles.pressed,
+        pressed &&
+          !unavailable &&
+          (variant === "primary" ? styles.primaryPressed : styles.pressed),
         unavailable && variant !== "primary" && styles.disabled,
         unavailable && variant === "primary" && styles.primaryDisabled,
         style,
@@ -97,9 +100,11 @@ export function Button({
           color={
             variant === "primary" && unavailable
               ? nativeColors.text.primary
-              : variant === "primary" || variant === "pro"
+              : variant === "primary"
                 ? nativeColors.action.onPrimary
-                : nativeColors.action.primary
+                : variant === "pro" || variant === "danger"
+                  ? nativeColors.text.inverse
+                  : nativeColors.text.primary
           }
         />
       ) : (
@@ -127,7 +132,12 @@ export function Button({
 const styles = StyleSheet.create({
   base: {
     borderRadius: nativeRadius.control,
+    minHeight: nativeSizing.controlTouch,
+    minWidth: nativeSizing.controlTouch,
+    maxWidth: nativeSizing.full,
     paddingHorizontal: nativeSpacing.lg,
+    paddingVertical: nativeSpacing.xs,
+    flexShrink: 1,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
@@ -135,33 +145,26 @@ const styles = StyleSheet.create({
     borderWidth: nativeBorders.hairline,
   },
   fullWidth: { width: nativeSizing.full },
+  small: { paddingHorizontal: nativeSpacing.md },
   pressed: { opacity: nativeOpacity.pressed },
+  primaryPressed: { transform: [{ scale: interaction.pressScale }] },
   disabled: { opacity: nativeOpacity.disabled },
   primaryDisabled: {
     backgroundColor: nativeColors.action.primaryDisabled,
     borderColor: nativeColors.action.primaryDisabledBorder,
   },
   primaryDisabledLabel: { color: nativeColors.text.primary },
-  label: { fontFamily: nativeTypography.fontFamily.bold },
+  label: {
+    fontFamily: nativeTypography.fontFamily.bold,
+    flexShrink: 1,
+    textAlign: "center",
+  },
 });
 
-const sizeStyles = StyleSheet.create({
-  sm: {
-    minHeight: nativeSizing.controlSm,
-    paddingHorizontal: nativeSpacing.md,
-  },
-  compact: { minHeight: nativeSizing.controlMd },
-  md: { minHeight: nativeSizing.controlTouch },
-  lg: {
-    minHeight: nativeSizing.controlLg,
-    paddingHorizontal: nativeSpacing.xl,
-  },
-});
 const labelSizeStyles = StyleSheet.create({
   sm: { fontSize: nativeTypography.size.caption },
   compact: { fontSize: nativeTypography.size.bodySm },
   md: { fontSize: nativeTypography.size.bodySm },
-  lg: { fontSize: nativeTypography.size.body },
 });
 const variantStyles = StyleSheet.create({
   primary: {
@@ -195,6 +198,6 @@ const labelVariantStyles = StyleSheet.create({
   secondary: { color: nativeColors.text.primary },
   outline: { color: nativeColors.text.primary },
   ghost: { color: nativeColors.action.primary },
-  danger: { color: nativeColors.action.onPrimary },
-  pro: { color: nativeColors.action.onPrimary },
+  danger: { color: nativeColors.text.inverse },
+  pro: { color: nativeColors.text.inverse },
 });

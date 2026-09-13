@@ -95,7 +95,6 @@ export const NewsletterUnsubscribePage: React.FC = () => {
           <Button
             variant="primary"
             fullWidth
-            size="lg"
             onClick={unsubscribe}
             disabled={state === "submitting"}
           >

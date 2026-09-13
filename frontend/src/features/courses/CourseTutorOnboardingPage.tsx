@@ -361,7 +361,7 @@ const CourseTutorOnboardingEditor: React.FC = () => {
                   disabled={index > step}
                   className={`flex min-h-control-touch w-full items-center gap-2 rounded-control px-2.5 text-left text-xs font-semibold ${
                     index === step
-                      ? "bg-primary-light text-primary"
+                      ? "bg-primary-light text-text-main"
                       : index < step
                         ? "text-success"
                         : "text-text-disabled"

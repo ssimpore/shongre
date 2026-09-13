@@ -181,6 +181,7 @@ export const HomeUniverseExplorer: React.FC<{
     return (
       <Container
         as="section"
+        width="results"
         aria-labelledby="home-universe-explorer-title"
         className={homepageVisibilityClass(section)}
       >
@@ -206,6 +207,7 @@ export const HomeUniverseExplorer: React.FC<{
     return (
       <Container
         as="section"
+        width="results"
         aria-labelledby="home-universe-explorer-title"
         className={homepageVisibilityClass(section)}
       >
@@ -235,6 +237,7 @@ export const HomeUniverseExplorer: React.FC<{
   return (
     <Container
       as="section"
+      width="results"
       aria-labelledby="home-universe-explorer-title"
       data-testid="home-universe-explorer"
       className={homepageVisibilityClass(section)}

@@ -717,7 +717,9 @@ const SEMANTIC_TEXT_SURFACE_PAIRS = [
   ...TEXT_TOKENS_ON_LIGHT.flatMap((textToken) =>
     LIGHT_SURFACES.map((surfaceToken) => [textToken, surfaceToken]),
   ),
-  ["primary", "primary-light"],
+  ["on-primary", "primary"],
+  ["on-primary", "primary-hover"],
+  ["on-primary", "primary-active"],
 ];
 
 function readToken(name) {

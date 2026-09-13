@@ -25,6 +25,8 @@ import {
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
+import { useConversationPresence } from "@/features/messaging/useConversationPresence";
+import { PresenceStatus } from "@/features/messaging/PresenceStatus";
 
 export default function MessagesScreen() {
   const router = useRouter();
@@ -33,6 +35,10 @@ export default function MessagesScreen() {
   const [items, setItems] = useState<MobileConversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const presence = useConversationPresence(
+    items.map((item) => item.id),
+    activeMarket.code,
+  );
 
   const load = useCallback(async () => {
     if (!user) {
@@ -109,6 +115,7 @@ export default function MessagesScreen() {
                   </Text>
                 ) : null}
               </View>
+              <PresenceStatus presence={presence[item.id]} />
               <Text numberOfLines={1} style={styles.listingTitle}>
                 {item.listingTitle}
               </Text>

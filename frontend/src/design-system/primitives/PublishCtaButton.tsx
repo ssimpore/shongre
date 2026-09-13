@@ -9,7 +9,8 @@ export interface PublishCtaButtonProps {
   fullWidth?: boolean;
   /** Runs before navigation — the mobile drawer uses it to close itself. */
   onNavigate?: () => void;
-  size?: "md" | "lg";
+  /** Allows a prominent marketing surface to use the brand-filled treatment. */
+  variant?: "pro" | "primary";
   className?: string;
 }
 
@@ -23,9 +24,10 @@ export interface PublishCtaButtonProps {
  * whichever one a visitor met first taught them the wrong thing about the
  * others.
  *
- * The dark treatment is the canonical one: it is what the raised tab-bar button
- * already uses, and it keeps the brand colour for the glyph rather than spending
- * it on a full-width fill that competes with the primary buttons around it.
+ * The dark treatment remains the shell default: it is what the raised tab-bar
+ * button and header use, and it keeps the brand colour for the glyph. A focused
+ * marketing surface may request the primary variant when the action is the
+ * page's visual anchor; destination, label and interaction stay centralized.
  *
  * Destination and label come from `usePublishCta`, so the button keeps matching
  * what the visitor can actually do — a guest is offered registration, a seller
@@ -34,7 +36,7 @@ export interface PublishCtaButtonProps {
 export const PublishCtaButton: React.FC<PublishCtaButtonProps> = ({
   fullWidth = false,
   onNavigate,
-  size = "md",
+  variant = "pro",
   className = "",
 }) => {
   const publishCta = usePublishCta();
@@ -45,10 +47,13 @@ export const PublishCtaButton: React.FC<PublishCtaButtonProps> = ({
       to={publishCta.to}
       data-marketplace-action="listing.publish"
       onClick={onNavigate}
-      variant="pro"
-      size={size}
+      variant={variant}
       fullWidth={fullWidth}
-      leftIcon={<PlusCircle className="w-4.5 h-4.5 text-primary" />}
+      leftIcon={
+        <PlusCircle
+          className={`h-4.5 w-4.5 ${variant === "primary" ? "text-on-primary" : "text-primary"}`}
+        />
+      }
       className={`${fullWidth ? "" : "w-full sm:w-auto"} ${className}`}
     >
       {t(publishCta.labelKey)}

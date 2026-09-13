@@ -23,6 +23,7 @@ export function HomeRecentSearches({
   return (
     <Container
       as="section"
+      width="results"
       aria-labelledby="home-recent-searches-title"
       className={homepageVisibilityClass(section)}
     >
@@ -44,7 +45,7 @@ export function HomeRecentSearches({
           >
             <Link
               to={routes.search(query)}
-              className="flex min-h-control-md min-w-0 items-center gap-2 rounded-control text-sm font-semibold text-text-main hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              className="flex min-h-control-md min-w-0 items-center gap-2 rounded-control text-sm font-semibold text-text-main decoration-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
             >
               <Search
                 aria-hidden="true"

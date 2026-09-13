@@ -11,7 +11,7 @@ const classTokens = (html: string, name: string): string[] =>
     .filter((token) => token === name);
 
 describe("shared control metrics", () => {
-  it("keeps default buttons, inputs and selects on the touch height and control radius", () => {
+  it("keeps actions at header height and fields at touch height with a shared radius", () => {
     const html = renderToStaticMarkup(
       <>
         <Button>Continuer</Button>
@@ -23,10 +23,8 @@ describe("shared control metrics", () => {
       </>,
     );
 
-    // Count whole class tokens, not substrings: `min-h-control-touch` contains
-    // `h-control-touch`, so a substring match cannot tell the height apart from
-    // the floor the fields also pin.
-    expect(classTokens(html, "h-control-touch")).toHaveLength(3);
+    expect(classTokens(html, "h-control-touch")).toHaveLength(2);
+    expect(classTokens(html, "min-h-control-md")).toHaveLength(1);
     expect(classTokens(html, "rounded-control")).toHaveLength(3);
   });
 
@@ -102,7 +100,7 @@ describe("shared control metrics", () => {
       <>
         <Button size="sm">Petit</Button>
         <Button size="compact">Compact</Button>
-        <Button size="lg">Grand</Button>
+        <Button>Standard</Button>
         <IconButton size="md" ariaLabel="Fermer">
           ×
         </IconButton>
@@ -112,7 +110,7 @@ describe("shared control metrics", () => {
     expect(html.match(/rounded-control/g)).toHaveLength(4);
     expect(html).toContain("h-control-sm");
     expect(html).toContain("h-control-md");
-    expect(html).toContain("h-control-lg");
+    expect(html).toContain("min-h-control-md");
   });
 
   it("keeps multiline fields on the same radius and touch floor", () => {

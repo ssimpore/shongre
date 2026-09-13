@@ -11,6 +11,7 @@ import {
   nativeBorders,
   nativeColors,
   nativeRadius,
+  nativeSizing,
   nativeSpacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
@@ -61,11 +62,13 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     flexDirection: "row",
     alignItems: "center",
+    maxWidth: nativeSizing.full,
     borderRadius: nativeRadius.md,
     borderWidth: nativeBorders.hairline,
     gap: nativeSpacing.xs,
   },
   label: {
+    flexShrink: 1,
     fontFamily: nativeTypography.fontFamily.semibold,
   },
 });
@@ -109,6 +112,10 @@ const variants = StyleSheet.create({
     backgroundColor: nativeColors.action.primarySubtle,
     borderColor: nativeColors.action.primaryBorder,
   },
+  boosted: {
+    backgroundColor: nativeColors.surface.raised,
+    borderColor: nativeColors.action.primaryBorder,
+  },
   inverse: {
     backgroundColor: nativeColors.surface.inverse,
     borderColor: nativeColors.surface.inverse,
@@ -136,11 +143,18 @@ const variants = StyleSheet.create({
 });
 const labels = StyleSheet.create({
   neutral: { color: nativeColors.text.emphasis },
-  primary: { color: nativeColors.action.primary },
+  primary: { color: nativeColors.text.primary },
+  boosted: {
+    color: nativeColors.action.primary,
+    fontFamily: nativeTypography.fontFamily.bold,
+  },
   inverse: { color: nativeColors.text.inverse },
   urgent: { color: nativeColors.status.error },
   deal: { color: nativeColors.status.warning },
   warning: { color: nativeColors.status.warning },
   success: { color: nativeColors.status.success },
-  featured: { color: nativeColors.text.inverse },
+  featured: {
+    color: nativeColors.action.onPrimary,
+    fontFamily: nativeTypography.fontFamily.bold,
+  },
 });

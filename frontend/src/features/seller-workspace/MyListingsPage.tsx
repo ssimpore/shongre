@@ -46,7 +46,7 @@ const BOOST_STYLES: Record<
     spanClass: "",
   },
   top_of_list: {
-    swatchClass: "bg-primary text-text-inverse",
+    swatchClass: "bg-primary text-on-primary",
     hoverClass: "hover:border-primary hover:bg-primary-light",
     spanClass: "",
   },

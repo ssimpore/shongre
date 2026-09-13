@@ -52,6 +52,7 @@ import {
   SearchSortControl,
   Skeleton,
   StatePanel,
+  useSearchFilterDisclosure,
 } from "../../design-system";
 import type { LocationSelectorValue } from "../../design-system";
 import { NoResultsFound } from "../../design-system/primitives/NoResultsFound";
@@ -154,8 +155,13 @@ export const SearchPage: React.FC = () => {
     "grid" | "list" | "map" | null;
   const viewMode =
     urlViewParam === "map" || urlViewParam === "list" ? urlViewParam : "grid";
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const {
+    desktopFiltersExpanded: showDesktopFilters,
+    mobileFiltersExpanded: isFilterDrawerOpen,
+    toggleDesktopFilters,
+    openMobileFilters,
+    closeMobileFilters,
+  } = useSearchFilterDisclosure();
   const lastStartedSearchKey = useRef<string | null>(null);
   const cursorByPage = useRef(new Map<number, string | undefined>());
   const paginationScope = useRef("");
@@ -872,6 +878,14 @@ export const SearchPage: React.FC = () => {
     t,
   ]);
 
+  const resultsDescription = query
+    ? t("search.searchPage.refineResultsDescription")
+    : activeSubCat || activeCategory || serverCategoryHeading
+      ? t("search.searchPage.categoryResultsDescription", {
+          category: pageHeading,
+        })
+      : t("search.searchPage.allResultsDescription");
+
   const searchMeta = useMemo(() => {
     if (!marketContext) {
       return { title: "Toutes les annonces", noIndex: true, follow: true };
@@ -920,35 +934,6 @@ export const SearchPage: React.FC = () => {
 
   return (
     <Container width="results" className="py-4 sm:py-6">
-      {/* Page heading. The search results are the page's subject, so they need a
-          real h1 — it was previously the only top-level route with none. */}
-      <div className="mb-3 sm:mb-4">
-        <h1 className="text-lg sm:text-2xl font-bold text-text-main tracking-tight">
-          {pageHeading}
-        </h1>
-        {/* The visible result count lives in the results toolbar, next to the
-            controls that change it. Printing it here too cost a line of mobile
-            fold for no new information — but the live region still has to
-            announce it, so it stays for assistive tech.
-
-            It was previously revealed again from `sm` up, which put the count
-            on screen twice on every tablet and desktop ("17 annonces
-            correspondent à votre recherche" here, "17 annonces" in the
-            toolbar). Staying `sr-only` at every width is what the surrounding
-            note already described: one visible count, announced once. */}
-        <p
-          className="text-sm text-text-tertiary mt-1 sr-only"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {isLoading
-            ? "Recherche en cours…"
-            : `${totalRelation === "lower_bound" ? "Au moins " : ""}${plural(totalCount, "annonce")} ${
-                totalCount > 1 ? "correspondent" : "correspond"
-              } à votre recherche`}
-        </p>
-      </div>
-
       {/* Mobile keyword entry.
           The desktop header slot is `hidden md:block` and the bottom tab bar's
           "Rechercher" tab points here, so on a phone the tab promised search
@@ -976,6 +961,82 @@ export const SearchPage: React.FC = () => {
           onSearch={applyKeywordSearch}
         />
       </div>
+
+      <SearchResultsToolbar
+        id="search-results-toolbar"
+        title={pageHeading}
+        resultDescription={resultsDescription}
+        resultLabel={
+          isLoading
+            ? t("common.loading")
+            : totalRelation === "lower_bound"
+              ? `Au moins ${plural(totalCount, "annonce")}`
+              : plural(totalCount, "annonce")
+        }
+        desktopFilterPanelId="search-filter-panel-desktop"
+        mobileFilterPanelId="search-filter-panel-mobile"
+        desktopFiltersExpanded={showDesktopFilters}
+        mobileFiltersExpanded={isFilterDrawerOpen}
+        activeFilterCount={activeFilterCount + (query ? 1 : 0)}
+        onToggleDesktopFilters={toggleDesktopFilters}
+        onOpenMobileFilters={openMobileFilters}
+        actions={
+          <Button
+            type="button"
+            onClick={handleSaveSearch}
+            variant="secondary"
+            size="md"
+            className="shrink-0"
+            leftIcon={
+              <Bookmark className="w-icon-sm h-icon-sm text-text-tertiary" />
+            }
+            title={t("search.searchPage.sauvegarderCetteRecherche")}
+            aria-label={t("search.searchPage.sauvegarderCetteRecherche")}
+          >
+            <span className="hidden sm:inline">Sauvegarder</span>
+          </Button>
+        }
+        viewControls={
+          <ViewModeToggle
+            viewMode={viewMode}
+            onChange={(mode) =>
+              setSearchParams((current) => {
+                const next = new URLSearchParams(current);
+                if (mode === "grid") next.delete("view");
+                else next.set("view", mode);
+                return next;
+              })
+            }
+            showMap={true}
+            size="md"
+          />
+        }
+        sortControl={
+          <SearchSortControl>
+            <DropdownMenu
+              id="sort-select"
+              ariaLabel="Trier les résultats"
+              size="md"
+              placement="bottom-right"
+              panelWidth="w-48"
+              className="shrink-0"
+              triggerClassName="w-auto"
+              mobileIcon={
+                <ArrowUpDown className="w-icon-sm h-icon-sm text-text-emphasis" />
+              }
+              headerTitle={
+                <div className="flex items-center gap-1.5 text-text-supporting normal-case font-semibold">
+                  <ArrowUpDown className="w-icon-sm h-icon-sm text-primary shrink-0" />
+                  <span>{t("search.searchPage.trierPar2")}</span>
+                </div>
+              }
+              options={sortDropdownOptions}
+              value={sortBy}
+              onChange={(val) => updateFilter("sortBy", val)}
+            />
+          </SearchSortControl>
+        }
+      />
 
       {/* Active criteria stay removable here; result refinement lives in the
           adaptive filter panel. */}
@@ -1424,81 +1485,6 @@ export const SearchPage: React.FC = () => {
             showDesktopFilters ? "lg:col-span-3 space-y-4" : "w-full space-y-4"
           }
         >
-          {/* Controls Bar: Total Count, Save Search, View Mode, Sort */}
-          <SearchResultsToolbar
-            id="search-results-toolbar"
-            resultLabel={
-              totalRelation === "lower_bound"
-                ? `Au moins ${plural(totalCount, "annonce")}`
-                : plural(totalCount, "annonce")
-            }
-            desktopFilterPanelId="search-filter-panel-desktop"
-            mobileFilterPanelId="search-filter-panel-mobile"
-            desktopFiltersExpanded={showDesktopFilters}
-            mobileFiltersExpanded={isFilterDrawerOpen}
-            activeFilterCount={activeFilterCount + (query ? 1 : 0)}
-            onToggleDesktopFilters={() =>
-              setShowDesktopFilters(!showDesktopFilters)
-            }
-            onOpenMobileFilters={() => setIsFilterDrawerOpen(true)}
-            actions={
-              <Button
-                type="button"
-                onClick={handleSaveSearch}
-                variant="secondary"
-                size="sm"
-                className="shrink-0"
-                leftIcon={
-                  <Bookmark className="w-icon-sm h-icon-sm text-text-tertiary" />
-                }
-                title={t("search.searchPage.sauvegarderCetteRecherche")}
-                aria-label={t("search.searchPage.sauvegarderCetteRecherche")}
-              >
-                <span className="hidden sm:inline">Sauvegarder</span>
-              </Button>
-            }
-            viewControls={
-              <ViewModeToggle
-                viewMode={viewMode}
-                onChange={(mode) =>
-                  setSearchParams((current) => {
-                    const next = new URLSearchParams(current);
-                    if (mode === "grid") next.delete("view");
-                    else next.set("view", mode);
-                    return next;
-                  })
-                }
-                showMap={true}
-                size="sm"
-              />
-            }
-            sortControl={
-              <SearchSortControl>
-                <DropdownMenu
-                  id="sort-select"
-                  ariaLabel="Trier les résultats"
-                  size="sm"
-                  placement="bottom-right"
-                  panelWidth="w-48"
-                  className="shrink-0"
-                  triggerClassName="w-auto"
-                  mobileIcon={
-                    <ArrowUpDown className="w-icon-sm h-icon-sm text-text-emphasis" />
-                  }
-                  headerTitle={
-                    <div className="flex items-center gap-1.5 text-text-supporting normal-case font-semibold">
-                      <ArrowUpDown className="w-icon-sm h-icon-sm text-primary shrink-0" />
-                      <span>{t("search.searchPage.trierPar2")}</span>
-                    </div>
-                  }
-                  options={sortDropdownOptions}
-                  value={sortBy}
-                  onChange={(val) => updateFilter("sortBy", val)}
-                />
-              </SearchSortControl>
-            }
-          />
-
           {/* The card titles are `h3`, so without this the outline jumped
               straight from the page `h1` to `h3`. The count is already shown
               in the toolbar, so the heading is visually hidden rather than
@@ -1550,9 +1536,9 @@ export const SearchPage: React.FC = () => {
                       <div
                         role="status"
                         aria-label={t("common.loading")}
-                        className="h-full overflow-hidden rounded-2xl border border-border-base bg-bg-surface p-3"
+                        className="h-full overflow-hidden rounded-listing-card border border-border-base bg-bg-surface p-3"
                       >
-                        <Skeleton className="h-full w-full rounded-xl" />
+                        <Skeleton className="h-full w-full rounded-listing-card" />
                       </div>
                     }
                   >
@@ -1631,7 +1617,7 @@ export const SearchPage: React.FC = () => {
                       aria-label={`Page ${pageNumber}`}
                       className={`h-control-sm min-w-8 rounded-control px-2 text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
                         pageNumber === page
-                          ? "bg-primary text-text-inverse"
+                          ? "bg-primary text-on-primary"
                           : "border border-border-base bg-bg-surface text-text-emphasis hover:bg-bg-subtle"
                       }`}
                     >
@@ -1658,7 +1644,7 @@ export const SearchPage: React.FC = () => {
       {/* Mobile Filters Drawer */}
       <Drawer
         isOpen={isFilterDrawerOpen}
-        onClose={() => setIsFilterDrawerOpen(false)}
+        onClose={closeMobileFilters}
         title={t("search.searchPage.filtresDeRecherche")}
       >
         <FilterPanel
@@ -1666,11 +1652,7 @@ export const SearchPage: React.FC = () => {
           presentation="drawer"
           onReset={clearAllFilters}
           footer={
-            <Button
-              variant="primary"
-              fullWidth
-              onClick={() => setIsFilterDrawerOpen(false)}
-            >
+            <Button variant="primary" fullWidth onClick={closeMobileFilters}>
               Voir les résultats ({totalCount})
             </Button>
           }
@@ -1757,7 +1739,7 @@ export const SearchPage: React.FC = () => {
                   onClick={() => updateFilter("sellerType", s.value)}
                   className={`h-control-md px-2 text-xs font-semibold rounded-control border text-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                     sellerType === s.value
-                      ? "bg-primary text-text-inverse border-primary shadow-xs"
+                      ? "bg-primary text-on-primary border-primary shadow-xs"
                       : "bg-bg-surface text-text-emphasis border-border-base hover:bg-surface-soft"
                   }`}
                 >

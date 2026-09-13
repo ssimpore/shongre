@@ -262,7 +262,7 @@ export function InvoicingOnboardingPage() {
           </div>
           <a
             href={applicationHref("facturation", "/app")}
-            className="mt-4 inline-flex min-h-control-md items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-text-inverse sm:mt-0"
+            className="mt-4 inline-flex min-h-control-md items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-on-primary sm:mt-0"
           >
             Ouvrir Facturation
             <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />

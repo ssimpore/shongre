@@ -170,7 +170,7 @@ export const LocationPickerModal: React.FC = () => {
           onClick={() => applyLocation(wholeCountryLocation)}
           className={`w-full min-h-control-touch px-3 rounded-control border flex items-center justify-between motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
             isWholeCountry
-              ? "border-primary bg-primary-light text-primary font-semibold"
+              ? "border-primary bg-primary-light text-text-main font-semibold"
               : "border-border-base hover:border-border-strong bg-bg-surface text-text-strong"
           }`}
         >
@@ -272,7 +272,7 @@ export const LocationPickerModal: React.FC = () => {
                   onClick={() => setRadius(r)}
                   className={`h-control-sm rounded-control text-xs font-semibold border motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     radius === r
-                      ? "bg-primary text-text-inverse border-primary"
+                      ? "bg-primary text-on-primary border-primary"
                       : "bg-surface-soft border-border-base text-text-emphasis hover:bg-surface-muted"
                   }`}
                 >

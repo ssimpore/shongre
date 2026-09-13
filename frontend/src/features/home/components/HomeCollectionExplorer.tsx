@@ -75,6 +75,7 @@ export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
   return (
     <Container
       as="section"
+      width="results"
       aria-labelledby="home-collection-explorer-title"
       data-testid="home-collection-explorer"
       className={homepageVisibilityClass(section)}

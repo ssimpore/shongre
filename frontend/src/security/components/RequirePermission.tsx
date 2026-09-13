@@ -1,13 +1,8 @@
+import { AuthRequiredPrompt } from "../../features/auth/components/AuthRequiredPrompt";
 import { routes } from "../../configuration/routes";
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
-import {
-  ShieldAlert,
-  AlertTriangle,
-  ArrowLeft,
-  Briefcase,
-  Lock,
-} from "lucide-react";
+import { Link } from "react-router-dom";
+import { ShieldAlert, AlertTriangle, ArrowLeft, Briefcase } from "lucide-react";
 import { Permission } from "../../types";
 import { useAuthorization } from "../useAuthorization";
 import { Button } from "../../design-system/primitives/Button";
@@ -220,37 +215,11 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
 }) => {
   const { t } = useTranslation();
   const { currentUser, decision, isSuspended } = useAuthorization();
-  const location = useLocation();
 
   if (!currentUser) {
-    const redirectParam = encodeURIComponent(
-      location.pathname + location.search,
-    );
     return (
       <GuardShell standalone={standalone}>
-        <div className="max-w-lg mx-auto px-4 py-16 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8" />
-          </div>
-          <h1 className="text-2xl font-bold text-text-main mb-2">
-            Authentification requise
-          </h1>
-          <p className="text-sm text-text-supporting max-w-md mx-auto mb-6">
-            {t("security.requirePermission.vousDevezEtreConnectePour")}
-          </p>
-          <div className="flex items-center justify-center gap-3">
-            <Button
-              to={`/connexion?redirect=${redirectParam}`}
-              variant="primary"
-              size="md"
-            >
-              Se connecter
-            </Button>
-            <Button to="/inscription" variant="outline" size="md">
-              {t("security.requirePermission.creerUnCompte")}
-            </Button>
-          </div>
-        </div>
+        <AuthRequiredPrompt />
       </GuardShell>
     );
   }

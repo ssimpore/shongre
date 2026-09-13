@@ -30,6 +30,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { DetailMobileActionPanel } from "../listings/components/DetailMobileActionPanel";
 
 function VerificationRow({ label, status }: { label: string; status: string }) {
   const { t } = useTranslation();
@@ -139,6 +140,24 @@ export const CourseTutorProfilePage: React.FC = () => {
         </Link>{" "}
         <span aria-hidden="true">/</span> {tutor.displayName}
       </nav>
+
+      <DetailMobileActionPanel
+        eyebrow="Demander un cours"
+        summary={
+          hourlyPrice ? `${formatMoney(hourlyPrice.price)} / h` : undefined
+        }
+      >
+        <Button
+          to={`/education/demande?tutor=${tutor.id}&subject=${primaryOffer?.subjectId || ""}`}
+          fullWidth
+          leftIcon={<MessageSquare className="h-icon-sm w-icon-sm" />}
+        >
+          Contacter {tutor.displayName.split(" ")[0]}
+        </Button>
+        <Button to="/education" variant="outline" fullWidth>
+          Voir d’autres professeurs
+        </Button>
+      </DetailMobileActionPanel>
 
       <div className="grid min-w-0 gap-6 lg:grid-cols-content-aside">
         <div className="min-w-0 space-y-5">

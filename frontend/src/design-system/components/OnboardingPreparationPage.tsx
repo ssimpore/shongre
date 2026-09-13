@@ -72,7 +72,7 @@ export const OnboardingPreparationPage: React.FC<
                 onClick={onStart}
                 disabled={!isReady}
                 rightIcon={<ArrowRight className="h-icon-md w-icon-md" />}
-                className="w-full min-w-0 !whitespace-normal sm:w-auto"
+                className="w-full min-w-0 sm:w-auto"
               >
                 {actionLabel}
               </Button>

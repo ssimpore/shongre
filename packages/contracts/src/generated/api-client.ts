@@ -6350,6 +6350,30 @@ export function getGeoReverseGeocoding(
     "application/json",
   );
 }
+export function getMessagingPresence(
+  transport: ApiTransport,
+  input: ApiInput<"getMessagingPresence">,
+): Promise<ApiResponse<"getMessagingPresence">> {
+  return executeApiOperation<"getMessagingPresence">(
+    transport,
+    "GET",
+    "/messaging/presence",
+    input,
+    "application/json",
+  );
+}
+export function postMessagingPresence(
+  transport: ApiTransport,
+  input: ApiInput<"postMessagingPresence">,
+): Promise<ApiResponse<"postMessagingPresence">> {
+  return executeApiOperation<"postMessagingPresence">(
+    transport,
+    "POST",
+    "/messaging/presence",
+    input,
+    "application/json",
+  );
+}
 export const generatedApiOperations = {
   getDigitalPolicy,
   getDigitalSellerProfile,
@@ -6878,6 +6902,8 @@ export const generatedApiOperations = {
   getGeoMapConfig,
   getGeoAddressSuggestions,
   getGeoReverseGeocoding,
+  getMessagingPresence,
+  postMessagingPresence,
 } as const;
 export type GeneratedApiOperationId = keyof typeof generatedApiOperations;
 type AnyGeneratedApiOperation = (

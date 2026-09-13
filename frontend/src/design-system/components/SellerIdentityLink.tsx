@@ -1,11 +1,12 @@
 import React from "react";
 import { ChevronRight, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-import { ProBadge } from "@shongre/ui/web";
+import { ProBadge, VerificationBadge } from "@shongre/ui/web";
+import type { UserPresence } from "@shongre/shared/presence";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { Avatar } from "../primitives/Badge";
 import { cn } from "../utils/variants";
 import { RatingDisplay } from "./Price";
+import { SellerAvatarWithPresence } from "./SellerAvatarWithPresence";
 
 export interface SellerIdentityLinkProps {
   to: string;
@@ -16,6 +17,8 @@ export interface SellerIdentityLinkProps {
   rating?: number;
   reviewCount?: number;
   locationLabel?: string;
+  /** Authorized, short-lived presence only; absence is rendered as unknown. */
+  presence?: UserPresence;
   surface?: "plain" | "subtle";
   className?: string;
 }
@@ -35,6 +38,7 @@ export const SellerIdentityLink: React.FC<SellerIdentityLinkProps> = ({
   rating,
   reviewCount,
   locationLabel,
+  presence,
   surface = "plain",
   className,
 }) => {
@@ -59,23 +63,19 @@ export const SellerIdentityLink: React.FC<SellerIdentityLinkProps> = ({
         className,
       )}
     >
-      <span
-        role="img"
-        aria-label={t("ui.sellerIdentity.avatar", { name })}
-        className="shrink-0"
-      >
-        <Avatar
-          src={avatarUrl}
-          name={name}
-          size="lg"
-          isVerified={isVerified}
-          className="transition-shadow group-hover:ring-2 group-hover:ring-primary"
-        />
-      </span>
+      <SellerAvatarWithPresence
+        src={avatarUrl}
+        name={name}
+        presence={presence}
+        avatarClassName="transition-shadow group-hover:ring-2 group-hover:ring-primary"
+      />
 
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-sm font-semibold text-text-main transition-colors group-hover:text-primary sm:text-base">
+          <span
+            className="truncate text-sm font-semibold text-text-main transition-colors group-hover:text-primary sm:text-base"
+            data-seller-name="true"
+          >
             {name}
           </span>
           {isProfessional ? (
@@ -83,6 +83,13 @@ export const SellerIdentityLink: React.FC<SellerIdentityLinkProps> = ({
               label={t("ui.identityStatus.pro.short")}
               accessibilityLabel={t("ui.identityStatus.pro.account")}
               size="xs"
+            />
+          ) : isVerified ? (
+            <VerificationBadge
+              label={t("ui.identityStatus.verification.generic")}
+              accessibilityLabel={t("ui.identityStatus.verification.profile")}
+              size="xs"
+              showIcon={false}
             />
           ) : null}
         </div>

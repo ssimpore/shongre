@@ -10,6 +10,7 @@ export * from "./identity/identity-status.types";
 export * from "./identity/VerifiedIcon.web";
 export * from "./identity/VerificationBadge.web";
 export * from "./identity/ProBadge.web";
+export * from "./identity/PresenceIndicator.web";
 export * from "./forms/FormField.web";
 export * from "./layout/Layout.web";
 export * from "./feedback/Modal.web";

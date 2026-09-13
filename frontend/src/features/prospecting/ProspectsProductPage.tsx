@@ -23,10 +23,10 @@ import { ProspectsLandingPreview } from "./components/ProspectsLandingPreview";
 import { applicationHref } from "../../platform/applications/use-application-href";
 
 const primaryCtaClass =
-  "inline-flex min-h-control-lg items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-text-inverse shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  "inline-flex min-h-control-md items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-on-primary shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 const secondaryCtaClass =
-  "inline-flex min-h-control-lg items-center justify-center gap-2 rounded-control border border-primary bg-bg-surface px-5 text-sm font-bold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  "inline-flex min-h-control-md items-center justify-center gap-2 rounded-control border border-primary bg-bg-surface px-5 text-sm font-bold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 const trustPoints = [
   [ShieldCheck, "Sources autorisées"],
@@ -192,7 +192,7 @@ export function ProspectsProductPage() {
                 key={number}
                 className="relative flex gap-4 pb-8 md:block md:pb-0"
               >
-                <span className="z-raised relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-micro font-bold text-text-inverse shadow-sm">
+                <span className="z-raised relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-micro font-bold text-on-primary shadow-sm">
                   {number}
                 </span>
                 <div className="md:mt-6">
@@ -430,7 +430,7 @@ export function ProspectsProductPage() {
             </Link>
             <Link
               to={routes.proPlans()}
-              className="inline-flex min-h-control-lg items-center justify-center gap-1 px-4 text-sm font-bold text-primary hover:text-primary-hover"
+              className="inline-flex min-h-control-md items-center justify-center gap-1 px-4 text-sm font-bold text-primary hover:text-primary-hover"
             >
               Explorer Shongre Pro
               <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />

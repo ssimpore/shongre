@@ -34,6 +34,7 @@ import {
   StatePanel,
   ViewModeToggle,
   countActiveSearchParams,
+  useSearchFilterDisclosure,
 } from "../../design-system";
 import type {
   FilterPanelPresentation,
@@ -393,8 +394,13 @@ export const ImmoSearchPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
   const [selectedId, setSelectedId] = useState<string>();
-  const [mobileFilters, setMobileFilters] = useState(false);
-  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const {
+    desktopFiltersExpanded: showDesktopFilters,
+    mobileFiltersExpanded: mobileFilters,
+    toggleDesktopFilters,
+    openMobileFilters,
+    closeMobileFilters,
+  } = useSearchFilterDisclosure();
   const view = params.get("view") === "list" ? "list" : "map";
   const queryText = params.get("q") || "";
   const visibleItems = useMemo(
@@ -740,16 +746,14 @@ export const ImmoSearchPage: React.FC = () => {
           desktopFiltersExpanded={showDesktopFilters}
           mobileFiltersExpanded={mobileFilters}
           activeFilterCount={activeFilterCount}
-          onToggleDesktopFilters={() =>
-            setShowDesktopFilters(!showDesktopFilters)
-          }
-          onOpenMobileFilters={() => setMobileFilters(true)}
+          onToggleDesktopFilters={toggleDesktopFilters}
+          onOpenMobileFilters={openMobileFilters}
           actions={
             <Button
               aria-label="Créer une alerte"
               data-marketplace-action="saved-search.create"
               variant="outline"
-              size="sm"
+              size="md"
               onClick={saveAlert}
               leftIcon={<Bell className="h-icon-md w-icon-md" />}
             >
@@ -761,7 +765,7 @@ export const ImmoSearchPage: React.FC = () => {
               viewMode={view}
               onChange={(mode) => setParam("view", mode)}
               modes={["list", "map"]}
-              size="sm"
+              size="md"
             />
           }
           sortControl={
@@ -770,7 +774,7 @@ export const ImmoSearchPage: React.FC = () => {
                 ariaLabel="Trier les biens"
                 headerTitle="Trier par"
                 placement="bottom-right"
-                size="sm"
+                size="md"
                 value={query.sort}
                 onChange={(value) => setParam("sort", value)}
                 options={[
@@ -862,14 +866,17 @@ export const ImmoSearchPage: React.FC = () => {
                   )
                 }
                 map={
-                  <div className="h-full overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
+                  <div
+                    data-search-results-map
+                    className="h-full overflow-hidden rounded-listing-card border border-border-base bg-bg-surface shadow-xs"
+                  >
                     {loading ? (
                       <div
                         role="status"
                         aria-label={t("common.loadingMap")}
                         className="h-full w-full p-3"
                       >
-                        <Skeleton className="h-full w-full rounded-card" />
+                        <Skeleton className="h-full w-full rounded-listing-card" />
                       </div>
                     ) : (
                       <React.Suspense
@@ -879,7 +886,7 @@ export const ImmoSearchPage: React.FC = () => {
                             aria-label={t("common.loadingMap")}
                             className="h-full w-full p-3"
                           >
-                            <Skeleton className="h-full w-full rounded-card" />
+                            <Skeleton className="h-full w-full rounded-listing-card" />
                           </div>
                         }
                       >
@@ -945,7 +952,7 @@ export const ImmoSearchPage: React.FC = () => {
       {catalog ? (
         <Drawer
           isOpen={mobileFilters}
-          onClose={() => setMobileFilters(false)}
+          onClose={closeMobileFilters}
           title="Filtres immobiliers"
         >
           <ImmoFilters
@@ -958,7 +965,7 @@ export const ImmoSearchPage: React.FC = () => {
             onReset={resetFilters}
             presentation="drawer"
             resultCount={total}
-            onApply={() => setMobileFilters(false)}
+            onApply={closeMobileFilters}
           />
         </Drawer>
       ) : null}

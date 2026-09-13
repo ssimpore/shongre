@@ -43,11 +43,24 @@ Shared packages never import application folders; backend may consume
   roles and state while retaining authoritative disabled/loading state, so real
   radio and toggle consumers do not have to bypass the primitive. Native form
   fields are announced as disabled only when `editable={false}` is explicit.
+  Standard buttons use the header's 40px `control-md` minimum on Web and the
+  existing coarse-pointer token floor raises it to 44px. `compact` keeps the
+  same height with denser typography; `sm` is 32px for desktop toolbars and
+  tables, rising to 44px on touch. Native buttons use a 44px minimum at every
+  density. Buttons grow only when their labels need more room, including font
+  scaling, and standard actions have no oversized marketing variant. Inputs
+  alongside a button, such as newsletter signup, use its control metric.
 - `packages/features` owns reusable feature presentation and interaction rules.
   Listing cards are the first migrated vertical slice. Their shared projection
   carries category, optional brand, semantic price state, seller type/rating,
   market-resolved promotion and media facts; Web injects routing and the
   canonical favourite control while native injects its platform interaction.
+  The shared promotion presenter distinguishes featured/spotlight, search boost,
+  urgent, and price-reduction badges. A current, same-market paid placement and
+  a valid same-currency reduction can coexist; badge stacks reserve room for
+  the favourite control and announce every label. Placement expiry removes only
+  the paid badge. Price reductions never qualify a listing for sponsored hero
+  priority or boosted map markers, and listing details reuse the same meanings.
   Expo resolves favourite membership once in `FavoritesProvider`, scoped by
   authenticated account and market; cards only consume that cache, guest
   actions open login, and the favourites screen filters one market listing load
@@ -112,12 +125,21 @@ primitives now delegate to `@shongre/ui`; listing-card consumers delegate to
 autocomplete, data tables, responsive galleries, SEO metadata, and admin grids
 remain local because their structure and interaction are Web-specific.
 
-Compact Web listing cards use the existing 13px title and 16px price tokens,
-reserve at least two title lines, and keep category/location copy secondary.
-Vertical titles wrap in full rather than being clamped while space remains.
-The shared card permits long titles, prices and seller facts to wrap without
-clipping; its token-backed height is a minimum. The visible verification label is concise
-while its accessible name retains the complete seller-verification meaning.
+Web and native listing cards share category/brand, title, price and seller rating,
+capabilities, location/date, and public seller identity. Vertical cards place
+capability icons with accessible labels at the bottom-left of the media and
+photo counts at the bottom-right, keeping the body compact. Horizontal cards
+retain labeled capabilities in the body. Vertical cards place the canonical
+verification icon beside the seller name when verified;
+professional status and a single rating share the divided seller row below the
+name. When public seller identity is absent, explicit professional status stays
+beside the price. Vertical titles and prices use the shared `card-title` and
+`card-price` typography; prices use the existing brand-orange semantic role.
+Horizontal cards retain their price-row seller summary. The hero retains
+its compact price-first layout. Media geometry, card widths, typography, spacing
+and colors come from the shared design tokens. Long titles and financial values
+may grow without clipping; rails align only their own cards. Discovery rails
+place navigation beside their heading and retain touch scrolling on phones.
 Horizontal cards retain their larger type and richer decision information.
 Online-payment capabilities use the shared `payment` semantic icon, mapped to
 the credit-card glyph on Web and native. The existing localized payment label

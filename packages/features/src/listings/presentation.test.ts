@@ -5,12 +5,14 @@ import {
   getListingCapabilityPresentation,
   getListingPromotionBadges,
   getListingSellerRatingPresentation,
+  getListingSellerTrustPresentation,
+  getListingVerticalFacts,
   listingAccessibilityLabel,
 } from "./presentation";
 import { getListingPromotionRefreshDelay } from "./use-listing-promotion-refresh";
 
 describe("getListingPromotionBadges", () => {
-  it("shows the compact label only while a promotion schedule is active", () => {
+  it("shows the matching label only while a promotion schedule is active", () => {
     const current = Date.now();
     const active = {
       state: "active" as const,
@@ -30,9 +32,16 @@ describe("getListingPromotionBadges", () => {
           isFeatured: false,
           promotion: active,
         },
-        "Boosté",
+        undefined,
       ),
-    ).toEqual([{ label: "Boosté" }]);
+    ).toEqual([
+      {
+        kind: "featured",
+        label: "À la une",
+        variant: "featured",
+        icon: "flame",
+      },
+    ]);
     expect(
       getListingPromotionBadges({
         marketCode: "FR",
@@ -128,9 +137,229 @@ describe("getListingPromotionBadges", () => {
       }),
     ).toEqual([]);
   });
+  const now = Date.parse("2026-09-12T12:00:00.000Z");
+  const activePromotion: NonNullable<ListingCardView["promotion"]> = {
+    state: "active",
+    type: "featured",
+    marketCode: "FR",
+    source: "purchase",
+    sourceId: "placement-proof",
+    startsAt: "2026-09-12T11:00:00.000Z",
+    endsAt: "2026-09-12T13:00:00.000Z",
+  };
+  const sale = {
+    marketCode: "FR",
+    price: { amountMinor: 8000, currency: "EUR" },
+    originalPrice: { amountMinor: 10000, currency: "EUR" },
+  };
+
+  it.each([
+    ["search_bump", "boosted", "Boosté"],
+    ["sponsored_search", "sponsored", "Sponsorisé"],
+    ["urgent_badge", "urgent", "Urgent"],
+    ["featured", "featured", "À la une"],
+    ["top_placement", "featured", "À la une"],
+    ["homepage_spotlight", "featured", "À la une"],
+    ["category_spotlight", "featured", "À la une"],
+    ["local_spotlight", "featured", "À la une"],
+    ["seller_spotlight", "featured", "À la une"],
+  ] as const)("maps %s to its actual public meaning", (type, kind, label) => {
+    expect(
+      getListingPromotionBadges(
+        {
+          marketCode: "FR",
+          promotion: {
+            ...activePromotion,
+            type,
+            label: "Untrusted alternate label",
+          },
+        },
+        undefined,
+        now,
+      ),
+    ).toEqual([expect.objectContaining({ kind, label })]);
+  });
+
+  it.each([
+    "inactive",
+    "scheduled",
+    "expired",
+    "cancelled",
+    "refunded",
+    "failed",
+  ] as const)(
+    "hides %s placement while retaining an independent reduction",
+    (state) => {
+      expect(
+        getListingPromotionBadges(
+          { ...sale, promotion: { ...activePromotion, state } },
+          undefined,
+          now,
+        ),
+      ).toEqual([
+        {
+          kind: "promotion",
+          label: "En promotion",
+          icon: "tag",
+          variant: "success",
+        },
+      ]);
+    },
+  );
+
+  it("shows placement and sale together, using localized labels", () => {
+    const labels = {
+      boosted: "Boosted",
+      sponsored: "Sponsored",
+      featured: "Featured",
+      urgent: "Urgent",
+      promotion: "On sale",
+    };
+    const badges = getListingPromotionBadges(
+      { ...sale, promotion: activePromotion },
+      labels,
+      now,
+    );
+    expect(badges.map(({ kind, label }) => ({ kind, label }))).toEqual([
+      { kind: "featured", label: "Featured" },
+      { kind: "promotion", label: "On sale" },
+    ]);
+    expect(
+      getListingPromotionBadges(
+        { ...sale, promotion: activePromotion },
+        labels,
+        Date.parse(activePromotion.endsAt),
+      ).map(({ label }) => label),
+    ).toEqual(["On sale"]);
+    expect(
+      getListingPromotionBadges(
+        { marketCode: "FR", promotion: activePromotion },
+        labels,
+        Date.parse(activePromotion.startsAt) - 1,
+      ),
+    ).toEqual([]);
+  });
+
+  it.each([
+    { price: undefined },
+    { originalPrice: undefined },
+    { price: { amountMinor: 0, currency: "EUR" } },
+    { price: { amountMinor: -10, currency: "EUR" } },
+    { price: { amountMinor: Number.NaN, currency: "EUR" } },
+    { price: { amountMinor: 8.5, currency: "EUR" } },
+    { originalPrice: { amountMinor: Infinity, currency: "EUR" } },
+    { originalPrice: { amountMinor: 8000, currency: "EUR" } },
+    { originalPrice: { amountMinor: 7000, currency: "EUR" } },
+    { originalPrice: { amountMinor: 10000, currency: "USD" } },
+    { isFreeDonation: true },
+    { priceKind: "free" as const },
+    { priceKind: "on_request" as const },
+    { priceKind: "unpriced" as const },
+  ])(
+    "does not invent a price reduction from invalid or hidden amounts: %j",
+    (override) => {
+      expect(
+        getListingPromotionBadges({ ...sale, ...override }, undefined, now),
+      ).toEqual([]);
+    },
+  );
 });
 
 describe("compact card value presentation", () => {
+  it.each([
+    {
+      name: "verified professional",
+      listing: {
+        publisherType: "professional" as const,
+        seller: {
+          id: "pro",
+          name: "Pro",
+          sellerType: "pro" as const,
+          isIdentityVerified: true,
+          isBusinessVerified: true,
+        },
+      },
+      expected: { isProfessional: true, showVerifiedBadge: false },
+    },
+    {
+      name: "verified private seller",
+      listing: {
+        publisherType: "private" as const,
+        seller: {
+          id: "private-verified",
+          name: "Particulier",
+          sellerType: "individual" as const,
+          isIdentityVerified: true,
+          isBusinessVerified: false,
+        },
+      },
+      expected: { isProfessional: false, showVerifiedBadge: true },
+    },
+    {
+      name: "unverified private seller",
+      listing: {
+        publisherType: "private" as const,
+        seller: {
+          id: "private",
+          name: "Particulier",
+          sellerType: "individual" as const,
+          isIdentityVerified: false,
+          isBusinessVerified: false,
+        },
+      },
+      expected: { isProfessional: false, showVerifiedBadge: false },
+    },
+  ])("shares the seller badge rule for $name", ({ listing, expected }) => {
+    expect(getListingSellerTrustPresentation(listing)).toEqual(expected);
+  });
+
+  it("shares category-aware vertical footer facts across platforms", () => {
+    expect(
+      getListingVerticalFacts(
+        {
+          characteristics: ["128 Go", "Noir"],
+          characteristicIcons: ["database", "palette"],
+        },
+        [
+          {
+            kind: "online_payment",
+            label: "Paiement en ligne",
+            icon: "payment",
+          },
+          {
+            kind: "digital_fulfillment",
+            label: "Accès numérique",
+            icon: "file",
+          },
+        ],
+      ),
+    ).toEqual([
+      {
+        key: "digital_fulfillment",
+        label: "Accès numérique",
+        icon: "file",
+      },
+      {
+        key: "online_payment",
+        label: "Paiement en ligne",
+        icon: "payment",
+      },
+    ]);
+
+    expect(
+      getListingVerticalFacts(
+        {
+          characteristics: ["128 Go", "65 currency_minor", "Noir"],
+          characteristicIcons: ["database", "tag", "palette"],
+        },
+        [],
+      ),
+    ).toEqual([
+      { key: "characteristic-0", label: "128 Go", icon: "database" },
+      { key: "characteristic-2", label: "Noir", icon: "palette" },
+    ]);
+  });
+
   it("projects only explicit buyer-facing capabilities in a stable order", () => {
     const labels = {
       delivery: "Livraison",

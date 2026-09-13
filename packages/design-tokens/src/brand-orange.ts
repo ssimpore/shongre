@@ -71,65 +71,37 @@ export function contrastRatio(first: HexColor, second: HexColor): number {
 }
 
 /**
- * Finds the smallest one-per-mille blend toward the canonical ink that meets
- * the requested contrast. This keeps the interaction colour recognisably
- * Shongre Orange while making normal-size inverse text WCAG AA readable, with
- * enough headroom for the approved subtle orange surface.
+ * Every solid orange is the exact logo swatch. Subtle roles change only its
+ * alpha; interaction states must never mix in a competing orange shade.
  */
-function accessibleBlend(
-  source: HexColor,
-  onColor: HexColor,
-  toward: HexColor,
-  minimumContrast: number,
-): HexColor {
-  for (let step = 0; step <= 1_000; step += 1) {
-    const candidate = mixHex(source, toward, step / 1_000);
-    if (contrastRatio(candidate, onColor) >= minimumContrast) return candidate;
-  }
-  throw new Error(
-    "Unable to derive an accessible Shongre Orange interaction colour.",
-  );
-}
-
-/**
- * The complete orange family is a recipe over the three approved brand
- * colours. There is deliberately no second orange literal here: changing the
- * generated canonical `orange` input recomputes every role.
- */
-export function deriveShongreOrangeTokens(
-  orange: HexColor,
-  ink: HexColor,
-  white: HexColor,
-) {
-  const interactive = accessibleBlend(orange, white, ink, 4.75);
-  const overlay = withAlpha(orange, 0.2);
-  const darkOverlaySurface = mixHex(ink, orange, 0.2);
+export function deriveShongreOrangeTokens(orange: HexColor) {
+  parseHex(orange);
   return {
     canonical: orange,
-    interactive,
-    hover: mixHex(interactive, ink, 0.12),
-    active: mixHex(interactive, ink, 0.24),
-    disabled: mixHex(orange, white, 0.62),
-    disabledBorder: mixHex(orange, white, 0.46),
-    light: mixHex(orange, white, 0.95),
-    surfaceFaint: mixHex(orange, white, 0.985),
-    surface: mixHex(orange, white, 0.9),
-    surfaceSelected: mixHex(orange, white, 0.85),
-    surfaceStrong: mixHex(orange, white, 0.8),
-    border: mixHex(orange, white, 0.68),
-    borderSoft: mixHex(orange, white, 0.82),
-    borderStrong: mixHex(orange, white, 0.5),
-    surfaceSoft: mixHex(orange, white, 0.97),
-    onInverseSoft: mixHex(orange, white, 0.88),
-    onInverseMuted: mixHex(orange, white, 0.7),
-    fill: mixHex(orange, ink, 0.1),
-    emphasis: mixHex(orange, ink, 0.28),
-    ring: withAlpha(interactive, 0.2),
-    ringStrong: withAlpha(interactive, 0.4),
-    shadow: withAlpha(interactive, 0.2),
-    shadowStrong: withAlpha(interactive, 0.3),
-    overlay,
-    onDark: accessibleBlend(orange, darkOverlaySurface, white, 4.75),
+    interactive: orange,
+    hover: orange,
+    active: orange,
+    disabled: withAlpha(orange, 0.38),
+    disabledBorder: withAlpha(orange, 0.54),
+    light: withAlpha(orange, 0.05),
+    surfaceFaint: withAlpha(orange, 0.015),
+    surface: withAlpha(orange, 0.1),
+    surfaceSelected: withAlpha(orange, 0.15),
+    surfaceStrong: withAlpha(orange, 0.2),
+    border: withAlpha(orange, 0.32),
+    borderSoft: withAlpha(orange, 0.18),
+    borderStrong: withAlpha(orange, 0.5),
+    surfaceSoft: withAlpha(orange, 0.03),
+    onInverseSoft: orange,
+    onInverseMuted: orange,
+    fill: orange,
+    emphasis: orange,
+    ring: withAlpha(orange, 0.2),
+    ringStrong: withAlpha(orange, 0.4),
+    shadow: withAlpha(orange, 0.2),
+    shadowStrong: withAlpha(orange, 0.3),
+    overlay: withAlpha(orange, 0.1),
+    onDark: orange,
     onDarkRing: withAlpha(orange, 0.2),
     onDarkBorder: withAlpha(orange, 0.4),
   } as const;

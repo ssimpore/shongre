@@ -159,8 +159,8 @@ export const NotificationsPage: React.FC = () => {
                 <span
                   className={`px-1.5 py-0.5 rounded-full text-micro font-bold ${
                     isActive
-                      ? "bg-primary text-text-inverse"
-                      : "bg-primary-surface-strong text-primary"
+                      ? "bg-primary text-on-primary"
+                      : "bg-primary-surface-strong text-text-main"
                   }`}
                 >
                   {tab.count}

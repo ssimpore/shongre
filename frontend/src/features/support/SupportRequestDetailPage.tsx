@@ -177,7 +177,7 @@ export const SupportRequestDetailPage: React.FC = () => {
                     <div
                       className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
                         isAgent
-                          ? "bg-primary text-text-inverse"
+                          ? "bg-primary text-on-primary"
                           : "bg-surface-disabled text-text-emphasis"
                       }`}
                     >

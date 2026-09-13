@@ -880,7 +880,7 @@ function SubscriptionsTab({
               {dashboard.verticals.map((vertical) => (
                 <tr key={vertical.verticalId}>
                   <th className="px-4 py-3 font-bold text-text-main">
-                    <span className="mr-2 rounded-pill bg-primary-light px-2 py-1 text-micro uppercase text-primary">
+                    <span className="mr-2 rounded-pill bg-primary-light px-2 py-1 text-micro uppercase text-text-main">
                       {vertical.verticalId}
                     </span>
                     {vertical.label}

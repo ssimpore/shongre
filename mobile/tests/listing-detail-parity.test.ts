@@ -25,12 +25,14 @@ describe("native listing detail parity", () => {
           items: [
             {
               code: "brand",
+              icon: "tag",
               label: "Marque",
               value: "Peugeot",
               presentation: "fact",
             },
             {
               code: "pool",
+              icon: "bath",
               label: "Piscine",
               value: "Oui",
               presentation: "feature",
@@ -54,6 +56,7 @@ describe("native listing detail parity", () => {
     // which items are values and which are capabilities.
     const facts = buildListingFactPresentation(data);
     expect(facts.keyFacts.map((fact) => fact.code)).toEqual(["brand"]);
+    expect(facts.features[0].icon).toBe("bath");
     expect(facts.features.map((feature) => feature.label)).toEqual(["Piscine"]);
   });
 

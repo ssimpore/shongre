@@ -33,7 +33,7 @@ export const SOLUTION_LIFECYCLE_PRESENTATION: Record<
   BETA: {
     labelKey: "solutions.lifecycle.beta.label",
     descriptionKey: "solutions.lifecycle.beta.description",
-    tone: "text-primary bg-primary-light border-primary-border",
+    tone: "text-text-main bg-primary-light border-primary-border",
   },
   AVAILABLE: {
     labelKey: "solutions.lifecycle.available.label",

@@ -76,6 +76,8 @@ describe("HeaderCategoryNav", () => {
     expect(markup).toContain("hover:bg-bg-subtle");
     expect(markup).toContain("focus-visible:ring-2");
     expect(markup).toContain("rounded-control");
+    expect(markup).toContain("lucide-smartphone");
+    expect(markup).not.toContain(">·<");
     expect(markup).toContain('id="header-category-trigger-electronique"');
     expect(markup).not.toContain(
       'id="header-category-trigger-category_overview"',

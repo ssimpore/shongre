@@ -1,0 +1,1186 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - link "Aller au contenu principal" [ref=f2e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=f2e4]:
+      - generic [ref=f2e6]:
+        - generic [ref=f2e7]:
+          - generic [ref=f2e8]: test
+          - generic [ref=f2e13]: Données fournies par l’API Shongre
+        - button "Réduire la barre d’environnement" [expanded] [ref=f2e15] [cursor=pointer]
+      - banner [ref=f2e19]:
+        - generic [ref=f2e21]:
+          - generic [ref=f2e22]:
+            - link "SHONGRE. France, accueil" [ref=f2e23] [cursor=pointer]:
+              - /url: /
+              - img "SHONGRE." [ref=f2e24]:
+                - generic [aria-hidden] [ref=f2e28]: France
+            - 'button "Langue et préférences régionales : Français" [ref=f2e31] [cursor=pointer]':
+              - generic [ref=f2e37]: fr
+          - search "Recherche globale" [ref=f2e43]:
+            - button "Sélectionner une catégorie" [ref=f2e45] [cursor=pointer]:
+              - generic [ref=f2e50]: Catégories
+            - combobox "Rechercher une annonce" [ref=f2e57]
+            - button "Lancer la recherche" [ref=f2e58] [cursor=pointer]
+          - generic [ref=f2e62]:
+            - link "Déposer une annonce" [ref=f2e64] [cursor=pointer]:
+              - /url: /deposer
+            - link "Favoris" [ref=f2e70] [cursor=pointer]:
+              - /url: /compte/favoris
+            - link "Messagerie" [ref=f2e73] [cursor=pointer]:
+              - /url: /compte/messages
+            - button "Notifications" [ref=f2e78] [cursor=pointer]
+            - link "Se connecter" [ref=f2e315] [cursor=pointer]:
+              - /url: /connexion
+    - main [ref=f2e92]:
+      - generic [ref=f2e321]:
+        - generic [ref=f2e323]:
+          - generic [ref=f2e327]:
+            - generic [ref=f2e328]:
+              - generic [ref=f2e329]:
+                - generic [ref=f2e330]: Plateforme de confiance
+                - heading "Trouvez la perle rare, sans tracas." [level=1] [ref=f2e335]:
+                  - text: Trouvez la perle rare,
+                  - generic [ref=f2e336]: sans tracas.
+                - paragraph [ref=f2e337]: Achetez et vendez avec un paiement suivi, des options de remise claires et des statuts vendeur explicites.
+                - list "Garanties Shongre" [ref=f2e338]:
+                  - listitem [ref=f2e339]:
+                    - generic [ref=f2e343]: Statuts explicites
+                  - listitem [ref=f2e344]:
+                    - generic [ref=f2e349]: Paiement suivi
+                  - listitem [ref=f2e350]:
+                    - generic [ref=f2e356]: Livraison possible
+                  - listitem [ref=f2e357]:
+                    - generic [ref=f2e362]: Particuliers et pros
+              - generic [ref=f2e364]:
+                - link "Déposer une annonce" [ref=f2e365] [cursor=pointer]:
+                  - /url: /deposer
+                - link "Explorer le catalogue" [ref=f2e370] [cursor=pointer]:
+                  - /url: /recherche
+            - region "Annonces vedettes" [ref=f2e377]:
+              - heading "Annonces vedettes" [level=2] [ref=f2e378]
+              - generic [ref=f2e379]:
+                - generic "Annonces vedettes" [ref=f2e380]:
+                  - group [aria-hidden] [ref=f2e382]:
+                    - article [ref=f2e383]:
+                      - link [ref=f2e384] [cursor=pointer]:
+                        - /url: /annonce/b63a4f51-d794-5d26-8930-003dd55daf5a
+                        - generic [ref=f2e385]: "2"
+                        - generic [ref=f2e386]:
+                          - generic [ref=f2e387]:
+                            - generic [ref=f2e388]: Véhicules
+                            - generic [ref=f2e390]:
+                              - generic [aria-hidden] [ref=f2e391]: ·
+                              - generic [ref=f2e392]: Peugeot
+                          - generic [ref=f2e393]:
+                            - generic [ref=f2e394]: 15 400 €
+                            - generic [ref=f2e395]:
+                              - img [ref=f2e396]: Vérifié
+                              - img [ref=f2e401]:
+                                - generic [ref=f2e404]: 4,9
+                                - generic [ref=f2e405]: (14)
+                          - heading [level=3] [ref=f2e406]: Peugeot 208 II 1.2 PureTech 100ch Allure Pack - Faible Km
+                          - generic [ref=f2e407]:
+                            - generic [ref=f2e408]: "208"
+                            - generic [ref=f2e413]: "2022"
+                          - generic [ref=f2e418]: Paiement en ligne
+                          - generic [ref=f2e425]:
+                            - generic [ref=f2e426]: Paris 11e
+                            - generic [ref=f2e428]:
+                              - generic [aria-hidden] [ref=f2e429]: ·
+                              - generic [ref=f2e430]: il y a 4 sem.
+                          - generic [ref=f2e435]:
+                            - generic [ref=f2e436]: Thomas Laurent
+                            - generic [ref=f2e437]: en moins d'une heure
+                      - generic:
+                        - generic: Boosté
+                        - button [ref=f2e439] [cursor=pointer]
+                  - group "3 / 8" [ref=f2e442]:
+                    - article [ref=f2e443]:
+                      - link "Fauteuil Lounge Vintage Scandinave en Chêne Massif, 380 €, Maison, Boosté, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, 2 photos, Bordeaux, il y a 4 sem., Atelier Nordique Mobilier" [ref=f2e444] [cursor=pointer]:
+                        - /url: /annonce/41366f46-aba2-5073-a40c-dc0886d7cab3
+                        - generic [ref=f2e445]:
+                          - generic:
+                            - generic "2 photos": "2"
+                        - generic [ref=f2e446]:
+                          - generic "Maison" [ref=f2e449]
+                          - generic [ref=f2e450]:
+                            - generic "380 €" [ref=f2e451]
+                            - generic [ref=f2e452]:
+                              - img "Vendeur professionnel" [ref=f2e453]: Pro
+                              - img "Note 5,0 sur 5, 128 avis" [ref=f2e454]:
+                                - generic [ref=f2e457]: 5,0
+                                - generic [ref=f2e458]: (128)
+                          - heading "Fauteuil Lounge Vintage Scandinave en Chêne Massif" [level=3] [ref=f2e459]
+                          - generic [ref=f2e460]:
+                            - generic "Paiement en ligne" [ref=f2e461]
+                            - generic "Livraison" [ref=f2e465]
+                          - generic [ref=f2e474]:
+                            - generic "Bordeaux" [ref=f2e476]
+                            - generic [ref=f2e477]:
+                              - generic [aria-hidden] [ref=f2e478]: ·
+                              - generic "il y a 4 sem." [ref=f2e479]
+                          - generic [ref=f2e480]:
+                            - img "Atelier Nordique Mobilier" [ref=f2e483]
+                            - generic [ref=f2e484]:
+                              - generic "Atelier Nordique Mobilier" [ref=f2e485]
+                              - generic "en moins d'une heure" [ref=f2e486]
+                      - generic:
+                        - generic: Boosté
+                        - 'button "Ajouter aux favoris : Fauteuil Lounge Vintage Scandinave en Chêne Massif" [ref=f2e488] [cursor=pointer]'
+                  - group [aria-hidden] [ref=f2e491]:
+                    - article [ref=f2e492]:
+                      - link [ref=f2e493] [cursor=pointer]:
+                        - /url: /annonce/c8e5ac9a-86a6-5378-841f-74cc332593fe
+                        - generic [ref=f2e495]:
+                          - generic [ref=f2e496]: Animaux
+                          - generic [ref=f2e499]:
+                            - generic [ref=f2e500]: 95 €
+                            - generic [ref=f2e501]:
+                              - img [ref=f2e502]: Pro
+                              - img [ref=f2e503]:
+                                - generic [ref=f2e506]: 5,0
+                                - generic [ref=f2e507]: (128)
+                          - heading [level=3] [ref=f2e508]: Arbre à Chat Mural Design en Bois Massif et Corde Sisal Naturel
+                          - generic [ref=f2e509]:
+                            - generic [ref=f2e510]: Paiement en ligne
+                            - generic [ref=f2e514]: Livraison
+                          - generic [ref=f2e523]:
+                            - generic [ref=f2e524]: Bordeaux
+                            - generic [ref=f2e526]:
+                              - generic [aria-hidden] [ref=f2e527]: ·
+                              - generic [ref=f2e528]: il y a 4 sem.
+                          - generic [ref=f2e533]:
+                            - generic [ref=f2e534]: Atelier Nordique Mobilier
+                            - generic [ref=f2e535]: en moins d'une heure
+                      - generic:
+                        - generic: Boosté
+                        - button [ref=f2e537] [cursor=pointer]
+                - button "Annonce précédente" [ref=f2e544] [cursor=pointer]
+                - button "Annonce suivante" [ref=f2e547] [cursor=pointer]
+                - button "Mettre le carrousel en pause" [ref=f2e551] [cursor=pointer]
+              - generic [ref=f2e564]: 3 / 8
+          - list "Garanties Shongre" [ref=f2e565]:
+            - listitem [ref=f2e566]:
+              - generic [ref=f2e571]:
+                - generic [ref=f2e572]: Plateforme de confiance
+                - generic [ref=f2e573]: Statuts vendeur explicites
+            - listitem [ref=f2e574]:
+              - generic [ref=f2e577]:
+                - generic [ref=f2e578]: Paiements sécurisés
+                - generic [ref=f2e579]: Garanties Shongre
+            - listitem [ref=f2e580]:
+              - generic [ref=f2e584]:
+                - generic [ref=f2e585]: Partout en France
+                - generic [ref=f2e586]: Près de chez vous
+            - listitem [ref=f2e587]:
+              - generic [ref=f2e591]:
+                - generic [ref=f2e592]: Une seconde vie
+                - generic [ref=f2e593]: Pour vos objets
+        - region [ref=f2e594]:
+          - generic [ref=f2e595]:
+            - generic [ref=f2e596]:
+              - heading "Annonces récentes" [level=2] [ref=f2e597]
+              - paragraph [ref=f2e598]: Les dernières offres publiées près de chez vous.
+            - link "Voir tout" [ref=f2e599] [cursor=pointer]:
+              - /url: /recherche?sortBy=date_desc
+          - generic [ref=f2e605]:
+            - region "Annonces récentes" [ref=f2e606]:
+              - generic [ref=f2e607]:
+                - article [ref=f2e609]:
+                  - link "Vélo Gravel Specialized Diverge E5, 250 €, Véhicules, Specialized, Livraison, Lyon, il y a 3 sem." [ref=f2e610] [cursor=pointer]:
+                    - /url: /annonce/list_1
+                    - generic [ref=f2e611]:
+                      - generic:
+                        - generic:
+                          - generic "Livraison"
+                    - generic [ref=f2e612]:
+                      - generic [ref=f2e613]:
+                        - generic "Véhicules" [ref=f2e615]
+                        - generic [ref=f2e616]:
+                          - generic [aria-hidden] [ref=f2e617]: ·
+                          - generic "Specialized" [ref=f2e618]
+                      - generic "250 €" [ref=f2e620]
+                      - heading "Vélo Gravel Specialized Diverge E5" [level=3] [ref=f2e621]
+                      - generic [ref=f2e623]:
+                        - generic "Lyon" [ref=f2e625]
+                        - generic [ref=f2e626]:
+                          - generic [aria-hidden] [ref=f2e627]: ·
+                          - generic "il y a 3 sem." [ref=f2e628]
+                  - 'button "Ajouter aux favoris : Vélo Gravel Specialized Diverge E5" [ref=f2e630] [cursor=pointer]'
+                - article [ref=f2e634]:
+                  - link "Guide PDF — organisation du studio, 29 €, Numérique, Accès numérique, En ligne, la semaine dernière" [ref=f2e635] [cursor=pointer]:
+                    - /url: /annonce/list_digital_file
+                    - generic [ref=f2e636]:
+                      - generic:
+                        - generic:
+                          - generic "Accès numérique"
+                    - generic [ref=f2e637]:
+                      - generic "Numérique" [ref=f2e640]
+                      - generic "29 €" [ref=f2e642]
+                      - heading "Guide PDF — organisation du studio" [level=3] [ref=f2e643]
+                      - generic [ref=f2e645]:
+                        - generic "En ligne" [ref=f2e647]
+                        - generic [ref=f2e648]:
+                          - generic [aria-hidden] [ref=f2e649]: ·
+                          - generic "la semaine dernière" [ref=f2e650]
+                  - 'button "Ajouter aux favoris : Guide PDF — organisation du studio" [ref=f2e652] [cursor=pointer]'
+                - article [ref=f2e656]:
+                  - link "Cours Particuliers de Piano & Solfège à Domicile - Tous Niveaux, 35 €, Éducation, Note 5,0 sur 5, 42 avis, Vendeur vérifié, Lyon 2e, il y a 4 sem." [ref=f2e657] [cursor=pointer]:
+                    - /url: /annonce/63a1bab9-639d-53bb-97d7-241263aa9cb9
+                    - generic [ref=f2e659]:
+                      - generic "Éducation" [ref=f2e662]
+                      - generic [ref=f2e663]:
+                        - generic "35 €" [ref=f2e664]
+                        - generic [ref=f2e665]:
+                          - img "Vendeur vérifié" [ref=f2e666]: Vérifié
+                          - img "Note 5,0 sur 5, 42 avis" [ref=f2e671]:
+                            - generic [ref=f2e674]: 5,0
+                            - generic [ref=f2e675]: (42)
+                      - heading "Cours Particuliers de Piano & Solfège à Domicile - Tous Niveaux" [level=3] [ref=f2e676]
+                      - generic [ref=f2e678]:
+                        - generic "Lyon 2e" [ref=f2e680]
+                        - generic [ref=f2e681]:
+                          - generic [aria-hidden] [ref=f2e682]: ·
+                          - generic "il y a 4 sem." [ref=f2e683]
+                  - 'button "Ajouter aux favoris : Cours Particuliers de Piano & Solfège à Domicile - Tous Niveaux" [ref=f2e685] [cursor=pointer]'
+                - article [ref=f2e689]:
+                  - link "Arbre à Chat Mural Design en Bois Massif et Corde Sisal Naturel, 95 €, Animaux, Boosté, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, Bordeaux, il y a 4 sem." [ref=f2e690] [cursor=pointer]:
+                    - /url: /annonce/c8e5ac9a-86a6-5378-841f-74cc332593fe
+                    - generic [ref=f2e691]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                    - generic [ref=f2e692]:
+                      - generic "Animaux" [ref=f2e695]
+                      - generic [ref=f2e696]:
+                        - generic "95 €" [ref=f2e697]
+                        - generic [ref=f2e698]:
+                          - img "Vendeur professionnel" [ref=f2e699]: Pro
+                          - img "Note 5,0 sur 5, 128 avis" [ref=f2e700]:
+                            - generic [ref=f2e703]: 5,0
+                            - generic [ref=f2e704]: (128)
+                      - heading "Arbre à Chat Mural Design en Bois Massif et Corde Sisal Naturel" [level=3] [ref=f2e705]
+                      - generic [ref=f2e707]:
+                        - generic "Bordeaux" [ref=f2e709]
+                        - generic [ref=f2e710]:
+                          - generic [aria-hidden] [ref=f2e711]: ·
+                          - generic "il y a 4 sem." [ref=f2e712]
+                  - generic:
+                    - generic: Boosté
+                    - 'button "Ajouter aux favoris : Arbre à Chat Mural Design en Bois Massif et Corde Sisal Naturel" [ref=f2e714] [cursor=pointer]'
+                - article [ref=f2e718]:
+                  - link "Poussette Tout-Terrain Cybex Priam Rose Gold & Nacelle Lux, 680 €, Bébé & Famille, Cybex, Note 5,0 sur 5, 42 avis, Paiement en ligne, Livraison, Vendeur vérifié, Lyon 2e, il y a 4 sem." [ref=f2e719] [cursor=pointer]:
+                    - /url: /annonce/3aa3292b-8d25-58a6-aac4-e9cd8726ab82
+                    - generic [ref=f2e720]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                    - generic [ref=f2e721]:
+                      - generic [ref=f2e722]:
+                        - generic "Bébé & Famille" [ref=f2e724]
+                        - generic [ref=f2e725]:
+                          - generic [aria-hidden] [ref=f2e726]: ·
+                          - generic "Cybex" [ref=f2e727]
+                      - generic [ref=f2e728]:
+                        - generic "680 €" [ref=f2e729]
+                        - generic [ref=f2e730]:
+                          - img "Vendeur vérifié" [ref=f2e731]: Vérifié
+                          - img "Note 5,0 sur 5, 42 avis" [ref=f2e736]:
+                            - generic [ref=f2e739]: 5,0
+                            - generic [ref=f2e740]: (42)
+                      - heading "Poussette Tout-Terrain Cybex Priam Rose Gold & Nacelle Lux" [level=3] [ref=f2e741]
+                      - generic [ref=f2e743]:
+                        - generic "Lyon 2e" [ref=f2e745]
+                        - generic [ref=f2e746]:
+                          - generic [aria-hidden] [ref=f2e747]: ·
+                          - generic "il y a 4 sem." [ref=f2e748]
+                  - 'button "Ajouter aux favoris : Poussette Tout-Terrain Cybex Priam Rose Gold & Nacelle Lux" [ref=f2e750] [cursor=pointer]'
+                - article [ref=f2e754]:
+                  - link "Apple iPhone 15 Pro 128 Go Titane Naturel - Comme Neuf, 860 €, Électronique, Apple, Boosté, Note 5,0 sur 5, 42 avis, Paiement en ligne, Livraison, Vendeur vérifié, 2 photos, Lyon 2e, il y a 4 sem." [ref=f2e755] [cursor=pointer]:
+                    - /url: /annonce/9b8875c3-e032-5bc6-977b-e0fd271f8c9f
+                    - generic [ref=f2e756]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                        - generic "2 photos": "2"
+                    - generic [ref=f2e757]:
+                      - generic [ref=f2e758]:
+                        - generic "Électronique" [ref=f2e760]
+                        - generic [ref=f2e761]:
+                          - generic [aria-hidden] [ref=f2e762]: ·
+                          - generic "Apple" [ref=f2e763]
+                      - generic [ref=f2e764]:
+                        - generic "860 €" [ref=f2e765]
+                        - generic [ref=f2e766]:
+                          - img "Vendeur vérifié" [ref=f2e767]: Vérifié
+                          - img "Note 5,0 sur 5, 42 avis" [ref=f2e772]:
+                            - generic [ref=f2e775]: 5,0
+                            - generic [ref=f2e776]: (42)
+                      - heading "Apple iPhone 15 Pro 128 Go Titane Naturel - Comme Neuf" [level=3] [ref=f2e777]
+                      - generic [ref=f2e779]:
+                        - generic "Lyon 2e" [ref=f2e781]
+                        - generic [ref=f2e782]:
+                          - generic [aria-hidden] [ref=f2e783]: ·
+                          - generic "il y a 4 sem." [ref=f2e784]
+                  - generic:
+                    - generic: Boosté
+                    - 'button "Ajouter aux favoris : Apple iPhone 15 Pro 128 Go Titane Naturel - Comme Neuf" [ref=f2e786] [cursor=pointer]'
+                - article [ref=f2e790]:
+                  - 'link "Don : Lot de 15 Pots de Fleurs en Terre Cuite et Cache-pots, Maison, Note 4,9 sur 5, 14 avis, Vendeur vérifié, Marseille 7e, il y a 4 sem." [ref=f2e791] [cursor=pointer]':
+                    - /url: /annonce/78adf86d-a86e-59cc-bbf3-2ed392e1f26b
+                    - generic [ref=f2e793]:
+                      - generic "Maison" [ref=f2e796]
+                      - generic [ref=f2e798]:
+                        - img "Vendeur vérifié" [ref=f2e799]: Vérifié
+                        - img "Note 4,9 sur 5, 14 avis" [ref=f2e804]:
+                          - generic [ref=f2e807]: 4,9
+                          - generic [ref=f2e808]: (14)
+                      - 'heading "Don : Lot de 15 Pots de Fleurs en Terre Cuite et Cache-pots" [level=3] [ref=f2e809]'
+                      - generic [ref=f2e811]:
+                        - generic "Marseille 7e" [ref=f2e813]
+                        - generic [ref=f2e814]:
+                          - generic [aria-hidden] [ref=f2e815]: ·
+                          - generic "il y a 4 sem." [ref=f2e816]
+                  - 'button "Ajouter aux favoris : Don : Lot de 15 Pots de Fleurs en Terre Cuite et Cache-pots" [ref=f2e818] [cursor=pointer]'
+                - article [ref=f2e822]:
+                  - link "Manteau Long en Laine Sézane Modèle Johnson - Camel - Taille 38, 195 €, Mode, Sézane, Note 5,0 sur 5, 42 avis, Paiement en ligne, Livraison, Vendeur vérifié, 2 photos, Lyon 2e, il y a 4 sem." [ref=f2e823] [cursor=pointer]:
+                    - /url: /annonce/b76750c0-e3f1-5259-b9d3-f6709abd5d62
+                    - generic [ref=f2e824]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                        - generic "2 photos": "2"
+                    - generic [ref=f2e825]:
+                      - generic [ref=f2e826]:
+                        - generic "Mode" [ref=f2e828]
+                        - generic [ref=f2e829]:
+                          - generic [aria-hidden] [ref=f2e830]: ·
+                          - generic "Sézane" [ref=f2e831]
+                      - generic [ref=f2e832]:
+                        - generic "195 €" [ref=f2e833]
+                        - generic [ref=f2e834]:
+                          - img "Vendeur vérifié" [ref=f2e835]: Vérifié
+                          - img "Note 5,0 sur 5, 42 avis" [ref=f2e840]:
+                            - generic [ref=f2e843]: 5,0
+                            - generic [ref=f2e844]: (42)
+                      - heading "Manteau Long en Laine Sézane Modèle Johnson - Camel - Taille 38" [level=3] [ref=f2e845]
+                      - generic [ref=f2e847]:
+                        - generic "Lyon 2e" [ref=f2e849]
+                        - generic [ref=f2e850]:
+                          - generic [aria-hidden] [ref=f2e851]: ·
+                          - generic "il y a 4 sem." [ref=f2e852]
+                  - 'button "Ajouter aux favoris : Manteau Long en Laine Sézane Modèle Johnson - Camel - Taille 38" [ref=f2e854] [cursor=pointer]'
+                - article [ref=f2e858]:
+                  - link "Machine à Café Espresso avec Broyeur De'Longhi Magnifica S, 180 €, Maison, Note 5,0 sur 5, 42 avis, Paiement en ligne, Livraison, Vendeur vérifié, Lyon 2e, il y a 4 sem." [ref=f2e859] [cursor=pointer]:
+                    - /url: /annonce/9c9bf308-fd97-5418-8699-b5e519103e0b
+                    - generic [ref=f2e860]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                    - generic [ref=f2e861]:
+                      - generic "Maison" [ref=f2e864]
+                      - generic [ref=f2e865]:
+                        - generic "180 €" [ref=f2e866]
+                        - generic [ref=f2e867]:
+                          - img "Vendeur vérifié" [ref=f2e868]: Vérifié
+                          - img "Note 5,0 sur 5, 42 avis" [ref=f2e873]:
+                            - generic [ref=f2e876]: 5,0
+                            - generic [ref=f2e877]: (42)
+                      - heading "Machine à Café Espresso avec Broyeur De'Longhi Magnifica S" [level=3] [ref=f2e878]
+                      - generic [ref=f2e880]:
+                        - generic "Lyon 2e" [ref=f2e882]
+                        - generic [ref=f2e883]:
+                          - generic [aria-hidden] [ref=f2e884]: ·
+                          - generic "il y a 4 sem." [ref=f2e885]
+                  - 'button "Ajouter aux favoris : Machine à Café Espresso avec Broyeur De''Longhi Magnifica S" [ref=f2e887] [cursor=pointer]'
+                - article [ref=f2e891]:
+                  - link "Planche de Surf Hybride Torq TET 6'8 avec Dérives Futures et Leash, 340 €, Sports, Note 4,9 sur 5, 14 avis, Paiement en ligne, Vendeur vérifié, Biarritz, il y a 4 sem." [ref=f2e892] [cursor=pointer]:
+                    - /url: /annonce/f3cece9a-5062-5fd7-ab91-5b1947ea414b
+                    - generic [ref=f2e893]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                    - generic [ref=f2e894]:
+                      - generic "Sports" [ref=f2e897]
+                      - generic [ref=f2e898]:
+                        - generic "340 €" [ref=f2e899]
+                        - generic [ref=f2e900]:
+                          - img "Vendeur vérifié" [ref=f2e901]: Vérifié
+                          - img "Note 4,9 sur 5, 14 avis" [ref=f2e906]:
+                            - generic [ref=f2e909]: 4,9
+                            - generic [ref=f2e910]: (14)
+                      - heading "Planche de Surf Hybride Torq TET 6'8 avec Dérives Futures et Leash" [level=3] [ref=f2e911]
+                      - generic [ref=f2e913]:
+                        - generic "Biarritz" [ref=f2e915]
+                        - generic [ref=f2e916]:
+                          - generic [aria-hidden] [ref=f2e917]: ·
+                          - generic "il y a 4 sem." [ref=f2e918]
+                  - 'button "Ajouter aux favoris : Planche de Surf Hybride Torq TET 6''8 avec Dérives Futures et Leash" [ref=f2e920] [cursor=pointer]'
+                - article [ref=f2e924]:
+                  - link "Fauteuil Lounge Vintage Scandinave en Chêne Massif, 380 €, Maison, Boosté, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, 2 photos, Bordeaux, il y a 4 sem." [ref=f2e925] [cursor=pointer]:
+                    - /url: /annonce/41366f46-aba2-5073-a40c-dc0886d7cab3
+                    - generic [ref=f2e926]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                        - generic "2 photos": "2"
+                    - generic [ref=f2e927]:
+                      - generic "Maison" [ref=f2e930]
+                      - generic [ref=f2e931]:
+                        - generic "380 €" [ref=f2e932]
+                        - generic [ref=f2e933]:
+                          - img "Vendeur professionnel" [ref=f2e934]: Pro
+                          - img "Note 5,0 sur 5, 128 avis" [ref=f2e935]:
+                            - generic [ref=f2e938]: 5,0
+                            - generic [ref=f2e939]: (128)
+                      - heading "Fauteuil Lounge Vintage Scandinave en Chêne Massif" [level=3] [ref=f2e940]
+                      - generic [ref=f2e942]:
+                        - generic "Bordeaux" [ref=f2e944]
+                        - generic [ref=f2e945]:
+                          - generic [aria-hidden] [ref=f2e946]: ·
+                          - generic "il y a 4 sem." [ref=f2e947]
+                  - generic:
+                    - generic: Boosté
+                    - 'button "Ajouter aux favoris : Fauteuil Lounge Vintage Scandinave en Chêne Massif" [ref=f2e949] [cursor=pointer]'
+                - article [ref=f2e953]:
+                  - link "Console PlayStation 5 Édition Standard avec 2 Manettes DualSense, 390 €, Électronique, Note 4,9 sur 5, 14 avis, Paiement en ligne, Livraison, Vendeur vérifié, 2 photos, Nantes, il y a 4 sem." [ref=f2e954] [cursor=pointer]:
+                    - /url: /annonce/8e9b3202-41d2-5957-b7cc-accb2df7e941
+                    - generic [ref=f2e955]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                        - generic "2 photos": "2"
+                    - generic [ref=f2e956]:
+                      - generic "Électronique" [ref=f2e959]
+                      - generic [ref=f2e960]:
+                        - generic "390 €" [ref=f2e961]
+                        - generic [ref=f2e962]:
+                          - img "Vendeur vérifié" [ref=f2e963]: Vérifié
+                          - img "Note 4,9 sur 5, 14 avis" [ref=f2e968]:
+                            - generic [ref=f2e971]: 4,9
+                            - generic [ref=f2e972]: (14)
+                      - heading "Console PlayStation 5 Édition Standard avec 2 Manettes DualSense" [level=3] [ref=f2e973]
+                      - generic [ref=f2e975]:
+                        - generic "Nantes" [ref=f2e977]
+                        - generic [ref=f2e978]:
+                          - generic [aria-hidden] [ref=f2e979]: ·
+                          - generic "il y a 4 sem." [ref=f2e980]
+                  - 'button "Ajouter aux favoris : Console PlayStation 5 Édition Standard avec 2 Manettes DualSense" [ref=f2e982] [cursor=pointer]'
+            - button "Faire défiler les Annonces récentes vers la droite" [ref=f2e985] [cursor=pointer]
+        - region [ref=f2e988]:
+          - generic [ref=f2e989]:
+            - generic [ref=f2e990]:
+              - heading "En tendence" [level=2] [ref=f2e991]
+              - paragraph [ref=f2e992]: Découvrez ce qui attire le plus les acheteurs en ce moment.
+            - link "Voir tout" [ref=f2e993] [cursor=pointer]:
+              - /url: /recherche?sortBy=popularite
+          - generic [ref=f2e1001]:
+            - article [ref=f2e1003]:
+              - link "Vélo Gravel Specialized Diverge E5, 250 €, Specialized, Livraison, Lyon, il y a 3 sem." [ref=f2e1004] [cursor=pointer]:
+                - /url: /annonce/list_1
+                - generic [ref=f2e1005]:
+                  - generic:
+                    - generic:
+                      - generic "Livraison"
+                - generic [ref=f2e1006]:
+                  - generic "Specialized" [ref=f2e1009]
+                  - generic "250 €" [ref=f2e1011]
+                  - heading "Vélo Gravel Specialized Diverge E5" [level=3] [ref=f2e1012]
+                  - generic [ref=f2e1014]:
+                    - generic "Lyon" [ref=f2e1016]
+                    - generic [ref=f2e1017]:
+                      - generic [aria-hidden] [ref=f2e1018]: ·
+                      - generic "il y a 3 sem." [ref=f2e1019]
+              - 'button "Ajouter aux favoris : Vélo Gravel Specialized Diverge E5" [ref=f2e1021] [cursor=pointer]'
+            - article [ref=f2e1025]:
+              - link "Appartement T3 Rénové avec Balcon et Vue Dégagée - Lyon 6e, 345 000 €, Vendeur professionnel, Note 5,0 sur 5, 128 avis, 2 photos, Lyon 6e, le mois dernier" [ref=f2e1026] [cursor=pointer]:
+                - /url: /annonce/28c310c5-6646-5f88-8890-def30ee78a33
+                - generic [ref=f2e1027]:
+                  - generic:
+                    - generic "2 photos": "2"
+                - generic [ref=f2e1028]:
+                  - generic [ref=f2e1029]:
+                    - generic "345 000 €" [ref=f2e1030]
+                    - generic [ref=f2e1031]:
+                      - img "Vendeur professionnel" [ref=f2e1032]: Pro
+                      - img "Note 5,0 sur 5, 128 avis" [ref=f2e1033]:
+                        - generic [ref=f2e1036]: 5,0
+                        - generic [ref=f2e1037]: (128)
+                  - heading "Appartement T3 Rénové avec Balcon et Vue Dégagée - Lyon 6e" [level=3] [ref=f2e1038]
+                  - generic [ref=f2e1040]:
+                    - generic "Lyon 6e" [ref=f2e1042]
+                    - generic [ref=f2e1043]:
+                      - generic [aria-hidden] [ref=f2e1044]: ·
+                      - generic "le mois dernier" [ref=f2e1045]
+              - 'button "Ajouter aux favoris : Appartement T3 Rénové avec Balcon et Vue Dégagée - Lyon 6e" [ref=f2e1047] [cursor=pointer]'
+            - article [ref=f2e1051]:
+              - link "Table à Manger Ronde Extensible en Teck Massif Années 70, 490 €, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, Bordeaux, le mois dernier" [ref=f2e1052] [cursor=pointer]:
+                - /url: /annonce/e89165e5-ad32-592d-bcaf-8264b48d23d6
+                - generic [ref=f2e1053]:
+                  - generic:
+                    - generic:
+                      - generic "Paiement en ligne"
+                      - generic "Livraison"
+                - generic [ref=f2e1054]:
+                  - generic [ref=f2e1055]:
+                    - generic "490 €" [ref=f2e1056]
+                    - generic [ref=f2e1057]:
+                      - img "Vendeur professionnel" [ref=f2e1058]: Pro
+                      - img "Note 5,0 sur 5, 128 avis" [ref=f2e1059]:
+                        - generic [ref=f2e1062]: 5,0
+                        - generic [ref=f2e1063]: (128)
+                  - heading "Table à Manger Ronde Extensible en Teck Massif Années 70" [level=3] [ref=f2e1064]
+                  - generic [ref=f2e1066]:
+                    - generic "Bordeaux" [ref=f2e1068]
+                    - generic [ref=f2e1069]:
+                      - generic [aria-hidden] [ref=f2e1070]: ·
+                      - generic "le mois dernier" [ref=f2e1071]
+              - 'button "Ajouter aux favoris : Table à Manger Ronde Extensible en Teck Massif Années 70" [ref=f2e1073] [cursor=pointer]'
+            - article [ref=f2e1077]:
+              - link "Fauteuil Lounge Vintage Scandinave en Chêne Massif, 380 €, Boosté, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, 2 photos, Bordeaux, il y a 4 sem." [ref=f2e1078] [cursor=pointer]:
+                - /url: /annonce/41366f46-aba2-5073-a40c-dc0886d7cab3
+                - generic [ref=f2e1079]:
+                  - generic:
+                    - generic:
+                      - generic "Paiement en ligne"
+                      - generic "Livraison"
+                    - generic "2 photos": "2"
+                - generic [ref=f2e1080]:
+                  - generic [ref=f2e1081]:
+                    - generic "380 €" [ref=f2e1082]
+                    - generic [ref=f2e1083]:
+                      - img "Vendeur professionnel" [ref=f2e1084]: Pro
+                      - img "Note 5,0 sur 5, 128 avis" [ref=f2e1085]:
+                        - generic [ref=f2e1088]: 5,0
+                        - generic [ref=f2e1089]: (128)
+                  - heading "Fauteuil Lounge Vintage Scandinave en Chêne Massif" [level=3] [ref=f2e1090]
+                  - generic [ref=f2e1092]:
+                    - generic "Bordeaux" [ref=f2e1094]
+                    - generic [ref=f2e1095]:
+                      - generic [aria-hidden] [ref=f2e1096]: ·
+                      - generic "il y a 4 sem." [ref=f2e1097]
+              - generic:
+                - generic: Boosté
+                - 'button "Ajouter aux favoris : Fauteuil Lounge Vintage Scandinave en Chêne Massif" [ref=f2e1099] [cursor=pointer]'
+            - article [ref=f2e1103]:
+              - link "Peugeot 208 II 1.2 PureTech 100ch Allure Pack - Faible Km, 15 400 €, peugeot, Boosté, Note 4,9 sur 5, 14 avis, Paiement en ligne, Vendeur vérifié, 2 photos, Paris 11e, il y a 4 sem." [ref=f2e1104] [cursor=pointer]:
+                - /url: /annonce/b63a4f51-d794-5d26-8930-003dd55daf5a
+                - generic [ref=f2e1105]:
+                  - generic:
+                    - generic:
+                      - generic "Paiement en ligne"
+                    - generic "2 photos": "2"
+                - generic [ref=f2e1106]:
+                  - generic "peugeot" [ref=f2e1109]
+                  - generic [ref=f2e1110]:
+                    - generic "15 400 €" [ref=f2e1111]
+                    - generic [ref=f2e1112]:
+                      - img "Vendeur vérifié" [ref=f2e1113]: Vérifié
+                      - img "Note 4,9 sur 5, 14 avis" [ref=f2e1118]:
+                        - generic [ref=f2e1121]: 4,9
+                        - generic [ref=f2e1122]: (14)
+                  - heading "Peugeot 208 II 1.2 PureTech 100ch Allure Pack - Faible Km" [level=3] [ref=f2e1123]
+                  - generic [ref=f2e1125]:
+                    - generic "Paris 11e" [ref=f2e1127]
+                    - generic [ref=f2e1128]:
+                      - generic [aria-hidden] [ref=f2e1129]: ·
+                      - generic "il y a 4 sem." [ref=f2e1130]
+              - generic:
+                - generic: Boosté
+                - 'button "Ajouter aux favoris : Peugeot 208 II 1.2 PureTech 100ch Allure Pack - Faible Km" [ref=f2e1132] [cursor=pointer]'
+        - region [ref=f2e1135]:
+          - generic [ref=f2e1136]:
+            - generic [ref=f2e1137]:
+              - heading "Meilleures offres" [level=2] [ref=f2e1138]
+              - paragraph [ref=f2e1139]: Des réductions et offres actives sélectionnées pour votre marché.
+            - link "Voir tout" [ref=f2e1140] [cursor=pointer]:
+              - /url: /offres-prix-reduit
+          - generic [ref=f2e1148]:
+            - article [ref=f2e1150]:
+              - link "Poussette Tout-Terrain Cybex Priam Rose Gold & Nacelle Lux, 680 €, Bébé & Famille, Cybex, Note 5,0 sur 5, 42 avis, Paiement en ligne, Livraison, Vendeur vérifié, Lyon 2e, il y a 4 sem." [ref=f2e1151] [cursor=pointer]:
+                - /url: /annonce/3aa3292b-8d25-58a6-aac4-e9cd8726ab82
+                - generic [ref=f2e1152]:
+                  - generic:
+                    - generic:
+                      - generic "Paiement en ligne"
+                      - generic "Livraison"
+                - generic [ref=f2e1153]:
+                  - generic [ref=f2e1154]:
+                    - generic "Bébé & Famille" [ref=f2e1156]
+                    - generic [ref=f2e1157]:
+                      - generic [aria-hidden] [ref=f2e1158]: ·
+                      - generic "Cybex" [ref=f2e1159]
+                  - generic [ref=f2e1160]:
+                    - generic "680 €" [ref=f2e1161]
+                    - generic [ref=f2e1162]:
+                      - img "Vendeur vérifié" [ref=f2e1163]: Vérifié
+                      - img "Note 5,0 sur 5, 42 avis" [ref=f2e1168]:
+                        - generic [ref=f2e1171]: 5,0
+                        - generic [ref=f2e1172]: (42)
+                  - heading "Poussette Tout-Terrain Cybex Priam Rose Gold & Nacelle Lux" [level=3] [ref=f2e1173]
+                  - generic [ref=f2e1175]:
+                    - generic "Lyon 2e" [ref=f2e1177]
+                    - generic [ref=f2e1178]:
+                      - generic [aria-hidden] [ref=f2e1179]: ·
+                      - generic "il y a 4 sem." [ref=f2e1180]
+              - 'button "Ajouter aux favoris : Poussette Tout-Terrain Cybex Priam Rose Gold & Nacelle Lux" [ref=f2e1182] [cursor=pointer]'
+            - article [ref=f2e1186]:
+              - link "Manteau Long en Laine Sézane Modèle Johnson - Camel - Taille 38, 195 €, Mode, Sézane, Note 5,0 sur 5, 42 avis, Paiement en ligne, Livraison, Vendeur vérifié, 2 photos, Lyon 2e, il y a 4 sem." [ref=f2e1187] [cursor=pointer]:
+                - /url: /annonce/b76750c0-e3f1-5259-b9d3-f6709abd5d62
+                - generic [ref=f2e1188]:
+                  - generic:
+                    - generic:
+                      - generic "Paiement en ligne"
+                      - generic "Livraison"
+                    - generic "2 photos": "2"
+                - generic [ref=f2e1189]:
+                  - generic [ref=f2e1190]:
+                    - generic "Mode" [ref=f2e1192]
+                    - generic [ref=f2e1193]:
+                      - generic [aria-hidden] [ref=f2e1194]: ·
+                      - generic "Sézane" [ref=f2e1195]
+                  - generic [ref=f2e1196]:
+                    - generic "195 €" [ref=f2e1197]
+                    - generic [ref=f2e1198]:
+                      - img "Vendeur vérifié" [ref=f2e1199]: Vérifié
+                      - img "Note 5,0 sur 5, 42 avis" [ref=f2e1204]:
+                        - generic [ref=f2e1207]: 5,0
+                        - generic [ref=f2e1208]: (42)
+                  - heading "Manteau Long en Laine Sézane Modèle Johnson - Camel - Taille 38" [level=3] [ref=f2e1209]
+                  - generic [ref=f2e1211]:
+                    - generic "Lyon 2e" [ref=f2e1213]
+                    - generic [ref=f2e1214]:
+                      - generic [aria-hidden] [ref=f2e1215]: ·
+                      - generic "il y a 4 sem." [ref=f2e1216]
+              - 'button "Ajouter aux favoris : Manteau Long en Laine Sézane Modèle Johnson - Camel - Taille 38" [ref=f2e1218] [cursor=pointer]'
+            - article [ref=f2e1222]:
+              - link "Arbre à Chat Mural Design en Bois Massif et Corde Sisal Naturel, 95 €, Animaux, Boosté, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, Bordeaux, il y a 4 sem." [ref=f2e1223] [cursor=pointer]:
+                - /url: /annonce/c8e5ac9a-86a6-5378-841f-74cc332593fe
+                - generic [ref=f2e1224]:
+                  - generic:
+                    - generic:
+                      - generic "Paiement en ligne"
+                      - generic "Livraison"
+                - generic [ref=f2e1225]:
+                  - generic "Animaux" [ref=f2e1228]
+                  - generic [ref=f2e1229]:
+                    - generic "95 €" [ref=f2e1230]
+                    - generic [ref=f2e1231]:
+                      - img "Vendeur professionnel" [ref=f2e1232]: Pro
+                      - img "Note 5,0 sur 5, 128 avis" [ref=f2e1233]:
+                        - generic [ref=f2e1236]: 5,0
+                        - generic [ref=f2e1237]: (128)
+                  - heading "Arbre à Chat Mural Design en Bois Massif et Corde Sisal Naturel" [level=3] [ref=f2e1238]
+                  - generic [ref=f2e1240]:
+                    - generic "Bordeaux" [ref=f2e1242]
+                    - generic [ref=f2e1243]:
+                      - generic [aria-hidden] [ref=f2e1244]: ·
+                      - generic "il y a 4 sem." [ref=f2e1245]
+              - generic:
+                - generic: Boosté
+                - 'button "Ajouter aux favoris : Arbre à Chat Mural Design en Bois Massif et Corde Sisal Naturel" [ref=f2e1247] [cursor=pointer]'
+            - article [ref=f2e1251]:
+              - link "Planche de Surf Hybride Torq TET 6'8 avec Dérives Futures et Leash, 340 €, Sports, Note 4,9 sur 5, 14 avis, Paiement en ligne, Vendeur vérifié, Biarritz, il y a 4 sem." [ref=f2e1252] [cursor=pointer]:
+                - /url: /annonce/f3cece9a-5062-5fd7-ab91-5b1947ea414b
+                - generic [ref=f2e1253]:
+                  - generic:
+                    - generic:
+                      - generic "Paiement en ligne"
+                - generic [ref=f2e1254]:
+                  - generic "Sports" [ref=f2e1257]
+                  - generic [ref=f2e1258]:
+                    - generic "340 €" [ref=f2e1259]
+                    - generic [ref=f2e1260]:
+                      - img "Vendeur vérifié" [ref=f2e1261]: Vérifié
+                      - img "Note 4,9 sur 5, 14 avis" [ref=f2e1266]:
+                        - generic [ref=f2e1269]: 4,9
+                        - generic [ref=f2e1270]: (14)
+                  - heading "Planche de Surf Hybride Torq TET 6'8 avec Dérives Futures et Leash" [level=3] [ref=f2e1271]
+                  - generic [ref=f2e1273]:
+                    - generic "Biarritz" [ref=f2e1275]
+                    - generic [ref=f2e1276]:
+                      - generic [aria-hidden] [ref=f2e1277]: ·
+                      - generic "il y a 4 sem." [ref=f2e1278]
+              - 'button "Ajouter aux favoris : Planche de Surf Hybride Torq TET 6''8 avec Dérives Futures et Leash" [ref=f2e1280] [cursor=pointer]'
+            - article [ref=f2e1284]:
+              - link "Niveau Laser Rotatif Autonivelant Bosch Professional GRL 300 HV + Trépied, 450 €, Outils pro, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, Bordeaux, il y a 4 sem." [ref=f2e1285] [cursor=pointer]:
+                - /url: /annonce/697d378e-1b34-500f-b324-b219e604e782
+                - generic [ref=f2e1286]:
+                  - generic:
+                    - generic:
+                      - generic "Paiement en ligne"
+                      - generic "Livraison"
+                - generic [ref=f2e1287]:
+                  - generic "Outils pro" [ref=f2e1290]
+                  - generic [ref=f2e1291]:
+                    - generic "450 €" [ref=f2e1292]
+                    - generic [ref=f2e1293]:
+                      - img "Vendeur professionnel" [ref=f2e1294]: Pro
+                      - img "Note 5,0 sur 5, 128 avis" [ref=f2e1295]:
+                        - generic [ref=f2e1298]: 5,0
+                        - generic [ref=f2e1299]: (128)
+                  - heading "Niveau Laser Rotatif Autonivelant Bosch Professional GRL 300 HV + Trépied" [level=3] [ref=f2e1300]
+                  - generic [ref=f2e1302]:
+                    - generic "Bordeaux" [ref=f2e1304]
+                    - generic [ref=f2e1305]:
+                      - generic [aria-hidden] [ref=f2e1306]: ·
+                      - generic "il y a 4 sem." [ref=f2e1307]
+              - 'button "Ajouter aux favoris : Niveau Laser Rotatif Autonivelant Bosch Professional GRL 300 HV + Trépied" [ref=f2e1309] [cursor=pointer]'
+            - article [ref=f2e1313]:
+              - link "Machine à Café Espresso avec Broyeur De'Longhi Magnifica S, 180 €, Maison, Note 5,0 sur 5, 42 avis, Paiement en ligne, Livraison, Vendeur vérifié, Lyon 2e, il y a 4 sem." [ref=f2e1314] [cursor=pointer]:
+                - /url: /annonce/9c9bf308-fd97-5418-8699-b5e519103e0b
+                - generic [ref=f2e1315]:
+                  - generic:
+                    - generic:
+                      - generic "Paiement en ligne"
+                      - generic "Livraison"
+                - generic [ref=f2e1316]:
+                  - generic "Maison" [ref=f2e1319]
+                  - generic [ref=f2e1320]:
+                    - generic "180 €" [ref=f2e1321]
+                    - generic [ref=f2e1322]:
+                      - img "Vendeur vérifié" [ref=f2e1323]: Vérifié
+                      - img "Note 5,0 sur 5, 42 avis" [ref=f2e1328]:
+                        - generic [ref=f2e1331]: 5,0
+                        - generic [ref=f2e1332]: (42)
+                  - heading "Machine à Café Espresso avec Broyeur De'Longhi Magnifica S" [level=3] [ref=f2e1333]
+                  - generic [ref=f2e1335]:
+                    - generic "Lyon 2e" [ref=f2e1337]
+                    - generic [ref=f2e1338]:
+                      - generic [aria-hidden] [ref=f2e1339]: ·
+                      - generic "il y a 4 sem." [ref=f2e1340]
+              - 'button "Ajouter aux favoris : Machine à Café Espresso avec Broyeur De''Longhi Magnifica S" [ref=f2e1342] [cursor=pointer]'
+        - region [ref=f2e1345]:
+          - generic [ref=f2e1346]:
+            - heading "Explorez par univers" [level=2] [ref=f2e1348]
+            - paragraph [ref=f2e1349]: Trouvez rapidement ce qui vous intéresse
+          - generic [ref=f2e1350]:
+            - region [ref=f2e1351]:
+              - generic [ref=f2e1352]:
+                - heading "Maison & Jardin" [level=3] [ref=f2e1358]
+                - link "Voir tout" [ref=f2e1359] [cursor=pointer]:
+                  - /url: /categorie/maison-jardin
+              - generic [ref=f2e1367]:
+                - article [ref=f2e1369]:
+                  - 'link "Don : Lot de 15 Pots de Fleurs en Terre Cuite et Cache-pots, Maison, Note 4,9 sur 5, 14 avis, Vendeur vérifié, Marseille 7e, il y a 4 sem." [ref=f2e1370] [cursor=pointer]':
+                    - /url: /annonce/78adf86d-a86e-59cc-bbf3-2ed392e1f26b
+                    - generic [ref=f2e1372]:
+                      - generic "Maison" [ref=f2e1375]
+                      - generic [ref=f2e1377]:
+                        - img "Vendeur vérifié" [ref=f2e1378]: Vérifié
+                        - img "Note 4,9 sur 5, 14 avis" [ref=f2e1383]:
+                          - generic [ref=f2e1386]: 4,9
+                          - generic [ref=f2e1387]: (14)
+                      - 'heading "Don : Lot de 15 Pots de Fleurs en Terre Cuite et Cache-pots" [level=3] [ref=f2e1388]'
+                      - generic [ref=f2e1390]:
+                        - generic "Marseille 7e" [ref=f2e1392]
+                        - generic [ref=f2e1393]:
+                          - generic [aria-hidden] [ref=f2e1394]: ·
+                          - generic "il y a 4 sem." [ref=f2e1395]
+                  - 'button "Ajouter aux favoris : Don : Lot de 15 Pots de Fleurs en Terre Cuite et Cache-pots" [ref=f2e1397] [cursor=pointer]'
+                - article [ref=f2e1401]:
+                  - link "Machine à Café Espresso avec Broyeur De'Longhi Magnifica S, 180 €, Maison, Note 5,0 sur 5, 42 avis, Paiement en ligne, Livraison, Vendeur vérifié, Lyon 2e, il y a 4 sem." [ref=f2e1402] [cursor=pointer]:
+                    - /url: /annonce/9c9bf308-fd97-5418-8699-b5e519103e0b
+                    - generic [ref=f2e1403]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                    - generic [ref=f2e1404]:
+                      - generic "Maison" [ref=f2e1407]
+                      - generic [ref=f2e1408]:
+                        - generic "180 €" [ref=f2e1409]
+                        - generic [ref=f2e1410]:
+                          - img "Vendeur vérifié" [ref=f2e1411]: Vérifié
+                          - img "Note 5,0 sur 5, 42 avis" [ref=f2e1416]:
+                            - generic [ref=f2e1419]: 5,0
+                            - generic [ref=f2e1420]: (42)
+                      - heading "Machine à Café Espresso avec Broyeur De'Longhi Magnifica S" [level=3] [ref=f2e1421]
+                      - generic [ref=f2e1423]:
+                        - generic "Lyon 2e" [ref=f2e1425]
+                        - generic [ref=f2e1426]:
+                          - generic [aria-hidden] [ref=f2e1427]: ·
+                          - generic "il y a 4 sem." [ref=f2e1428]
+                  - 'button "Ajouter aux favoris : Machine à Café Espresso avec Broyeur De''Longhi Magnifica S" [ref=f2e1430] [cursor=pointer]'
+                - article [ref=f2e1434]:
+                  - link "Fauteuil Lounge Vintage Scandinave en Chêne Massif, 380 €, Maison, Boosté, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, 2 photos, Bordeaux, il y a 4 sem." [ref=f2e1435] [cursor=pointer]:
+                    - /url: /annonce/41366f46-aba2-5073-a40c-dc0886d7cab3
+                    - generic [ref=f2e1436]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                        - generic "2 photos": "2"
+                    - generic [ref=f2e1437]:
+                      - generic "Maison" [ref=f2e1440]
+                      - generic [ref=f2e1441]:
+                        - generic "380 €" [ref=f2e1442]
+                        - generic [ref=f2e1443]:
+                          - img "Vendeur professionnel" [ref=f2e1444]: Pro
+                          - img "Note 5,0 sur 5, 128 avis" [ref=f2e1445]:
+                            - generic [ref=f2e1448]: 5,0
+                            - generic [ref=f2e1449]: (128)
+                      - heading "Fauteuil Lounge Vintage Scandinave en Chêne Massif" [level=3] [ref=f2e1450]
+                      - generic [ref=f2e1452]:
+                        - generic "Bordeaux" [ref=f2e1454]
+                        - generic [ref=f2e1455]:
+                          - generic [aria-hidden] [ref=f2e1456]: ·
+                          - generic "il y a 4 sem." [ref=f2e1457]
+                  - generic:
+                    - generic: Boosté
+                    - 'button "Ajouter aux favoris : Fauteuil Lounge Vintage Scandinave en Chêne Massif" [ref=f2e1459] [cursor=pointer]'
+                - article [ref=f2e1463]:
+                  - link "Perforateur Burineur Électroportatif Bosch Professional GBH 2-28 F, 145 €, Maison, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, Bordeaux, le mois dernier" [ref=f2e1464] [cursor=pointer]:
+                    - /url: /annonce/a8540c24-d496-5741-b978-debe0e8dc1f8
+                    - generic [ref=f2e1465]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                    - generic [ref=f2e1466]:
+                      - generic "Maison" [ref=f2e1469]
+                      - generic [ref=f2e1470]:
+                        - generic "145 €" [ref=f2e1471]
+                        - generic [ref=f2e1472]:
+                          - img "Vendeur professionnel" [ref=f2e1473]: Pro
+                          - img "Note 5,0 sur 5, 128 avis" [ref=f2e1474]:
+                            - generic [ref=f2e1477]: 5,0
+                            - generic [ref=f2e1478]: (128)
+                      - heading "Perforateur Burineur Électroportatif Bosch Professional GBH 2-28 F" [level=3] [ref=f2e1479]
+                      - generic [ref=f2e1481]:
+                        - generic "Bordeaux" [ref=f2e1483]
+                        - generic [ref=f2e1484]:
+                          - generic [aria-hidden] [ref=f2e1485]: ·
+                          - generic "le mois dernier" [ref=f2e1486]
+                  - 'button "Ajouter aux favoris : Perforateur Burineur Électroportatif Bosch Professional GBH 2-28 F" [ref=f2e1488] [cursor=pointer]'
+                - article [ref=f2e1492]:
+                  - link "Table à Manger Ronde Extensible en Teck Massif Années 70, 490 €, Maison, Vendeur professionnel, Note 5,0 sur 5, 128 avis, Paiement en ligne, Livraison, Bordeaux, le mois dernier" [ref=f2e1493] [cursor=pointer]:
+                    - /url: /annonce/e89165e5-ad32-592d-bcaf-8264b48d23d6
+                    - generic [ref=f2e1494]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                    - generic [ref=f2e1495]:
+                      - generic "Maison" [ref=f2e1498]
+                      - generic [ref=f2e1499]:
+                        - generic "490 €" [ref=f2e1500]
+                        - generic [ref=f2e1501]:
+                          - img "Vendeur professionnel" [ref=f2e1502]: Pro
+                          - img "Note 5,0 sur 5, 128 avis" [ref=f2e1503]:
+                            - generic [ref=f2e1506]: 5,0
+                            - generic [ref=f2e1507]: (128)
+                      - heading "Table à Manger Ronde Extensible en Teck Massif Années 70" [level=3] [ref=f2e1508]
+                      - generic [ref=f2e1510]:
+                        - generic "Bordeaux" [ref=f2e1512]
+                        - generic [ref=f2e1513]:
+                          - generic [aria-hidden] [ref=f2e1514]: ·
+                          - generic "le mois dernier" [ref=f2e1515]
+                  - 'button "Ajouter aux favoris : Table à Manger Ronde Extensible en Teck Massif Années 70" [ref=f2e1517] [cursor=pointer]'
+            - region [ref=f2e1520]:
+              - generic [ref=f2e1521]:
+                - heading "Véhicules" [level=3] [ref=f2e1528]
+                - link "Voir tout" [ref=f2e1529] [cursor=pointer]:
+                  - /url: /categorie/vehicules
+              - generic [ref=f2e1537]:
+                - article [ref=f2e1539]:
+                  - link "Vélo Gravel Specialized Diverge E5, 250 €, Véhicules, Specialized, Livraison, Lyon, il y a 3 sem." [ref=f2e1540] [cursor=pointer]:
+                    - /url: /annonce/list_1
+                    - generic [ref=f2e1541]:
+                      - generic:
+                        - generic:
+                          - generic "Livraison"
+                    - generic [ref=f2e1542]:
+                      - generic [ref=f2e1543]:
+                        - generic "Véhicules" [ref=f2e1545]
+                        - generic [ref=f2e1546]:
+                          - generic [aria-hidden] [ref=f2e1547]: ·
+                          - generic "Specialized" [ref=f2e1548]
+                      - generic "250 €" [ref=f2e1550]
+                      - heading "Vélo Gravel Specialized Diverge E5" [level=3] [ref=f2e1551]
+                      - generic [ref=f2e1553]:
+                        - generic "Lyon" [ref=f2e1555]
+                        - generic [ref=f2e1556]:
+                          - generic [aria-hidden] [ref=f2e1557]: ·
+                          - generic "il y a 3 sem." [ref=f2e1558]
+                  - 'button "Ajouter aux favoris : Vélo Gravel Specialized Diverge E5" [ref=f2e1560] [cursor=pointer]'
+                - article [ref=f2e1564]:
+                  - link "Peugeot 208 II 1.2 PureTech 100ch Allure Pack - Faible Km, 15 400 €, Véhicules, Peugeot, Boosté, Note 4,9 sur 5, 14 avis, Paiement en ligne, Vendeur vérifié, 2 photos, Paris 11e, il y a 4 sem." [ref=f2e1565] [cursor=pointer]:
+                    - /url: /annonce/b63a4f51-d794-5d26-8930-003dd55daf5a
+                    - generic [ref=f2e1566]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                        - generic "2 photos": "2"
+                    - generic [ref=f2e1567]:
+                      - generic [ref=f2e1568]:
+                        - generic "Véhicules" [ref=f2e1570]
+                        - generic [ref=f2e1571]:
+                          - generic [aria-hidden] [ref=f2e1572]: ·
+                          - generic "Peugeot" [ref=f2e1573]
+                      - generic [ref=f2e1574]:
+                        - generic "15 400 €" [ref=f2e1575]
+                        - generic [ref=f2e1576]:
+                          - img "Vendeur vérifié" [ref=f2e1577]: Vérifié
+                          - img "Note 4,9 sur 5, 14 avis" [ref=f2e1582]:
+                            - generic [ref=f2e1585]: 4,9
+                            - generic [ref=f2e1586]: (14)
+                      - heading "Peugeot 208 II 1.2 PureTech 100ch Allure Pack - Faible Km" [level=3] [ref=f2e1587]
+                      - generic [ref=f2e1589]:
+                        - generic "Paris 11e" [ref=f2e1591]
+                        - generic [ref=f2e1592]:
+                          - generic [aria-hidden] [ref=f2e1593]: ·
+                          - generic "il y a 4 sem." [ref=f2e1594]
+                  - generic:
+                    - generic: Boosté
+                    - 'button "Ajouter aux favoris : Peugeot 208 II 1.2 PureTech 100ch Allure Pack - Faible Km" [ref=f2e1596] [cursor=pointer]'
+                - article [ref=f2e1600]:
+                  - link "Vélo Gravel Canyon Grizl CF SL 7 - Taille M - Équipé Shimano GRX, 1 850 €, Véhicules, Note 4,9 sur 5, 14 avis, Paiement en ligne, Livraison, Vendeur vérifié, 2 photos, Paris 11e, il y a 4 sem." [ref=f2e1601] [cursor=pointer]:
+                    - /url: /annonce/719502e1-5e86-531f-a732-fac31c56b072
+                    - generic [ref=f2e1602]:
+                      - generic:
+                        - generic:
+                          - generic "Paiement en ligne"
+                          - generic "Livraison"
+                        - generic "2 photos": "2"
+                    - generic [ref=f2e1603]:
+                      - generic "Véhicules" [ref=f2e1606]
+                      - generic [ref=f2e1607]:
+                        - generic "1 850 €" [ref=f2e1608]
+                        - generic [ref=f2e1609]:
+                          - img "Vendeur vérifié" [ref=f2e1610]: Vérifié
+                          - img "Note 4,9 sur 5, 14 avis" [ref=f2e1615]:
+                            - generic [ref=f2e1618]: 4,9
+                            - generic [ref=f2e1619]: (14)
+                      - heading "Vélo Gravel Canyon Grizl CF SL 7 - Taille M - Équipé Shimano GRX" [level=3] [ref=f2e1620]
+                      - generic [ref=f2e1622]:
+                        - generic "Paris 11e" [ref=f2e1624]
+                        - generic [ref=f2e1625]:
+                          - generic [aria-hidden] [ref=f2e1626]: ·
+                          - generic "il y a 4 sem." [ref=f2e1627]
+                  - 'button "Ajouter aux favoris : Vélo Gravel Canyon Grizl CF SL 7 - Taille M - Équipé Shimano GRX" [ref=f2e1629] [cursor=pointer]'
+            - region [ref=f2e1632]:
+              - generic [ref=f2e1633]:
+                - heading "Mode" [level=3] [ref=f2e1638]
+                - link "Voir tout" [ref=f2e1639] [cursor=pointer]:
+                  - /url: /categorie/mode
+              - article [ref=f2e1649]:
+                - link "Manteau Long en Laine Sézane Modèle Johnson - Camel - Taille 38, 195 €, Mode, Sézane, Note 5,0 sur 5, 42 avis, Paiement en ligne, Livraison, Vendeur vérifié, 2 photos, Lyon 2e, il y a 4 sem." [ref=f2e1650] [cursor=pointer]:
+                  - /url: /annonce/b76750c0-e3f1-5259-b9d3-f6709abd5d62
+                  - generic [ref=f2e1651]:
+                    - generic:
+                      - generic:
+                        - generic "Paiement en ligne"
+                        - generic "Livraison"
+                      - generic "2 photos": "2"
+                  - generic [ref=f2e1652]:
+                    - generic [ref=f2e1653]:
+                      - generic "Mode" [ref=f2e1655]
+                      - generic [ref=f2e1656]:
+                        - generic [aria-hidden] [ref=f2e1657]: ·
+                        - generic "Sézane" [ref=f2e1658]
+                    - generic [ref=f2e1659]:
+                      - generic "195 €" [ref=f2e1660]
+                      - generic [ref=f2e1661]:
+                        - img "Vendeur vérifié" [ref=f2e1662]: Vérifié
+                        - img "Note 5,0 sur 5, 42 avis" [ref=f2e1667]:
+                          - generic [ref=f2e1670]: 5,0
+                          - generic [ref=f2e1671]: (42)
+                    - heading "Manteau Long en Laine Sézane Modèle Johnson - Camel - Taille 38" [level=3] [ref=f2e1672]
+                    - generic [ref=f2e1674]:
+                      - generic "Lyon 2e" [ref=f2e1676]
+                      - generic [ref=f2e1677]:
+                        - generic [aria-hidden] [ref=f2e1678]: ·
+                        - generic "il y a 4 sem." [ref=f2e1679]
+                - 'button "Ajouter aux favoris : Manteau Long en Laine Sézane Modèle Johnson - Camel - Taille 38" [ref=f2e1681] [cursor=pointer]'
+        - region [ref=f2e1684]:
+          - generic [ref=f2e1685]:
+            - generic [ref=f2e1686]:
+              - heading "Collections du moment" [level=2] [ref=f2e1687]
+              - paragraph [ref=f2e1688]: Explorez les annonces disponibles par catégorie.
+            - link "Voir toutes les collections" [ref=f2e1689] [cursor=pointer]:
+              - /url: /collections
+          - generic [ref=f2e1697]:
+            - link "Explorer la collection Véhicules" [ref=f2e1698] [cursor=pointer]:
+              - /url: /collections/vehicules
+              - generic [ref=f2e1701]:
+                - generic [ref=f2e1702]: Véhicules
+                - generic [ref=f2e1703]: 2 annonces
+            - link "Explorer la collection Immobilier" [ref=f2e1711] [cursor=pointer]:
+              - /url: /collections/immobilier
+              - generic [ref=f2e1714]:
+                - generic [ref=f2e1715]: Immobilier
+                - generic [ref=f2e1716]: 1 annonce
+            - link "Explorer la collection Emploi" [ref=f2e1724] [cursor=pointer]:
+              - /url: /collections/emploi
+              - generic [ref=f2e1727]:
+                - generic [ref=f2e1728]: Emploi
+                - generic [ref=f2e1729]: 1 annonce
+            - link "Explorer la collection Mode" [ref=f2e1737] [cursor=pointer]:
+              - /url: /collections/mode
+              - generic [ref=f2e1740]:
+                - generic [ref=f2e1741]: Mode
+                - generic [ref=f2e1742]: 1 annonce
+            - link "Explorer la collection Maison & Jardin" [ref=f2e1750] [cursor=pointer]:
+              - /url: /collections/maison-jardin
+              - generic [ref=f2e1753]:
+                - generic [ref=f2e1754]: Maison
+                - generic [ref=f2e1755]: 5 annonces
+        - region [ref=f2e1763]:
+          - generic [ref=f2e1764]:
+            - generic [ref=f2e1765]:
+              - heading "Vous êtes commerçant, artisan ou professionnel ?" [level=2] [ref=f2e1766]
+              - paragraph [ref=f2e1767]: Ouvrez votre vitrine officielle, présentez votre catalogue et pilotez votre activité professionnelle.
+            - link "Découvrir les forfaits Pro" [ref=f2e1769] [cursor=pointer]:
+              - /url: /solutions-pro
+    - contentinfo [ref=f2e95]:
+      - generic [ref=f2e96]:
+        - generic [ref=f2e98]:
+          - generic [ref=f2e99]:
+            - heading "Catégories phares Trouvez ce dont vous avez besoin" [level=2] [ref=f2e100]:
+              - generic [ref=f2e108]:
+                - generic [ref=f2e109]: Catégories phares
+                - generic [ref=f2e110]: Trouvez ce dont vous avez besoin
+            - list [ref=f2e111]:
+              - listitem [ref=f2e1771]:
+                - link "Immobilier" [ref=f2e1772] [cursor=pointer]:
+                  - /url: /categorie/immobilier
+              - listitem [ref=f2e1776]:
+                - link "Véhicules" [ref=f2e1777] [cursor=pointer]:
+                  - /url: /categorie/vehicules
+              - listitem [ref=f2e1781]:
+                - link "Outils pro" [ref=f2e1782] [cursor=pointer]:
+                  - /url: /categorie/materiel-professionnel
+              - listitem [ref=f2e1786]:
+                - link "Emploi" [ref=f2e1787] [cursor=pointer]:
+                  - /url: /categorie/emploi
+              - listitem [ref=f2e1791]:
+                - link "Mode" [ref=f2e1792] [cursor=pointer]:
+                  - /url: /categorie/mode
+              - listitem [ref=f2e1796]:
+                - link "Maison" [ref=f2e1797] [cursor=pointer]:
+                  - /url: /categorie/maison-jardin
+          - generic [ref=f2e117]:
+            - heading "Espace professionnels Développez votre activité" [level=2] [ref=f2e118]:
+              - generic [ref=f2e124]:
+                - generic [ref=f2e125]: Espace professionnels
+                - generic [ref=f2e126]: Développez votre activité
+            - list [ref=f2e127]:
+              - listitem [ref=f2e128]:
+                - link "Toutes les solutions Shongre" [ref=f2e129] [cursor=pointer]:
+                  - /url: /solutions
+              - listitem [ref=f2e133]:
+                - link "Solutions & Tarifs Pro" [ref=f2e134] [cursor=pointer]:
+                  - /url: /solutions-pro
+              - listitem [ref=f2e138]:
+                - link "Shongre Prospects" [ref=f2e139] [cursor=pointer]:
+                  - /url: /prospects
+              - listitem [ref=f2e143]:
+                - link "Shongre Facturation" [ref=f2e144] [cursor=pointer]:
+                  - /url: http://facturation.localhost:3110/
+              - listitem [ref=f2e148]:
+                - link "Annuaire des boutiques" [ref=f2e149] [cursor=pointer]:
+                  - /url: /professionnels
+              - listitem [ref=f2e153]:
+                - link "Grille des options & boosts" [ref=f2e154] [cursor=pointer]:
+                  - /url: /tarifs
+          - generic [ref=f2e158]:
+            - heading [level=2] [ref=f2e159]:
+              - link "Aide & Confiance Un accompagnement à chaque étape" [ref=f2e160] [cursor=pointer]:
+                - /url: /securite
+                - generic [ref=f2e166]:
+                  - generic [ref=f2e167]: Aide & Confiance
+                  - generic [ref=f2e168]: Un accompagnement à chaque étape
+            - list [ref=f2e169]:
+              - listitem [ref=f2e170]:
+                - link "Centre d’aide & FAQ" [ref=f2e171] [cursor=pointer]:
+                  - /url: /aide
+              - listitem [ref=f2e175]:
+                - link "Contacter le support" [ref=f2e176] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=f2e180]:
+                - link "Livraison & coursier" [ref=f2e181] [cursor=pointer]:
+                  - /url: /livraison
+              - listitem [ref=f2e185]:
+                - link "Promotions" [ref=f2e186] [cursor=pointer]:
+                  - /url: /offres-prix-reduit
+          - complementary "Newsletter Shongre" [ref=f2e190]:
+            - heading "Newsletter Shongre Recevez notre sélection hebdomadaire d’annonces et de nouveautés." [level=2] [ref=f2e191]:
+              - generic [ref=f2e197]:
+                - generic [ref=f2e198]: Newsletter Shongre
+                - generic [ref=f2e199]: Recevez notre sélection hebdomadaire d’annonces et de nouveautés.
+            - generic [ref=f2e201]:
+              - textbox "Votre adresse email" [ref=f2e206]:
+                - /placeholder: votre@email.com
+              - button "S'inscrire" [ref=f2e207] [cursor=pointer]
+            - list [ref=f2e213]:
+              - listitem [ref=f2e214]:
+                - generic [ref=f2e218]: Bons plans et nouveautés
+              - listitem [ref=f2e219]:
+                - generic [ref=f2e223]: Conseils et guides pratiques
+              - listitem [ref=f2e224]:
+                - generic [ref=f2e228]: Désinscription en un clic
+        - generic [ref=f2e229]:
+          - region [ref=f2e230]:
+            - generic [ref=f2e231]:
+              - generic [ref=f2e236]:
+                - heading "Applications mobiles Shongre" [level=2] [ref=f2e237]
+                - paragraph [ref=f2e238]: Emportez Shongre partout avec vous. Achetez, vendez et gérez vos annonces depuis votre mobile.
+              - generic [ref=f2e239]:
+                - generic "App Store — bientôt disponible" [ref=f2e240]:
+                  - generic [ref=f2e243]:
+                    - generic [ref=f2e244]: Bientôt sur
+                    - generic [ref=f2e245]: App Store
+                - generic "Google Play — bientôt disponible" [ref=f2e246]:
+                  - generic [ref=f2e249]:
+                    - generic [ref=f2e250]: Bientôt sur
+                    - generic [ref=f2e251]: Google Play
+          - region [ref=f2e252]:
+            - heading "Suivez Shongre" [level=2] [ref=f2e253]
+            - paragraph [ref=f2e254]: Rejoignez notre communauté
+            - generic [ref=f2e255]:
+              - img "Instagram — bientôt disponible" [ref=f2e256]
+              - img "Facebook — bientôt disponible" [ref=f2e261]
+              - img "LinkedIn — bientôt disponible" [ref=f2e264]
+              - img "YouTube — bientôt disponible" [ref=f2e267]
+        - generic [ref=f2e270]:
+          - generic [ref=f2e271]:
+            - generic [ref=f2e272]:
+              - link "SHONGRE., accueil" [ref=f2e273] [cursor=pointer]:
+                - /url: /
+                - generic [ref=f2e278]: Le bon plan, plus proche de vous.
+              - generic [ref=f2e280]: Marché France
+            - navigation "Informations légales" [ref=f2e288]:
+              - list [ref=f2e289]:
+                - listitem [ref=f2e290]:
+                  - link "À propos" [ref=f2e291] [cursor=pointer]:
+                    - /url: /a-propos
+                - listitem [ref=f2e292]:
+                  - link "CGU" [ref=f2e293] [cursor=pointer]:
+                    - /url: /conditions-utilisation
+                - listitem [ref=f2e294]:
+                  - link "Politique de confidentialité" [ref=f2e295] [cursor=pointer]:
+                    - /url: /confidentialite
+                - listitem [ref=f2e296]:
+                  - link "Mentions légales" [ref=f2e297] [cursor=pointer]:
+                    - /url: /mentions-legales
+                - listitem [ref=f2e298]:
+                  - link "Accessibilité (WCAG 2.2 AA)" [ref=f2e299] [cursor=pointer]:
+                    - /url: /accessibilite
+                - listitem [ref=f2e300]:
+                  - button "Gestion des cookies" [ref=f2e301] [cursor=pointer]
+          - generic [ref=f2e302]:
+            - generic [ref=f2e303]: © 2026 Shongre SAS. Tous droits réservés.
+            - 'button "Langue et préférences régionales : Français" [ref=f2e305] [cursor=pointer]':
+              - generic [ref=f2e311]: fr
+  - region "Notifications"
+  - button "Open Next.js Dev Tools" [ref=f2e1806] [cursor=pointer]
+  - alert [ref=f2e1810]

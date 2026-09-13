@@ -1,9 +1,10 @@
 import { PAGE_SIZES } from "../../../configuration/pagination.config";
-import { getListingPromotionBadges } from "@shongre/features";
+import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import type { Listing } from "../../../types";
 import { IconButton } from "../../../design-system/primitives/IconButton";
+import { RAIL_CONTROL_ICON_CLASS } from "../../../design-system/utils/controlMetrics";
 import { services } from "../../../api/client/service-registry";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
@@ -130,20 +131,34 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     const candidates = candidatesWithMedia.length
       ? candidatesWithMedia
       : projected;
+    const sponsored: typeof candidates = [];
     const promoted: typeof candidates = [];
     const organic: typeof candidates = [];
     for (const candidate of candidates) {
-      const target = getListingPromotionBadges(candidate.card).length
-        ? promoted
-        : organic;
+      const promotion = candidate.card.promotion;
+      if (
+        !isActiveMarketResolvedListingPromotion(
+          promotion,
+          candidate.card.marketCode,
+        )
+      ) {
+        organic.push(candidate);
+        continue;
+      }
+      const target =
+        promotion.type === "sponsored_search" ? sponsored : promoted;
       target.push(candidate);
     }
 
-    // The service order remains authoritative inside each group. The Hero only
-    // lifts listings carrying the shared market-resolved promotion projection;
-    // legacy `isBoosted` flags, seller type, discounts and record ids are not
-    // ranking evidence.
-    return [...promoted, ...organic].slice(0, MAX_FEATURED_LISTINGS);
+    // The service order remains authoritative inside each group. Sponsored
+    // search is the backend's highest paid-placement rank, so preserve that
+    // priority after the Hero's media filter and eight-item cap. Legacy
+    // `isBoosted` flags, seller type, discounts and record ids are not ranking
+    // evidence.
+    return [...sponsored, ...promoted, ...organic].slice(
+      0,
+      MAX_FEATURED_LISTINGS,
+    );
   }, [activeMarket.code, allListings, convertMoney, currentLocale]);
   const favoriteSet = useMemo(() => new Set(favorites), [favorites]);
 
@@ -240,7 +255,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   return (
     <section
       data-home-boosted-carousel="true"
-      className="relative flex w-full max-w-full flex-1 flex-col justify-between"
+      className="relative flex w-full max-w-full flex-col justify-between"
       aria-label={t("home.heroBoostedScroll.carouselLabel")}
       aria-roledescription="carrousel"
       onMouseEnter={() => setIsInteractionPaused(true)}
@@ -323,7 +338,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
           <>
             <IconButton
               variant="ghost"
-              size="md"
+              size="sm"
               ariaLabel={t("home.heroBoostedScroll.previous")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex - 1)}
@@ -333,17 +348,17 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
                  rail already swipes. */
               className="absolute inset-y-0 left-2 z-raised my-auto hidden rounded-full bg-surface-inverse-deep/60 text-text-inverse shadow-sm backdrop-blur-xs hover:bg-surface-inverse-deep/80 hover:text-text-inverse sm:left-3 sm:inline-flex"
             >
-              <ChevronLeft className="h-icon-lg w-icon-lg" />
+              <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
             </IconButton>
             <IconButton
               variant="ghost"
-              size="md"
+              size="sm"
               ariaLabel={t("home.heroBoostedScroll.next")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex + 1)}
               className="absolute inset-y-0 right-2 z-raised my-auto hidden rounded-full bg-surface-inverse-deep/60 text-text-inverse shadow-sm backdrop-blur-xs hover:bg-surface-inverse-deep/80 hover:text-text-inverse sm:right-3 sm:inline-flex"
             >
-              <ChevronRight className="h-icon-lg w-icon-lg" />
+              <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
             </IconButton>
           </>
         )}

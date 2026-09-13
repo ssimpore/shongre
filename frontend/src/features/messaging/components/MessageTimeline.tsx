@@ -180,7 +180,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                     <div
                       className={`max-w-message-bubble sm:max-w-message-bubble-wide rounded-2xl px-4 py-2.5 shadow-2xs text-xs font-medium ${
                         isMe
-                          ? "bg-primary text-text-inverse rounded-br-xs"
+                          ? "bg-primary text-on-primary rounded-br-xs"
                           : "bg-bg-surface text-text-main border border-border-base rounded-bl-xs"
                       }`}
                     >
@@ -270,12 +270,8 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
 
                       {/* Timestamp & Status Ticks */}
                       <div
-                        /* `text-text-inverse/75` on the terracotta bubble measured
-                           3.48:1 — the timestamp and read receipt are real
-                           content, so they take the full-strength white the
-                           message body already uses. */
                         className={`flex items-center justify-end gap-1 text-micro mt-1 ${
-                          isMe ? "text-text-inverse" : "text-text-tertiary"
+                          isMe ? "text-on-primary" : "text-text-tertiary"
                         }`}
                       >
                         <span>{formatTime(msg.createdAt)}</span>
@@ -289,13 +285,13 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                               <Check className="w-icon-xs h-icon-xs" />
                             )}
                             {msg.status === "delivered" && (
-                              <CheckCheck className="w-icon-xs h-icon-xs text-text-inverse/90" />
+                              <CheckCheck className="w-icon-xs h-icon-xs" />
                             )}
                             {msg.status === "read" && (
-                              <CheckCheck className="w-icon-xs h-icon-xs text-text-inverse" />
+                              <CheckCheck className="w-icon-xs h-icon-xs" />
                             )}
                             {msg.status === "failed" && (
-                              <span className="flex items-center gap-1 text-danger-on-inverse-muted font-bold">
+                              <span className="flex items-center gap-1 font-bold">
                                 <AlertCircle className="w-icon-xs h-icon-xs" />
                                 <span>
                                   {t("messaging.messageTimeline.echec")}
@@ -304,7 +300,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => onRetryMessage(msg)}
-                                    className="underline ml-0.5 hover:text-text-inverse"
+                                    className="underline ml-0.5 hover:no-underline"
                                   >
                                     {t("messaging.messageTimeline.reessayer")}
                                   </button>

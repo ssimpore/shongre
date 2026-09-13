@@ -17,8 +17,11 @@ import {
 import { Avatar } from "../../../design-system/primitives/Badge";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { routes } from "../../../configuration/routes";
+import type { UserPresence } from "@shongre/shared/presence";
+import { PresenceStatus } from "./PresenceStatus";
 
 interface ConversationHeaderProps {
+  presence?: UserPresence;
   counterpart: ConversationParticipant;
   capabilities: ConversationCapabilities;
   onBack?: () => void;
@@ -29,6 +32,7 @@ interface ConversationHeaderProps {
 
 export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   counterpart,
+  presence,
   capabilities,
   onBack,
   onBlockToggle,
@@ -112,6 +116,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             )}
           </div>
 
+          <PresenceStatus presence={presence} lastSeen />
           <div className="flex items-center gap-2 text-micro text-text-tertiary font-medium">
             {counterpart.rating !== undefined && (
               <span className="flex items-center gap-0.5 text-warning font-bold">

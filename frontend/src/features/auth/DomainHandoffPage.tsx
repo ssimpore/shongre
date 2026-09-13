@@ -67,6 +67,7 @@ export function DomainHandoffPage() {
 
   return (
     <AuthLayout
+      width="compact"
       title="Votre compte Shongre vous suit"
       subtitle={`Connexion sécurisée au marché ${activeMarket.name}`}
     >
@@ -75,7 +76,7 @@ export function DomainHandoffPage() {
         aria-live="polite"
         aria-busy={state === "loading"}
       >
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-surface text-primary">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-surface text-text-main">
           {icon}
         </div>
         <p className="text-sm leading-relaxed text-text-emphasis">

@@ -59,32 +59,45 @@ export const HomeDiscoverySection: React.FC<{
   const { listings, section, type } = content;
   const headingId = `home-discovery-${type}-title`;
 
+  const heading = (
+    <>
+      <HomeSectionHeading id={headingId}>{section.title}</HomeSectionHeading>
+      {section.subtitle ? (
+        <p className="mt-1 hidden text-sm font-medium text-text-secondary sm:block">
+          {section.subtitle}
+        </p>
+      ) : null}
+    </>
+  );
+  const action = (
+    <HomeSectionAction to={destinationFor(type)}>
+      {t("common.seeAll")}
+    </HomeSectionAction>
+  );
+
   return (
     <Container
       as="section"
+      width="results"
       aria-labelledby={headingId}
       data-testid={`home-discovery-${type}`}
       data-home-discovery-type={type}
       className={`[contain-intrinsic-size:auto_28rem] [content-visibility:auto] ${homepageVisibilityClass(section)}`}
     >
-      <div className="mb-4 flex items-end justify-between gap-3 sm:mb-5">
-        <div className="min-w-0">
-          <HomeSectionHeading id={headingId}>
-            {section.title}
-          </HomeSectionHeading>
-          {section.subtitle ? (
-            <p className="mt-1 hidden text-sm font-medium text-text-secondary sm:block">
-              {section.subtitle}
-            </p>
-          ) : null}
+      {section.status === "error" ||
+      (section.status !== "loading" && listings.length === 0) ? (
+        <div className="mb-5 flex items-end justify-between gap-3">
+          <div>{heading}</div>
+          {action}
         </div>
-        <HomeSectionAction to={destinationFor(type)}>
-          {t("common.seeAll")}
-        </HomeSectionAction>
-      </div>
+      ) : null}
 
       {section.status === "loading" ? (
-        <ListingRail label={t("common.loading")}>
+        <ListingRail
+          label={t("common.loading")}
+          heading={heading}
+          action={action}
+        >
           {Array.from({ length: 6 }).map((_, index) => (
             <ListingCardSkeleton
               key={index}
@@ -116,7 +129,7 @@ export const HomeDiscoverySection: React.FC<{
           action={null}
         />
       ) : (
-        <ListingRail label={section.title}>
+        <ListingRail label={section.title} heading={heading} action={action}>
           {listings.map((listing) => {
             const deal =
               type === "deals"

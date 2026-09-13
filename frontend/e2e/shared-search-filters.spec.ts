@@ -79,7 +79,7 @@ test.describe("shared search filter panels", () => {
       }
       const toolbar = page.locator("[data-search-results-toolbar]");
       await expect(toolbar).toBeVisible();
-      await expect(toolbar).toHaveClass(/rounded-listing-card/);
+      await expect(toolbar.getByRole("status")).toBeVisible();
       if (surface.name === "marketplace") {
         await expect(page.locator("[data-search-active-filters]")).toHaveClass(
           /rounded-listing-card/,
@@ -87,6 +87,8 @@ test.describe("shared search filter panels", () => {
       }
 
       const panel = page.locator(`#${surface.panelId}`);
+      await expect(panel).toBeHidden();
+      await page.getByRole("button", { name: "Afficher les filtres" }).click();
       await expect(panel).toBeVisible();
       await expect(panel).toHaveClass(/rounded-listing-card/);
       await expect(panel).toContainText(surface.adaptiveField);
@@ -182,9 +184,15 @@ test.describe("shared search filter panels", () => {
       expect(geometry.direction).toBe("row");
       expect(geometry.cardWidth).toBeCloseTo(geometry.gridWidth, 0);
       expect(geometry.imageRight).toBeLessThanOrEqual(geometry.contentLeft + 1);
-      await expect(
-        listCard.locator('[data-listing-card-characteristics="true"]'),
-      ).toBeVisible();
+      const characteristics = listCard.locator(
+        '[data-listing-card-characteristics="true"]',
+      );
+      // The generic fixture has no projected characteristics; vertical fixtures do.
+      if (surface.name === "marketplace") {
+        await expect(characteristics).toHaveCount(0);
+      } else {
+        await expect(characteristics).toBeVisible();
+      }
       await expect(
         listCard.locator('[data-listing-card-seller-identity="true"]'),
       ).toBeVisible();

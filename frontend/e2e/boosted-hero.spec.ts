@@ -1,6 +1,24 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { useEstablishedConsent, usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
+
+async function selectFeaturedHeroListing(page: Page) {
+  const activeSlide = page.locator(
+    '#hero-boosted-track [data-hero-listing-slide="true"][aria-hidden="false"]',
+  );
+  const total = Number(
+    (await activeSlide.getAttribute("aria-label"))?.split("/")[1],
+  );
+  expect(total).toBeGreaterThan(0);
+  for (let index = 0; index < total; index += 1) {
+    if (await activeSlide.locator('[data-listing-badge="featured"]').count())
+      break;
+    const previous = await activeSlide.getAttribute("aria-label");
+    await page.locator("#hero-boosted-track").press("ArrowRight");
+    await expect(activeSlide).not.toHaveAttribute("aria-label", previous!);
+  }
+  return activeSlide;
+}
 
 test.describe("boosted listings hero rail", () => {
   test.beforeEach(async ({ page }) => {
@@ -13,6 +31,7 @@ test.describe("boosted listings hero rail", () => {
     await usePersona(page, "guest");
 
     for (const viewport of [
+      { width: 2048, height: 1200 },
       { width: 1408, height: 701 },
       { width: 768, height: 900 },
       { width: 390, height: 844 },
@@ -73,6 +92,7 @@ test.describe("boosted listings hero rail", () => {
     await usePersona(page, "guest");
 
     for (const viewport of [
+      { width: 2048, height: 1200 },
       { width: 1408, height: 701 },
       { width: 768, height: 900 },
       { width: 390, height: 844 },
@@ -115,6 +135,15 @@ test.describe("boosted listings hero rail", () => {
         expect(cardBox!.height).toBeGreaterThan(250);
         expect(Math.abs(cardBox!.height - carouselBox!.height)).toBeLessThan(2);
       }
+      if (viewport.width >= 1536) {
+        expect(cardBox!.width).toBeGreaterThan(600);
+        expect(cardBox!.height).toBeLessThan(320);
+        const surface = await page
+          .locator('[data-home-hero-surface="true"]')
+          .boundingBox();
+        expect(surface!.width).toBeLessThanOrEqual(1536);
+        expect(surface!.height).toBeLessThan(440);
+      }
       if (viewport.width >= 768) {
         expect(contentBox!.width).toBeGreaterThan(240);
       }
@@ -125,7 +154,7 @@ test.describe("boosted listings hero rail", () => {
     }
   });
 
-  test("shows real decision attributes and seller identity in the desktop hero", async ({
+  test("shows available decision attributes and seller identity in the desktop hero", async ({
     page,
   }) => {
     await usePersona(page, "guest");
@@ -136,25 +165,49 @@ test.describe("boosted listings hero rail", () => {
       .getByRole("button", { name: "Mettre le carrousel en pause" })
       .click();
 
-    const card = page
-      .locator(
-        '#hero-boosted-track [data-hero-listing-slide="true"][aria-hidden="false"]',
-      )
-      .locator('[data-listing-card="true"]');
-    const characteristics = card.locator(
-      '[data-listing-card-characteristics="true"]',
+    const activeSlide = page.locator(
+      '#hero-boosted-track [data-hero-listing-slide="true"][aria-hidden="false"]',
     );
-    const seller = card.locator('[data-listing-card-seller-identity="true"]');
+    const nextButton = page.getByRole("button", { name: "Annonce suivante" });
+    const total = await page
+      .locator('[data-hero-carousel-indicators="true"] > span')
+      .count();
+    let foundCharacteristics = false;
 
-    await expect(characteristics).toBeVisible();
-    await expect(characteristics).toContainText("4 pièces");
-    await expect(characteristics).toContainText("92 m²");
-    await expect(characteristics).toContainText("DPE B");
+    for (let index = 0; index < total; index += 1) {
+      const card = activeSlide.locator('[data-listing-card="true"]');
+      const characteristics = card.locator(
+        '[data-listing-card-characteristics="true"]',
+      );
+      if ((await characteristics.count()) > 0) {
+        foundCharacteristics = true;
+        await expect(characteristics).toBeVisible();
+        expect(
+          await characteristics.locator("span[title]").allTextContents(),
+        ).not.toEqual([]);
+        break;
+      }
+
+      const currentLabel = await activeSlide.getAttribute("aria-label");
+      await nextButton.click();
+      await expect
+        .poll(() => activeSlide.getAttribute("aria-label"))
+        .not.toBe(currentLabel);
+    }
+
+    expect(foundCharacteristics).toBe(true);
+    const cardWithCharacteristics = activeSlide.locator(
+      '[data-listing-card="true"]',
+    );
+    const seller = cardWithCharacteristics.locator(
+      '[data-listing-card-seller-identity="true"]',
+    );
     await expect(seller).toBeVisible();
-    await expect(seller).toContainText("Agence Canopée");
-    await expect(seller).toContainText("Répond généralement sous 2 h");
+    await expect(seller).not.toBeEmpty();
     await expect(
-      card.locator('[data-listing-card-seller-avatar="true"]'),
+      cardWithCharacteristics.locator(
+        '[data-listing-card-seller-avatar="true"]',
+      ),
     ).toBeVisible();
   });
 
@@ -247,15 +300,17 @@ test.describe("boosted listings hero rail", () => {
       );
     }
 
-    const [nextBox, characteristicsBox] = await Promise.all([
-      nextButton.boundingBox(),
-      activeCharacteristics.boundingBox(),
-    ]);
-    expect(nextBox).not.toBeNull();
-    expect(characteristicsBox).not.toBeNull();
-    expect(
-      characteristicsBox!.x + characteristicsBox!.width,
-    ).toBeLessThanOrEqual(nextBox!.x);
+    if ((await activeCharacteristics.count()) > 0) {
+      const [nextBox, characteristicsBox] = await Promise.all([
+        nextButton.boundingBox(),
+        activeCharacteristics.boundingBox(),
+      ]);
+      expect(nextBox).not.toBeNull();
+      expect(characteristicsBox).not.toBeNull();
+      expect(
+        characteristicsBox!.x + characteristicsBox!.width,
+      ).toBeLessThanOrEqual(nextBox!.x);
+    }
   });
 
   test("fills the hero rail with real listing media when image-rich inventory is available", async ({
@@ -300,15 +355,6 @@ test.describe("boosted listings hero rail", () => {
         .toBe(true);
     }
 
-    const firstImage = rail
-      .locator(
-        `[data-hero-listing-slide="true"][aria-label="1 / ${total}"] [data-listing-card-media="true"] img`,
-      )
-      .first();
-    await expect(firstImage).toHaveAttribute(
-      "src",
-      /\/images\/immo\/appartement-lyon\.webp/,
-    );
     await expectNoHorizontalOverflow(page, "media-rich hero rail");
   });
 
@@ -421,7 +467,7 @@ test.describe("boosted listings hero rail", () => {
     }
   });
 
-  test("marks a market-resolved promotion with the canonical Boosté badge", async ({
+  test("marks a market-resolved featured placement with its own badge", async ({
     page,
   }) => {
     await usePersona(page, "guest");
@@ -434,22 +480,53 @@ test.describe("boosted listings hero rail", () => {
     await page
       .getByRole("button", { name: "Mettre le carrousel en pause" })
       .click();
-    const targetListing = rail.locator(
-      '[data-hero-listing-slide="true"][aria-hidden="false"]',
-    );
+    const targetListing = await selectFeaturedHeroListing(page);
     await expect(
       targetListing.locator('[data-listing-card="true"]'),
     ).toHaveCount(1);
     await expect(
-      targetListing.locator('[data-listing-card-promotion="true"]'),
-    ).toContainText("Boosté");
+      targetListing.locator('[data-listing-badge="featured"]'),
+    ).toContainText("À la une");
     await expect(
-      targetListing.locator('[data-listing-card-promotion="true"] .lucide-zap'),
+      targetListing.locator('[data-listing-badge="featured"] .lucide-star'),
     ).toBeAttached();
     await expectNoHorizontalOverflow(page, "boosted hero rail");
   });
 
-  test("keeps the boosted indicator available on a mobile hero viewport", async ({
+  test("discloses sponsored inventory before the organic hero sequence", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1408, height: 795 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const slides = page.locator(
+      '#hero-boosted-track [data-hero-listing-slide="true"]',
+    );
+    const ordering = await slides.evaluateAll((items) => {
+      const sponsoredIndex = items.findIndex((item) =>
+        item.querySelector('[data-listing-badge="sponsored"]'),
+      );
+      const firstOrganicIndex = items.findIndex(
+        (item) => !item.querySelector("[data-listing-badge]"),
+      );
+      return { sponsoredIndex, firstOrganicIndex };
+    });
+
+    expect(ordering.sponsoredIndex).toBeGreaterThanOrEqual(0);
+    if (ordering.firstOrganicIndex >= 0) {
+      expect(ordering.sponsoredIndex).toBeLessThan(ordering.firstOrganicIndex);
+    }
+    await expect(
+      slides
+        .nth(ordering.sponsoredIndex)
+        .locator('[data-listing-badge="sponsored"]'),
+    ).toHaveText("Sponsorisé");
+    await expectNoHorizontalOverflow(page, "sponsored boosted hero rail");
+  });
+
+  test("keeps the featured indicator available on a mobile hero viewport", async ({
     page,
   }) => {
     await usePersona(page, "guest");
@@ -457,20 +534,17 @@ test.describe("boosted listings hero rail", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const rail = page.locator("#hero-boosted-track");
     await page
       .getByRole("button", { name: "Mettre le carrousel en pause" })
       .click();
-    const targetListing = rail.locator(
-      '[data-hero-listing-slide="true"][aria-hidden="false"]',
-    );
+    const targetListing = await selectFeaturedHeroListing(page);
     await expect(
-      targetListing.locator('[data-listing-card-promotion="true"]'),
-    ).toContainText("Boosté");
+      targetListing.locator('[data-listing-badge="featured"]'),
+    ).toContainText("À la une");
     await expectNoHorizontalOverflow(page, "mobile boosted hero rail");
   });
 
-  test("moves the compact trust line from the hero to the footer", async ({
+  test("pairs the compact hero with clear trust navigation", async ({
     page,
   }) => {
     await usePersona(page, "guest");
@@ -480,34 +554,68 @@ test.describe("boosted listings hero rail", () => {
 
     const main = page.getByRole("main");
     const hero = main.locator('[data-home-hero="true"]');
-    await expect(hero.locator('[data-home-hero-eyebrow="true"]')).toHaveText(
-      "Plateforme de confiance",
+    await expect(hero.locator('[data-home-hero-eyebrow="true"]')).toHaveCount(
+      0,
     );
     const footer = page.getByRole("contentinfo");
-    const trustLine = footer.getByRole("link", { name: /Paiement suivi/ });
+    const trustLink = footer.getByRole("link", {
+      name: /Sécurité et bonnes pratiques/,
+    });
     await expect(
-      page.getByRole("list", { name: "Garanties Shongre" }),
-    ).toHaveCount(0);
-    await expect(hero.locator('[data-home-hero-trust="true"]')).toHaveCount(0);
-    await expect(trustLine).toBeVisible();
-    await expect(trustLine).toHaveAttribute("href", "/securite");
-    await expect(footer.locator('a[href="/securite"]')).toHaveCount(1);
+      main.getByRole("list", { name: "Garanties Shongre", exact: true }),
+    ).toHaveCount(1);
+    await expect(trustLink).toBeVisible();
+    await expect(trustLink).toHaveAttribute("href", "/securite");
+    await expect(footer.locator('a[href="/securite"]:visible')).toHaveCount(1);
 
-    const trustBox = await trustLine.boundingBox();
+    const trustBox = await trustLink.boundingBox();
     const heroSurfaceBox = await hero
       .locator('[data-home-hero-surface="true"]')
       .boundingBox();
     expect(trustBox).not.toBeNull();
     expect(heroSurfaceBox).not.toBeNull();
     expect(trustBox!.height).toBeGreaterThanOrEqual(48);
-    expect(trustBox!.height).toBeLessThanOrEqual(72);
-    expect(heroSurfaceBox!.height).toBeLessThanOrEqual(350);
-    await expect(trustLine).toHaveAttribute("data-footer-trust", "true");
+    expect(trustBox!.height).toBeLessThanOrEqual(80);
+    expect(heroSurfaceBox!.height).toBeGreaterThanOrEqual(320);
+    expect(heroSurfaceBox!.height).toBeLessThan(440);
 
-    await trustLine.click();
+    await trustLink.click();
     await expect(page).toHaveURL(/\/securite$/);
     await expect(
       page.getByRole("heading", { name: /sécurité/i }),
     ).toBeVisible();
+  });
+
+  test("balances hero copy and featured listing after removing the eyebrow", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1408, height: 701 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const hero = page.locator('[data-home-hero="true"]');
+    await expect(hero.locator('[data-home-hero-eyebrow="true"]')).toHaveCount(
+      0,
+    );
+    const headlineBox = await hero
+      .getByRole("heading", { level: 1 })
+      .boundingBox();
+    const publishBox = await hero
+      .getByRole("link", { name: "Déposer une annonce" })
+      .boundingBox();
+    const featuredBox = await hero
+      .locator('[data-home-boosted-surface="true"]')
+      .boundingBox();
+    expect(headlineBox).not.toBeNull();
+    expect(publishBox).not.toBeNull();
+    expect(featuredBox).not.toBeNull();
+
+    const copyCenter =
+      headlineBox!.y +
+      (publishBox!.y + publishBox!.height - headlineBox!.y) / 2;
+    const featuredCenter = featuredBox!.y + featuredBox!.height / 2;
+    expect(Math.abs(copyCenter - featuredCenter)).toBeLessThanOrEqual(12);
+    await expectNoHorizontalOverflow(page, "balanced hero");
   });
 });

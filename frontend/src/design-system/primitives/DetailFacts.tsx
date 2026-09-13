@@ -66,6 +66,7 @@ export const DetailSection: React.FC<DetailSectionProps> = ({
 const FactIcon: React.FC<{ name: IconName }> = ({ name }) => (
   <span
     aria-hidden="true"
+    data-fact-icon={name}
     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-bg-subtle text-text-emphasis"
   >
     <SemanticIcon name={name} size="sm" />
@@ -103,30 +104,32 @@ export const DetailFactList: React.FC<DetailFactListProps> = ({
         <div
           key={`${fact.code}-${fact.label}`}
           data-detail-fact={fact.code}
-          className="flex min-w-0 items-center gap-3"
+          className="grid min-w-0 grid-cols-1 items-center gap-y-0.5 sm:grid-cols-2 sm:gap-x-4"
         >
-          <FactIcon name={fact.icon} />
           {/*
            * The value sits beside its label at a repeating offset rather than
            * against the far edge of the column: pushed apart, a long label and a
            * short value stop reading as one pair and the eye has to travel back
            * across whitespace for every row. Below `sm` there is not enough
            * width for two columns of text, so the pair stacks instead.
+           *
+           * The icon belongs inside `dt`: a definition list group may contain
+           * only `dt` and `dd` children. Keeping the decorative icon as their
+           * sibling produced malformed list semantics in every detail template.
            */}
-          <div className="flex min-w-0 flex-1 flex-col gap-y-0.5 sm:flex-row sm:items-baseline sm:gap-x-4">
-            <dt className="text-sm text-text-supporting sm:w-40 sm:shrink-0">
-              {fact.label}
-            </dt>
-            <dd className="min-w-0 break-words text-sm font-bold text-text-main">
-              {fact.href ? (
-                <Link to={fact.href} className="underline underline-offset-4">
-                  {fact.value}
-                </Link>
-              ) : (
-                fact.value
-              )}
-            </dd>
-          </div>
+          <dt className="flex min-w-0 items-center gap-3 text-sm text-text-supporting">
+            <FactIcon name={fact.icon} />
+            <span className="min-w-0 break-words">{fact.label}</span>
+          </dt>
+          <dd className="min-w-0 break-words pl-12 text-sm font-bold text-text-main sm:pl-0">
+            {fact.href ? (
+              <Link to={fact.href} className="underline underline-offset-4">
+                {fact.value}
+              </Link>
+            ) : (
+              fact.value
+            )}
+          </dd>
         </div>
       ))}
     </dl>

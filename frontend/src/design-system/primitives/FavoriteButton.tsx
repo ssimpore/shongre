@@ -5,7 +5,7 @@ import {
   CONTROL_MOTION_CLASS,
 } from "../utils/controlMetrics";
 
-type FavoriteButtonSize = "sm" | "md" | "lg";
+type FavoriteButtonSize = "sm" | "md";
 type FavoriteButtonVariant = "bare" | "floating";
 
 export interface FavoriteButtonProps {
@@ -23,16 +23,14 @@ export interface FavoriteButtonProps {
 }
 
 const ICON: Record<FavoriteButtonSize, string> = {
-  sm: "w-3.5 h-3.5",
-  md: "w-4 h-4",
-  lg: "w-5 h-5",
+  sm: "h-icon-sm w-icon-sm",
+  md: "h-icon-md w-icon-md",
 };
 
 /** The painted size of the control. Never grows — see `TOUCH_EXPANSION`. */
 const BOX: Record<FavoriteButtonSize, string> = {
-  sm: "w-6 h-6",
-  md: "w-8 h-8",
-  lg: "w-9 h-9",
+  sm: "h-control-target w-control-target",
+  md: "h-control-favorite w-control-favorite",
 };
 
 /**

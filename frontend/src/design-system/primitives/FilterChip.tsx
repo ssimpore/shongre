@@ -35,7 +35,7 @@ export interface FilterChipProps {
 }
 
 const TONE_STYLES: Record<NonNullable<FilterChipProps["tone"]>, string> = {
-  query: "bg-primary-light text-primary border-primary-border",
+  query: "bg-primary-light text-text-main border-primary-border",
   neutral: "bg-surface-muted text-text-strong border-border-disabled",
   strong: "bg-surface-inverse text-text-inverse border-border-inverse-strong",
   success: "bg-success-surface text-success border-success-border",
@@ -69,8 +69,8 @@ export const FilterChip: React.FC<FilterChipProps> = ({
         <span
           className={`inline-flex min-w-5 items-center justify-center rounded-pill px-1.5 py-0.5 text-micro font-bold ${
             selected
-              ? "bg-primary text-text-inverse"
-              : "bg-primary-surface-selected text-primary"
+              ? "bg-primary text-on-primary"
+              : "bg-primary-surface-selected text-text-main"
           }`}
         >
           {count}

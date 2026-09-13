@@ -1,5 +1,11 @@
 /** Mobile UI copy remains keyed even while French is the only shipped locale. */
 export const messagesFr = {
+  "messaging.presence.online": "En ligne",
+  "messaging.presence.away": "Absent",
+  "messaging.presence.offline": "Hors ligne",
+  "messaging.presence.unknown": "Statut indisponible",
+  "messaging.presence.lastSeen": "Vu le {date}",
+
   "publication.titleHint":
     "{count}/{max} caractères · Produit, marque et modèle. Placez les détails dans la description.",
   "publication.titleTooLong":
@@ -10,6 +16,10 @@ export const messagesFr = {
   "ui.identityStatus.verification.identity": "Identité vérifiée",
   "ui.identityStatus.verification.profile": "Profil vérifié",
   "ui.listingCard.boosted": "Boosté",
+  "ui.listingCard.sponsored": "Sponsorisé",
+  "ui.listingCard.featured": "À la une",
+  "ui.listingCard.urgent": "Urgent",
+  "ui.listingCard.promotion": "En promotion",
   "ui.listingCard.delivery": "Livraison",
   "ui.listingCard.digitalFulfillment": "Accès numérique",
   "ui.listingCard.free": "Gratuit",
@@ -26,6 +36,7 @@ export const messagesFr = {
   "ui.listingCard.photos_one": "{count} photo",
   "ui.listingCard.photos_other": "{count} photos",
   "ui.listingCard.verifiedSeller": "Vendeur vérifié",
+  "ui.listingCard.verifiedSellerShort": "Vérifié",
   "ui.favorites.add": "Ajouter aux favoris",
   "ui.favorites.remove": "Retirer des favoris",
   "ui.favorites.loading": "Chargement des favoris",

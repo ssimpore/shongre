@@ -163,12 +163,18 @@ test("official desktop signatures and metadata are served from the curated runti
   ).toBe("4px");
   expect(
     await footerIcon.evaluate((image) => image.getBoundingClientRect().width),
-  ).toBe(36);
+  ).toBe(
+    await headerIcon.evaluate((image) => image.getBoundingClientRect().width),
+  );
   expect(
     await footerWordmark.evaluate(
       (image) => image.getBoundingClientRect().width,
     ),
-  ).toBe(96);
+  ).toBe(
+    await headerWordmark.evaluate(
+      (image) => image.getBoundingClientRect().width,
+    ),
+  );
 
   await expect(page.locator('meta[property="og:site_name"]')).toHaveAttribute(
     "content",

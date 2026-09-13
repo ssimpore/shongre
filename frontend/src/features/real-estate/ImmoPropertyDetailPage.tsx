@@ -1,4 +1,3 @@
-import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -15,7 +14,7 @@ import type {
   PropertyLead,
   PropertyPublic,
 } from "@shongre/contracts/real-estate";
-import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
+import { getListingPromotionBadges } from "@shongre/features/listings/presentation";
 import { useListingPromotionRefresh } from "@shongre/features/listings/web";
 import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
@@ -47,14 +46,13 @@ import {
   formatImmoField,
 } from "./immo-format";
 import { useTranslation } from "../../i18n/I18nProvider";
-import {
-  DetailFactList,
-  DetailSection,
-} from "../../design-system/primitives/DetailFacts";
+import { DetailSection } from "../../design-system/primitives/DetailFacts";
 import { ListingLocationSection } from "../listings/components/ListingLocationSection";
 import { ListingDiscoveryRail } from "../listings/components/ListingDiscoveryRail";
+import { DetailMobileActionPanel } from "../listings/components/DetailMobileActionPanel";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
-import { iconForFact } from "@shongre/features/listings/facts";
+import { localizeListingCharacteristics } from "@shongre/features/listings/facts";
+import { ListingCharacteristics } from "../listings/components/ListingCharacteristics";
 import {
   PROPERTY_LEAD_FORM_ID,
   PropertyPrimaryActionButton,
@@ -104,10 +102,19 @@ export const ImmoPropertyDetailPage: React.FC = () => {
     consent: false,
   });
   useListingPromotionRefresh(property?.resolvedPromotion);
-  const hasActivePromotion = isActiveMarketResolvedListingPromotion(
-    property?.resolvedPromotion,
-    activeMarket.code,
-  );
+  const promotionBadge = getListingPromotionBadges(
+    {
+      marketCode: activeMarket.code,
+      promotion: property?.resolvedPromotion,
+    },
+    {
+      boosted: t("ui.listingCard.boosted"),
+      sponsored: t("ui.listingCard.sponsored"),
+      featured: t("ui.listingCard.featured"),
+      urgent: t("ui.listingCard.urgent"),
+      promotion: t("ui.listingCard.promotion"),
+    },
+  )[0];
 
   useEffect(() => {
     let cancelled = false;
@@ -355,6 +362,17 @@ export const ImmoPropertyDetailPage: React.FC = () => {
           {formatImmoField(property, "property_type", currentLocale)} /{" "}
           {property.address.city}
         </nav>
+        <DetailMobileActionPanel
+          eyebrow="Contacter l’annonceur"
+          summary={formattedPrice}
+        >
+          <PropertyPrimaryActionButton
+            phase={sentLeadId ? "appointment" : "lead"}
+            isSending={sending}
+            placement="panel"
+            onRequestVisit={requestVisit}
+          />
+        </DetailMobileActionPanel>
         <div className="grid items-start gap-5 lg:grid-cols-content-aside-lg">
           <div className="min-w-0 space-y-5">
             <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface">
@@ -369,17 +387,21 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   sizes="(min-width: 1024px) 760px, 100vw"
                 />
                 <div className="absolute left-3 top-3 flex gap-2">
-                  {hasActivePromotion ? (
-                    <Badge
+                  {promotionBadge ? (
+                    <span
                       data-testid="immo-property-promotion"
-                      variant={
-                        property.resolvedPromotion?.type === "urgent_badge"
-                          ? "urgent"
-                          : "featured"
-                      }
+                      data-listing-badge={promotionBadge.kind}
                     >
-                      {t("ui.listingCard.boosted")}
-                    </Badge>
+                      <Badge
+                        variant={
+                          promotionBadge.variant === "urgent"
+                            ? "urgent"
+                            : "featured"
+                        }
+                      >
+                        {promotionBadge.label}
+                      </Badge>
+                    </span>
                   ) : null}
                 </div>
                 <div
@@ -479,26 +501,14 @@ export const ImmoPropertyDetailPage: React.FC = () => {
              * were previously a bare definition list stapled under the prose.
              */}
             {property.taxonomy?.detailCharacteristics?.length ? (
-              <DetailSection
-                title={t("listings.characteristics.keyInformation")}
-              >
-                <DetailFactList
-                  facts={property.taxonomy.detailCharacteristics.map(
-                    (field) => ({
-                      code: field.code,
-                      label: localizeTaxonomyLabels(
-                        field.labels,
-                        currentLocale,
-                      ),
-                      value: localizeTaxonomyLabels(
-                        field.values,
-                        currentLocale,
-                      ),
-                      icon: iconForFact("grp.property_specs", field.code),
-                    }),
-                  )}
-                />
-              </DetailSection>
+              <ListingCharacteristics
+                key={property.id}
+                state="ready"
+                data={localizeListingCharacteristics(
+                  property.taxonomy?.detailCharacteristics,
+                  currentLocale,
+                )}
+              />
             ) : null}
 
             <DetailSection title="Description">

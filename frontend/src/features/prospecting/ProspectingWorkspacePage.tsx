@@ -700,7 +700,7 @@ export const ProspectingWorkspacePage: React.FC<
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-text-inverse">
+              <div className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-on-primary">
                 <Target className="h-5 w-5" aria-hidden="true" />
               </div>
               <h1 className="text-xl font-bold tracking-tight text-text-main sm:text-2xl">
@@ -822,7 +822,6 @@ export const ProspectingWorkspacePage: React.FC<
               <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <Button
                   variant="primary"
-                  size="lg"
                   type="button"
                   onClick={() => void controller.discover()}
                   disabled={controller.searching}

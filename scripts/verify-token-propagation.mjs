@@ -76,11 +76,7 @@ if (/export\s+const\s+palette\b/.test(semanticAdapter))
 if (/#[\da-f]{3,8}\b|\b(?:rgba?|hsla?|oklch)\s*\(/i.test(officialAdapter))
   failures.push("official artwork adapter duplicates literal colour values");
 
-const orangeRoles = deriveShongreOrangeTokens(
-  brandPalette.orange,
-  brandPalette.ink,
-  brandPalette.white,
-);
+const orangeRoles = deriveShongreOrangeTokens(brandPalette.orange);
 const orangeBindings = {
   "brand-primary": orangeRoles.canonical,
   primary: orangeRoles.interactive,
@@ -112,6 +108,7 @@ const orangeBindings = {
   "primary-overlay": orangeRoles.overlay,
   "category-vehicles": orangeRoles.interactive,
   "category-sport": orangeRoles.fill,
+  "category-home-garden": orangeRoles.canonical,
 };
 for (const [name, expected] of Object.entries(orangeBindings)) {
   if (themeColors[name] !== expected) {
@@ -119,9 +116,17 @@ for (const [name, expected] of Object.entries(orangeBindings)) {
       `semantic orange role ${name} is ${themeColors[name]}; expected computed ${expected}`,
     );
   }
+  if (
+    expected.slice(0, 7) !== brandPalette.orange ||
+    ![7, 9].includes(expected.length)
+  ) {
+    failures.push(
+      `orange role ${name} changes the logo swatch instead of its alpha`,
+    );
+  }
 }
 
-/* Warning and home/garden retain their functional amber identity. Every other
+/* Warning retains its functional amber identity. Every other
    saturated warm hexadecimal theme value must be one of the computed Shongre
    Orange bindings above; this prevents a new visual alias from hiding behind a
    different semantic name. */
@@ -129,7 +134,6 @@ const functionalWarmExceptions = new Set([
   "warning",
   "warning-hover",
   "warning-active",
-  "category-home-garden",
 ]);
 function isSaturatedOrangeHex(value) {
   if (!/^#[\da-f]{6}$/i.test(value)) return false;
@@ -165,8 +169,6 @@ for (const [name, value] of Object.entries(themeColors)) {
 
 const changedOrangeRoles = deriveShongreOrangeTokens(
   mixHex(brandPalette.orange, brandPalette.white, 0.2),
-  brandPalette.ink,
-  brandPalette.white,
 );
 for (const name of Object.keys(orangeRoles)) {
   if (changedOrangeRoles[name] === orangeRoles[name]) {

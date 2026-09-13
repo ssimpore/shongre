@@ -86,4 +86,14 @@ describe("Explore map marker presentation", () => {
       ).isBoosted,
     ).toBe(false);
   });
+  it("does not turn a price reduction into paid map prominence", () => {
+    expect(
+      presentExploreMapMarker(
+        { ...baseListing, price: 80, originalPrice: 100, attributes: {} },
+        "fr-FR",
+        "FR",
+        priceLabels,
+      ).isBoosted,
+    ).toBe(false);
+  });
 });

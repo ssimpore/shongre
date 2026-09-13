@@ -1,5 +1,11 @@
 import React from "react";
-import { Search, Sparkles } from "lucide-react";
+import {
+  LockKeyhole,
+  Search,
+  ShieldCheck,
+  Truck,
+  UsersRound,
+} from "lucide-react";
 import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
 import { Container, Heading } from "../../../design-system";
 import { Button } from "../../../design-system/primitives/Button";
@@ -13,37 +19,90 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
   section,
 }) => {
   const { t } = useTranslation();
+  const titleSeparator = section.title.indexOf(",");
+  const titleLead =
+    titleSeparator >= 0
+      ? section.title.slice(0, titleSeparator + 1)
+      : section.title;
+  const titleAccent =
+    titleSeparator >= 0 ? section.title.slice(titleSeparator + 1).trim() : "";
+  const reassuranceItems = [
+    {
+      Icon: ShieldCheck,
+      label: t("home.homePage.explicitSellerStatusesShort"),
+    },
+    {
+      Icon: LockKeyhole,
+      label: t("home.homePage.trackedPayment"),
+    },
+    {
+      Icon: Truck,
+      label: t("home.homePage.deliveryAvailable"),
+    },
+    {
+      Icon: UsersRound,
+      label: t("home.homePage.individualsAndPros"),
+    },
+  ];
+
   return (
     <section
       data-home-hero="true"
-      className={`relative overflow-hidden bg-bg-base py-3 sm:py-5 ${homepageVisibilityClass(section)}`}
+      className={`relative overflow-hidden bg-bg-base pb-4 pt-6 sm:pt-8 ${homepageVisibilityClass(section)}`}
     >
-      <Container className="relative z-raised">
+      <Container width="results" className="relative z-raised">
         <div
           data-home-hero-surface="true"
-          className="rounded-listing-card border border-border-base bg-bg-surface px-5 py-7 shadow-sm sm:p-8 lg:px-8 lg:py-6"
+          className="relative isolate overflow-hidden rounded-listing-card border border-border-base bg-bg-surface shadow-sm"
         >
-          <div className="grid w-full grid-cols-1 items-stretch gap-8 lg:grid-cols-2 lg:gap-10 xl:gap-12">
-            <div className="flex min-w-0 w-full flex-col justify-between text-left">
-              <div className="flex flex-col items-start gap-5">
-                <div
-                  data-home-hero-eyebrow="true"
-                  className="inline-flex w-fit items-center gap-2 rounded-pill border border-primary-border bg-primary-light px-3 py-2 text-sm font-semibold text-primary shadow-2xs"
+          <img
+            src="/images/home-marketplace-hero.webp"
+            alt=""
+            width={2056}
+            height={765}
+            fetchPriority="high"
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-bg-surface via-bg-surface/95 to-bg-surface/30 sm:w-4/5 lg:w-3/5 lg:to-transparent"
+          />
+          <div className="relative grid w-full grid-cols-1 items-stretch gap-6 px-5 py-6 sm:p-6 lg:grid-cols-2 lg:gap-8 lg:px-8 lg:py-6">
+            <div className="flex min-w-0 w-full flex-col justify-center text-left">
+              <div className="flex flex-col items-start gap-3">
+                <Heading
+                  as="h1"
+                  size="display-md"
+                  className="max-w-2xl lg:text-hero"
                 >
-                  <Sparkles
-                    className="h-icon-md w-icon-md shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span>{t("home.homePage.trustedMarketplace")}</span>
-                </div>
-                <Heading as="h1" size="display-md" className="text-hero">
-                  {section.title}
+                  {titleLead}
+                  {titleAccent ? (
+                    <span className="block text-primary">{titleAccent}</span>
+                  ) : null}
                 </Heading>
                 {section.subtitle ? (
-                  <p className="max-w-md text-sm font-normal leading-relaxed text-text-secondary sm:text-base">
+                  <p className="max-w-2xl text-sm font-normal leading-relaxed text-text-secondary sm:text-base">
                     {section.subtitle}
                   </p>
                 ) : null}
+                <ul
+                  aria-label={t("home.homePage.garantiesShongre")}
+                  className="hidden w-full grid-cols-2 gap-x-5 gap-y-3 pt-1 lg:grid xl:flex xl:flex-nowrap xl:items-center xl:gap-x-4"
+                >
+                  {reassuranceItems.map(({ Icon, label }) => (
+                    <li
+                      key={label}
+                      className="flex min-w-0 items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-text-secondary"
+                    >
+                      <Icon
+                        className="h-icon-md w-icon-md shrink-0 text-primary"
+                        aria-hidden="true"
+                      />
+                      <span>{label}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
               <div className="mt-5 w-full">
                 <GlobalSearchBar
@@ -54,20 +113,19 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
                   className="mb-3 md:hidden"
                 />
                 <div className="flex w-full flex-col gap-3 sm:w-fit sm:flex-row">
-                  <PublishCtaButton size="md" />
+                  <PublishCtaButton variant="primary" />
                   <Button
                     to="/recherche"
                     variant="outline"
-                    size="md"
-                    leftIcon={<Search className="h-icon-lg w-icon-lg" />}
-                    className="w-full sm:w-auto"
+                    leftIcon={<Search className="h-icon-md w-icon-md" />}
+                    className="w-full bg-bg-surface/90 backdrop-blur-xs sm:w-auto"
                   >
                     {t("home.homePage.explorerLeCatalogue")}
                   </Button>
                 </div>
               </div>
             </div>
-            <div className="relative flex min-w-0 w-full flex-col empty:hidden">
+            <div className="relative flex min-w-0 w-full flex-col justify-center empty:hidden">
               <HeroBoostedScroll />
             </div>
           </div>

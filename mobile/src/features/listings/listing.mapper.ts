@@ -103,6 +103,16 @@ export function mapBackendListing(item: BackendListing): ListingCardView {
     id: item.id,
     title: item.title,
     price: priceKind === "amount" ? price : undefined,
+    originalPrice:
+      priceKind === "amount" &&
+      typeof item.originalPrice === "number" &&
+      Number.isFinite(item.originalPrice) &&
+      item.originalPrice > 0
+        ? {
+            amountMinor: majorToMinorAmount(item.originalPrice, item.currency),
+            currency: item.currency,
+          }
+        : undefined,
     priceLabel: recurringSuffix
       ? `${formatCompactMoney(price, locale)}${recurringSuffix}`
       : undefined,

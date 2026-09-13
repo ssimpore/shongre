@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { ArrowUpDown } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { cn } from "../utils/variants";
@@ -43,6 +43,7 @@ export function SearchActiveFiltersBar({
 
 export interface SearchResultsToolbarProps {
   id?: string;
+  title?: ReactNode;
   resultLabel: ReactNode;
   resultDescription?: ReactNode;
   desktopFilterPanelId: string;
@@ -59,6 +60,38 @@ export interface SearchResultsToolbarProps {
 }
 
 /**
+ * Shared disclosure state for every marketplace search surface.
+ *
+ * Search pages start with their results at full width. The same controller
+ * then owns desktop toggling and the mobile drawer lifecycle, so a vertical
+ * cannot silently drift back to an expanded default.
+ */
+export function useSearchFilterDisclosure() {
+  const [desktopFiltersExpanded, setDesktopFiltersExpanded] = useState(false);
+  const [mobileFiltersExpanded, setMobileFiltersExpanded] = useState(false);
+  const toggleDesktopFilters = useCallback(
+    () => setDesktopFiltersExpanded((expanded) => !expanded),
+    [],
+  );
+  const openMobileFilters = useCallback(
+    () => setMobileFiltersExpanded(true),
+    [],
+  );
+  const closeMobileFilters = useCallback(
+    () => setMobileFiltersExpanded(false),
+    [],
+  );
+
+  return {
+    desktopFiltersExpanded,
+    mobileFiltersExpanded,
+    toggleDesktopFilters,
+    openMobileFilters,
+    closeMobileFilters,
+  };
+}
+
+/**
  * Canonical results toolbar for marketplace search pages.
  *
  * Its slots intentionally describe capabilities rather than domains: a route
@@ -66,6 +99,7 @@ export interface SearchResultsToolbarProps {
  */
 export function SearchResultsToolbar({
   id,
+  title,
   resultLabel,
   resultDescription,
   desktopFilterPanelId,
@@ -84,13 +118,15 @@ export function SearchResultsToolbar({
     <div
       id={id}
       data-search-results-toolbar
-      className={cn(
-        "mb-4 flex scroll-mt-24 flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-listing-card border border-border-base bg-bg-surface p-2 shadow-xs sm:p-4 lg:flex-nowrap",
-        className,
-      )}
+      className={cn("mb-5 min-w-0 scroll-mt-24", className)}
     >
-      <div className="flex min-w-0 shrink items-center gap-3">
+      <div className="relative flex min-w-0 flex-col items-start gap-1 border-b border-border-base pb-3 after:absolute after:-bottom-px after:left-0 after:h-0.5 after:w-12 after:bg-primary sm:flex-row sm:items-end sm:justify-between sm:gap-6">
         <div className="min-w-0">
+          {title ? (
+            <h1 className="mb-1 break-words text-xl font-extrabold tracking-tight text-text-main sm:text-2xl">
+              {title}
+            </h1>
+          ) : null}
           <span
             role="status"
             aria-live="polite"
@@ -99,30 +135,48 @@ export function SearchResultsToolbar({
           >
             {resultLabel}
           </span>
-          {resultDescription ? (
-            <span className="mt-0.5 block text-micro text-text-secondary">
-              {resultDescription}
-            </span>
-          ) : null}
         </div>
+        {resultDescription ? (
+          <div className="max-w-lg text-xs leading-relaxed text-text-muted sm:text-right sm:text-sm">
+            {resultDescription}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="flex min-w-0 items-center justify-between gap-1 overflow-x-auto pt-4 sm:flex-wrap sm:justify-start sm:gap-3 sm:overflow-visible">
         <FilterPanelToggle
           isExpanded={desktopFiltersExpanded}
           controls={desktopFilterPanelId}
+          activeCount={activeFilterCount}
+          className="justify-self-start"
           onToggle={onToggleDesktopFilters}
         />
-      </div>
-
-      <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 lg:w-auto lg:flex-nowrap lg:justify-end">
         <FilterPanelToggle
           isExpanded={mobileFiltersExpanded}
           controls={mobileFilterPanelId}
           presentation="drawer"
           activeCount={activeFilterCount}
+          className="order-1"
           onToggle={onOpenMobileFilters}
         />
-        {actions}
-        {viewControls}
-        {sortControl}
+        {viewControls ? (
+          <div
+            className={cn(
+              "order-2 shrink-0 sm:order-3",
+              !actions && "sm:ml-auto",
+            )}
+          >
+            {viewControls}
+          </div>
+        ) : null}
+        {actions ? (
+          <div className="order-3 shrink-0 sm:order-2 sm:ml-auto">
+            {actions}
+          </div>
+        ) : null}
+        {sortControl ? (
+          <div className="order-4 shrink-0">{sortControl}</div>
+        ) : null}
       </div>
     </div>
   );
@@ -145,7 +199,7 @@ export function SearchSortControl({
   return (
     <div
       className={cn(
-        "flex min-w-0 shrink-0 items-center gap-1.5 text-xs",
+        "flex min-w-0 shrink-0 items-center gap-2 text-sm",
         className,
       )}
     >

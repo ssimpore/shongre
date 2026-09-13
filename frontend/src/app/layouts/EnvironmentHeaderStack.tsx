@@ -8,8 +8,7 @@ interface EnvironmentHeaderStackProps {
 
 /**
  * Keeps the environment disclosure and application header in one sticky
- * chrome stack. The environment toolbar owns development-diagnostic alignment
- * so direct toolbar consumers and stacked application headers behave alike.
+ * chrome stack. Hiding the toolbar lets the application header occupy its space.
  */
 export function EnvironmentHeaderStack({
   children,

@@ -20,14 +20,12 @@ const publicSource = {
 } as const;
 
 interface NewsletterSignupProps {
-  variant?: "band" | "footer" | "inline";
   showConsentCheckbox?: boolean;
   className?: string;
   source?: NewsletterSubscriptionSource;
 }
 
 export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
-  variant = "band",
   showConsentCheckbox = true,
   className = "",
   source = "homepage",
@@ -85,17 +83,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     }
   };
 
-  // SUCCESS STATE
   if (isSuccess) {
-    if (variant === "footer") {
-      return (
-        <div className="flex items-center gap-2 text-xs text-success-on-inverse-vivid font-semibold py-1">
-          <CheckCircle2 className="w-icon-md h-icon-md shrink-0" />
-          <span>Demande enregistrée — consultez votre messagerie</span>
-        </div>
-      );
-    }
-
     return (
       <div
         className={`p-6 rounded-3xl bg-success-surface border border-success-border text-center space-y-2 ${className}`}
@@ -113,61 +101,12 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     );
   }
 
-  // FOOTER COMPACT VARIANT
-  if (variant === "footer") {
-    return (
-      <form
-        data-marketplace-action="newsletter.subscribe"
-        onSubmit={handleSubmit}
-        className={`space-y-2 ${className}`}
-      >
-        {/* Stacked, not side by side. This sits in the footer's narrowest
-            column, where a row left the field about 100px wide — enough to show
-            "thomas" and nothing else, so the reader could not check what they
-            had typed. Two rows give the field the column's full width. */}
-        <div className="flex flex-col gap-2 max-w-sm">
-          <div className="relative">
-            <Mail className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t("newsletter.newsletterSignup.votreEmailCom")}
-              aria-label={t("newsletter.newsletterSignup.votreAdresseEmail")}
-              autoComplete="email"
-              disabled={isSubmitting}
-              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-surface-inverse-deep/60 border border-border-inverse-subtle/80 text-text-inverse rounded-control placeholder:text-text-inverse-subtle focus:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark transition-colors"
-            />
-          </div>
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            fullWidth
-            isLoading={isSubmitting}
-            rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
-          >
-            <span>{isSubmitting ? "Inscription…" : "S'inscrire"}</span>
-          </Button>
-        </div>
-        {errorMessage && (
-          <p className="text-micro text-critical-on-inverse-vivid font-medium">
-            {errorMessage}
-          </p>
-        )}
-      </form>
-    );
-  }
-
-  // HOMEPAGE / BAND VARIANT
   return (
     <div
       className={`bg-surface-inverse text-text-inverse rounded-3xl p-6 sm:p-10 shadow-md relative overflow-hidden ${className}`}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-        <div className="lg:col-span-6 space-y-2 text-left">
-          {/* On the dark band the light-surface primary is unreadable (3.5:1),
-              so this uses the inverse-surface brand variant. */}
+        <div className="lg:col-span-5 space-y-2 text-left">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-overlay text-primary-on-dark text-xs font-bold">
             <Mail className="w-icon-sm h-icon-sm" />
             <span>{t("newsletter.newsletterSignup.laSelectionShongre")}</span>
@@ -184,7 +123,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
           </p>
         </div>
 
-        <div className="lg:col-span-6">
+        <div className="lg:col-span-7">
           <form
             data-marketplace-action="newsletter.subscribe"
             onSubmit={handleSubmit}
@@ -205,14 +144,13 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   )}
                   autoComplete="email"
                   disabled={isSubmitting}
-                  className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-surface-inverse-hover border border-border-inverse-subtle text-text-inverse rounded-control placeholder:text-text-inverse-subtle focus:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark transition-colors"
+                  className="w-full h-control-md min-h-control-md pl-11 pr-4 text-xs sm:text-sm bg-surface-inverse-hover border border-border-inverse-subtle text-text-inverse rounded-control placeholder:text-text-inverse-subtle focus:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark transition-colors"
                 />
               </div>
 
               <Button
                 type="submit"
                 variant="primary"
-                size="lg"
                 disabled={isSubmitting}
                 className="font-semibold shrink-0 flex items-center justify-center gap-2"
               >

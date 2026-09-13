@@ -38,7 +38,7 @@ describe("shared authentication prompt", () => {
 
   it("uses equal responsive columns and preserves both return destinations", () => {
     const html = render();
-    expect(html).toContain("sm:inline-grid sm:grid-cols-2");
+    expect(html).toContain("grid-cols-1 gap-3 sm:grid-cols-2");
     expect(html).not.toContain("sm:w-auto");
     expect(html).toContain(
       'href="/connexion?redirect=%2Fcompte%2Fmessages%3Ftab%3Dunread%23latest"',

@@ -388,7 +388,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               onClick={() => setSelectedSubCategory("all")}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                 selectedSubCategory === "all"
-                  ? "bg-primary text-text-inverse font-semibold"
+                  ? "bg-primary text-on-primary font-semibold"
                   : "bg-bg-surface text-text-supporting hover:bg-surface-muted border border-border-disabled"
               }`}
             >
@@ -401,7 +401,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 onClick={() => setSelectedSubCategory(sub.slug)}
                 className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                   selectedSubCategory === sub.slug
-                    ? "bg-primary text-text-inverse font-semibold"
+                    ? "bg-primary text-on-primary font-semibold"
                     : "bg-bg-surface text-text-supporting hover:bg-surface-muted border border-border-disabled"
                 }`}
               >

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Eye, EyeOff, Check, X, ShieldAlert } from "lucide-react";
+import { Eye, EyeOff, Check, X, ShieldAlert, LockKeyhole } from "lucide-react";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { IconButton } from "../../../design-system/primitives/IconButton";
 import { ProgressBar } from "../../../design-system/primitives/ProgressBar";
@@ -59,17 +59,17 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
   let strengthTextClass = "text-danger";
   let strengthPercent = 20;
 
-  if (score >= 4) {
+  if (hasMinLength && score >= 4) {
     strengthLabel = "Très robuste";
     strengthVariant = "success";
     strengthTextClass = "text-success";
     strengthPercent = 100;
-  } else if (score === 3) {
+  } else if (hasMinLength && score === 3) {
     strengthLabel = "Bon";
     strengthVariant = "primary";
     strengthTextClass = "text-primary";
     strengthPercent = 75;
-  } else if (score === 2) {
+  } else if (hasMinLength && score === 2) {
     strengthLabel = "Moyen";
     strengthVariant = "warning";
     strengthTextClass = "text-warning";
@@ -81,7 +81,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
       {label && (
         <label
           htmlFor={id}
-          className="block text-xs font-semibold text-text-strong mb-1.5"
+          className="block text-sm font-semibold text-text-strong mb-1.5"
         >
           {label} {required && <span className="text-primary">*</span>}
         </label>
@@ -98,15 +98,27 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           required={required}
           autoComplete={autoComplete}
           disabled={disabled}
-          className={`w-full h-control-touch px-3.5 py-2.5 pr-11 bg-bg-surface border rounded-control text-sm text-text-main placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary-ring transition-all ${
+          aria-invalid={error ? true : undefined}
+          aria-describedby={
+            error ? `${id}-error` : showStrength ? `${id}-hint` : undefined
+          }
+          className={`w-full h-control-touch pl-10 py-2.5 pr-12 bg-bg-surface border rounded-control text-sm text-text-main placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary-ring transition-all ${
             error
               ? "border-danger focus:border-danger bg-danger-surface/20"
               : "border-border-disabled focus:border-primary"
           }`}
         />
 
+        <LockKeyhole
+          className="pointer-events-none absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-muted"
+          aria-hidden="true"
+        />
+
         <IconButton
           size="sm"
+          disabled={disabled}
+          aria-pressed={showPassword}
+          aria-controls={id}
           variant="ghost"
           onClick={() => setShowPassword(!showPassword)}
           ariaLabel={
@@ -125,12 +137,21 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
       </div>
 
       {error && (
-        <p className="mt-1 text-xs font-semibold text-danger flex items-center gap-1">
+        <p
+          id={`${id}-error`}
+          role="alert"
+          className="mt-1 text-xs font-semibold text-danger flex items-center gap-1"
+        >
           <ShieldAlert className="w-icon-sm h-icon-sm shrink-0" />
           <span>{error}</span>
         </p>
       )}
 
+      {showStrength && (
+        <p id={`${id}-hint`} className="mt-2 text-xs text-text-supporting">
+          {t("auth.passwordField.8CaracteresMinimum")}
+        </p>
+      )}
       {showStrength && value.length > 0 && (
         <div className="mt-2.5 p-2.5 rounded-xl bg-surface-soft border border-border-soft text-xs">
           <div className="flex items-center justify-between font-bold mb-1.5">

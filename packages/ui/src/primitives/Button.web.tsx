@@ -6,12 +6,12 @@ import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
   CONTROL_RADIUS_CLASS,
-  controlHeightClasses,
+  controlMinHeightClasses,
 } from "../utils/controlMetrics";
 
 export interface ButtonVisualProps {
   variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "pro";
-  size?: "sm" | "compact" | "md" | "lg";
+  size?: "sm" | "compact" | "md";
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -66,10 +66,8 @@ export type ButtonProps = (
 ) &
   NameableProps;
 
-// `whitespace-nowrap` is load-bearing: the size variants below pin an exact
-// height, so a label allowed to wrap spills out through the bottom edge.
 /** Everything except the display utility, which is applied conditionally below. */
-const baseStyles = `items-center justify-center font-medium whitespace-nowrap ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:shadow-none disabled:hover:shadow-none disabled:hover:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:shadow-none aria-disabled:hover:shadow-none aria-disabled:hover:translate-y-0 active:translate-y-0 active:scale-press-control ${CONTROL_FOCUS_CLASS}`;
+const baseStyles = `min-w-0 max-w-full items-center justify-center font-medium whitespace-normal text-center ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:shadow-none disabled:hover:shadow-none disabled:hover:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:shadow-none aria-disabled:hover:shadow-none aria-disabled:hover:translate-y-0 active:translate-y-0 active:scale-press-control ${CONTROL_FOCUS_CLASS}`;
 const neutralUnavailableStyles =
   "disabled:bg-bg-muted disabled:text-text-muted disabled:border-border-base disabled:hover:bg-bg-muted aria-disabled:bg-bg-muted aria-disabled:text-text-muted aria-disabled:border-border-base aria-disabled:hover:bg-bg-muted";
 const primaryUnavailableStyles =
@@ -92,32 +90,21 @@ const DISPLAY_SET_BY_CALLER =
   /(?:^|\s)(?:hidden|block|inline|inline-block|flex|inline-flex|grid|inline-grid|contents)(?:\s|$)/;
 
 /**
- * Heights come from the shared control scale in `index.css`, not from ad-hoc
- * `h-*` values:
- *   md  → control-touch (44px) — the WCAG 2.5.5 target, the default
- *   lg  → control-lg    (48px) — page-level primary actions
- *
- * `lg` was `h-14`. 56px is not a step on that scale, and it showed: the
- * registration and pro-signup submit buttons towered over every other control
- * on their form, and in the newsletter band the button stood 8px taller than
- * the email field beside it. 48px is the scale's own large step and still reads
- * as the biggest control on the page.
- *
- * `sm` uses control-sm (32px) for dense admin tables and filter bars. The
- * `compact` step (40px) is reserved for dense navigation and search toolbars;
- * the medium touch size remains the default for primary user journeys.
+ * Standard actions match the header: 40px with a fine pointer, 44px on touch.
+ * Compact uses denser typography; sm keeps desktop tables dense. The existing
+ * coarse-pointer token floor expands both. Minimum heights let translated or
+ * enlarged labels wrap inside the control instead of clipping.
  */
 const buttonClasses = createVariants({
   base: baseStyles,
   variants: {
     size: {
-      sm: `text-xs px-3 gap-1.5 ${controlHeightClasses.sm} font-semibold ${CONTROL_RADIUS_CLASS}`,
-      compact: `text-xs px-4 gap-2 ${controlHeightClasses.compact} font-semibold ${CONTROL_RADIUS_CLASS}`,
-      md: `text-sm px-5 gap-2 ${controlHeightClasses.md} font-semibold ${CONTROL_RADIUS_CLASS}`,
-      lg: `text-base px-6 gap-2.5 ${controlHeightClasses.lg} font-semibold ${CONTROL_RADIUS_CLASS}`,
+      sm: `text-xs ${controlMinHeightClasses.sm} font-semibold ${CONTROL_RADIUS_CLASS}`,
+      compact: `text-xs ${controlMinHeightClasses.compact} font-semibold ${CONTROL_RADIUS_CLASS}`,
+      md: `text-sm ${controlMinHeightClasses.compact} font-semibold ${CONTROL_RADIUS_CLASS}`,
     },
     variant: {
-      primary: `bg-primary text-text-inverse hover:bg-primary-hover active:bg-primary-active shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary-shadow ${primaryUnavailableStyles}`,
+      primary: `bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary-shadow ${primaryUnavailableStyles}`,
       /* The only filled variant that had no edge. On a white card that left it with
      no boundary at all — the "Message" action on a listing read as flat text
      rather than a control, sitting next to two bordered neighbours. A 1px border
@@ -150,6 +137,13 @@ export const Button: React.FC<ButtonProps> = (props) => {
   const display = DISPLAY_SET_BY_CALLER.test(className) ? "" : "inline-flex";
   const classes = cn(
     display,
+    // Respect explicit composition spacing without conflicting Tailwind utilities.
+    !/(?:^|\s)!?p(?:x)?-\S+/.test(className) &&
+      (size === "sm" ? "px-3" : "px-4"),
+    !/(?:^|\s)!?p(?:y)?-\S+/.test(className) &&
+      (size === "sm" ? "py-1" : "py-1.5"),
+    !/(?:^|\s)!?gap-\S+/.test(className) &&
+      (size === "sm" ? "gap-1.5" : "gap-2"),
     buttonClasses({
       size,
       variant,
@@ -167,12 +161,7 @@ export const Button: React.FC<ButtonProps> = (props) => {
           <span className="shrink-0 inline-flex items-center">{leftIcon}</span>
         )
       )}
-      {/* The children slot is itself a non-wrapping flex row. Call sites often
-          pass an icon alongside the label instead of using `leftIcon`; as a plain
-          <span> those became inline content that broke onto a second line inside
-          the button's fixed height, leaving the label sitting on the bottom
-          border. As a flex row the icon and label can never separate. */}
-      <span className="inline-flex items-center gap-1.5 min-w-0">
+      <span className="inline-flex min-w-0 items-center justify-center gap-1.5 [overflow-wrap:anywhere] [&>svg]:shrink-0">
         {children}
       </span>
       {!isLoading && rightIcon && (
@@ -187,7 +176,13 @@ export const Button: React.FC<ButtonProps> = (props) => {
       keyof ButtonVisualProps
     >;
     return (
-      <Link to={to} className={classes} {...linkProps}>
+      <Link
+        to={to}
+        data-ui="button"
+        data-size={size}
+        className={classes}
+        {...linkProps}
+      >
         {content}
       </Link>
     );
@@ -199,7 +194,13 @@ export const Button: React.FC<ButtonProps> = (props) => {
       keyof ButtonVisualProps
     >;
     return (
-      <a href={href} className={classes} {...anchorProps}>
+      <a
+        href={href}
+        data-ui="button"
+        data-size={size}
+        className={classes}
+        {...anchorProps}
+      >
         {content}
       </a>
     );
@@ -213,6 +214,8 @@ export const Button: React.FC<ButtonProps> = (props) => {
   return (
     <button
       type={type}
+      data-ui="button"
+      data-size={size}
       className={classes}
       disabled={disabled || isLoading}
       aria-busy={isLoading || undefined}

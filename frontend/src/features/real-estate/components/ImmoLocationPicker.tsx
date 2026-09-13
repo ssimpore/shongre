@@ -36,7 +36,7 @@ export const ImmoLocationPicker: React.FC<{
         zoom: 14,
       }}
       ariaLabel="Position approximative du bien"
-      className="h-64 w-full rounded-card border border-border-base bg-bg-subtle"
+      className="h-64 w-full overflow-hidden rounded-listing-card border border-border-base bg-bg-subtle"
       onReady={(map) => {
         const marker = new Marker({
           element: createMarkerElement({

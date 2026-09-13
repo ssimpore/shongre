@@ -139,44 +139,71 @@ test("employment onboarding clears incompatible specializations and recovers fro
     });
 });
 
-test("specialized details render the published localized characteristic values", async ({
-  page,
-}) => {
-  await useEstablishedConsent(page);
-  await usePersona(page, "guest");
-  await page.goto("/auto");
-  for (const item of [
-    { api: "/auto/vehicles/vehicle_3008_petrol", route: "/auto/vehicule/" },
-    {
-      api: "/real-estate/properties/property_apartment_lyon",
-      route: "/immo/bien/",
-    },
-  ]) {
-    const response = await browserApi(page, item.api);
-    expect(response.status).toBe(200);
-    const fields = (
-      response.body.taxonomy as {
-        detailCharacteristics: Array<{
-          labels: Record<string, string>;
-          values: Record<string, string>;
-        }>;
-      }
-    ).detailCharacteristics;
+for (const item of [
+  {
+    name: "vehicle",
+    api: "/auto/vehicles/vehicle_3008_petrol",
+    route: "/auto/vehicule/",
+  },
+  {
+    name: "property",
+    api: "/real-estate/properties/property_apartment_lyon",
+    route: "/immo/bien/",
+  },
+  {
+    name: "job",
+    api: "/employment/jobs/job-react-lyon",
+    route: "/emploi/offre/",
+  },
+]) {
+  test(`specialized details render published values and icons for a ${item.name}`, async ({
+    page,
+    request,
+  }) => {
+    await useEstablishedConsent(page);
+    const response = await request.get(`/api/v1${item.api}`, {
+      params: { marketCode: "FR" },
+    });
+    expect(response.ok()).toBe(true);
+    const detail = await response.json();
+    const fields = detail.taxonomy.detailCharacteristics as Array<{
+      code: string;
+      icon: string;
+      presentation: "fact" | "feature";
+      labels: Record<string, string>;
+      values: Record<string, string>;
+    }>;
     expect(fields.length).toBeGreaterThan(3);
-    await page.goto(`${item.route}${String(response.body.slug)}`);
+    await page.goto(`${item.route}${detail.slug}`);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      String(response.body.title),
+      detail.title,
     );
-    for (const field of fields) {
-      await expect(
-        page.getByText(field.labels["fr-FR"], { exact: true }).first(),
-      ).toBeVisible();
-      await expect(
-        page.getByText(field.values["fr-FR"], { exact: true }).first(),
-      ).toBeVisible();
+    await waitForStableLayout(page);
+    const panel = page.locator("[data-listing-characteristics]");
+    await expect(
+      panel.locator("[data-detail-fact], [data-detail-feature]"),
+    ).toHaveCount(fields.length);
+    for (const button of await panel
+      .locator("[data-detail-disclosure]")
+      .all()) {
+      await button.click();
+      await expect(button).toHaveAttribute("aria-expanded", "true");
     }
-  }
-});
+    for (const field of fields) {
+      const row = panel.locator(
+        `[data-detail-${field.presentation === "feature" ? "feature" : "fact"}="${field.code}"]`,
+      );
+      await expect(row).toBeVisible();
+      await expect(row).toContainText(field.labels["fr-FR"]);
+      await expect(row.locator("[data-fact-icon]")).toHaveAttribute(
+        "data-fact-icon",
+        field.icon,
+      );
+      if (field.presentation !== "feature")
+        await expect(row.locator("dd")).toHaveText(field.values["fr-FR"]);
+    }
+  });
+}
 
 test("vehicle comparison recovers from API failure and uses published values", async ({
   page,

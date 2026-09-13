@@ -277,7 +277,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               }
               className={`shrink-0 h-control-sm px-2.5 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer border ${
                 !selectedSubCategorySlug
-                  ? "bg-primary-light text-primary border-primary-border font-semibold"
+                  ? "bg-primary-light text-text-main border-primary-border font-semibold"
                   : "bg-surface-muted text-text-secondary border-transparent hover:bg-surface-disabled"
               }`}
             >
@@ -304,7 +304,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                   }}
                   className={`shrink-0 h-control-sm px-2.5 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer border ${
                     isSubSelected
-                      ? "bg-primary text-text-inverse border-primary shadow-2xs font-semibold"
+                      ? "bg-primary text-on-primary border-primary shadow-2xs font-semibold"
                       : "bg-surface-muted text-text-emphasis border-transparent hover:bg-surface-disabled"
                   }`}
                   title={subLabel}

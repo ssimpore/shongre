@@ -128,7 +128,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
               aria-pressed={filter === option.id}
               className={`rounded-control px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-primary ${
                 filter === option.id
-                  ? "bg-primary text-text-inverse"
+                  ? "bg-primary text-on-primary"
                   : "bg-bg-subtle text-text-secondary hover:text-text-main"
               }`}
             >

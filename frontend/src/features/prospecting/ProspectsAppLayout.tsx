@@ -151,7 +151,7 @@ export function ProspectsAppLayout() {
           className={({ isActive }) =>
             `inline-flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-micro font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
               isActive
-                ? "bg-primary text-text-inverse"
+                ? "bg-primary text-on-primary"
                 : "text-text-secondary hover:bg-bg-muted hover:text-text-main"
             }`
           }

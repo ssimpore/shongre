@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 import { waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
 
@@ -9,10 +9,30 @@ const FILTER_SURFACES = [
     desktopTrigger: "Afficher les filtres",
     mobileTrigger: /^Ouvrir les filtres de recherche/,
   },
-  { name: "vehicles", path: "/auto", mobileTrigger: "Filtres" },
-  { name: "real estate", path: "/immo", mobileTrigger: "Filtres" },
-  { name: "employment", path: "/emploi", mobileTrigger: "Filtres" },
-  { name: "education", path: "/education", mobileTrigger: "Filtres" },
+  {
+    name: "vehicles",
+    path: "/auto",
+    desktopTrigger: "Afficher les filtres",
+    mobileTrigger: "Filtres",
+  },
+  {
+    name: "real estate",
+    path: "/immo",
+    desktopTrigger: "Afficher les filtres",
+    mobileTrigger: "Filtres",
+  },
+  {
+    name: "employment",
+    path: "/emploi",
+    desktopTrigger: "Afficher les filtres",
+    mobileTrigger: "Filtres",
+  },
+  {
+    name: "education",
+    path: "/education",
+    desktopTrigger: "Afficher les filtres",
+    mobileTrigger: "Filtres",
+  },
 ] as const;
 
 const DROPDOWN_SURFACES = [
@@ -42,6 +62,50 @@ const DROPDOWN_SURFACES = [
   },
 ] as const;
 
+const expectBrandedBooleanControl = async (
+  control: Locator,
+  kind: "checkbox" | "radio",
+) => {
+  await expect
+    .poll(async () =>
+      control.evaluate((element, controlKind) => {
+        const input = element as HTMLInputElement;
+        const rootStyle = getComputedStyle(document.documentElement);
+        const style = getComputedStyle(input);
+        const mark = getComputedStyle(input, "::before");
+        const probe = document.createElement("span");
+        probe.style.color = rootStyle.getPropertyValue("--color-primary");
+        document.body.appendChild(probe);
+        const primary = getComputedStyle(probe).color;
+        probe.style.color = rootStyle.getPropertyValue("--color-on-primary");
+        const onPrimary = getComputedStyle(probe).color;
+        probe.remove();
+
+        return {
+          appearance: style.appearance,
+          usesPrimaryBorder: style.borderColor === primary,
+          usesExpectedFill:
+            controlKind === "radio"
+              ? mark.backgroundColor === primary
+              : style.backgroundColor === primary,
+          usesExpectedMark:
+            controlKind === "radio"
+              ? mark.backgroundColor === primary
+              : mark.borderRightColor === onPrimary,
+          markVisible:
+            mark.transform !== "none" && !mark.transform.includes("0, 0, 0, 0"),
+        };
+      }, kind),
+    )
+    .toEqual({
+      appearance: "none",
+      usesPrimaryBorder: true,
+      usesExpectedFill: true,
+      usesExpectedMark: true,
+      markVisible: true,
+    });
+};
+
 test.beforeEach(async ({ page }) => {
   await useEstablishedConsent(page);
   await usePersona(page, "guest");
@@ -57,11 +121,8 @@ test.describe("canonical marketplace filter panel", () => {
       await waitForStableLayout(page);
 
       const panel = page.locator('[data-filter-panel="surface"]');
-      if ("desktopTrigger" in surface && !(await panel.isVisible())) {
-        await page
-          .getByRole("button", { name: surface.desktopTrigger })
-          .click();
-      }
+      await expect(panel).toBeHidden();
+      await page.getByRole("button", { name: surface.desktopTrigger }).click();
 
       await expect(panel).toHaveCount(1);
       await expect(panel).toBeVisible();
@@ -74,6 +135,22 @@ test.describe("canonical marketplace filter panel", () => {
       await expect(
         panel.getByRole("button", { name: "Réinitialiser", exact: true }),
       ).toBeVisible();
+
+      const checkbox = panel.getByRole("checkbox").first();
+      await expect(checkbox).toBeVisible();
+      if (await checkbox.isChecked()) await checkbox.click();
+      await checkbox.click();
+      await expect(checkbox).toBeChecked();
+      await expectBrandedBooleanControl(checkbox, "checkbox");
+
+      if (surface.name === "marketplace search") {
+        const radio = panel.getByRole("radio", {
+          name: "Tous les vendeurs",
+          exact: true,
+        });
+        await expect(radio).toBeChecked();
+        await expectBrandedBooleanControl(radio, "radio");
+      }
     });
 
     test(`${surface.name} uses the shared mobile drawer presentation`, async ({
@@ -109,6 +186,7 @@ test.describe("canonical vertical dropdowns", () => {
 
       const main = page.locator("main#main-content");
       await expect(main.locator("select")).toHaveCount(0);
+      await main.getByRole("button", { name: "Afficher les filtres" }).click();
 
       const filter = main.getByRole("button", {
         name: surface.filterLabel,
@@ -135,7 +213,9 @@ test.describe("canonical vertical dropdowns", () => {
       await expect(listbox).toHaveClass(/rounded-card/);
       await expect(listbox).toHaveClass(/shadow-dropdown/);
       await expect(listbox).toHaveClass(/border-border-base/);
-      await expect(listbox.getByText("Trier par", { exact: true })).toBeVisible();
+      await expect(
+        listbox.getByText("Trier par", { exact: true }),
+      ).toBeVisible();
 
       await listbox
         .getByRole("option", { name: surface.nextSortLabel, exact: true })

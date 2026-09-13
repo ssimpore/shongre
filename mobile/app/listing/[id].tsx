@@ -6,7 +6,15 @@ import {
   type ListingCardView,
   type ReportInput,
 } from "@shongre/contracts";
-import { Modal, ProBadge, VerificationBadge } from "@shongre/ui/native";
+import {
+  Badge,
+  Modal,
+  ProBadge,
+  SemanticIcon,
+  VerificationBadge,
+} from "@shongre/ui/native";
+import { getListingPromotionBadges } from "@shongre/features/listings/presentation";
+import { useListingPromotionRefresh } from "@shongre/features/listings/native";
 import { Button } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { Screen } from "@/components/Screen";
@@ -22,6 +30,8 @@ import {
   mobileRadius as radius,
   nativeAspect,
   nativeBorders,
+  nativeColors,
+  nativeRadius,
   nativeSizing,
   nativeSpacing as spacing,
   nativeTypography,
@@ -63,6 +73,9 @@ export default function ListingDetailScreen() {
     toggleFavorite,
   } = useFavorites();
   const { activeMarket } = useMarket();
+  const [expandedListingId, setExpandedListingId] = useState<string | null>(
+    null,
+  );
   const [listing, setListing] = useState<ListingCardView | null>(null);
   const [characteristics, setCharacteristics] =
     useState<ListingCharacteristicsData | null>(null);
@@ -80,6 +93,16 @@ export default function ListingDetailScreen() {
   const [reportDetails, setReportDetails] = useState("");
   const [reportError, setReportError] = useState("");
   const [reporting, setReporting] = useState(false);
+  useListingPromotionRefresh(listing?.promotion);
+  const promotionBadges = listing
+    ? getListingPromotionBadges(listing, {
+        boosted: messagesFr["ui.listingCard.boosted"],
+        sponsored: messagesFr["ui.listingCard.sponsored"],
+        featured: messagesFr["ui.listingCard.featured"],
+        urgent: messagesFr["ui.listingCard.urgent"],
+        promotion: messagesFr["ui.listingCard.promotion"],
+      })
+    : [];
 
   useEffect(() => {
     let active = true;
@@ -386,10 +409,34 @@ export default function ListingDetailScreen() {
       ) : null}
       <View style={styles.titleGroup}>
         <View style={styles.badges}>
-          {listing.isUrgent ? <Text style={styles.urgent}>Urgent</Text> : null}
-          {listing.isFeatured ? (
-            <Text style={styles.featured}>À la une · sponsorisé</Text>
-          ) : null}
+          {promotionBadges.map((badge) => (
+            <Badge
+              key={badge.kind}
+              testID={`listing-badge-${badge.kind}`}
+              variant={badge.variant}
+              style={styles.promotionBadge}
+              icon={
+                <SemanticIcon
+                  name={badge.icon}
+                  filled={
+                    badge.kind === "featured" || badge.kind === "promotion"
+                  }
+                  size="xs"
+                  color={
+                    badge.kind === "featured"
+                      ? nativeColors.action.onPrimary
+                      : badge.kind === "urgent"
+                        ? nativeColors.status.error
+                        : badge.kind === "promotion"
+                          ? nativeColors.status.success
+                          : nativeColors.action.primary
+                  }
+                />
+              }
+            >
+              {badge.label}
+            </Badge>
+          ))}
           {listing.requiresPhysicalDelivery === false ? (
             <Text style={styles.digital}>Produit numérique</Text>
           ) : null}
@@ -418,6 +465,31 @@ export default function ListingDetailScreen() {
       {facts.keyFacts.length ? (
         <DetailSection title="Les informations clés">
           <DetailFactList facts={facts.keyFacts} />
+          {facts.additionalCount ? (
+            <>
+              <Button
+                variant="ghost"
+                accessibilityState={{ expanded: expandedListingId === id }}
+                onPress={() =>
+                  setExpandedListingId(expandedListingId === id ? null : id)
+                }
+              >
+                {expandedListingId === id
+                  ? "Voir moins de critères"
+                  : `Voir les ${facts.additionalCount} critères supplémentaires`}
+              </Button>
+              {expandedListingId === id
+                ? facts.additionalGroups.map((group) => (
+                    <View key={group.id}>
+                      <Text accessibilityRole="header" style={styles.heading}>
+                        {group.label}
+                      </Text>
+                      <DetailFactList facts={group.facts} />
+                    </View>
+                  ))
+                : null}
+            </>
+          ) : null}
         </DetailSection>
       ) : null}
 
@@ -620,15 +692,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceMuted,
   },
   titleGroup: { gap: spacing.sm },
-  badges: { flexDirection: "row", gap: spacing.sm },
-  urgent: {
-    color: colors.danger,
-    fontFamily: nativeTypography.fontFamily.bold,
-  },
-  featured: {
-    color: colors.warning,
-    fontFamily: nativeTypography.fontFamily.bold,
-  },
+  badges: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  promotionBadge: { borderRadius: nativeRadius.pill },
   digital: {
     color: colors.primary,
     fontFamily: nativeTypography.fontFamily.bold,

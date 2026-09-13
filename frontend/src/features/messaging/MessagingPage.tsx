@@ -32,6 +32,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { analyticsService } from "../../services/analytics.service";
+import { useConversationPresence } from "./useConversationPresence";
 
 export const MessagingPage: React.FC = () => {
   const { t } = useTranslation();
@@ -72,6 +73,10 @@ export const MessagingPage: React.FC = () => {
 
   // Blocked users set
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
+  const presence = useConversationPresence(
+    conversations.map((conversation) => conversation.id),
+    blockedUsers.join(","),
+  );
 
   // 1. Load User's Conversations
   const loadConversations = useCallback(async () => {
@@ -465,6 +470,7 @@ export const MessagingPage: React.FC = () => {
           >
             <ConversationList
               conversations={filteredConversations}
+              presence={presence}
               activeConversationId={activeConvId}
               onSelectConversation={handleSelectConversation}
               selectedFilter={selectedFilter}
@@ -485,6 +491,12 @@ export const MessagingPage: React.FC = () => {
               <>
                 {/* Conversation Header */}
                 <ConversationHeader
+                  presence={
+                    capabilities.isBlockedByViewer ||
+                    capabilities.isBlockedByCounterpart
+                      ? undefined
+                      : presence[activeConversationPreview.id]
+                  }
                   counterpart={activeConversationPreview.counterpart}
                   capabilities={capabilities}
                   publicProfileSlug={activeConversationPreview.counterpart.id}

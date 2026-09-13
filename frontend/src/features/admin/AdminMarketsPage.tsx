@@ -207,7 +207,7 @@ export const AdminMarketsPage: React.FC = () => {
               key={market.code}
               type="button"
               onClick={() => setSelectedCode(market.code)}
-              className={`flex w-full items-center justify-between rounded-control px-3 py-2 text-left text-sm ${market.code === selectedCode ? "bg-primary-light text-primary" : "text-text-main hover:bg-bg-subtle"}`}
+              className={`flex w-full items-center justify-between rounded-control px-3 py-2 text-left text-sm ${market.code === selectedCode ? "bg-primary-light text-text-main" : "text-text-main hover:bg-bg-subtle"}`}
             >
               <span>
                 {market.flag} {market.name}

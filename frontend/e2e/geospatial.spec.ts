@@ -81,10 +81,12 @@ test.describe("map provider outage", () => {
 });
 
 test.describe("map and filter layout", () => {
-  test("collapsing the filters does not re-search the map", async ({ page }) => {
+  test("opening and closing the filters does not re-search the map", async ({
+    page,
+  }) => {
     /*
-     * Hiding the filter panel widens the map, which resizes it, which the
-     * renderer reports as a `moveend` — the same event a drag produces. Acted
+     * Opening or hiding the filter panel resizes the map, which the renderer
+     * reports as a `moveend` — the same event a drag produces. Acted
      * on blindly, that applies a viewport filter nobody asked for: the count
      * on this page dropped from two results to one on a layout change alone.
      * Only a move carrying an `originalEvent` is the reader asking to search
@@ -92,7 +94,8 @@ test.describe("map and filter layout", () => {
      */
     const searches: string[] = [];
     page.on("request", (request) => {
-      if (/\/api\/v1\/real-estate/.test(request.url())) searches.push(request.url());
+      if (/\/api\/v1\/real-estate/.test(request.url()))
+        searches.push(request.url());
     });
 
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -105,16 +108,20 @@ test.describe("map and filter layout", () => {
     expect(countBefore).toBeGreaterThan(0);
     const searchesBefore = searches.length;
 
-    await page
+    const toggle = page
       .locator('button[aria-expanded][aria-controls*="filter"]')
-      .first()
-      .click();
+      .first();
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await page.waitForTimeout(2_500);
 
     expect(await resultCount(page)).toBe(countBefore);
     expect(
       searches.length - searchesBefore,
-      "collapsing the filter panel must not query the catalogue",
+      "opening or closing the filter panel must not query the catalogue",
     ).toBe(0);
   });
 
@@ -132,14 +139,14 @@ test.describe("map and filter layout", () => {
     const toggle = page
       .locator('button[aria-expanded][aria-controls*="filter"]')
       .first();
-    await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await expect(toggle).toHaveText(/Filtres/i);
-    await expect(toggle).toHaveAttribute("aria-label", /Masquer les filtres/i);
-
-    await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await expect(toggle).toHaveText(/Filtres/i);
     await expect(toggle).toHaveAttribute("aria-label", /Afficher les filtres/i);
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(toggle).toHaveText(/Filtres/i);
+    await expect(toggle).toHaveAttribute("aria-label", /Masquer les filtres/i);
   });
 });
 
@@ -204,7 +211,9 @@ test.describe("public location privacy", () => {
 
     expect(offenders, offenders.join("\n")).toEqual([]);
     // A test that inspected nothing proves nothing.
-    expect(inspected, "no location-bearing API response was observed").
-      toBeGreaterThan(0);
+    expect(
+      inspected,
+      "no location-bearing API response was observed",
+    ).toBeGreaterThan(0);
   });
 });

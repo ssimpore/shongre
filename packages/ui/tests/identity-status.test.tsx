@@ -3,6 +3,7 @@ import type { ComponentProps, ElementType } from "react";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { Avatar } from "../src/primitives/Avatar.web";
 import { ProBadge } from "../src/identity/ProBadge.web";
+import { PresenceIndicator } from "../src/identity/PresenceIndicator.web";
 import { VerificationBadge } from "../src/identity/VerificationBadge.web";
 import { VerifiedIcon } from "../src/identity/VerifiedIcon.web";
 
@@ -20,6 +21,30 @@ describe("canonical identity status components", () => {
       UnsupportedProps<typeof VerificationBadge>
     >().toEqualTypeOf<never>();
     expectTypeOf<UnsupportedProps<typeof ProBadge>>().toEqualTypeOf<never>();
+    expectTypeOf<
+      UnsupportedProps<typeof PresenceIndicator>
+    >().toEqualTypeOf<never>();
+  });
+
+  it("renders every presence state with a labelled token-backed marker", () => {
+    const statuses = ["online", "away", "offline", "unknown"] as const;
+    const html = statuses.map((status) =>
+      renderToStaticMarkup(
+        <PresenceIndicator status={status} label={`Presence ${status}`} />,
+      ),
+    );
+
+    expect(html[0]).toContain('data-presence-status="online"');
+    expect(html[0]).toContain("bg-success");
+    expect(html[1]).toContain("bg-warning");
+    expect(html[2]).toContain("bg-text-tertiary");
+    expect(html[3]).toContain("bg-text-disabled");
+    html.forEach((markup) => {
+      expect(markup).toContain('data-ui-presence-indicator="true"');
+      expect(markup).toContain('role="img"');
+      expect(markup).toContain("aria-label=");
+      expect(markup).toContain("border-border-base");
+    });
   });
 
   it("labels a standalone verification icon and hides a decorative one", () => {
@@ -50,6 +75,21 @@ describe("canonical identity status components", () => {
     expect(html).toContain('data-ui-verified-icon="true"');
   });
 
+  it("keeps the canonical verification badge when its icon is redundant", () => {
+    const html = renderToStaticMarkup(
+      <VerificationBadge
+        label="Vérifié"
+        accessibilityLabel="Profil vérifié"
+        showIcon={false}
+      />,
+    );
+
+    expect(html).toContain('data-ui-verification-badge="true"');
+    expect(html).toContain('aria-label="Profil vérifié"');
+    expect(html).toContain(">Vérifié<");
+    expect(html).not.toContain('data-ui-verified-icon="true"');
+  });
+
   it("keeps the professional marker inverse by default and supports the card tone", () => {
     const defaultHtml = renderToStaticMarkup(
       <ProBadge
@@ -73,7 +113,7 @@ describe("canonical identity status components", () => {
     expect(defaultHtml).toContain("bg-surface-inverse");
     expect(defaultHtml).toContain("text-text-inverse");
     expect(cardHtml).toContain("bg-primary-light");
-    expect(cardHtml).toContain("text-primary");
+    expect(cardHtml).toContain("text-text-main");
     expect(cardHtml).toContain("text-overline");
     expect(cardHtml).not.toContain("uppercase");
   });

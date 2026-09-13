@@ -55,6 +55,29 @@ Web and mobile authentication always use the Shongre API. Local development
 requires the repository-owned backend and Supabase stack; API failures never
 fall back to a browser identity or fixture session.
 
+## Web authentication presentation
+
+`frontend/src/features/auth/components/AuthLayout.tsx` owns the shared backdrop,
+heading, responsive form or account-choice card, and supporting privacy copy.
+Sign-in, registration, recovery, email verification, OAuth completion, domain
+handoff, and internal MFA use that frame. The enclosing application layout owns
+navigation; entry screens must not repeat the logo or add another header.
+`AuthRequiredPrompt` supplies the same guest prompt to both authentication and
+permission guards without changing their authorization decisions.
+
+`AccountTypeSelector` uses native radios, including keyboard arrow selection.
+Professional registration retains values when returning to the identity step
+and focuses the heading when the step changes. All primary authentication actions
+use the shared primary button and semantic design tokens. A professional account
+selection does not imply a verified identity or activated paid tools.
+
+Safe return destinations retain their path, query, and fragment through the
+canonical authentication route helpers. Password-reset tokens come from the
+received link and are not editable form fields. Error and confirmation states
+are announced, and pending actions prevent competing submissions. Social buttons
+retain backend availability, explicit unavailable states, and the existing secure
+provider flow.
+
 ## Identity and account rules
 
 - `user_identities` is keyed by `(provider, provider_subject)`. Email is
@@ -127,6 +150,21 @@ returns a neutral cancelled result and creates no account or session.
   suspending, reactivating, or revoking Staff access also requires recent
   authentication, forbids self-management, revokes all target sessions, and
   protects the last active owner. A role label alone grants no authority.
+
+### Messaging presence
+
+Presence is a short-lived Redis projection attached to authenticated session
+leases. Web tabs and the native app submit only a per-client identifier, a
+monotonic sequence, and an activity state. The backend assigns all timestamps
+and rechecks the session before renewing the lease.
+
+The API exposes `online`, `away`, `offline`, and retained `lastSeenAt` only to
+the other participant in a conversation. All active sessions are combined, so
+closing one tab or revoking one device does not hide another active device.
+Blocking in either direction, an inactive account, any retained Staff
+membership, an expired or revoked session, a stale response, or an unavailable
+presence store returns `unknown`. Presence never authorizes a message or proves
+that a person deliberately viewed a conversation.
 
 The complete actor inventory, contextual decision flow, ownership and
 organization rules, market scope, entitlement separation, and denial
@@ -266,7 +304,7 @@ redirect query strings, analytics events or screenshots.
 1. Deploy migration `00012_auth_identities_and_sessions.sql` and verify the
    existing password-identity backfill and RLS/service-role grants.
 2. Deploy backend and UI with all social flags false. Verify password login,
-   verification, reset, refresh, logout and demo-only frontend operation.
+   verification, reset, refresh, logout and API-only frontend operation.
 3. Configure one provider in staging, enable its provider flag plus
    `ENABLE_SOCIAL_AUTH`, and test new account, repeat login, conflict/link,
    cancellation, denied email, Apple relay, invalid state, native exchange and
@@ -286,9 +324,20 @@ contain the continuity needed for safe recovery and account linking.
 - **Provider rejects the callback:** compare the generated callback byte for
   byte with the console entry, including scheme, host, port, path and trailing
   slash. Apple web callbacks must use a registered HTTPS domain.
-- **Button is absent:** check `ENABLE_SOCIAL_AUTH`, the provider-specific flag,
-  and startup validation for missing credential names. Clients intentionally
-  reflect `/auth/oauth/providers`; they do not override backend flags.
+- **Provider button is disabled:** Web sign-in and registration forms show
+  Google, Apple and Facebook before the email form. The preceding account-type
+  selection screen only chooses an Individual or Professional profile; its
+  Continue action opens the corresponding registration form with the safe
+  return destination preserved. Each provider button is enabled only
+  when `/auth/oauth/providers` explicitly permits it. Check `ENABLE_SOCIAL_AUTH`,
+  the provider-specific flag, and startup validation for missing credential
+  names. Unavailable providers remain visible and disabled without a banner; a
+  failed availability request offers retry while email remains usable. Clients
+  never override backend flags. The shared control preserves the safe return
+  path and selected onboarding account type, and prevents a simultaneous email
+  submission while provider authorization is starting. Sign-in and registration
+  place their shared legal notice at the bottom of the authentication card,
+  after the account-switch link, including both professional onboarding steps.
 - **Invalid or expired attempt:** start a fresh flow. State, completion handles
   and native exchange codes are single-use and must never be manually replayed.
 - **Existing-account conflict:** sign in with the existing method, complete

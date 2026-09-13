@@ -1,0 +1,163 @@
+- generic [active] [ref=f10e1]:
+  - generic [ref=f10e2]:
+    - link "Aller au contenu principal" [ref=f10e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - generic [ref=f10e4]:
+      - generic [ref=f10e6]:
+        - generic [ref=f10e7]:
+          - generic [ref=f10e8]: test
+          - generic [ref=f10e13]: Données fournies par l’API Shongre
+        - button "Réduire la barre d’environnement" [expanded] [ref=f10e15] [cursor=pointer]
+      - banner [ref=f10e19]:
+        - generic [ref=f10e21]:
+          - generic [ref=f10e22]:
+            - link "SHONGRE. France, accueil" [ref=f10e23] [cursor=pointer]:
+              - /url: /
+              - img "SHONGRE." [ref=f10e24]:
+                - generic [aria-hidden] [ref=f10e28]: France
+            - 'button "Langue et préférences régionales : Français" [ref=f10e31] [cursor=pointer]':
+              - generic [ref=f10e37]: fr
+          - search "Recherche globale" [ref=f10e43]:
+            - button "Sélectionner une catégorie" [ref=f10e45] [cursor=pointer]:
+              - generic [ref=f10e50]: Catégories
+            - combobox "Rechercher une annonce" [ref=f10e57]
+            - button "Lancer la recherche" [ref=f10e58] [cursor=pointer]
+          - generic [ref=f10e62]:
+            - link "Déposer une annonce" [ref=f10e64] [cursor=pointer]:
+              - /url: /deposer
+            - link "Favoris" [ref=f10e70] [cursor=pointer]:
+              - /url: /compte/favoris
+            - link "Messagerie" [ref=f10e73] [cursor=pointer]:
+              - /url: /compte/messages
+            - button "Notifications" [ref=f10e78] [cursor=pointer]
+            - status "Restauration de votre session" [ref=f10e83]
+    - main [ref=f10e92]:
+      - status "Chargement de la page" [ref=f10e325]
+    - contentinfo [ref=f10e95]:
+      - generic [ref=f10e96]:
+        - generic [ref=f10e98]:
+          - generic [ref=f10e99]:
+            - heading "Catégories phares Trouvez ce dont vous avez besoin" [level=2] [ref=f10e100]:
+              - generic [ref=f10e108]:
+                - generic [ref=f10e109]: Catégories phares
+                - generic [ref=f10e110]: Trouvez ce dont vous avez besoin
+            - list [ref=f10e111]:
+              - listitem [ref=f10e112]:
+                - link "Catégories phares" [ref=f10e113] [cursor=pointer]:
+                  - /url: /categories
+          - generic [ref=f10e117]:
+            - heading "Espace professionnels Développez votre activité" [level=2] [ref=f10e118]:
+              - generic [ref=f10e124]:
+                - generic [ref=f10e125]: Espace professionnels
+                - generic [ref=f10e126]: Développez votre activité
+            - list [ref=f10e127]:
+              - listitem [ref=f10e128]:
+                - link "Toutes les solutions Shongre" [ref=f10e129] [cursor=pointer]:
+                  - /url: /solutions
+              - listitem [ref=f10e133]:
+                - link "Solutions & Tarifs Pro" [ref=f10e134] [cursor=pointer]:
+                  - /url: /solutions-pro
+              - listitem [ref=f10e138]:
+                - link "Shongre Prospects" [ref=f10e139] [cursor=pointer]:
+                  - /url: /prospects
+              - listitem [ref=f10e143]:
+                - link "Shongre Facturation" [ref=f10e144] [cursor=pointer]:
+                  - /url: http://facturation.localhost:3110/
+              - listitem [ref=f10e148]:
+                - link "Annuaire des boutiques" [ref=f10e149] [cursor=pointer]:
+                  - /url: /professionnels
+              - listitem [ref=f10e153]:
+                - link "Grille des options & boosts" [ref=f10e154] [cursor=pointer]:
+                  - /url: /tarifs
+          - generic [ref=f10e158]:
+            - heading [level=2] [ref=f10e159]:
+              - link "Aide & Confiance Un accompagnement à chaque étape" [ref=f10e160] [cursor=pointer]:
+                - /url: /securite
+                - generic [ref=f10e166]:
+                  - generic [ref=f10e167]: Aide & Confiance
+                  - generic [ref=f10e168]: Un accompagnement à chaque étape
+            - list [ref=f10e169]:
+              - listitem [ref=f10e170]:
+                - link "Centre d’aide & FAQ" [ref=f10e171] [cursor=pointer]:
+                  - /url: /aide
+              - listitem [ref=f10e175]:
+                - link "Contacter le support" [ref=f10e176] [cursor=pointer]:
+                  - /url: /contact
+              - listitem [ref=f10e180]:
+                - link "Livraison & coursier" [ref=f10e181] [cursor=pointer]:
+                  - /url: /livraison
+              - listitem [ref=f10e185]:
+                - link "Promotions" [ref=f10e186] [cursor=pointer]:
+                  - /url: /offres-prix-reduit
+          - complementary "Newsletter Shongre" [ref=f10e190]:
+            - heading "Newsletter Shongre Recevez notre sélection hebdomadaire d’annonces et de nouveautés." [level=2] [ref=f10e191]:
+              - generic [ref=f10e197]:
+                - generic [ref=f10e198]: Newsletter Shongre
+                - generic [ref=f10e199]: Recevez notre sélection hebdomadaire d’annonces et de nouveautés.
+            - generic [ref=f10e201]:
+              - textbox "Votre adresse email" [ref=f10e206]:
+                - /placeholder: votre@email.com
+              - button "S'inscrire" [ref=f10e207] [cursor=pointer]
+            - list [ref=f10e213]:
+              - listitem [ref=f10e214]:
+                - generic [ref=f10e218]: Bons plans et nouveautés
+              - listitem [ref=f10e219]:
+                - generic [ref=f10e223]: Conseils et guides pratiques
+              - listitem [ref=f10e224]:
+                - generic [ref=f10e228]: Désinscription en un clic
+        - generic [ref=f10e229]:
+          - region [ref=f10e230]:
+            - generic [ref=f10e231]:
+              - generic [ref=f10e236]:
+                - heading "Applications mobiles Shongre" [level=2] [ref=f10e237]
+                - paragraph [ref=f10e238]: Emportez Shongre partout avec vous. Achetez, vendez et gérez vos annonces depuis votre mobile.
+              - generic [ref=f10e239]:
+                - generic "App Store — bientôt disponible" [ref=f10e240]:
+                  - generic [ref=f10e243]:
+                    - generic [ref=f10e244]: Bientôt sur
+                    - generic [ref=f10e245]: App Store
+                - generic "Google Play — bientôt disponible" [ref=f10e246]:
+                  - generic [ref=f10e249]:
+                    - generic [ref=f10e250]: Bientôt sur
+                    - generic [ref=f10e251]: Google Play
+          - region [ref=f10e252]:
+            - heading "Suivez Shongre" [level=2] [ref=f10e253]
+            - paragraph [ref=f10e254]: Rejoignez notre communauté
+            - generic [ref=f10e255]:
+              - img "Instagram — bientôt disponible" [ref=f10e256]
+              - img "Facebook — bientôt disponible" [ref=f10e261]
+              - img "LinkedIn — bientôt disponible" [ref=f10e264]
+              - img "YouTube — bientôt disponible" [ref=f10e267]
+        - generic [ref=f10e270]:
+          - generic [ref=f10e271]:
+            - generic [ref=f10e272]:
+              - link "SHONGRE., accueil" [ref=f10e273] [cursor=pointer]:
+                - /url: /
+                - generic [ref=f10e278]: Le bon plan, plus proche de vous.
+              - generic [ref=f10e280]: Marché France
+            - navigation "Informations légales" [ref=f10e288]:
+              - list [ref=f10e289]:
+                - listitem [ref=f10e290]:
+                  - link "À propos" [ref=f10e291] [cursor=pointer]:
+                    - /url: /a-propos
+                - listitem [ref=f10e292]:
+                  - link "CGU" [ref=f10e293] [cursor=pointer]:
+                    - /url: /conditions-utilisation
+                - listitem [ref=f10e294]:
+                  - link "Politique de confidentialité" [ref=f10e295] [cursor=pointer]:
+                    - /url: /confidentialite
+                - listitem [ref=f10e296]:
+                  - link "Mentions légales" [ref=f10e297] [cursor=pointer]:
+                    - /url: /mentions-legales
+                - listitem [ref=f10e298]:
+                  - link "Accessibilité (WCAG 2.2 AA)" [ref=f10e299] [cursor=pointer]:
+                    - /url: /accessibilite
+                - listitem [ref=f10e300]:
+                  - button "Gestion des cookies" [ref=f10e301] [cursor=pointer]
+          - generic [ref=f10e302]:
+            - generic [ref=f10e303]: © 2026 Shongre SAS. Tous droits réservés.
+            - 'button "Langue et préférences régionales : Français" [ref=f10e305] [cursor=pointer]':
+              - generic [ref=f10e311]: fr
+  - region "Notifications"
+  - button "Open Next.js Dev Tools" [ref=f10e320] [cursor=pointer]
+  - alert [ref=f10e324]

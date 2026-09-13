@@ -138,36 +138,114 @@
   }
 
   /* --- Native boolean controls -------------------------------------------
-     Checkboxes and radios across the product carry `text-primary`,
-     `border-border-base` and `rounded-md`. None of those do anything to a
-     native control: they are the `@tailwindcss/forms` vocabulary, and that
-     plugin is not installed here. So every checkbox in the app — including the
-     `Checkbox` primitive — painted in the operating system's default blue,
-     which is why the notification preferences grid was the one user-facing
-     screen that did not look like Shongre.
-
-     `accent-color` is the platform-native way to tint them. One declaration
-     covers every control, present and future, keeps native keyboard and
-     screen-reader behaviour intact, and needs no plugin.
-
-     The size floor is here for the same reason: `w-4 h-4` (16px) is below the
-     24px WCAG 2.5.8 target minimum, and it appears at ~16 call sites. The
-     primitive already wraps bare checkboxes in a 24px box; this catches the
-     ones written by hand. */
+     Native checkbox and radio paint differs by browser, even with the same
+     `accent-color`. Own the indicator geometry here so filters, forms and the
+     Checkbox primitive all use the authentication flow's Shongre ring/fill
+     language without giving up native input semantics. Every visual value
+     resolves through the shared semantic design tokens. */
   input[type="checkbox"],
   input[type="radio"] {
+    appearance: none;
     accent-color: var(--color-primary);
+    box-sizing: border-box;
+    display: inline-grid;
+    flex: 0 0 auto;
+    place-content: center;
+    width: var(--spacing-control-indicator);
+    height: var(--spacing-control-indicator);
     min-width: var(--spacing-control-indicator);
     min-height: var(--spacing-control-indicator);
+    margin: 0;
+    border: var(--border-strong) solid var(--color-border-strong);
+    background-color: var(--color-bg-surface);
+    transition:
+      border-color var(--duration-fast) var(--ease-standard),
+      background-color var(--duration-fast) var(--ease-standard);
   }
 
-  /* … and the interactive target reaches the 24px floor via padding on coarse
+  input[type="radio"] {
+    border-radius: var(--radius-pill);
+  }
+
+  input[type="checkbox"] {
+    border-radius: var(--radius-sm);
+  }
+
+  input[type="checkbox"]::before,
+  input[type="radio"]::before {
+    content: "";
+    transform: scale(0);
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+
+  input[type="radio"]::before {
+    width: calc(var(--spacing-control-indicator) / 2);
+    height: calc(var(--spacing-control-indicator) / 2);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-primary);
+  }
+
+  input[type="radio"]:checked {
+    border-color: var(--color-primary);
+  }
+
+  input[type="radio"]:checked::before {
+    transform: scale(1);
+  }
+
+  input[type="checkbox"]::before {
+    width: calc(var(--spacing-icon-xs) / 2);
+    height: var(--spacing-icon-xs);
+    border-right: var(--border-strong) solid var(--color-on-primary);
+    border-bottom: var(--border-strong) solid var(--color-on-primary);
+    transform: rotate(45deg) scale(0);
+  }
+
+  input[type="checkbox"]:checked,
+  input[type="checkbox"]:indeterminate {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+  }
+
+  input[type="checkbox"]:checked::before {
+    transform: rotate(45deg) scale(1);
+  }
+
+  input[type="checkbox"]:indeterminate::before {
+    width: var(--spacing-icon-xs);
+    height: var(--border-strong);
+    border: 0;
+    background-color: var(--color-on-primary);
+    transform: scale(1);
+  }
+
+  input[type="checkbox"]:disabled,
+  input[type="radio"]:disabled {
+    cursor: not-allowed;
+    opacity: var(--opacity-disabled);
+  }
+
+  /* … and the visible indicator reaches the 24px target floor on coarse
      pointers, where the finger — not the cursor — is doing the aiming. */
   @media (pointer: coarse) {
     input[type="checkbox"],
     input[type="radio"] {
       min-width: var(--spacing-control-target);
       min-height: var(--spacing-control-target);
+    }
+  }
+
+  /* Let Windows High Contrast and equivalent forced-colour modes restore the
+     platform's own highly visible indicator treatment. */
+  @media (forced-colors: active) {
+    input[type="checkbox"],
+    input[type="radio"] {
+      appearance: auto;
+    }
+
+    input[type="checkbox"]::before,
+    input[type="radio"]::before {
+      content: none;
     }
   }
 
@@ -647,19 +725,32 @@
   }
 }
 
-/* Keep the shared footprint as a minimum, not a clipping boundary: unusually
-   long prices or trust facts may wrap without hiding buyer information. */
+/* The shared vertical card follows the canonical 220 x 420 footprint. Narrow
+   viewports may reduce its width, while the complete accessible values remain
+   available through native titles and the listing link label. */
 .listing-card-standard {
   width: min(100%, var(--spacing-listing-card-mobile-max));
   max-width: var(--spacing-listing-card-mobile-max);
+  height: var(--spacing-listing-card-height);
   min-height: var(--spacing-listing-card-height);
+  max-height: var(--spacing-listing-card-height);
   margin-inline: auto;
 }
 
 .listing-card-title-vertical {
+  display: -webkit-box;
   min-height: 2lh;
+  max-height: 2lh;
   flex-shrink: 0;
+  overflow: hidden;
   overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.listing-card-content-vertical {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .listing-card-shell,
@@ -672,10 +763,8 @@
   overflow: hidden;
 }
 
-/* One token-backed media height keeps the four essential information rows
-   visible even when a fluid grid gives the compact card a little more width.
-   The canonical 13rem card remains near the dedicated 4:5 portrait ratio;
-   wider phone cards reveal more of the crop without changing media height. */
+/* The media-led crop mirrors the accepted reference and keeps all overlays
+   spatially separate from the category-aware footer facts. */
 .listing-card-media,
 .listing-card-skeleton > :first-child {
   height: var(--spacing-listing-card-media-height);
@@ -683,7 +772,9 @@
 
 /* Showcase is a context variant of the same primitive and footprint. */
 .listing-card-showcase {
+  height: var(--spacing-listing-card-showcase-height);
   min-height: var(--spacing-listing-card-showcase-height);
+  max-height: var(--spacing-listing-card-showcase-height);
 }
 
 .listing-card-showcase-skeleton {
@@ -697,11 +788,6 @@
 .listing-card-showcase > a {
   height: 100%;
   min-height: 0;
-}
-
-.listing-card-promotion-badge {
-  padding-inline: var(--spacing-semantic-sm);
-  letter-spacing: normal;
 }
 
 /* Horizontal results use a fixed shared footprint so cards stay aligned when
@@ -874,14 +960,19 @@
     max-width: var(--spacing-listing-card);
   }
 
-  /* Result grids should consume the complete content row. Rails and curated
-     grids keep the canonical fixed card width; only an explicitly fluid grid
-     lets its cards follow the responsive column track. */
+  /* Result grids reuse the same token width as rails. Their grid template owns
+     the remaining row space instead of stretching individual cards. Centering
+     each fixed card inside its equal flexible track makes the first and last
+     cards balance the complete results row. Homepage rails are unaffected. */
+  .listing-grid-fluid {
+    justify-items: center;
+  }
+
   .listing-grid-fluid .listing-card-standard,
   .listing-grid-fluid .listing-card-skeleton {
-    width: 100%;
-    min-width: 0;
-    max-width: none;
+    width: var(--spacing-listing-card);
+    min-width: var(--spacing-listing-card);
+    max-width: var(--spacing-listing-card);
   }
 }
 

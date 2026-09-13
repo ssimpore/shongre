@@ -146,9 +146,15 @@ inline-path overrides.
 Use primary artwork on light backgrounds and reverse or monochrome-white
 artwork on dark backgrounds. The marketplace footer uses the same separately
 sized `BrandHeaderSignature` lockup as the header, pairing the shared mask-safe
-icon and `radius-sm` treatment with the approved reverse wordmark. This keeps
-the orange icon and terminal period visible without allowing radius drift;
-standalone primary `BrandIcon` consumers use that same source and radius.
+icon and `radius-sm` treatment with the approved reverse wordmark. Header and
+footer both use the compact signature: a 36 px icon and 96 px wordmark at every
+breakpoint. Footer typography follows the header's `text-sm`/`text-xs` scale,
+with weight providing section hierarchy instead of larger desktop font sizes.
+Standalone primary `BrandIcon` consumers use
+that same source and radius. Marketplace and product footers share the official
+ink `surface-inverse` background with Pro buttons, including the header publish
+action. Dark surfaces, borders, and secondary text use the centrally derived
+inverse tokens to keep the same ink family across Web and native.
 Reserve monochrome white for contexts that cannot reproduce color. Use semantic
 design tokens for surrounding UI, and never use orange for long body text on
 white. Authentication routes inherit the shared focused shell; main navigation,
@@ -161,13 +167,16 @@ primitives or generated document asset.
 The kit JSON generates a narrow adapter; `packages/design-tokens/` remains the
 only application token system. It maps the official palette to
 `--brand-primary`, `--brand-ink`, `--brand-background`, and
-`--brand-surface-subtle`. A private typed recipe computes every orange UI role —
-accessible primary, hover, active, disabled, border, focus, subtle surface,
-inverse, fill, and approved orange category accents — from the single generated
-Shongre Orange input plus official Ink and White. Official orange does not
-provide AA contrast for normal white text, so filled controls use the derived
-accessible primary while identity artwork retains the selected kit's exact
-canonical swatch. Functional status, chart, unrelated category, country-flag,
+`--brand-surface-subtle`. Every solid orange UI role equals the generated logo
+swatch exactly, including primary, hover, active, fill, emphasis, and approved
+orange category accents. The private typed recipe accepts only that orange;
+subtle surfaces, borders, shadows, and disabled roles vary its alpha rather
+than blend new shades. Orange controls use the shared logo-white `on-primary`
+foreground for text and icons. The exact pairing is below the normal-text
+contrast threshold; accessibility checks retain that finding, without local
+foreground or orange overrides. Hover and pressed feedback comes from elevation,
+motion, borders, or other non-color cues instead of a darker orange override.
+Functional status, chart, unrelated category, country-flag,
 and provider colors are not
 reclassified as brand colors. `make tokens-check` rejects independently authored
 orange aliases and performs an in-memory one-token mutation proof.

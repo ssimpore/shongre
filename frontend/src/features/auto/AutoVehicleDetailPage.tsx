@@ -1,4 +1,3 @@
-import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -12,7 +11,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import type { AutoLead, VehiclePublic } from "@shongre/contracts/auto";
-import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
+import { getListingPromotionBadges } from "@shongre/features/listings/presentation";
 import { useListingPromotionRefresh } from "@shongre/features/listings/web";
 import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
@@ -37,6 +36,7 @@ import {
 } from "../../design-system";
 import { ListingMediaGallery } from "../listings/components/ListingMediaGallery";
 import { ListingDiscoveryRail } from "../listings/components/ListingDiscoveryRail";
+import { DetailMobileActionPanel } from "../listings/components/DetailMobileActionPanel";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { AutoVehicleCard } from "./components/AutoVehicleCard";
 import {
@@ -46,12 +46,12 @@ import {
 } from "./auto-format";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
-  DetailFactList,
   DetailFeatureList,
   DetailSection,
 } from "../../design-system/primitives/DetailFacts";
 import { ListingLocationSection } from "../listings/components/ListingLocationSection";
-import { iconForFact } from "@shongre/features/listings/facts";
+import { localizeListingCharacteristics } from "@shongre/features/listings/facts";
+import { ListingCharacteristics } from "../listings/components/ListingCharacteristics";
 import { useAutoVehicleFavorites } from "./useAutoVehicleFavorites";
 
 type LeadFormState = {
@@ -92,10 +92,19 @@ export const AutoVehicleDetailPage: React.FC = () => {
     marketingConsent: false,
   });
   useListingPromotionRefresh(vehicle?.resolvedPromotion);
-  const hasActivePromotion = isActiveMarketResolvedListingPromotion(
-    vehicle?.resolvedPromotion,
-    activeMarket.code,
-  );
+  const promotionBadge = getListingPromotionBadges(
+    {
+      marketCode: activeMarket.code,
+      promotion: vehicle?.resolvedPromotion,
+    },
+    {
+      boosted: t("ui.listingCard.boosted"),
+      sponsored: t("ui.listingCard.sponsored"),
+      featured: t("ui.listingCard.featured"),
+      urgent: t("ui.listingCard.urgent"),
+      promotion: t("ui.listingCard.promotion"),
+    },
+  )[0];
 
   useEffect(() => {
     let cancelled = false;
@@ -296,6 +305,35 @@ export const AutoVehicleDetailPage: React.FC = () => {
           <span aria-hidden="true">/</span> {vehicle.makeLabel}{" "}
           {vehicle.modelLabel}
         </nav>
+        <DetailMobileActionPanel
+          eyebrow="Agir sur cette annonce"
+          summary={formatAutoMoney(vehicle.price, currentLocale, convertMoney)}
+        >
+          <Button
+            data-marketplace-action="message.send"
+            fullWidth
+            leftIcon={<MessageSquare className="h-icon-sm w-icon-sm" />}
+            onClick={() => setLeadOpen(true)}
+          >
+            Contacter le vendeur
+          </Button>
+          <Button
+            data-marketplace-action="appointment.request"
+            fullWidth
+            variant="outline"
+            onClick={() => {
+              setLead((current) => ({
+                ...current,
+                intention: "test_drive",
+                message:
+                  "Bonjour, je souhaite organiser un essai de ce véhicule.",
+              }));
+              setLeadOpen(true);
+            }}
+          >
+            Demander un essai
+          </Button>
+        </DetailMobileActionPanel>
         <div className="grid min-w-0 gap-5 lg:grid-cols-content-aside-md">
           <div className="min-w-0 space-y-5">
             <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
@@ -337,8 +375,10 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <div>
                     <div className="mb-2 flex flex-wrap gap-2">
-                      {hasActivePromotion && (
-                        <Badge>{t("ui.listingCard.boosted")}</Badge>
+                      {promotionBadge && (
+                        <span data-listing-badge={promotionBadge.kind}>
+                          <Badge>{promotionBadge.label}</Badge>
+                        </span>
                       )}
                       {vehicle.trust.publicBadges.map((badge) => (
                         <Badge key={badge} variant="success">
@@ -423,18 +463,14 @@ export const AutoVehicleDetailPage: React.FC = () => {
              * not get its own grid — a visitor arriving from search reads the
              * same shape whichever vertical published the listing.
              */}
-            <DetailSection title={t("listings.characteristics.keyInformation")}>
-              <DetailFactList
-                facts={(vehicle.taxonomy?.detailCharacteristics ?? []).map(
-                  (field) => ({
-                    code: field.code,
-                    label: localizeTaxonomyLabels(field.labels, currentLocale),
-                    value: localizeTaxonomyLabels(field.values, currentLocale),
-                    icon: iconForFact("grp.vehicle_technical", field.code),
-                  }),
-                )}
-              />
-            </DetailSection>
+            <ListingCharacteristics
+              key={vehicle.id}
+              state="ready"
+              data={localizeListingCharacteristics(
+                vehicle.taxonomy?.detailCharacteristics,
+                currentLocale,
+              )}
+            />
 
             {vehicle.equipment.length > 0 ? (
               <DetailSection title={t("listings.characteristics.amenities")}>

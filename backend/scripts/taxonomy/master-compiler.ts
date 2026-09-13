@@ -11,6 +11,11 @@ import { gzipSync } from "node:zlib";
 import readWorkbook from "read-excel-file/node";
 import referenceEntries from "../../taxonomy/v1/reference-entries.json";
 import leafApplicability from "../../taxonomy/v1/leaf-applicability.json";
+import attributeIcons from "../../taxonomy/v1/attribute-icons.json";
+import {
+  listingCharacteristicIconSchema,
+  type ListingCharacteristicIcon,
+} from "@shongre/contracts/listings";
 import attributeHelp from "../../taxonomy/v1/attribute-help.json";
 import historicalIdentities from "../../taxonomy/history/v3-identities.json";
 const CANONICAL_TAXONOMY_IDENTITIES = historicalIdentities.identities;
@@ -1420,6 +1425,7 @@ function normalizeWorkbook(
     return {
       id,
       code: asString(row.attribute_key, `${id}.attribute_key`),
+      iconName: undefined as ListingCharacteristicIcon | undefined,
       labels: {
         "fr-FR": asString(row.name_fr, `${id}.name_fr`),
         "en-US": asString(row.name_en, `${id}.name_en`),
@@ -2615,7 +2621,7 @@ function generateSeedSql(source: NormalizedSource): string {
   }
   for (const attribute of source.attributes) {
     lines.push(
-      `UPDATE public.taxonomy_attributes SET source_data_type = ${sqlLiteral(attribute.sourceDataType)}, scope = ${sqlLiteral(attribute.scope)}, cardinality = ${sqlNullable(attribute.cardinality)}, default_value = ${sqlNullable(attribute.defaultValue)}, card_visible = ${attribute.cardVisible}, detail_visible = ${attribute.detailVisible}, is_seo_relevant = ${attribute.seoRelevant}, seller_eligibility = ${jsonLiteral(attribute.sellerEligibility)}, market_availability = ${jsonLiteral(attribute.marketAvailability)}, localized_help_text = ${jsonLiteral(attribute.helpText)}, placeholder = ${jsonLiteral(attribute.placeholder)} WHERE id = ${sqlLiteral(attribute.id)};`,
+      `UPDATE public.taxonomy_attributes SET icon_name = ${sqlNullable(attribute.iconName)}, source_data_type = ${sqlLiteral(attribute.sourceDataType)}, scope = ${sqlLiteral(attribute.scope)}, cardinality = ${sqlNullable(attribute.cardinality)}, default_value = ${sqlNullable(attribute.defaultValue)}, card_visible = ${attribute.cardVisible}, detail_visible = ${attribute.detailVisible}, is_seo_relevant = ${attribute.seoRelevant}, seller_eligibility = ${jsonLiteral(attribute.sellerEligibility)}, market_availability = ${jsonLiteral(attribute.marketAvailability)}, localized_help_text = ${jsonLiteral(attribute.helpText)}, placeholder = ${jsonLiteral(attribute.placeholder)} WHERE id = ${sqlLiteral(attribute.id)};`,
     );
   }
   const editorialMetadata = {
@@ -3135,6 +3141,18 @@ async function compileFromNormalizedSource(check: boolean) {
     "Canonical normalized taxonomy checksum is invalid.",
   );
   const applicability = applyLeafApplicability(applyAuthoredHelpText(source));
+  const icons = attributeIcons.icons as Record<string, string>;
+  for (const attribute of applicability.source.attributes) {
+    attribute.iconName = listingCharacteristicIconSchema.parse(
+      icons[attribute.id],
+    );
+  }
+  assert(
+    Object.keys(icons).every((id) =>
+      applicability.source.attributes.some((attribute) => attribute.id === id),
+    ),
+    "Authored icons must target existing taxonomy fields.",
+  );
   const labelled = canonicaliseProjectionLabels(applicability.source);
   const compiledSource: NormalizedSource = {
     ...labelled,

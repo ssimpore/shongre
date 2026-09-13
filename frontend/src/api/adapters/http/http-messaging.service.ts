@@ -123,6 +123,19 @@ const mapConversation = (conversation: BackendConversation): Conversation => ({
 });
 
 export class HttpMessagingService implements MessagingServiceContract {
+  async updatePresence(
+    heartbeat: import("@shongre/shared/presence").PresenceHeartbeat,
+    signal?: AbortSignal,
+  ) {
+    return apiOperation("postMessagingPresence", { body: heartbeat, signal });
+  }
+
+  async getPresence(conversationIds: readonly string[], signal?: AbortSignal) {
+    return apiOperation("getMessagingPresence", {
+      query: { conversationIds: conversationIds.join(",") },
+      signal,
+    });
+  }
   async getUserConversations(_userId: string): Promise<Conversation[]> {
     const page = await apiOperation<
       {

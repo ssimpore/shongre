@@ -71,6 +71,33 @@ const standardJobData = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe("EmploymentService", () => {
+  it("projects public job details through the published taxonomy", async () => {
+    const job = await createService().getPublicJob("job-react-lyon", "FR");
+    expect(job.taxonomy.detailCharacteristics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "profession",
+          icon: "briefcase",
+          values: expect.objectContaining({ "fr-FR": job.professionLabel }),
+        }),
+        expect.objectContaining({
+          code: "contract_type",
+          icon: "file",
+          values: expect.objectContaining({ "fr-FR": job.contractTypeLabel }),
+        }),
+        expect.objectContaining({
+          code: "working_time",
+          icon: "clock",
+        }),
+      ]),
+    );
+    expect(
+      job.taxonomy.detailCharacteristics?.every(
+        (field) => field.icon && field.groupId,
+      ),
+    ).toBe(true);
+  });
+
   it("creates one recoverable draft per owner and normalizes publication form data server-side", async () => {
     const service = createService();
     const first = await service.getOrCreateOwnDraft("user_pro_atelier", "FR");

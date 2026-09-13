@@ -80,7 +80,7 @@ export const colors = {
     primaryOnDark: themeColors["primary-on-dark"],
     primaryOnDarkBorder: themeColors["primary-on-dark-border"],
     disabled: themeColors["text-disabled"],
-    onPrimary: themeColors["text-inverse"],
+    onPrimary: themeColors["on-primary"],
   },
   status: {
     success: themeColors.success,

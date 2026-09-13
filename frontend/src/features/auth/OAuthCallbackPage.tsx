@@ -7,6 +7,7 @@ import { Button } from "../../design-system/primitives/Button";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { AuthLayout } from "./components/AuthLayout";
+import { routes } from "../../configuration/routes";
 import { resolveSafeReturn } from "../../security/safe-return";
 
 type CallbackState =
@@ -64,7 +65,7 @@ export function OAuthCallbackPage() {
       return;
     }
     if (status === "verification_required") {
-      navigate("/verification-email", { replace: true });
+      navigate(routes.auth.verifyEmail(returnTo), { replace: true });
       return;
     }
     if (
@@ -99,7 +100,7 @@ export function OAuthCallbackPage() {
             ? "professional"
             : "individual",
       });
-      navigate("/verification-email", { replace: true });
+      navigate(routes.auth.verifyEmail(returnTo), { replace: true });
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : t("auth.social.failed"),
@@ -126,6 +127,7 @@ export function OAuthCallbackPage() {
 
   return (
     <AuthLayout
+      width="compact"
       title={t("auth.callback.title")}
       subtitle={t("auth.callback.subtitle")}
     >

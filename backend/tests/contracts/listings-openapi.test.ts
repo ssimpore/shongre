@@ -1,12 +1,32 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts/publication";
+import { listingCharacteristicIconSchema } from "@shongre/contracts/listings";
 
 const specification = JSON.parse(
   readFileSync(new URL("../../openapi/openapi.json", import.meta.url), "utf8"),
 );
 
 describe("public listings OpenAPI contract", () => {
+  it("preserves authored icons and grouping across generic and specialized details", () => {
+    const schemas = specification.components.schemas;
+    const icon = { $ref: "#/components/schemas/ListingCharacteristicIcon" };
+    expect(schemas.ListingCharacteristicIcon.enum).toEqual(
+      listingCharacteristicIconSchema.options,
+    );
+    expect(schemas.TaxonomyV1Attribute.properties.iconName).toEqual(icon);
+    expect(
+      schemas.ListingCharacteristics.properties.groups.items.properties.items
+        .items.properties.icon,
+    ).toEqual(icon);
+    expect(schemas.TaxonomyLocalizedCharacteristic.properties).toMatchObject({
+      icon,
+      groupId: { type: "string" },
+      groupLabels: { $ref: "#/components/schemas/TaxonomyV1LocalizedLabels" },
+      presentation: { type: "string", enum: ["fact", "feature"] },
+    });
+  });
+
   it("bounds new product titles without restricting existing listing projections", () => {
     const draft =
       specification.paths["/listings/publish"].post.requestBody.content[

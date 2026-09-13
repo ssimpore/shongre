@@ -1850,6 +1850,39 @@ describe("API v1 Endpoints Integration", () => {
     expect(messages.items).toHaveLength(1);
     expect(messages.items[0].text).toContain("parcours HTTP");
 
+    const presenceUpdate = await fetch(`${baseUrl}/api/v1/messaging/presence`, {
+      method: "POST",
+      headers: auth(buyerToken),
+      body: JSON.stringify({
+        clientId: "11111111-1111-4111-8111-111111111111",
+        sequence: 1,
+        activity: "active",
+      }),
+    });
+    expect(presenceUpdate.status).toBe(200);
+    expect(await presenceUpdate.json()).toEqual({ updated: true });
+
+    const sellerToken = await login("camille.martin@example.fr");
+    const presenceResponse = await fetch(
+      `${baseUrl}/api/v1/messaging/presence?conversationIds=${conversation.id}`,
+      { headers: auth(sellerToken) },
+    );
+    expect(presenceResponse.status).toBe(200);
+    expect(await presenceResponse.json()).toMatchObject({
+      items: [
+        {
+          conversationId: conversation.id,
+          presence: { status: "online" },
+        },
+      ],
+    });
+
+    const presenceDenied = await fetch(
+      `${baseUrl}/api/v1/messaging/presence?conversationIds=${conversation.id}`,
+      { headers: auth(proToken) },
+    );
+    expect(presenceDenied.status).toBe(404);
+
     const deniedResponse = await fetch(
       `${baseUrl}/api/v1/messaging/conversations/${conversation.id}/messages`,
       { headers: auth(proToken) },

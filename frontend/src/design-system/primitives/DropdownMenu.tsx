@@ -77,7 +77,7 @@ export const DROPDOWN_ITEM_CLASSES = {
      open, so `:focus-visible` cannot express "the option you are on" — without
      its own class, arrowing through the menu moved an invisible cursor. */
   active: "bg-bg-subtle ring-1 ring-inset ring-primary-border",
-  selected: "bg-primary-light text-primary font-bold",
+  selected: "bg-primary-light text-text-main font-bold",
   unselected:
     "text-text-emphasis hover:bg-bg-subtle hover:text-text-main font-medium",
   disabled: "text-text-disabled cursor-not-allowed opacity-50",

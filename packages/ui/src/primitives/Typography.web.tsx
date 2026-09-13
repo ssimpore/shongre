@@ -56,6 +56,8 @@ Heading.displayName = "Heading";
 export interface TextProps extends React.HTMLAttributes<HTMLElement> {
   as?: "p" | "span" | "div" | "label";
   size?:
+    | "card-title"
+    | "card-price"
     | "body-lg"
     | "body-md"
     | "body-sm"
@@ -77,6 +79,8 @@ export interface TextProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const textSizes = {
+  "card-title": "text-card-title",
+  "card-price": "text-card-price",
   "body-lg": "text-body-lg",
   "body-md": "text-body-md",
   "body-sm": "text-body-sm",

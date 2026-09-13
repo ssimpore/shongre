@@ -304,14 +304,14 @@ export const ContactPage: React.FC = () => {
                 }}
                 className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
                   isSelected
-                    ? "border-primary bg-primary-surface-soft text-primary ring-2 ring-primary-ring shadow-xs"
+                    ? "border-primary bg-primary-surface-soft text-text-main ring-2 ring-primary-ring shadow-xs"
                     : "border-border-base bg-bg-surface text-text-strong hover:border-border-strong hover:bg-surface-soft"
                 }`}
               >
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${
                     isSelected
-                      ? "bg-primary text-text-inverse"
+                      ? "bg-primary text-on-primary"
                       : "bg-surface-muted text-text-supporting"
                   }`}
                 >
@@ -518,7 +518,6 @@ export const ContactPage: React.FC = () => {
             <Button
               type="submit"
               variant="primary"
-              size="lg"
               disabled={isSubmitting}
               className="font-semibold"
             >

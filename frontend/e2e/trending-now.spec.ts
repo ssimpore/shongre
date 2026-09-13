@@ -113,6 +113,7 @@ test.describe("Admin-managed homepage discovery", () => {
             ),
           ),
         ).toBe(true);
+        const rowStart = cardGeometry.length;
         cardGeometry.push(
           ...(await cards.evaluateAll((elements) =>
             elements.map((element) => {
@@ -128,19 +129,46 @@ test.describe("Admin-managed homepage discovery", () => {
             }),
           )),
         );
+        const rowHeights = cardGeometry
+          .slice(rowStart)
+          .map(({ height }) => height);
+        expect(
+          Math.max(...rowHeights) - Math.min(...rowHeights),
+        ).toBeLessThanOrEqual(1);
       }
 
       expect(cardGeometry.length).toBeGreaterThan(3);
       expect(cardGeometry.every(({ contained }) => contained)).toBe(true);
-      expect(
-        Math.max(...cardGeometry.map(({ height }) => height)) -
-          Math.min(...cardGeometry.map(({ height }) => height)),
-      ).toBeLessThanOrEqual(1);
       await expectNoHorizontalOverflow(
         page,
         `homepage discovery cards at ${viewport.width}px`,
       );
     }
+  });
+
+  test("places discovery navigation above the cards and advances the rail", async ({
+    page,
+  }) => {
+    await useEstablishedConsent(page);
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1600, height: 1000 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+    const section = page.getByTestId("home-discovery-recent_listings");
+    await section.scrollIntoViewIfNeeded();
+    const next = section.getByRole("button", { name: /défiler.*droite/i });
+    const track = section.locator(".overflow-x-auto");
+    const card = section.locator("article").first();
+    const [buttonBox, cardBox] = await Promise.all([
+      next.boundingBox(),
+      card.boundingBox(),
+    ]);
+    expect(buttonBox!.y + buttonBox!.height).toBeLessThan(cardBox!.y);
+    await next.click();
+    await expect
+      .poll(() => track.evaluate((el) => el.scrollLeft))
+      .toBeGreaterThan(0);
+    await expectNoHorizontalOverflow(page, "discovery navigation");
   });
 
   test("keeps one Pro action and routes it to the Pro information page", async ({
@@ -172,9 +200,14 @@ test.describe("Admin-managed homepage discovery", () => {
     const footer = page.locator("footer");
     await footer.scrollIntoViewIfNeeded();
     await expect(footer).toBeVisible();
+    for (const name of ["Acheter", "Vendre", "Aide", "À propos"]) {
+      await expect(
+        footer.getByRole("heading", { name, exact: true }),
+      ).toBeVisible();
+    }
     await expect(
-      footer.getByRole("complementary", { name: "Newsletter Shongre" }),
-    ).toBeVisible();
+      footer.getByRole("link", { name: "Newsletter Shongre" }),
+    ).toHaveAttribute("href", "/newsletter");
     await expect(
       footer.getByRole("button", { name: "Gestion des cookies" }),
     ).toBeVisible();
@@ -194,3 +227,84 @@ test.describe("Admin-managed homepage discovery", () => {
     ).toHaveCount(4);
   });
 });
+
+for (const { width, hasTouch } of [
+  { width: 1408, hasTouch: false },
+  { width: 768, hasTouch: true },
+]) {
+  test.describe(`homepage rail arrows at ${width}px`, () => {
+    test.use({ viewport: { width, height: 900 }, hasTouch });
+
+    test("places compact controls on overflowing tracks and hides them at the ends", async ({
+      page,
+    }) => {
+      await useEstablishedConsent(page);
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+      const hero = page.locator("[data-home-boosted-carousel]");
+      const heroNext = hero.getByRole("button", { name: "Annonce suivante" });
+      await expect(heroNext).toBeVisible();
+      const controlSize = hasTouch ? 44 : 32;
+      expect((await heroNext.boundingBox())!.height).toBe(controlSize);
+      expect((await heroNext.locator("svg").boundingBox())!.height).toBe(14);
+      const heroTrack = hero.locator("#hero-boosted-track");
+      await hero
+        .getByRole("button", { name: "Mettre le carrousel en pause" })
+        .click();
+      const initialSlide = await heroTrack.evaluate(
+        (element) => element.scrollLeft,
+      );
+      await heroNext.click();
+      await expect
+        .poll(() => heroTrack.evaluate((element) => element.scrollLeft))
+        .not.toBe(initialSlide);
+
+      for (const type of ["recent_listings", "trending", "deals"]) {
+        const section = page.getByTestId(`home-discovery-${type}`);
+        await section.scrollIntoViewIfNeeded();
+        const track = section.locator(".overflow-x-auto");
+        const previous = section.getByRole("button", {
+          name: /vers la gauche/,
+        });
+        const next = section.getByRole("button", { name: /vers la droite/ });
+        await expect(next).toBeVisible();
+        await expect(previous).toHaveCount(0);
+        const trackBox = (await track.boundingBox())!;
+        const buttonBox = (await next.boundingBox())!;
+        expect(buttonBox.height).toBe(controlSize);
+        expect(buttonBox.width).toBe(controlSize);
+        expect(buttonBox.y + buttonBox.height / 2).toBeCloseTo(
+          trackBox.y + trackBox.height / 2,
+          0,
+        );
+        await next.click();
+        await expect
+          .poll(() => track.evaluate((element) => element.scrollLeft))
+          .toBeGreaterThan(0);
+        await expect(previous).toBeVisible();
+        await track.evaluate((element) =>
+          element.scrollTo({ left: element.scrollWidth, behavior: "instant" }),
+        );
+        await expect(next).toHaveCount(0);
+        const end = await track.evaluate((element) => element.scrollLeft);
+        await previous.focus();
+        await page.keyboard.press("Enter");
+        await expect
+          .poll(() => track.evaluate((element) => element.scrollLeft))
+          .toBeLessThan(end);
+      }
+      const collections = page.getByTestId("home-collection-explorer");
+      await collections.scrollIntoViewIfNeeded();
+      const collectionTrack = collections.locator(".overflow-x-auto");
+      const overflows = await collectionTrack.evaluate(
+        (element) => element.scrollWidth > element.clientWidth + 2,
+      );
+      const collectionNext = collections.getByRole("button", {
+        name: /vers la droite/,
+      });
+      if (overflows) await expect(collectionNext).toBeVisible();
+      else await expect(collectionNext).toHaveCount(0);
+      await expectNoHorizontalOverflow(page, "homepage rail arrows");
+    });
+  });
+}

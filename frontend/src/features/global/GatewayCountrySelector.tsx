@@ -84,7 +84,7 @@ export function GatewayCountrySelector({
                     recommendedEntry.country.code,
                   )
                 }
-                className="mt-3 inline-flex min-h-control-touch items-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="mt-3 inline-flex min-h-control-touch items-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {t("shell.marketDetection.gatewayContinue", {
                   country: recommendedEntry.country.name,

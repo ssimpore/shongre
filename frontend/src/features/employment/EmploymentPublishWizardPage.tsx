@@ -664,7 +664,7 @@ const EmploymentPublicationEditor: React.FC = () => {
             return (
               <li
                 key={label}
-                className={`flex min-w-max items-center gap-2 rounded-pill border px-3 py-2 text-xs font-bold ${number === step ? "border-primary bg-primary-light text-primary" : number < step ? "border-success-border bg-success-surface text-success" : "border-border-base bg-bg-surface text-text-muted"}`}
+                className={`flex min-w-max items-center gap-2 rounded-pill border px-3 py-2 text-xs font-bold ${number === step ? "border-primary bg-primary-light text-text-main" : number < step ? "border-success-border bg-success-surface text-success" : "border-border-base bg-bg-surface text-text-muted"}`}
                 aria-current={number === step ? "step" : undefined}
               >
                 {number < step ? (

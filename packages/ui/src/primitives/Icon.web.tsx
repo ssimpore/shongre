@@ -1,5 +1,27 @@
 import {
   Bell,
+  BatteryCharging,
+  BedDouble,
+  Bath,
+  Car,
+  Clock,
+  Cpu,
+  DoorOpen,
+  FileCheck,
+  Globe,
+  Leaf,
+  Package,
+  Palette,
+  PawPrint,
+  Plug,
+  ShieldAlert,
+  Sofa,
+  Users,
+  Wifi,
+  Wrench,
+  Music,
+  Ticket,
+  Thermometer,
   BookOpen,
   BriefcaseBusiness,
   Camera,
@@ -10,6 +32,7 @@ import {
   CreditCard,
   Database,
   FileText,
+  Flame,
   Fuel,
   Gauge,
   Heart,
@@ -24,6 +47,7 @@ import {
   Plus,
   RefreshCw,
   Ruler,
+  Rocket,
   Search,
   Settings,
   Shirt,
@@ -41,6 +65,28 @@ import { cn } from "../utils/variants";
 
 export type IconName =
   | "bell"
+  | "battery"
+  | "bed"
+  | "bath"
+  | "car"
+  | "clock"
+  | "cpu"
+  | "door"
+  | "file-check"
+  | "globe"
+  | "leaf"
+  | "package"
+  | "palette"
+  | "paw"
+  | "plug"
+  | "shield-alert"
+  | "sofa"
+  | "users"
+  | "wifi"
+  | "wrench"
+  | "music"
+  | "ticket"
+  | "thermometer"
   | "book-open"
   | "briefcase"
   | "camera"
@@ -50,6 +96,7 @@ export type IconName =
   | "chevron-right"
   | "database"
   | "file"
+  | "flame"
   | "fuel"
   | "gauge"
   | "heart"
@@ -65,6 +112,7 @@ export type IconName =
   | "plus"
   | "refresh"
   | "ruler"
+  | "rocket"
   | "search"
   | "settings"
   | "shirt"
@@ -80,18 +128,42 @@ export interface SemanticIconProps {
   size?: "xs" | "sm" | "md" | "lg" | "nav" | "xl";
   label?: string;
   className?: string;
+  filled?: boolean;
 }
 const icons: Record<
   IconName,
   ComponentType<{
     className?: string;
     strokeWidth?: number;
+    fill?: string;
     "aria-hidden"?: boolean;
     "aria-label"?: string;
     role?: string;
   }>
 > = {
   bell: Bell,
+  battery: BatteryCharging,
+  bed: BedDouble,
+  bath: Bath,
+  car: Car,
+  clock: Clock,
+  cpu: Cpu,
+  door: DoorOpen,
+  "file-check": FileCheck,
+  globe: Globe,
+  leaf: Leaf,
+  package: Package,
+  palette: Palette,
+  paw: PawPrint,
+  plug: Plug,
+  "shield-alert": ShieldAlert,
+  sofa: Sofa,
+  users: Users,
+  wifi: Wifi,
+  wrench: Wrench,
+  music: Music,
+  ticket: Ticket,
+  thermometer: Thermometer,
   "book-open": BookOpen,
   briefcase: BriefcaseBusiness,
   camera: Camera,
@@ -101,6 +173,7 @@ const icons: Record<
   "chevron-right": ChevronRight,
   database: Database,
   file: FileText,
+  flame: Flame,
   fuel: Fuel,
   gauge: Gauge,
   heart: Heart,
@@ -116,6 +189,7 @@ const icons: Record<
   plus: Plus,
   refresh: RefreshCw,
   ruler: Ruler,
+  rocket: Rocket,
   search: Search,
   settings: Settings,
   shirt: Shirt,
@@ -140,12 +214,14 @@ export function SemanticIcon({
   size = "md",
   label,
   className,
+  filled = false,
 }: SemanticIconProps) {
   const Glyph = icons[name];
   return (
     <Glyph
       className={cn("shrink-0", iconSizes[size], className)}
       strokeWidth={iconStrokeWidths.regular}
+      fill={filled ? "currentColor" : "none"}
       aria-hidden={label ? undefined : true}
       aria-label={label}
       role={label ? "img" : undefined}

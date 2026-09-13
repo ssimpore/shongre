@@ -117,6 +117,37 @@ describe("mobile public contracts", () => {
     ).toBeUndefined();
   });
 
+  it.each([
+    { currency: "EUR", price: 2.99, originalPrice: 4.99, expected: 499 },
+    { currency: "XOF", price: 12500, originalPrice: 15000, expected: 15000 },
+  ])(
+    "preserves the reference price in $currency for shared sale badges",
+    ({ currency, price, originalPrice, expected }) => {
+      const listing = mapBackendListing({
+        ...backendListing,
+        currency,
+        price,
+        originalPrice,
+      });
+      expect(listing.originalPrice).toEqual({
+        amountMinor: expected,
+        currency,
+      });
+    },
+  );
+
+  it.each(["free", "on_request", "unpriced"])(
+    "omits reference prices when the price mode is %s",
+    (priceType) => {
+      const listing = mapBackendListing({
+        ...backendListing,
+        originalPrice: 4.99,
+        attributes: { price_type: priceType },
+      });
+      expect(listing.originalPrice).toBeUndefined();
+    },
+  );
+
   it("rejects non-integer publication amounts", () => {
     const result = publicationInputSchema.safeParse({
       title: "Objet test",

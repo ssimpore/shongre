@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { usePersona } from "./personas";
 import { waitForStableLayout } from "./overflow";
 
-test("desktop filters are visible by default and can be reopened", async ({
+test("desktop filters are closed by default and remain togglable", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -11,19 +11,27 @@ test("desktop filters are visible by default and can be reopened", async ({
   await waitForStableLayout(page);
 
   const filterPanel = page.locator("#search-filter-panel-desktop");
+  await expect(filterPanel).toBeHidden();
+  const showFilters = page.getByRole("button", {
+    name: "Afficher les filtres",
+  });
+  await expect(showFilters).toHaveAttribute("aria-expanded", "false");
+  await showFilters.click();
   await expect(filterPanel).toBeVisible();
 
   /* One control owns the panel. The sidebar used to carry its own "Masquer"
      button as well, so with the toolbar toggle also reading "Masquer" once
      open, the page showed two identically-labelled buttons for one action. */
-  const hideFilters = page.getByRole("button", { name: /^Masquer/i });
+  const hideFilters = page.getByRole("button", {
+    name: "Masquer les filtres",
+    exact: true,
+  });
   await expect(hideFilters).toHaveCount(1);
   await expect(hideFilters).toBeVisible();
 
   await hideFilters.click();
   await expect(filterPanel).toBeHidden();
-  await page.getByRole("button", { name: "Afficher les filtres" }).click();
-  await expect(filterPanel).toBeVisible();
+  await expect(showFilters).toHaveAttribute("aria-expanded", "false");
 });
 
 test("condition is filterable, not just displayed", async ({ page }) => {
@@ -34,6 +42,7 @@ test("condition is filterable, not just displayed", async ({ page }) => {
   await page.goto("/recherche", { waitUntil: "domcontentloaded" });
   await waitForStableLayout(page);
 
+  await page.getByRole("button", { name: "Afficher les filtres" }).click();
   await expect(page.locator("#search-filter-panel-desktop")).toBeVisible();
 
   const count = page

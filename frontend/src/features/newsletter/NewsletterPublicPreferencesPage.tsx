@@ -118,7 +118,6 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
       </section>
       <Button
         variant="primary"
-        size="lg"
         fullWidth
         onClick={save}
         disabled={state === "saving"}

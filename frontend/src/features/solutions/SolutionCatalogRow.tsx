@@ -76,7 +76,7 @@ export function SolutionCatalogRow({
         {launch.allowed && launch.href ? (
           <a
             href={launch.href}
-            className={`inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control px-4 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${solution.lifecycle === "AVAILABLE" ? "bg-primary text-text-inverse shadow-sm hover:bg-primary-hover" : "border border-primary bg-bg-surface text-primary hover:bg-primary-light"}`}
+            className={`inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control px-4 text-xs font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${solution.lifecycle === "AVAILABLE" ? "bg-primary text-on-primary shadow-sm hover:bg-primary-hover" : "border border-primary bg-bg-surface text-primary hover:bg-primary-light"}`}
           >
             {launchCopy.actionLabel}
             <ExternalLink className="h-icon-sm w-icon-sm" aria-hidden="true" />

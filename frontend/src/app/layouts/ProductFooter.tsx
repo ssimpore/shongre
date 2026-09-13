@@ -32,7 +32,7 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
   const showEcosystem = !isProductOnlyAccount(currentUser, productId);
 
   return (
-    <footer className="border-t border-border-inverse bg-surface-inverse-deep py-9 text-text-inverse-muted">
+    <footer className="border-t border-border-inverse bg-surface-inverse py-9 text-text-inverse-muted">
       <Container>
         <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-between">
           <div>

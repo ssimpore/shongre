@@ -8,6 +8,7 @@ export * from "./identity/identity-status.types";
 export * from "./identity/VerifiedIcon.native";
 export * from "./identity/VerificationBadge.native";
 export * from "./identity/ProBadge.native";
+export * from "./identity/PresenceIndicator.native";
 export * from "./forms/FormField.native";
 export * from "./layout/Layout.native";
 export * from "./feedback/Modal.native";

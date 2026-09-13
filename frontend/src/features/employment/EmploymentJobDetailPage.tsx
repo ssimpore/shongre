@@ -23,7 +23,7 @@ import {
   EMPLOYMENT_TEXT_LIMITS,
   employmentSearchQuerySchema,
 } from "@shongre/contracts/employment";
-import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
+import { getListingPromotionBadges } from "@shongre/features/listings/presentation";
 import { useListingPromotionRefresh } from "@shongre/features/listings/web";
 import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
@@ -55,10 +55,11 @@ import {
 } from "../../platform/seo/seo-policy";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
-import { DetailFactList } from "../../design-system/primitives/DetailFacts";
+import { ListingCharacteristics } from "../listings/components/ListingCharacteristics";
 import { ListingLocationSection } from "../listings/components/ListingLocationSection";
 import { ListingDiscoveryRail } from "../listings/components/ListingDiscoveryRail";
-import { iconForFact } from "@shongre/features/listings/facts";
+import { DetailMobileActionPanel } from "../listings/components/DetailMobileActionPanel";
+import { localizeListingCharacteristics } from "@shongre/features/listings/facts";
 
 export const EmploymentJobDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -107,10 +108,19 @@ export const EmploymentJobDetailPage: React.FC = () => {
     favoriteState.scope === favoriteScope ? favoriteState.loadState : "loading";
 
   useListingPromotionRefresh(job?.resolvedPromotion);
-  const hasActivePromotion = isActiveMarketResolvedListingPromotion(
-    job?.resolvedPromotion,
-    activeMarket.code,
-  );
+  const promotionBadge = getListingPromotionBadges(
+    {
+      marketCode: activeMarket.code,
+      promotion: job?.resolvedPromotion,
+    },
+    {
+      boosted: t("ui.listingCard.boosted"),
+      sponsored: t("ui.listingCard.sponsored"),
+      featured: t("ui.listingCard.featured"),
+      urgent: t("ui.listingCard.urgent"),
+      promotion: t("ui.listingCard.promotion"),
+    },
+  )[0];
 
   const loadFavoriteIds = useCallback(async () => {
     const scope = favoriteScope;
@@ -387,23 +397,45 @@ export const EmploymentJobDetailPage: React.FC = () => {
           <span>{job.professionLabel}</span>
         </nav>
 
+        <DetailMobileActionPanel
+          eyebrow="Candidater à cette offre"
+          summary={formatSalary(
+            job.salary,
+            catalog,
+            currentLocale,
+            convertMoney,
+          )}
+        >
+          <Button variant="primary" className="w-full" onClick={apply}>
+            {job.applicationMethod === "shongre"
+              ? "Postuler gratuitement"
+              : job.applicationMethod === "external"
+                ? "Postuler sur le site employeur"
+                : "Contacter le recruteur"}
+          </Button>
+        </DetailMobileActionPanel>
+
         <div className="grid items-start gap-5 lg:grid-cols-content-aside-md">
           <div className="min-w-0 space-y-5">
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-7">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
-                  {hasActivePromotion ? (
+                  {promotionBadge ? (
                     <div className="mb-3 flex flex-wrap gap-2">
-                      <Badge
+                      <span
                         data-testid="employment-job-promotion"
-                        variant={
-                          job.resolvedPromotion?.type === "urgent_badge"
-                            ? "warning"
-                            : "primary"
-                        }
+                        data-listing-badge={promotionBadge.kind}
                       >
-                        {t("ui.listingCard.boosted")}
-                      </Badge>
+                        <Badge
+                          variant={
+                            promotionBadge.variant === "urgent"
+                              ? "warning"
+                              : "primary"
+                          }
+                        >
+                          {promotionBadge.label}
+                        </Badge>
+                      </span>
                     </div>
                   ) : null}
                   <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
@@ -474,51 +506,15 @@ export const EmploymentJobDetailPage: React.FC = () => {
                * vehicle's or a rental's, so they use the same list rather than a
                * four-across tinted panel that only this page understood.
                */}
-              <div className="mt-7 border-t border-border-base pt-7">
-                <h2 className="mb-5 text-xl font-bold tracking-tight text-text-main sm:text-2xl">
-                  {t("listings.characteristics.keyInformation")}
-                </h2>
-                <DetailFactList
-                  facts={[
-                    {
-                      code: "location",
-                      label: "Localisation",
-                      value: job.primaryLocation.label,
-                    },
-                    {
-                      code: "profession",
-                      label: "Métier",
-                      value: job.professionLabel,
-                    },
-                    {
-                      code: "industry",
-                      label: "Secteur",
-                      value: job.industryLabel,
-                    },
-                    {
-                      code: "working_arrangement",
-                      label: "Organisation",
-                      value: job.workingArrangementLabel,
-                    },
-                    {
-                      code: "contract_type",
-                      label: "Contrat",
-                      value: job.contractTypeLabel,
-                    },
-                    {
-                      code: "working_time",
-                      label: "Temps de travail",
-                      value:
-                        catalog?.dictionaries.find(
-                          (entry) => entry.id === job.workingTimeId,
-                        )?.label || "Selon l’offre",
-                    },
-                  ].map((fact) => ({
-                    ...fact,
-                    icon: iconForFact("grp.job_role", fact.code),
-                  }))}
-                />
-              </div>
+              <ListingCharacteristics
+                key={job.id}
+                className="mt-7"
+                state="ready"
+                data={localizeListingCharacteristics(
+                  job.taxonomy?.detailCharacteristics,
+                  currentLocale,
+                )}
+              />
 
               <ListingLocationSection
                 className="mt-7"

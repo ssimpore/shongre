@@ -59,6 +59,7 @@ const fieldsByResource = {
   },
   attributes: {
     id: "id",
+    icon_name: "iconName",
     code: "code",
     labels: "labels",
     data_type: "dataType",

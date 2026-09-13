@@ -194,7 +194,7 @@ export function SolutionDetailPage() {
           action={
             <a
               href={catalogHref}
-              className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-sm font-bold text-text-inverse"
+              className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-sm font-bold text-on-primary"
             >
               {t("solutions.header.seeAll")}
             </a>
@@ -226,7 +226,7 @@ export function SolutionDetailPage() {
     launch.allowed && launch.href ? (
       <a
         href={launch.href}
-        className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-text-inverse shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-on-primary shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         {label}{" "}
         <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />

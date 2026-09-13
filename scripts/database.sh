@@ -133,6 +133,12 @@ case "$action" in
     DATABASE_URL="$resolved_database_url" TAXONOMY_DATABASE_TEST=local BACKEND_DATA_MODE=database \
       npm run test --workspace=backend -- tests/integration/taxonomy-database.test.ts
     ;;
+  discovery-test)
+    require_local
+    resolved_database_url="$(local_database_url)"
+    DATABASE_URL="$resolved_database_url" VERTICAL_DISCOVERY_DATABASE_TEST=local \
+      npm run test --workspace=backend -- tests/integration/vertical-discovery-database.test.ts
+    ;;
   taxonomy-migration-check)
     require_local
     resolved_database_url="$(local_database_url)"

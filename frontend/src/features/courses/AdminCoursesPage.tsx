@@ -185,7 +185,7 @@ export const AdminCoursesPage: React.FC = () => {
               key={String(value)}
               type="button"
               onClick={() => setTab(value as Tab)}
-              className={`flex min-h-control-touch shrink-0 items-center gap-2 rounded-control px-4 text-xs font-semibold ${tab === value ? "bg-primary text-text-inverse" : "text-text-secondary hover:bg-bg-subtle"}`}
+              className={`flex min-h-control-touch shrink-0 items-center gap-2 rounded-control px-4 text-xs font-semibold ${tab === value ? "bg-primary text-on-primary" : "text-text-secondary hover:bg-bg-subtle"}`}
             >
               <TabIcon className="h-icon-sm w-icon-sm" aria-hidden="true" />
               {String(label)}

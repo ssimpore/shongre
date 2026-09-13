@@ -54,8 +54,11 @@ async function expectCardContentContained(card: Locator, label: string) {
   );
   expect(geometry.height, `${label}: height`).toBeLessThanOrEqual(520);
   expect(geometry.controlsContained, `${label}: controls`).toBe(true);
-  if (geometry.variant !== "list" && geometry.width <= 210) {
-    expect(geometry.mediaRatio, `${label}: portrait media`).toBeCloseTo(0.8, 1);
+  if (geometry.variant === "grid" || geometry.variant === "showcase") {
+    expect(geometry.mediaRatio, `${label}: media-led crop`).toBeGreaterThan(
+      0.9,
+    );
+    expect(geometry.mediaRatio, `${label}: media-led crop`).toBeLessThan(1.1);
   }
   if (geometry.variant === "grid" || geometry.variant === "showcase") {
     const title = card.locator('[data-listing-card-title="true"]');
@@ -89,6 +92,118 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("canonical listing cards", () => {
   for (const width of [1408, 390]) {
+    test(`homepage listing favorites share the hero control token at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: width < 768 ? 844 : 900 });
+      await openAsGuest(page, "/");
+
+      const heroFavorite = page
+        .locator('[data-listing-card-variant="hero"]')
+        .first()
+        .locator('[data-marketplace-action="favorite.manage"]');
+      const showcaseFavorite = page
+        .locator('[data-listing-card-variant="showcase"]')
+        .first()
+        .locator('[data-marketplace-action="favorite.manage"]');
+      await expect(heroFavorite).toBeVisible();
+      await showcaseFavorite.scrollIntoViewIfNeeded();
+      await expect(showcaseFavorite).toBeVisible();
+
+      const sizes = await Promise.all(
+        [heroFavorite, showcaseFavorite].map((favorite) =>
+          favorite.evaluate((element) => {
+            const rect = element.getBoundingClientRect();
+            const iconRect = element
+              .querySelector("svg")!
+              .getBoundingClientRect();
+            const styles = getComputedStyle(element);
+            return {
+              width: rect.width,
+              height: rect.height,
+              iconWidth: iconRect.width,
+              iconHeight: iconRect.height,
+              controlToken: getComputedStyle(document.documentElement)
+                .getPropertyValue("--spacing-control-favorite")
+                .trim(),
+              widthStyle: styles.width,
+              heightStyle: styles.height,
+            };
+          }),
+        ),
+      );
+
+      expect(sizes).toEqual([
+        {
+          width: 32,
+          height: 32,
+          iconWidth: 16,
+          iconHeight: 16,
+          controlToken: "2rem",
+          widthStyle: "32px",
+          heightStyle: "32px",
+        },
+        {
+          width: 32,
+          height: 32,
+          iconWidth: 16,
+          iconHeight: 16,
+          controlToken: "2rem",
+          widthStyle: "32px",
+          heightStyle: "32px",
+        },
+      ]);
+    });
+  }
+
+  test("keeps the compact favorite visual inside a touch-sized hit area", async ({
+    browser,
+  }, testInfo) => {
+    const baseURL = testInfo.project.use.baseURL;
+    if (typeof baseURL !== "string") {
+      throw new Error("Playwright baseURL is required for responsive checks.");
+    }
+    const context = await browser.newContext({
+      baseURL,
+      viewport: { width: 390, height: 844 },
+      hasTouch: true,
+    });
+    const page = await context.newPage();
+    await useEstablishedConsent(page);
+
+    try {
+      await openAsGuest(page, "/");
+      const favorite = page
+        .locator('[data-listing-card-variant="showcase"]')
+        .first()
+        .locator('[data-marketplace-action="favorite.manage"]');
+      await favorite.scrollIntoViewIfNeeded();
+      await expect(favorite).toBeVisible();
+
+      const geometry = await favorite.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const touchTarget = getComputedStyle(element, "::after");
+        return {
+          width: rect.width,
+          height: rect.height,
+          touchWidth: touchTarget.width,
+          touchHeight: touchTarget.height,
+          coarsePointer: matchMedia("(pointer: coarse)").matches,
+        };
+      });
+      expect(geometry).toEqual({
+        width: 32,
+        height: 32,
+        touchWidth: "44px",
+        touchHeight: "44px",
+        coarsePointer: true,
+      });
+    } finally {
+      await context.close();
+    }
+  });
+
+  for (const width of [1408, 390]) {
     test(`online payment uses an accessible payment-card glyph at ${width}px`, async ({
       page,
     }) => {
@@ -101,7 +216,7 @@ test.describe("canonical listing cards", () => {
       await openAsGuest(page, "/");
       await expect(page).toHaveTitle(/Shongre/i);
       const card = page
-        .locator('[data-listing-card="true"]')
+        .locator('[data-listing-card-variant="showcase"]')
         .filter({
           has: page.locator('[data-listing-capability="online_payment"]'),
         })
@@ -111,6 +226,7 @@ test.describe("canonical listing cards", () => {
         '[data-listing-capability="online_payment"]',
       );
       await expect(payment).toHaveText("Paiement en ligne");
+      await expect(payment).toHaveAccessibleName("Paiement en ligne");
       await expect(payment).toHaveAttribute("title", "Paiement en ligne");
       await expect(payment.locator("svg.lucide-credit-card")).toBeVisible();
       await expect(payment.locator("svg.lucide-credit-card")).toHaveAttribute(
@@ -118,6 +234,27 @@ test.describe("canonical listing cards", () => {
         "true",
       );
       await expect(payment.locator("svg.lucide-shield-check")).toHaveCount(0);
+      await expect(
+        card.locator("[data-listing-card-content] [data-listing-capability]"),
+      ).not.toHaveCount(0);
+      const media = card.locator("[data-listing-card-media]");
+      const icons = card.locator(
+        "[data-listing-card-footer-facts] [data-listing-capability]",
+      );
+      expect(await icons.count()).toBeGreaterThan(0);
+      await expect(media.locator("[data-listing-capability]")).toHaveCount(0);
+      const cardBox = (await card.boundingBox())!;
+      for (const icon of await icons.all()) {
+        const box = (await icon.boundingBox())!;
+        expect(box.x).toBeGreaterThanOrEqual(cardBox.x);
+        expect(box.y).toBeGreaterThanOrEqual(cardBox.y);
+        expect(box.y + box.height).toBeLessThanOrEqual(
+          cardBox.y + cardBox.height,
+        );
+        expect(box.x + box.width).toBeLessThanOrEqual(
+          cardBox.x + cardBox.width,
+        );
+      }
       await expectNoHorizontalOverflow(page, `payment icon @ ${width}px`);
       const title = await card
         .locator('[data-listing-card-title="true"]')
@@ -147,11 +284,15 @@ test.describe("canonical listing cards", () => {
       await expect(cards.first()).toBeVisible();
       expect(await cards.count()).toBeGreaterThan(3);
       await expectCardContentContained(cards.first(), `homepage @ ${width}px`);
+      await expectCardContentContained(
+        page.locator('[data-listing-card-variant="showcase"]').first(),
+        `vertical homepage @ ${width}px`,
+      );
       await expectNoHorizontalOverflow(page, `homepage cards @ ${width}px`);
     });
   }
 
-  test("uses the exact compact hierarchy and only real optional facts", async ({
+  test("uses the exact compact hierarchy and only real optional facts @serial", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1408, height: 900 });
@@ -169,17 +310,23 @@ test.describe("canonical listing cards", () => {
     ).toHaveText("Bébé & Famille·Cybex");
     await expect(branded.locator('[data-ui-pro-badge="true"]')).toHaveCount(0);
     const verificationBadge = branded.locator(
-      '[data-listing-card-price-row="true"] [data-ui-verification-badge="true"]',
+      '[data-listing-card-seller-summary="true"] [data-ui-verification-badge="true"]',
     );
-    await expect(verificationBadge).toHaveText("Vérifié");
+    await expect(verificationBadge).toBeVisible();
     await expect(verificationBadge).toHaveAttribute(
       "aria-label",
       "Vendeur vérifié",
     );
-    await expect(verificationBadge).toContainClass("text-overline");
+    await expect(verificationBadge.locator("svg")).toHaveCount(0);
+    await expect(branded).not.toContainText("Particulier");
     await expect(
       branded.locator(
         '[data-listing-card-media="true"] [data-ui-verification-badge="true"]',
+      ),
+    ).toHaveCount(0);
+    await expect(
+      branded.locator(
+        '[data-listing-card-price-row="true"] [data-ui-verification-badge="true"]',
       ),
     ).toHaveCount(0);
     await expect(
@@ -187,7 +334,7 @@ test.describe("canonical listing cards", () => {
     ).toContainText("5,0");
     await expect(branded.locator("svg.lucide-star")).toHaveCount(1);
     await expect(
-      branded.locator('[data-listing-card-capabilities="true"]'),
+      branded.locator('[data-listing-card-footer-facts="true"]'),
     ).toBeVisible();
     await expect(
       branded.locator('[data-listing-capability="online_payment"]'),
@@ -207,7 +354,7 @@ test.describe("canonical listing cards", () => {
     ).toHaveAttribute("aria-label", "Livraison");
     await expect(
       branded.locator('[data-listing-capability="negotiable"]'),
-    ).toHaveAttribute("aria-label", "Négociable");
+    ).toHaveCount(0);
 
     const order = await branded.evaluate((element) => {
       const top = (selector: string) =>
@@ -218,6 +365,8 @@ test.describe("canonical listing cards", () => {
         top('[data-listing-card-price-row="true"]'),
         top('[data-listing-card-title="true"]'),
         top('[data-listing-card-meta="true"]'),
+        top('[data-listing-card-seller-summary="true"]'),
+        top('[data-listing-card-footer-facts="true"]'),
       ];
     });
     expect(
@@ -239,7 +388,55 @@ test.describe("canonical listing cards", () => {
     await expect(
       professional.locator('[data-listing-card-rating="true"]'),
     ).toBeVisible();
+    const sellerIdentity = professional.locator(
+      '[data-listing-card-seller-identity="true"]',
+    );
+    await expect(sellerIdentity).toHaveCount(0);
+    const priceRow = professional.locator(
+      '[data-listing-card-price-row="true"]',
+    );
+    const price = priceRow.locator('[data-listing-card-current-price="true"]');
+    const sellerSummary = professional.locator(
+      '[data-listing-card-seller-summary="true"]',
+    );
+    await expect(sellerSummary).toBeVisible();
+    await expect(
+      sellerSummary.locator('[data-ui-verification-badge="true"]'),
+    ).toHaveCount(0);
+    const summaryOrder = await sellerSummary.evaluate((element) =>
+      Array.from(element.children).map((child) =>
+        child.hasAttribute("data-ui-pro-badge")
+          ? "pro"
+          : child.hasAttribute("data-ui-verification-badge")
+            ? "verified"
+            : child.hasAttribute("data-listing-card-rating")
+              ? "rating"
+              : "other",
+      ),
+    );
+    expect(summaryOrder).toEqual(["pro", "rating", "other"]);
+    const meta = professional.locator('[data-listing-card-meta="true"]');
+    const [priceRowBox, priceBox, sellerSummaryBox, metaBox] =
+      await Promise.all([
+        priceRow.boundingBox(),
+        price.boundingBox(),
+        sellerSummary.boundingBox(),
+        meta.boundingBox(),
+      ]);
+    expect(priceRowBox).not.toBeNull();
+    expect(priceBox).not.toBeNull();
+    expect(sellerSummaryBox).not.toBeNull();
+    expect(metaBox).not.toBeNull();
+    expect(sellerSummaryBox!.y).toBeGreaterThanOrEqual(
+      metaBox!.y + metaBox!.height,
+    );
+    expect(Math.abs(priceRowBox!.x - sellerSummaryBox!.x)).toBeLessThanOrEqual(
+      2,
+    );
+    expect(sellerSummaryBox!.width).toBeCloseTo(priceRowBox!.width, 0);
+    expect(priceBox!.y).toBeLessThan(sellerSummaryBox!.y);
 
+    await openAsGuest(page, "/emploi");
     const withoutReviews = page
       .locator('[data-listing-card="true"]', {
         has: page.locator(
@@ -258,7 +455,6 @@ test.describe("canonical listing cards", () => {
     for (const selector of [
       '[data-listing-card-characteristics="true"]',
       '[data-listing-card-delivery-overlay="true"]',
-      '[data-listing-card-seller-avatar="true"]',
       '[data-listing-card-original-price="true"]',
       '[data-listing-card-negotiable="true"]',
     ]) {
@@ -280,8 +476,11 @@ test.describe("canonical listing cards", () => {
     await card.scrollIntoViewIfNeeded();
     await expect(card).toHaveAttribute("data-listing-card-variant", "list");
     const capabilities = card.locator(
-      '[data-listing-card-capabilities="true"]',
+      '[data-listing-card-content] [data-listing-card-capabilities="true"]',
     );
+    await expect(
+      card.locator("[data-listing-card-media] [data-listing-capability]"),
+    ).toHaveCount(0);
     await expect(capabilities).toContainText("Paiement en ligne");
     await expect(capabilities).toContainText("Livraison");
     await expect(capabilities).toContainText("Négociable");
@@ -293,6 +492,12 @@ test.describe("canonical listing cards", () => {
         '[data-listing-card-price-row="true"] [data-ui-verification-badge="true"]',
       ),
     ).toHaveText("Vérifié");
+    await expect(
+      card.locator(
+        '[data-listing-card-price-row="true"] [data-ui-verification-badge="true"] svg',
+      ),
+    ).toHaveCount(0);
+    await expect(card).not.toContainText("Particulier");
     await expectCardContentContained(card, "generic list capability card");
 
     await card.locator(`a[href="${testListingPath("list-113")}"]`).click();
@@ -310,7 +515,7 @@ test.describe("canonical listing cards", () => {
     await expect(detailCapabilities).toContainText("1 photo");
   });
 
-  test("shows the single Boosté indicator only on promoted results", async ({
+  test("shows distinct indicators only when their conditions apply", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1408, height: 900 });
@@ -318,17 +523,19 @@ test.describe("canonical listing cards", () => {
 
     const promoted = page
       .locator('[data-listing-card="true"]')
-      .filter({ has: page.locator('[data-listing-card-promotion="true"]') })
+      .filter({ has: page.locator('[data-listing-badge="featured"]') })
       .first();
     await promoted.scrollIntoViewIfNeeded();
     await expect(
-      promoted.locator('[data-listing-card-promotion="true"]'),
-    ).toHaveText("Boosté");
-    await expect(promoted.locator("svg.lucide-zap")).toHaveCount(1);
+      promoted.locator('[data-listing-badge="featured"]'),
+    ).toHaveText("À la une");
+    await expect(
+      promoted.locator('[data-listing-badge="featured"] svg.lucide-flame'),
+    ).toHaveCount(1);
 
     const standard = page
       .locator('[data-listing-card="true"]', {
-        has: page.locator(`a[href="${testListingPath("list-113")}"]`),
+        has: page.locator(`a[href="${testListingPath("list-111")}"]`),
       })
       .first();
     await standard.scrollIntoViewIfNeeded();
@@ -380,7 +587,7 @@ test.describe("canonical listing cards", () => {
     await expect(page).toHaveURL(new RegExp(`${testListingPath("list-113")}$`));
   });
 
-  test("wraps the full compact title while safely truncating secondary fields", async ({
+  test("clamps the compact visual title while preserving the complete accessible value", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1408, height: 900 });
@@ -407,14 +614,15 @@ test.describe("canonical listing cards", () => {
       };
     });
     expect(titleStyle).toMatchObject({
-      overflow: "visible",
-      lineClamp: "none",
-      fontSize: 13,
+      overflow: "hidden",
+      lineClamp: "2",
+      fontSize: 16,
     });
-    expect(titleStyle.renderedLines).toBeGreaterThanOrEqual(2);
+    expect(titleStyle.renderedLines).toBe(2);
+    await expect(title).toHaveAttribute("title", /.+/);
 
     const price = card.locator('[data-listing-card-current-price="true"]');
-    await expect(price).toHaveCSS("font-size", "16px");
+    await expect(price).toHaveCSS("font-size", "24px");
     await expect(price).not.toHaveCSS("text-overflow", "ellipsis");
 
     const locationStyle = await card
@@ -434,7 +642,7 @@ test.describe("canonical listing cards", () => {
       whiteSpace: "nowrap",
     });
     expect(locationStyle.fontSize).toBeGreaterThanOrEqual(11);
-    await expectCardContentContained(card, "full vertical title");
+    await expectCardContentContained(card, "clamped vertical title");
   });
 
   test("homepage discovery keeps available token-width cards aligned", async ({
@@ -456,6 +664,8 @@ test.describe("canonical listing cards", () => {
         element.querySelectorAll<HTMLElement>(":scope > .listing-rail-cell"),
       ).map((item) => item.getBoundingClientRect());
       return {
+        viewportWidth: viewport?.width ?? 0,
+        gap: Number.parseFloat(getComputedStyle(element).columnGap),
         complete: viewport
           ? cards.filter(
               (card) =>
@@ -468,12 +678,16 @@ test.describe("canonical listing cards", () => {
       };
     });
     expect(geometry.heights.length).toBeGreaterThan(0);
-    expect(geometry.complete).toBeGreaterThanOrEqual(
-      Math.min(5, geometry.heights.length),
+    expect(geometry.firstWidth).toBeCloseTo(220, 0);
+    const availableColumns = Math.floor(
+      (geometry.viewportWidth + geometry.gap) / (220 + geometry.gap),
     );
-    expect(geometry.firstWidth).toBeCloseTo(208, 0);
+    expect(availableColumns).toBeGreaterThan(0);
+    expect(geometry.complete).toBe(
+      Math.min(availableColumns, geometry.heights.length),
+    );
     for (const height of geometry.heights) {
-      expect(height).toBeGreaterThanOrEqual(368);
+      expect(height).toBeCloseTo(420, 0);
       expect(height).toBeCloseTo(geometry.heights[0], 0);
     }
   });
@@ -486,6 +700,7 @@ test.describe("canonical listing cards", () => {
       { path: "/immo", consumer: "real-estate", variant: "list" },
       { path: "/auto", consumer: "auto", variant: "grid" },
       { path: "/emploi", consumer: "employment", variant: "grid" },
+      { path: "/education", consumer: "courses", variant: "grid" },
     ] as const;
 
     for (const width of [320, 768, 1440]) {
@@ -505,6 +720,41 @@ test.describe("canonical listing cards", () => {
             card,
             `${category.consumer} @ ${width}px`,
           );
+          if (category.variant === "grid") {
+            const rowBalance = await page
+              .locator(".listing-grid-fluid")
+              .first()
+              .evaluate((grid) => {
+                const gridBounds = grid.getBoundingClientRect();
+                const cards = Array.from(
+                  grid.querySelectorAll<HTMLElement>(
+                    'article[data-listing-card="true"]',
+                  ),
+                );
+                const firstTop = cards[0]?.getBoundingClientRect().top;
+                const firstRow = cards.filter(
+                  (candidate) =>
+                    Math.abs(
+                      candidate.getBoundingClientRect().top - (firstTop ?? 0),
+                    ) < 1,
+                );
+                const firstBounds = firstRow[0]?.getBoundingClientRect();
+                const lastBounds = firstRow.at(-1)?.getBoundingClientRect();
+                return {
+                  left:
+                    firstBounds?.left === undefined
+                      ? null
+                      : firstBounds.left - gridBounds.left,
+                  right:
+                    lastBounds?.right === undefined
+                      ? null
+                      : gridBounds.right - lastBounds.right,
+                };
+              });
+            expect(rowBalance.left).not.toBeNull();
+            expect(rowBalance.right).not.toBeNull();
+            expect(rowBalance.left).toBeCloseTo(rowBalance.right ?? 0, 0);
+          }
           await expectNoHorizontalOverflow(
             page,
             `${category.consumer} cards @ ${width}px`,

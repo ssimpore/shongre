@@ -115,7 +115,7 @@ export const Tabs: React.FC<TabsProps> = ({
                   isActive
                     ? isSegmented
                       ? "bg-bg-surface/15 text-text-inverse"
-                      : "bg-primary-light text-primary"
+                      : "bg-primary-light text-text-main"
                     : "bg-bg-muted text-text-secondary",
                 )}
               >

@@ -2204,7 +2204,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   <div className="mt-3 border-t border-border-subtle pt-3 space-y-2">
                     {matchedRules.slice(0, 4).map((entry, index) => (
                       <div key={entry.ruleId} className="flex gap-2 text-micro">
-                        <span className="w-5 h-5 rounded-pill bg-primary-light text-primary flex items-center justify-center font-bold shrink-0">
+                        <span className="w-5 h-5 rounded-pill bg-primary-light text-text-main flex items-center justify-center font-bold shrink-0">
                           {index + 1}
                         </span>
                         <div>

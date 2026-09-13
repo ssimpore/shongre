@@ -1,7 +1,12 @@
-import { testListingPath } from "./fixtures";
+import { readBrowserFixtures, testListingPath } from "./fixtures";
 import { expect, test } from "@playwright/test";
-import { usePersona } from "./personas";
+import { useEstablishedConsent, usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
+import { loginWithForm } from "./browser-api";
+
+const belgianListingUrl = () =>
+  new URL(`/be${testListingPath("list-be-201")}`, process.env.PUBLIC_INTL_URL)
+    .href;
 
 const revealStickyActions = async (page: import("@playwright/test").Page) => {
   const inlineAction = page.getByTestId("listing-inline-mobile-action");
@@ -15,13 +20,115 @@ const revealStickyActions = async (page: import("@playwright/test").Page) => {
   await expect(page.getByTestId("listing-mobile-actions")).toBeVisible();
 };
 
+test.describe("listing negotiation and reservation eligibility @serial", () => {
+  for (const width of [390, 1408]) {
+    test(`shows eligible actions and resumes them after sign-in at ${width}px`, async ({
+      page,
+    }) => {
+      await useEstablishedConsent(page);
+      await usePersona(page, "guest");
+      await page.setViewportSize({ width, height: 900 });
+      const path = `/be${testListingPath("list-be-201")}`;
+      const actionArea = page.getByTestId(
+        width < 1024
+          ? "listing-inline-mobile-action"
+          : "listing-desktop-actions",
+      );
+
+      for (const [action, intent, title] of [
+        ["offer.create", "offer", "Faire une offre de prix"],
+        ["reservation.start", "reserve", "Réserver l’annonce"],
+      ] as const) {
+        await usePersona(page, "guest");
+        await page.goto(belgianListingUrl(), { waitUntil: "domcontentloaded" });
+        const button = actionArea.locator(
+          `[data-marketplace-action="${action}"]`,
+        );
+        await expect(button).toBeVisible();
+        await button.click();
+        await expect(page).toHaveURL(/\/be\/connexion\?/);
+        const redirect = new URL(page.url()).searchParams.get("redirect");
+        expect(redirect).toBe(`${testListingPath("list-be-201")}?${intent}=1`);
+
+        const account = readBrowserFixtures().accounts.user_camille;
+        await page.locator("#login-email").fill(account.email);
+        await page
+          .locator("#login-password")
+          .fill(process.env.DEMO_ACCOUNT_PASSWORD!);
+        await page
+          .getByRole("button", { name: "Se connecter", exact: true })
+          .click();
+        const dialog = page.getByRole("dialog", { name: title });
+        await expect(dialog).toBeVisible();
+        expect(new URL(page.url()).pathname).toBe(path);
+        await page.keyboard.press("Escape");
+        await expect(dialog).toBeHidden();
+        expect(new URL(page.url()).searchParams.has(intent)).toBe(false);
+        await expectNoHorizontalOverflow(page, `${action} at ${width}px`);
+      }
+    });
+  }
+
+  test("omits ineligible actions and rejects action links on fixed, free and owned listings", async ({
+    page,
+  }) => {
+    await useEstablishedConsent(page);
+    await page.setViewportSize({ width: 1408, height: 900 });
+    await usePersona(page, "individual_seller");
+    for (const source of ["list-112", "list-110"]) {
+      await page.goto(`${testListingPath(source)}?offer=1&reserve=1`, {
+        waitUntil: "domcontentloaded",
+      });
+      await expect(page.locator("h1")).toBeVisible();
+      await expect
+        .poll(() => new URL(page.url()).searchParams.has("offer"))
+        .toBe(false);
+      await expect(
+        page.locator('[data-marketplace-action="offer.create"]:visible'),
+      ).toHaveCount(0);
+      await expect(
+        page.locator('[data-marketplace-action="reservation.start"]:visible'),
+      ).toHaveCount(0);
+      await expect(page.getByRole("dialog")).toHaveCount(0);
+    }
+    await loginWithForm(
+      page,
+      process.env.PUBLIC_INTL_URL!,
+      {
+        email: readBrowserFixtures().accounts.user_thomas.email,
+        password: process.env.DEMO_ACCOUNT_PASSWORD!,
+        id: "user_thomas",
+      },
+      "/be",
+    );
+    await page.goto(`${belgianListingUrl()}?offer=1&reserve=1`, {
+      waitUntil: "domcontentloaded",
+    });
+    await expect
+      .poll(() => new URL(page.url()).searchParams.has("offer"))
+      .toBe(false);
+    await expect(
+      page
+        .getByRole("main")
+        .locator('[data-marketplace-action="listing.publish"]:visible'),
+    ).toHaveCount(1);
+    await expect(
+      page.locator('[data-marketplace-action="offer.create"]:visible'),
+    ).toHaveCount(0);
+    await expect(
+      page.locator('[data-marketplace-action="reservation.start"]:visible'),
+    ).toHaveCount(0);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+});
+
 test.describe("listing mobile action hierarchy", () => {
   test("keeps secondary actions balanced and gives a three-action primary CTA a full row", async ({
     page,
   }) => {
     await usePersona(page, "guest");
     await page.setViewportSize({ width: 444, height: 795 });
-    await page.goto(testListingPath("list-112"), {
+    await page.goto(testListingPath("list-109"), {
       waitUntil: "domcontentloaded",
     });
     await waitForStableLayout(page);
@@ -61,7 +168,7 @@ test.describe("listing mobile action hierarchy", () => {
   }) => {
     await usePersona(page, "guest");
     await page.setViewportSize({ width: 320, height: 844 });
-    await page.goto(testListingPath("list-112"), {
+    await page.goto(testListingPath("list-109"), {
       waitUntil: "domcontentloaded",
     });
     await waitForStableLayout(page);
@@ -92,7 +199,7 @@ test.describe("listing mobile action hierarchy", () => {
   test("keeps four-action layouts in two balanced rows", async ({ page }) => {
     await usePersona(page, "guest");
     await page.setViewportSize({ width: 444, height: 844 });
-    await page.goto(testListingPath("list-109"), {
+    await page.goto(belgianListingUrl(), {
       waitUntil: "domcontentloaded",
     });
     await waitForStableLayout(page);

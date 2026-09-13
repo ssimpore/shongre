@@ -36,6 +36,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [socialPending, setSocialPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // MFA Challenge State
@@ -45,6 +46,8 @@ export const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading || socialPending) return;
+    if (socialPending || isLoading) return;
     setErrorMessage(null);
     setIsLoading(true);
 
@@ -87,6 +90,8 @@ export const LoginPage: React.FC = () => {
 
   return (
     <AuthLayout
+      width="compact"
+      showLegalNotice={!requiresMfa}
       title={requiresMfa ? "Validation 2FA" : "Connexion à Shongre"}
       subtitle={
         requiresMfa
@@ -99,8 +104,18 @@ export const LoginPage: React.FC = () => {
         to: routes.auth.register(redirectUrl),
       }}
     >
+      {!requiresMfa ? (
+        <SocialLoginButtons
+          returnTo={redirectUrl}
+          disabled={isLoading}
+          onPendingChange={setSocialPending}
+        />
+      ) : null}
       {errorMessage && (
-        <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
+        <div
+          role="alert"
+          className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5"
+        >
           <ShieldAlert className="w-icon-md h-icon-md text-danger shrink-0 mt-0.5" />
           <div className="leading-relaxed">{errorMessage}</div>
         </div>
@@ -109,11 +124,17 @@ export const LoginPage: React.FC = () => {
       {requiresMfa ? (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-text-strong mb-1.5">
+            <label
+              htmlFor="login-mfa-code"
+              className="block text-sm font-semibold text-text-strong mb-1.5"
+            >
               {t("auth.loginPage.codeDeSecurite2faOu")}
             </label>
             <input
               type="text"
+              id="login-mfa-code"
+              autoComplete="one-time-code"
+              disabled={isLoading}
               value={mfaCode}
               onChange={(e) => setMfaCode(e.target.value)}
               placeholder={t("auth.loginPage.ex123456Ou84921049")}
@@ -138,9 +159,12 @@ export const LoginPage: React.FC = () => {
             type="button"
             variant="ghost"
             size="sm"
+            disabled={isLoading}
             onClick={() => {
               setRequiresMfa(false);
               setTempMfaToken(null);
+              setMfaCode("");
+              setErrorMessage(null);
             }}
             className="w-full text-text-tertiary"
           >
@@ -148,89 +172,89 @@ export const LoginPage: React.FC = () => {
           </Button>
         </form>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="login-email"
-              className="block text-xs font-semibold text-text-strong mb-1.5"
-            >
-              Adresse email <span className="text-primary">*</span>
-            </label>
-            <div className="relative">
-              <input
-                id="login-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("auth.loginPage.votreEmailExempleFr")}
-                required
-                autoComplete="email"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main placeholder:text-text-tertiary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
-              />
-              <Mail className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
+        <form onSubmit={handleSubmit}>
+          <fieldset disabled={socialPending || isLoading} className="space-y-4">
+            <div>
               <label
-                htmlFor="login-password"
-                className="block text-xs font-semibold text-text-strong"
+                htmlFor="login-email"
+                className="block text-sm font-semibold text-text-strong mb-1.5"
               >
-                {t("auth.loginPage.motDePasse")}
-                <span className="text-primary">*</span>
+                Adresse email <span className="text-primary">*</span>
               </label>
-              {/*
-               * Account recovery is a standalone control on its own row, not a
-               * link inside a sentence, so WCAG 2.2 target-size has no inline
-               * exception to lean on. The padding keeps it at the 24px minimum
-               * without changing the type scale or the row's height.
-               */}
-              <Link
-                to="/mot-de-passe-oublie"
-                className="-my-1 inline-flex min-h-control-target items-center py-1 text-xs font-bold text-primary hover:underline"
-              >
-                {t("auth.loginPage.motDePasseOublie")}
-              </Link>
+              <div className="relative">
+                <input
+                  id="login-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("auth.loginPage.votreEmailExempleFr")}
+                  required
+                  autoComplete="email"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main placeholder:text-text-tertiary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                />
+                <Mail className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+              </div>
             </div>
-            <PasswordField
-              id="login-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••••••"
-              required
-              autoComplete="current-password"
-              // The label lives above, sharing its row with the reset link.
-              label={null}
-            />
-          </div>
 
-          <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 min-h-6 text-xs font-medium text-text-emphasis cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-border-prominent text-primary focus:ring-primary"
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label
+                  htmlFor="login-password"
+                  className="block text-xs font-semibold text-text-strong"
+                >
+                  {t("auth.loginPage.motDePasse")}
+                  <span className="text-primary">*</span>
+                </label>
+                {/*
+                 * Account recovery is a standalone control on its own row, not a
+                 * link inside a sentence, so WCAG 2.2 target-size has no inline
+                 * exception to lean on. The padding keeps it at the 24px minimum
+                 * without changing the type scale or the row's height.
+                 */}
+                <Link
+                  to={routes.auth.forgotPassword(redirectUrl)}
+                  className="-my-1 inline-flex min-h-control-target items-center py-1 text-xs font-bold text-text-main underline decoration-primary underline-offset-4"
+                >
+                  {t("auth.loginPage.motDePasseOublie")}
+                </Link>
+              </div>
+              <PasswordField
+                id="login-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                required
+                autoComplete="current-password"
+                // The label lives above, sharing its row with the reset link.
+                label={null}
               />
-              <span>{t("auth.loginPage.resterConnecteSurCetAppareil")}</span>
-            </label>
-          </div>
+            </div>
 
-          <Button
-            type="submit"
-            variant="primary"
-            size="md"
-            className="w-full mt-2"
-            isLoading={isLoading}
-            rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
-          >
-            Se connecter
-          </Button>
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-2 min-h-6 text-xs font-medium text-text-emphasis cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-border-prominent text-primary focus:ring-primary"
+                />
+                <span>{t("auth.loginPage.resterConnecteSurCetAppareil")}</span>
+              </label>
+            </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              className="w-full mt-2"
+              isLoading={isLoading}
+              rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
+            >
+              Se connecter
+            </Button>
+          </fieldset>
         </form>
       )}
-
-      {!requiresMfa ? <SocialLoginButtons returnTo={redirectUrl} /> : null}
     </AuthLayout>
   );
 };
