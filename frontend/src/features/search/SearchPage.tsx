@@ -614,7 +614,7 @@ export const SearchPage: React.FC = () => {
         : t("watch.save.customTitle");
     const id = `ss-${Date.now()}`;
     try {
-      await services.watchSubscriptions.createOrReplace(currentUser.id, {
+      await services.watchSubscriptions.createOrReplace({
         marketCode: activeMarket.code,
         targetType: "saved_search",
         targetId: id,

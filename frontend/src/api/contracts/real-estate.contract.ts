@@ -123,13 +123,9 @@ export interface RealEstateServiceContract {
     propertyId: string,
     marketCode: string,
   ): Promise<PropertyPublic[]>;
-  getRecentlyViewed(accountId: string): Promise<PropertyPublic[]>;
-  markRecentlyViewed(accountId: string, propertyId: string): Promise<void>;
-  getOrCreateDraft(
-    ownerUserId: string,
-    marketCode: string,
-    sellerDisplayName?: string,
-  ): Promise<PropertyDraft>;
+  getRecentlyViewed(): Promise<PropertyPublic[]>;
+  markRecentlyViewed(propertyId: string): Promise<void>;
+  getOrCreateDraft(marketCode: string): Promise<PropertyDraft>;
   getDraft(draftId: string): Promise<PropertyDraft | null>;
   saveDraft(draft: PropertyDraft): Promise<PropertyDraft>;
   submitDraft(

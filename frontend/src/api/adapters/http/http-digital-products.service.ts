@@ -29,7 +29,7 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     );
   }
 
-  getSellerProfile(marketCode: string, _sellerId: string) {
+  getSellerProfile(marketCode: string) {
     return apiOperation<DigitalSellerProfile | null, "getDigitalSellerProfile">(
       "getDigitalSellerProfile",
       { headers: marketHeaders(marketCode) },
@@ -38,7 +38,6 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
 
   acceptSellerResponsibilities(
     marketCode: string,
-    _sellerId: string,
     fulfillmentTypes: FulfillmentType[],
     acceptedPolicyVersion: number,
   ) {
@@ -208,7 +207,7 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     });
   }
 
-  async listSellerProvisioningTasks(marketCode: string, _sellerId: string) {
+  async listSellerProvisioningTasks(marketCode: string) {
     const result = await apiOperation<
       { items: DigitalProvisioningTask[] },
       "getDigitalSellerProvisioningTasks"
@@ -218,7 +217,7 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     return result.items;
   }
 
-  async listEntitlements(marketCode: string, _buyerId: string) {
+  async listEntitlements(marketCode: string) {
     const result = await apiOperation<
       {
         items: DigitalEntitlementProjection[];
@@ -228,7 +227,7 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     return result.items;
   }
 
-  getEntitlement(marketCode: string, _buyerId: string, entitlementId: string) {
+  getEntitlement(marketCode: string, entitlementId: string) {
     return apiOperation<DigitalEntitlementProjection, "getDigitalEntitlement">(
       "getDigitalEntitlement",
       { path: { id: entitlementId }, headers: marketHeaders(marketCode) },
@@ -237,7 +236,6 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
 
   createDownloadGrant(
     marketCode: string,
-    _buyerId: string,
     entitlementId: string,
     assetId: string,
   ) {
@@ -251,18 +249,14 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     );
   }
 
-  createRevealGrant(
-    marketCode: string,
-    _buyerId: string,
-    entitlementId: string,
-  ) {
+  createRevealGrant(marketCode: string, entitlementId: string) {
     return apiOperation<DigitalAccessGrant, "postDigitalRevealGrant">(
       "postDigitalRevealGrant",
       { path: { id: entitlementId }, headers: marketHeaders(marketCode) },
     );
   }
 
-  consumeAccessGrant(_buyerId: string, grantId: string) {
+  consumeAccessGrant(grantId: string) {
     return apiOperation<ConsumedDigitalAccess, "postDigitalAccessGrantConsume">(
       "postDigitalAccessGrantConsume",
       { path: { id: grantId } },
@@ -283,7 +277,6 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
 
   reportInvalidAccess(
     marketCode: string,
-    _buyerId: string,
     entitlementId: string,
     reportType: DigitalAccessReportType,
     description: string,

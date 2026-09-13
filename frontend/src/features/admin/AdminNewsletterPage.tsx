@@ -1235,8 +1235,8 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
         </div>
       ) : (
         <div className="mt-5 rounded-control border border-success-border bg-success-surface p-4 text-xs text-success">
-          Aucune suppression ajoutée pendant cette session de démonstration. Les
-          profils non éligibles restent exclus par leur statut.
+          Aucune suppression enregistrée. Les profils non éligibles restent
+          exclus par leur statut.
         </div>
       )}
     </section>

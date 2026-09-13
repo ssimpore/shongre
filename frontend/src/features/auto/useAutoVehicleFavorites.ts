@@ -5,15 +5,10 @@ import {
 } from "../favorites/useScopedResourceFavorites";
 
 const autoVehicleFavoritesAdapter: ScopedFavoritesAdapter = {
-  load: (accountId, marketCode) =>
-    services.auto.getFavoriteVehicleIds(accountId, marketCode),
-  set: (accountId, vehicleId, marketCode, isFavorite) =>
-    services.auto.setFavoriteVehicle(
-      accountId,
-      vehicleId,
-      marketCode,
-      isFavorite,
-    ),
+  load: (_accountId, marketCode) =>
+    services.auto.getFavoriteVehicleIds(marketCode),
+  set: (_accountId, vehicleId, marketCode, isFavorite) =>
+    services.auto.setFavoriteVehicle(vehicleId, marketCode, isFavorite),
 };
 
 /** Account-and-market scoped favorite authority shared by Auto surfaces. */

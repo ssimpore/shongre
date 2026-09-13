@@ -37,6 +37,24 @@ optional approaches.
 - When asked to implement or improve something, complete the safe in-scope
   implementation and verification; do not stop at an audit unless the user asks
   for analysis only.
+- Complete product behavior end to end. Before editing, trace the affected
+  database, domain, API/OpenAPI, shared-contract, Web, mobile, worker/provider,
+  operations, test, and documentation boundaries. Implement and migrate every
+  layer required by the behavior in the same task; never leave a required
+  backend capability without its client integration, or replace a required
+  backend change with frontend-only state, fixtures, or simulation. A layer may
+  remain unchanged only when repository evidence shows that the task does not
+  affect it; do not create meaningless edits merely to touch both frontend and
+  backend.
+- Develop product runtime code through the architecture intended for
+  production. Local and test environments may substitute isolated
+  infrastructure, sandbox providers, test identities, and test data, but must
+  exercise the same migrations, repositories, domain services, authorization,
+  OpenAPI operations, HTTP adapters, durable jobs, and failure semantics used by
+  production. Never add a local-only product implementation, runtime mock data,
+  client-owned business decision, authentication bypass, or synthetic success
+  path. Test-only adapters and transport mocks must remain outside runtime
+  selection and cannot be the sole acceptance evidence for a cross-layer change.
 - Use repository evidence to resolve non-critical ambiguity. Preserve existing
   behavior when evidence is insufficient, and report material uncertainty
   instead of inventing policy, legal facts, provider support, or production
@@ -70,18 +88,32 @@ optional approaches.
   files, or other disposable artifacts. Before completion, inspect `git status`
   and the complete final diff so only intentional task-related changes remain.
 
-Treat maintenance of this file as part of every implementation:
+`AGENTS.md` is a live repository contract and must be reviewed at both
+boundaries of every editing task:
 
-1. Re-read the instructions relevant to the changed area.
-2. Decide whether the change establishes or alters a durable architecture,
-   security, legal, data, release, or verification invariant.
-3. Update this file in the same change only when future agents need that durable
-   knowledge. Ordinary code changes do not require an instruction change.
-4. Search for the existing canonical rule and edit it; never append a duplicate.
-5. Remove or revise rules made obsolete by the implementation.
-6. Verify every referenced path, symbol, environment key, and command.
-7. Review the final instruction diff for contradictions, duplicated meaning,
-   temporary details, and unnecessary growth.
+1. At task start, before the first repository edit, read this file completely
+   and read every more-specific `AGENTS.md` governing the files likely to
+   change. Inspect `git status`, the existing implementation, and applicable
+   canonical documentation, then identify the complete affected layer and
+   verification scope. If the task scope changes materially, repeat the
+   applicable instruction review before the next edit.
+2. During implementation, decide whether each change establishes, alters, or
+   removes a durable architecture, security, legal, data, release, or
+   verification invariant. Search for the existing canonical rule and update it
+   in this file and the relevant canonical source in the same implementation;
+   never append a duplicate or use this file as a task log. Ordinary code edits
+   that do not change a durable invariant require review but not artificial
+   wording churn.
+3. At task end, after the last source edit and after any formatter, generator,
+   migration, or automated rewrite, re-read this file completely plus the
+   scoped instructions and canonical documentation relevant to the final diff.
+   Inspect `git status` and the complete diff, verify the final state against
+   every applicable rule, and update or remove any instruction made inaccurate
+   by the implementation before reporting completion.
+4. Verify every path, symbol, environment key, command, and invariant referenced
+   by an instruction change. Review the final instruction diff for
+   contradictions, duplicated meaning, temporary details, and unnecessary
+   growth.
 
 ## Repository ownership and dependency boundaries
 
@@ -246,7 +278,8 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   the repository-owned local Supabase stack. Public media may use
   backend-projected Supabase Storage URLs. Frontend demo adapters, fixture
   repositories, data-mode selectors, mock-storage flags, and runtime fallback
-  from API failures must not exist.
+  from API failures must not exist. Run `make frontend-api-only-check` after
+  changing Web runtime data access or service registration.
 - Local development uses the repository-owned Supabase stack for the backend and
   worker. The canonical local sequence is `make install`, `make supabase-up`,
   `make db-migrate`, `make db-seed`, then `make backend` and/or `make worker`;
@@ -1263,6 +1296,14 @@ France-only happy path is insufficient for market-sensitive work.
   the representative country matrix; marketing, CRM, provider, analytics,
   database, mobile, store, and infrastructure changes require their focused
   canonical Make targets.
+- Cross-layer work must verify every changed boundary and at least one
+  production-shaped end-to-end path through the real runtime chain, such as
+  client → generated HTTP operation → backend authorization/domain service →
+  repository → migrated database, including the resulting read-back or durable
+  side effect. Unit tests with mocked transports are supporting evidence, not a
+  substitute for this path. When an apparently related layer is intentionally
+  unchanged, the final report must identify the repository evidence that made
+  the layer out of scope.
 - Normal completion updates affected tests and documentation, then runs the
   applicable formatter, linter, type checker, configured unused-code and
   dependency detector, repository-hygiene check, unit/integration/E2E and

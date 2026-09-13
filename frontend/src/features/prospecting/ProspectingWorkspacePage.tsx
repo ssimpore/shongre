@@ -975,7 +975,7 @@ export const ProspectingWorkspacePage: React.FC<
                     </p>
                     {controller.discoverySummary && (
                       <p className="mt-1 text-micro text-text-muted">
-                        Instantané de démonstration généré le{" "}
+                        Instantané généré le{" "}
                         <time
                           dateTime={controller.discoverySummary.generatedAt}
                         >
@@ -1191,8 +1191,8 @@ export const ProspectingWorkspacePage: React.FC<
                     Paramètres et conformité
                   </h2>
                   <p className="mt-1 text-xs leading-relaxed text-text-muted">
-                    Configuration en lecture seule dans la démonstration. Les
-                    droits du tenant et du marché restent appliqués à chaque
+                    Configuration chargée depuis le backend. Les droits de
+                    l’organisation et du marché restent appliqués à chaque
                     opération.
                   </p>
                 </div>
@@ -1224,25 +1224,25 @@ export const ProspectingWorkspacePage: React.FC<
               </section>
               <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
                 <h3 className="text-sm font-bold text-text-main">
-                  État des intégrations
+                  Sources autorisées
                 </h3>
                 <dl className="mt-4 divide-y divide-border-subtle text-xs">
-                  {[
-                    ["Sources externes", "Inactives"],
-                    ["Fournisseur IA", "Moteur déterministe local"],
-                    ["Envoi e-mail", "Inactif"],
-                    ["Webhooks", "Inactifs"],
-                  ].map(([label, value]) => (
+                  {controller.sources.map((source) => (
                     <div
-                      key={label}
+                      key={source.id}
                       className="flex items-center justify-between gap-3 py-3"
                     >
-                      <dt className="text-text-muted">{label}</dt>
+                      <dt className="text-text-muted">{source.name}</dt>
                       <dd className="text-right font-bold text-text-main">
-                        {value}
+                        {sourceLifecyclePresentation[source.lifecycle].label}
                       </dd>
                     </div>
                   ))}
+                  {controller.sources.length === 0 ? (
+                    <p className="py-3 text-text-muted">
+                      Aucune source autorisée pour le marché actif.
+                    </p>
+                  ) : null}
                 </dl>
               </section>
             </div>

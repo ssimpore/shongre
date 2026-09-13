@@ -251,10 +251,7 @@ export class HttpCoursesService implements CoursesServiceContract {
     );
   }
 
-  async getSavedTutorIds(
-    _accountId: string,
-    marketCode: string,
-  ): Promise<string[]> {
+  async getSavedTutorIds(marketCode: string): Promise<string[]> {
     const result = await apiOperation<
       { tutorProfileIds: string[] },
       "getEducationFavorites"
@@ -265,7 +262,6 @@ export class HttpCoursesService implements CoursesServiceContract {
   }
 
   async setSavedTutor(
-    _accountId: string,
     tutorProfileId: string,
     marketCode: string,
     isFavorite: boolean,

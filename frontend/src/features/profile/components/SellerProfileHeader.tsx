@@ -72,7 +72,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
     }
     let active = true;
     services.messaging
-      .getBlockedUserIds(currentUser.id)
+      .getBlockedUserIds()
       .then((ids) => {
         if (active) setIsBlocked(ids.includes(seller.id));
       })
@@ -120,11 +120,11 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
     }
     try {
       if (isBlocked) {
-        await services.messaging.unblockUser(currentUser.id, seller.id);
+        await services.messaging.unblockUser(seller.id);
         setIsBlocked(false);
         toast.success(`${displayName} a été débloqué.`);
       } else {
-        await services.messaging.blockUser(currentUser.id, seller.id);
+        await services.messaging.blockUser(seller.id);
         setIsBlocked(true);
         toast.warning(
           `${displayName} a été bloqué. Ses messages et offres seront masqués.`,

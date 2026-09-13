@@ -37,6 +37,10 @@ export class SupportService {
     private readonly repository: ISupportRepository = repositories.support,
   ) {}
 
+  listHelpArticles(marketCode: string, locale: string) {
+    return this.repository.listHelpArticles(marketCode, locale);
+  }
+
   async createCase(principal: Principal, input: unknown): Promise<SupportCase> {
     requirePermission(principal, "marketplace.customer.access");
     const value = supportCaseCreateSchema.parse(input);

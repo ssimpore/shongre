@@ -417,7 +417,6 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
           const confirmed = identity
             ? deliveryRequestId
               ? await services.delivery.setFavoriteRequest(
-                  identity,
                   deliveryRequestId,
                   marketCode,
                   optimistic,
@@ -544,7 +543,6 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
             deliveryRequestIdFromDiscoveryListingId(listingId);
           if (identity && deliveryRequestId) {
             return services.delivery.setFavoriteRequest(
-              identity,
               deliveryRequestId,
               marketCode,
               false,

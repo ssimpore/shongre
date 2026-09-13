@@ -28,8 +28,6 @@ import type { ProspectingUsage } from "@shongre/contracts/prospecting";
 import type { ProspectingWorkspaceView } from "../useProspectingWorkspaceController";
 import { DEFAULT_MARKET_CURRENCY } from "../../../configuration/market-baseline";
 
-const DEMO_NOW = new Date("2026-08-27T12:00:00.000Z").getTime();
-
 const lifecycleLabels: Record<CrmAccount["lifecycle"], string> = {
   lead: "Lead",
   prospect: "Prospect",
@@ -367,7 +365,7 @@ function TaskQueue({
   return (
     <div className="divide-y divide-border-subtle">
       {visibleTasks.map((task) => {
-        const overdue = new Date(task.dueAt).getTime() < DEMO_NOW;
+        const overdue = new Date(task.dueAt).getTime() < Date.now();
         const relationId = task.opportunityId ?? task.accountId ?? "";
         return (
           <article key={task.id} className="flex items-start gap-3 px-4 py-3.5">
@@ -541,7 +539,7 @@ function CampaignCard({
       </Button>
       {!compact && (
         <p className="mt-2 text-center text-micro text-text-muted">
-          La démonstration ne contacte aucun fournisseur externe.
+          Ce contrôle ne déclenche aucun envoi externe.
         </p>
       )}
     </article>
@@ -906,7 +904,7 @@ export function FullPipelinePanel(props: SharedPanelProps) {
 export function FullTasksPanel(props: SharedPanelProps) {
   const pending = props.tasks.filter((task) => task.status !== "completed");
   const overdue = pending.filter(
-    (task) => new Date(task.dueAt).getTime() < DEMO_NOW,
+    (task) => new Date(task.dueAt).getTime() < Date.now(),
   );
   const completed = props.tasks.filter((task) => task.status === "completed");
   return (

@@ -144,7 +144,6 @@ export interface EmploymentServiceContract {
     marketCode?: string,
   ): Promise<JobPostingCard[]>;
   getOrCreateDraft(
-    ownerUserId: string,
     marketCode: string,
     preferredDraftId?: string,
   ): Promise<JobDraft>;
@@ -169,9 +168,8 @@ export interface EmploymentServiceContract {
     input: EmploymentApplicationDraft,
   ): Promise<EmploymentApplication>;
   withdrawApplication(applicationId: string): Promise<EmploymentApplication>;
-  getSavedJobIds(accountId: string, marketCode: string): Promise<string[]>;
+  getSavedJobIds(marketCode: string): Promise<string[]>;
   setSavedJob(
-    accountId: string,
     jobId: string,
     marketCode: string,
     isFavorite: boolean,

@@ -4,11 +4,7 @@
  * preference defaults, and unread aggregations.
  */
 
-import {
-  Notification,
-  NotificationFilterTab,
-  NotificationPreferences,
-} from "./notification.types";
+import { Notification, NotificationFilterTab } from "./notification.types";
 import { DEFAULT_LOCALE } from "../../i18n/locale";
 
 export interface NotificationDateGroup {
@@ -139,25 +135,6 @@ class NotificationService {
    */
   calculateUnreadCount(notifications: Notification[]): number {
     return notifications.filter((n) => !n.isRead).length;
-  }
-
-  /**
-   * Default notification preferences for a user.
-   */
-  getDefaultPreferences(userId: string): NotificationPreferences {
-    return {
-      userId,
-      messages: { inApp: true, email: false, push: true },
-      transactions: { inApp: true, email: true, push: true, isMandatory: true },
-      listings: { inApp: true, email: true, push: false },
-      delivery: { inApp: true, email: true, push: true, isMandatory: true },
-      delivery_opportunities: { inApp: false, email: false, push: false },
-      reviews: { inApp: true, email: false, push: true },
-      promotions: { inApp: true, email: false, push: false },
-      security: { inApp: true, email: true, push: true, isMandatory: true },
-      marketing: { inApp: false, email: false, push: false },
-      updatedAt: new Date().toISOString(),
-    };
   }
 }
 

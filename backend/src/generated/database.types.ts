@@ -30386,6 +30386,59 @@ export type Database = {
           },
         ];
       };
+      support_help_articles: {
+        Row: {
+          answer: string;
+          category: string;
+          id: string;
+          is_published: boolean;
+          link_href: string | null;
+          link_text: string | null;
+          locale: string;
+          market_code: string | null;
+          published_at: string | null;
+          question: string;
+          sort_order: number;
+          updated_at: string;
+        };
+        Insert: {
+          answer: string;
+          category: string;
+          id: string;
+          is_published?: boolean;
+          link_href?: string | null;
+          link_text?: string | null;
+          locale: string;
+          market_code?: string | null;
+          published_at?: string | null;
+          question: string;
+          sort_order: number;
+          updated_at?: string;
+        };
+        Update: {
+          answer?: string;
+          category?: string;
+          id?: string;
+          is_published?: boolean;
+          link_href?: string | null;
+          link_text?: string | null;
+          locale?: string;
+          market_code?: string | null;
+          published_at?: string | null;
+          question?: string;
+          sort_order?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_help_articles_market_code_fkey";
+            columns: ["market_code"];
+            isOneToOne: false;
+            referencedRelation: "markets";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
       support_macros: {
         Row: {
           body: string;

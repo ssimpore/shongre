@@ -122,10 +122,7 @@ export const MyListingsPage: React.FC = () => {
     }
     setIsLoading(true);
     try {
-      const result = await services.listings.getOwnListings(
-        currentUser.id,
-        activeMarket.code,
-      );
+      const result = await services.listings.getOwnListings(activeMarket.code);
       setMyListings(result.listings);
     } catch {
       setMyListings([]);

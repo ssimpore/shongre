@@ -134,10 +134,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
       return;
     }
     try {
-      const ids = await services.employment.getSavedJobIds(
-        accountId,
-        activeMarket.code,
-      );
+      const ids = await services.employment.getSavedJobIds(activeMarket.code);
       setFavoriteState((current) =>
         current.scope === scope
           ? { scope, ids: Array.from(new Set(ids)), loadState: "ready" }
@@ -315,7 +312,6 @@ export const EmploymentJobDetailPage: React.FC = () => {
     setFavoritePendingIds((current) => [...current, targetId]);
     try {
       const isFavorite = await services.employment.setSavedJob(
-        currentUser.id,
         targetId,
         activeMarket.code,
         !favoriteIds.has(targetId),

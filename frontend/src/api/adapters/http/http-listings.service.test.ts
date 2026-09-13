@@ -343,7 +343,7 @@ describe("HTTP seller listing workspace", () => {
     });
     const service = new HttpListingsService();
 
-    const result = await service.getOwnListings("ignored-client-user-id", "FR");
+    const result = await service.getOwnListings("FR");
 
     expect(result.total).toBe(1);
     expect(result.listings[0]?.id).toBe(backendListing.id);

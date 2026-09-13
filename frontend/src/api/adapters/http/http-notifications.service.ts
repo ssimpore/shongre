@@ -59,7 +59,7 @@ const mapNotification = (item: BackendNotification): Notification => ({
 });
 
 export class HttpNotificationsService implements NotificationsServiceContract {
-  async getUserNotifications(_userId: string): Promise<Notification[]> {
+  async getUserNotifications(): Promise<Notification[]> {
     const items = await apiOperation<BackendNotification[], "getNotifications">(
       "getNotifications",
       {},
@@ -67,7 +67,7 @@ export class HttpNotificationsService implements NotificationsServiceContract {
     return items.map(mapNotification);
   }
 
-  async getUnreadCount(_userId: string): Promise<number> {
+  async getUnreadCount(): Promise<number> {
     const res = await apiOperation<
       { count: number },
       "getNotificationsUnreadCount"
@@ -82,7 +82,7 @@ export class HttpNotificationsService implements NotificationsServiceContract {
     );
   }
 
-  async markAllAsRead(_userId: string): Promise<void> {
+  async markAllAsRead(): Promise<void> {
     return apiOperation<void, "postNotificationsReadAll">(
       "postNotificationsReadAll",
       {},
@@ -96,7 +96,7 @@ export class HttpNotificationsService implements NotificationsServiceContract {
     );
   }
 
-  async getPreferences(_userId: string): Promise<NotificationPreferences> {
+  async getPreferences(): Promise<NotificationPreferences> {
     return apiOperation<NotificationPreferences, "getNotificationPreferences">(
       "getNotificationPreferences",
       {},
@@ -104,7 +104,6 @@ export class HttpNotificationsService implements NotificationsServiceContract {
   }
 
   async updatePreferences(
-    _userId: string,
     preferences: NotificationPreferences,
   ): Promise<NotificationPreferences> {
     return apiOperation<NotificationPreferences, "putNotificationPreferences">(

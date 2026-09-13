@@ -78,7 +78,6 @@ export class HttpPromotionsService implements PromotionsServiceContract {
 
   async subscribeToProPlan(
     marketContext: MarketContext,
-    _sellerId: string,
     planId: string,
   ): Promise<{ success: boolean; plan: ProPlan }> {
     const idempotencyKey = `subscription:${planId}:${crypto.randomUUID()}`;

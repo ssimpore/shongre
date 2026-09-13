@@ -61,7 +61,6 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     );
   }
   getOrCreateDraft(
-    _ownerUserId: string,
     marketCode: string,
     preferredDraftId?: string,
   ): Promise<JobDraft> {
@@ -171,10 +170,7 @@ export class HttpEmploymentService implements EmploymentServiceContract {
       path: { id: applicationId },
     });
   }
-  async getSavedJobIds(
-    _accountId: string,
-    marketCode: string,
-  ): Promise<string[]> {
+  async getSavedJobIds(marketCode: string): Promise<string[]> {
     const result = await apiOperation<
       { jobIds: string[] },
       "getEmploymentFavorites"
@@ -184,7 +180,6 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     return result.jobIds;
   }
   async setSavedJob(
-    _accountId: string,
     jobId: string,
     marketCode: string,
     isFavorite: boolean,

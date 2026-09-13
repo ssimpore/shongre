@@ -66,8 +66,8 @@ export const TransactionsPage: React.FC = () => {
     setLoading(true);
     try {
       const [purchases, sales] = await Promise.all([
-        services.orders.getPurchases(currentUser.id),
-        services.orders.getSales(currentUser.id),
+        services.orders.getPurchases(),
+        services.orders.getSales(),
       ]);
       setPurchasesCount(purchases.length);
       setSalesCount(sales.length);

@@ -8184,6 +8184,23 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/support/help-articles": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List published help-center articles for the resolved market */
+        readonly get: operations["getSupportHelpArticles"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/support/metrics": {
         readonly parameters: {
             readonly query?: never;
@@ -13154,6 +13171,23 @@ export interface components {
         readonly SuccessResponse: {
             /** @constant */
             readonly success: true;
+        };
+        readonly SupportHelpArticle: {
+            readonly answer: string;
+            /** @enum {string} */
+            readonly category: "transactions" | "listings" | "delivery" | "account" | "pro" | "safety";
+            readonly id: string;
+            readonly linkHref?: string;
+            readonly linkText?: string;
+            readonly locale: string;
+            readonly marketCode: string | null;
+            readonly question: string;
+            readonly sortOrder: number;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        readonly SupportHelpArticlePage: {
+            readonly items: readonly components["schemas"]["SupportHelpArticle"][];
         };
         /** @enum {string} */
         readonly TaxonomyAdminResource: "categories" | "listingTypes" | "attributes" | "attributeGroups" | "optionSets" | "options" | "optionParentLinks" | "bindings" | "dependencies" | "validationRules" | "aliases" | "referenceData" | "presentations" | "discovery" | "referenceEntries";
@@ -32526,6 +32560,38 @@ export interface operations {
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getSupportHelpArticles: {
+        readonly parameters: {
+            readonly query?: {
+                readonly locale?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Published database-backed help-center articles. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["SupportHelpArticlePage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 500: components["responses"]["InternalError"];
         };
     };

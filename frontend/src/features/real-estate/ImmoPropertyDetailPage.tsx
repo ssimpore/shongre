@@ -131,7 +131,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
         // Account history and recommendations must not gate public discovery.
         if (currentUser && canRecordRecentlyViewed) {
           void services.realEstate
-            .markRecentlyViewed(currentUser.id, result.id)
+            .markRecentlyViewed(result.id)
             .catch(() => undefined);
         }
         void services.realEstate

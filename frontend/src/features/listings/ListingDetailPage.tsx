@@ -821,7 +821,7 @@ export const ListingDetailPage: React.FC = () => {
       };
     }
     void services.watchSubscriptions
-      .list(currentUser.id, activeMarket.code)
+      .list()
       .then((items) => {
         if (active) setWatches(items);
       })
@@ -897,39 +897,32 @@ export const ListingDetailPage: React.FC = () => {
     setWatchPending(targetType);
     try {
       if (existing) {
-        await services.watchSubscriptions.remove(
-          currentUser.id,
-          activeMarket.code,
-          existing.id,
-        );
+        await services.watchSubscriptions.remove(existing.id);
         setWatches((items) => items.filter((item) => item.id !== existing.id));
         toast.info(t("watch.listing.removed"));
       } else {
-        const created = await services.watchSubscriptions.createOrReplace(
-          currentUser.id,
-          {
-            marketCode: activeMarket.code,
-            targetType,
-            targetId,
-            title:
-              targetType === "listing_price"
-                ? listing.title
-                : seller?.name || listing.sellerName,
-            frequency: targetType === "listing_price" ? "immediate" : "daily",
-            channels: { inApp: true, email: false, push: true },
-            ...(targetType === "listing_price"
-              ? {
-                  baselinePrice: {
-                    amountMinor: majorToMinorAmount(
-                      listing.price,
-                      listingCurrency,
-                    ),
-                    currency: listingCurrency,
-                  },
-                }
-              : {}),
-          },
-        );
+        const created = await services.watchSubscriptions.createOrReplace({
+          marketCode: activeMarket.code,
+          targetType,
+          targetId,
+          title:
+            targetType === "listing_price"
+              ? listing.title
+              : seller?.name || listing.sellerName,
+          frequency: targetType === "listing_price" ? "immediate" : "daily",
+          channels: { inApp: true, email: false, push: true },
+          ...(targetType === "listing_price"
+            ? {
+                baselinePrice: {
+                  amountMinor: majorToMinorAmount(
+                    listing.price,
+                    listingCurrency,
+                  ),
+                  currency: listingCurrency,
+                },
+              }
+            : {}),
+        });
         setWatches((items) => [
           created,
           ...items.filter((item) => item.id !== created.id),
@@ -954,15 +947,8 @@ export const ListingDetailPage: React.FC = () => {
       !messageText.trim()
     )
       return;
-    const buyerId = currentUser.id;
-    const buyerName = currentUser.name;
-
     const conversation = await services.messaging.createOrGetConversation({
       listingId: listing.id,
-      buyerId,
-      buyerName,
-      sellerId: listing.sellerId,
-      sellerName: listing.sellerName,
       initialMessage: messageText.trim(),
     });
 
@@ -991,19 +977,10 @@ export const ListingDetailPage: React.FC = () => {
     try {
       const conv = await services.messaging.createOrGetConversation({
         listingId: listing.id,
-        buyerId: currentUser.id,
-        buyerName: currentUser.name,
-        sellerId: listing.sellerId,
-        sellerName: listing.sellerName,
         initialMessage: `Proposition d'offre de prix : ${formatPrice(numPrice, { sourceCurrency: listing.currency })} (Prix initial : ${formatPrice(listing.price, { sourceCurrency: listing.currency })})`,
       });
 
-      await services.messaging.makeOffer(
-        conv.id,
-        currentUser.id,
-        currentUser.name,
-        numPrice,
-      );
+      await services.messaging.makeOffer(conv.id, numPrice);
 
       setIsOfferModalOpen(false);
       setOfferPrice("");

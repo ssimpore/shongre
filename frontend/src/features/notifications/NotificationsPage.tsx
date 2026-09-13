@@ -50,8 +50,7 @@ export const NotificationsPage: React.FC = () => {
       return;
     }
     try {
-      const items =
-        await services.notifications.getUserNotifications(currentUserId);
+      const items = await services.notifications.getUserNotifications();
       setNotifications(items.slice(0, PAGE_SIZES.notificationCenter));
     } finally {
       setIsLoading(false);

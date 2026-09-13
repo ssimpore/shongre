@@ -321,10 +321,7 @@ export const EmploymentSearchPage: React.FC = () => {
       return;
     }
     try {
-      const ids = await services.employment.getSavedJobIds(
-        accountId,
-        activeMarket.code,
-      );
+      const ids = await services.employment.getSavedJobIds(activeMarket.code);
       setSavedState((current) =>
         current.scope === scope
           ? { scope, ids: Array.from(new Set(ids)), loadState: "ready" }
@@ -581,7 +578,6 @@ export const EmploymentSearchPage: React.FC = () => {
     }
     try {
       const isSaved = await services.employment.setSavedJob(
-        currentUser.id,
         job.id,
         activeMarket.code,
         !savedJobIds.has(job.id),

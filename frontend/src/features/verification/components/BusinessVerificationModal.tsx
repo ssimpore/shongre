@@ -70,7 +70,6 @@ export const BusinessVerificationModal: React.FC<
     setError(null);
     try {
       await services.verification.submitBusinessRegistration(
-        currentUser.id,
         identifier.replace(/\s+/g, ""),
       );
       refreshUser?.();

@@ -15,12 +15,10 @@ describe("HTTP vertical favorite market boundaries", () => {
       .mockResolvedValueOnce({ isFavorite: true });
     const service = new HttpCoursesService();
 
-    await expect(service.getSavedTutorIds("ignored", "BE")).resolves.toEqual([
-      "tutor-1",
-    ]);
-    await expect(
-      service.setSavedTutor("ignored", "tutor-1", "BE", true),
-    ).resolves.toBe(true);
+    await expect(service.getSavedTutorIds("BE")).resolves.toEqual(["tutor-1"]);
+    await expect(service.setSavedTutor("tutor-1", "BE", true)).resolves.toBe(
+      true,
+    );
 
     expect(apiOperation).toHaveBeenNthCalledWith(1, "getEducationFavorites", {
       headers: { "X-Shongre-Market": "BE" },
@@ -49,12 +47,10 @@ describe("HTTP vertical favorite market boundaries", () => {
     await service.getCandidateWorkspace("BE");
     await service.getJob("job-1", "BE");
     await service.getSimilarJobs("job-1", "BE");
-    await expect(service.getSavedJobIds("ignored", "BE")).resolves.toEqual([
-      "job-1",
-    ]);
-    await expect(
-      service.setSavedJob("ignored", "job-1", "BE", false),
-    ).resolves.toBe(false);
+    await expect(service.getSavedJobIds("BE")).resolves.toEqual(["job-1"]);
+    await expect(service.setSavedJob("job-1", "BE", false)).resolves.toBe(
+      false,
+    );
 
     expect(apiOperation).toHaveBeenCalledWith(
       "getEmploymentCandidateWorkspace",
@@ -84,11 +80,11 @@ describe("HTTP vertical favorite market boundaries", () => {
       .mockResolvedValueOnce({ isFavorite: true });
     const service = new HttpDeliveryService();
 
+    await expect(service.getFavoriteRequestIds("CH")).resolves.toEqual([
+      "request-1",
+    ]);
     await expect(
-      service.getFavoriteRequestIds("ignored", "CH"),
-    ).resolves.toEqual(["request-1"]);
-    await expect(
-      service.setFavoriteRequest("ignored", "request-1", "CH", true),
+      service.setFavoriteRequest("request-1", "CH", true),
     ).resolves.toBe(true);
 
     expect(apiOperation).toHaveBeenNthCalledWith(1, "getDeliveryFavorites", {

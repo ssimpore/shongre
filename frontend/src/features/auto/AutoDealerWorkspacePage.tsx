@@ -162,7 +162,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
       const job = await services.auto.requestInventoryImport(
         workspace.organization.id,
         type,
-        type === "csv" ? "stock_auto_demo.csv" : undefined,
+        undefined,
         crypto.randomUUID(),
       );
       setWorkspace({ ...workspace, imports: [job, ...workspace.imports] });
@@ -714,8 +714,8 @@ export const AutoDealerWorkspacePage: React.FC = () => {
       <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
         <h2 className="text-base font-bold">Facturation</h2>
         <p className="mt-2 text-xs text-text-secondary">
-          Les prix sont configurés par marché. Aucun paiement réel n’est émis en
-          mode démo.
+          Les prix et le statut de facturation sont chargés depuis le catalogue
+          et les commandes du backend pour le marché actif.
         </p>
         <dl className="mt-4 space-y-2 text-xs">
           <div className="flex justify-between">

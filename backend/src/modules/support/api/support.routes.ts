@@ -2,10 +2,23 @@ import {
   type RouteRegistrar,
   permission,
   AUTHENTICATED,
+  PUBLIC,
 } from "../../../api/v1/route-contract.js";
 import { supportService } from "../support.service.js";
+import { requireApiRequestMarket } from "../../markets/request-market-context.js";
 
 export function registerSupportRoutes(routes: RouteRegistrar): void {
+  routes.addRoute(
+    "GET",
+    "/support/help-articles",
+    PUBLIC,
+    async ({ marketCode, query }) => ({
+      items: await supportService.listHelpArticles(
+        requireApiRequestMarket(marketCode),
+        query.get("locale") || "fr-FR",
+      ),
+    }),
+  );
   routes.addRoute(
     "POST",
     "/support/cases",

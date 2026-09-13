@@ -43,6 +43,12 @@ function createService() {
 }
 
 describe("SupportService", () => {
+  it("does not invent help articles outside the database-backed repository", async () => {
+    await expect(
+      createService().listHelpArticles("FR", "fr-FR"),
+    ).resolves.toEqual([]);
+  });
+
   it("creates an account-owned case with server-derived priority and SLA", async () => {
     const service = createService();
     const created = await service.createCase(customer, {

@@ -20,7 +20,7 @@ export class HttpModerationService implements ModerationServiceContract {
     );
   }
 
-  async listOwnCases(_userId: string): Promise<OwnModerationCase[]> {
+  async listOwnCases(): Promise<OwnModerationCase[]> {
     const response = await apiOperation<
       { items: OwnModerationCase[] },
       "getOwnModerationCases"
@@ -28,7 +28,7 @@ export class HttpModerationService implements ModerationServiceContract {
     return response.items;
   }
 
-  async listOwnAppeals(_userId: string): Promise<ModerationAppeal[]> {
+  async listOwnAppeals(): Promise<ModerationAppeal[]> {
     const response = await apiOperation<
       { items: ModerationAppeal[] },
       "getOwnModerationAppeals"
@@ -38,7 +38,6 @@ export class HttpModerationService implements ModerationServiceContract {
 
   async submitAppeal(
     caseId: string,
-    _userId: string,
     reason: string,
   ): Promise<ModerationAppeal> {
     return apiOperation<ModerationAppeal, "postModerationCaseAppeal">(

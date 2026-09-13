@@ -5,15 +5,10 @@ import {
 } from "../favorites/useScopedResourceFavorites";
 
 const deliveryRequestFavoritesAdapter: ScopedFavoritesAdapter = {
-  load: (accountId, marketCode) =>
-    services.delivery.getFavoriteRequestIds(accountId, marketCode),
-  set: (accountId, requestId, marketCode, isFavorite) =>
-    services.delivery.setFavoriteRequest(
-      accountId,
-      requestId,
-      marketCode,
-      isFavorite,
-    ),
+  load: (_accountId, marketCode) =>
+    services.delivery.getFavoriteRequestIds(marketCode),
+  set: (_accountId, requestId, marketCode, isFavorite) =>
+    services.delivery.setFavoriteRequest(requestId, marketCode, isFavorite),
 };
 
 export function resolveDeliveryFavoriteAccountId(

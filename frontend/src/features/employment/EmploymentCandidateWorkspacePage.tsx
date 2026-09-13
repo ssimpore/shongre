@@ -305,7 +305,6 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
     if (!currentUser) return;
     try {
       const isSaved = await services.employment.setSavedJob(
-        currentUser.id,
         job.id,
         activeMarket.code,
         !job.saved,

@@ -24,8 +24,8 @@ export function useMarketPromotions() {
         input: { paymentMethod: string; idempotencyKey: string },
       ) =>
         services.promotions.applyBoost(context(), listingId, productId, input),
-      subscribeToProPlan: (sellerId: string, planId: string) =>
-        services.promotions.subscribeToProPlan(context(), sellerId, planId),
+      subscribeToProPlan: (planId: string) =>
+        services.promotions.subscribeToProPlan(context(), planId),
     };
   }, [marketContext, t]);
 }

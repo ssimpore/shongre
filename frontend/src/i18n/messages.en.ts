@@ -1378,6 +1378,15 @@ export const messagesEn: MessageCatalogue = {
   "support.helpCenterPage.rechercherUneQuestionDansL": "Search the help centre",
   "support.helpCenterPage.questionsFrequentes": "Frequently asked questions",
   "support.helpCenterPage.vousNAvezPasTrouve": "Didn't find your answer?",
+  "support.helpCenterPage.articlesUnavailable":
+    "Help articles are temporarily unavailable.",
+  "support.helpCenterPage.categoryAll": "All questions",
+  "support.helpCenterPage.categoryTransactions": "Payments and refunds",
+  "support.helpCenterPage.categoryListings": "Listings and selling",
+  "support.helpCenterPage.categoryDelivery": "Delivery and collection",
+  "support.helpCenterPage.categoryAccount": "My account",
+  "support.helpCenterPage.categoryPro": "Pro workspace",
+  "support.helpCenterPage.categorySafety": "Safety and fraud",
   "support.supportRequestDetailPage.ecrivezVotreMessageOuVos":
     "Write your message or extra details here…",
   "support.supportRequestDetailPage.retourAMesDemandes": "Back to my requests",
@@ -3460,7 +3469,7 @@ export const messagesEn: MessageCatalogue = {
   "verification.businessVerificationModal.jeCertifieSurLHonneur":
     "I certify that the documents provided are accurate and accept Shongre's compliance check.",
   "verification.businessVerificationModal.validationInstantaneeParSimulationDu":
-    "Instant approval by simulated RCS register lookup",
+    "Validation through the configured official business register",
   "verification.identityVerificationModal.verificationDIdentiteOfficielleKyc":
     "Official identity verification (KYC)",
   "verification.identityVerificationModal.typeDePieceDIdentite":
@@ -3482,7 +3491,7 @@ export const messagesEn: MessageCatalogue = {
   "verification.identityVerificationModal.regardezLObjectifSansLunettes":
     "Look at the camera without sunglasses or headwear.",
   "verification.identityVerificationModal.validationInstantaneeParSimulationOcr":
-    "Instant approval by simulated OCR / liveness check",
+    "Identity verification through the configured provider",
   "security.requireAuth.cettePageEstReserveeAux":
     "This page is for registered Shongre members. Sign in, or create a free account in a minute.",
   "security.requireAuth.creerUnCompte": "Create an account",

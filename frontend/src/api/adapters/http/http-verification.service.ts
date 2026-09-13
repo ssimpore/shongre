@@ -68,7 +68,6 @@ export class HttpVerificationService implements VerificationServiceContract {
   }
 
   async requestManualReview(input: {
-    userId: string;
     dimension: VerificationDimension;
   }): Promise<ManualReviewCase> {
     return apiOperation<ManualReviewCase, "postComplianceManualReview">(
@@ -81,7 +80,7 @@ export class HttpVerificationService implements VerificationServiceContract {
     );
   }
 
-  async getComplianceStatus(_userId: string): Promise<ComplianceSubject> {
+  async getComplianceStatus(): Promise<ComplianceSubject> {
     return apiOperation<ComplianceSubject, "getComplianceStatus">(
       "getComplianceStatus",
       {},
@@ -89,7 +88,6 @@ export class HttpVerificationService implements VerificationServiceContract {
   }
 
   async getVerificationRequirements(
-    _userId: string,
     input: ComplianceEvaluationInput,
   ): Promise<ComplianceRequirementDecision> {
     return apiOperation<
@@ -99,7 +97,6 @@ export class HttpVerificationService implements VerificationServiceContract {
   }
 
   async startIdentitySession(input: {
-    userId: string;
     dimension: Extract<VerificationDimension, "identity" | "age" | "address">;
     jurisdiction: string;
     returnTo: string;
@@ -117,7 +114,6 @@ export class HttpVerificationService implements VerificationServiceContract {
   }
 
   async startPaymentOnboarding(input: {
-    userId: string;
     jurisdiction: string;
     returnTo: string;
     contactEmail: string;
@@ -173,13 +169,12 @@ export class HttpVerificationService implements VerificationServiceContract {
   }
 
   async submitBusinessRegistration(
-    userId: string,
     siret: string,
   ): Promise<{ status: "verified" }> {
     return apiOperation<
       { status: "verified" },
       "postVerificationBusinessRegistration"
-    >("postVerificationBusinessRegistration", { body: { userId, siret } });
+    >("postVerificationBusinessRegistration", { body: { siret } });
   }
 }
 

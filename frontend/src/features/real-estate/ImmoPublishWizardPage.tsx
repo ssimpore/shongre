@@ -92,14 +92,18 @@ type DraftData = PropertyPublicationDraftData;
 export const ImmoPublishWizardPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { activeMarket } = useMarketLocation();
+  if (!currentUser) return null;
   return (
     <ImmoPublicationEditor
-      key={`${currentUser?.id ?? "guest"}:${activeMarket.code}`}
+      key={`${currentUser.id}:${activeMarket.code}`}
+      accountId={currentUser.id}
     />
   );
 };
 
-const ImmoPublicationEditor: React.FC = () => {
+const ImmoPublicationEditor: React.FC<{ accountId: string }> = ({
+  accountId,
+}) => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
@@ -107,7 +111,6 @@ const ImmoPublicationEditor: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returningFromCheckout = searchParams.get("checkout") === "success";
-  const accountId = currentUser?.id || "guest";
   const [draftId, setDraftId] = useState("");
   const [step, setStep] = useState<number>(FIRST_STEP);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -142,11 +145,7 @@ const ImmoPublicationEditor: React.FC = () => {
     let active = true;
     Promise.all([
       services.realEstate.getCatalog(activeMarket.code),
-      services.realEstate.getOrCreateDraft(
-        accountId,
-        activeMarket.code,
-        currentUser?.name,
-      ),
+      services.realEstate.getOrCreateDraft(activeMarket.code),
     ])
       .then(([nextCatalog, remote]) => {
         if (!active) return;
@@ -1256,7 +1255,7 @@ const ImmoPublicationEditor: React.FC = () => {
                   </p>
                   {paymentStatus ? (
                     <Badge variant="success" className="mt-3">
-                      Paiement démo : {paymentStatus}
+                      État du paiement : {paymentStatus}
                     </Badge>
                   ) : null}
                   <Button
@@ -1342,8 +1341,8 @@ const ImmoPublicationEditor: React.FC = () => {
                     Continuer vers le paiement
                   </Button>
                   <p className="text-center text-micro text-text-muted">
-                    Mode démo : le parcours de paiement est déterministe et
-                    clairement identifié.
+                    Le backend crée le devis et détermine si un passage par le
+                    prestataire de paiement est requis.
                   </p>
                 </>
               )}
@@ -1411,8 +1410,8 @@ const ImmoPublicationEditor: React.FC = () => {
                   : "Accéder au paiement sécurisé"}
               </Button>
               <p className="text-center text-micro text-text-muted">
-                En mode démo, le résultat est déterministe et aucun paiement
-                réel n’est créé.
+                Le paiement n’est confirmé qu’après la réponse du backend et du
+                prestataire configuré pour ce marché.
               </p>
             </div>
           ) : null}

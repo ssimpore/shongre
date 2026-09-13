@@ -63,13 +63,13 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       headers: { "X-Shongre-Market": marketCode },
     });
   }
-  getRecentlyViewed(_accountId: string) {
+  getRecentlyViewed() {
     return apiOperation<PropertyPublic[], "getRealEstateRecentlyViewed">(
       "getRealEstateRecentlyViewed",
       {},
     );
   }
-  markRecentlyViewed(_accountId: string, propertyId: string) {
+  markRecentlyViewed(propertyId: string) {
     return apiOperation<void, "postRealEstateRecentlyViewed">(
       "postRealEstateRecentlyViewed",
       {
@@ -79,11 +79,7 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       },
     );
   }
-  async getOrCreateDraft(
-    _ownerUserId: string,
-    marketCode: string,
-    _sellerDisplayName?: string,
-  ): Promise<PropertyDraft> {
+  async getOrCreateDraft(marketCode: string): Promise<PropertyDraft> {
     return propertyDraftToForm(
       await apiOperation<PropertyDraft, "postRealestateDrafts">(
         "postRealestateDrafts",

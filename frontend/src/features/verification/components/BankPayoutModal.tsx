@@ -34,7 +34,6 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
     setError(null);
     try {
       const onboarding = await services.verification.startPaymentOnboarding({
-        userId: currentUser.id,
         jurisdiction: currentUser.country || activeMarket.countryCode,
         returnTo,
         contactEmail: currentUser.email,

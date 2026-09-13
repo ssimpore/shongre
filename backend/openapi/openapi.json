@@ -34816,6 +34816,64 @@
         "x-shongre-source": "backend/src/modules/reviews/api/reviews.routes.ts"
       }
     },
+    "/support/help-articles": {
+      "get": {
+        "operationId": "getSupportHelpArticles",
+        "tags": ["support"],
+        "summary": "List published help-center articles for the resolved market",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 32
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published database-backed help-center articles.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportHelpArticlePage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/support/api/support.routes.ts"
+      }
+    },
     "/support/cases": {
       "get": {
         "operationId": "getSupportCases",
@@ -50567,6 +50625,95 @@
           },
           "featured": {
             "type": "boolean"
+          }
+        }
+      },
+      "SupportHelpArticle": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "locale",
+          "marketCode",
+          "category",
+          "question",
+          "answer",
+          "sortOrder",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "locale": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 32
+          },
+          "marketCode": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 16
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "transactions",
+              "listings",
+              "delivery",
+              "account",
+              "pro",
+              "safety"
+            ]
+          },
+          "question": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 240
+          },
+          "answer": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 4000
+          },
+          "linkText": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "linkHref": {
+            "type": "string",
+            "pattern": "^/[^/]"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SupportHelpArticlePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/SupportHelpArticle"
+            }
           }
         }
       },

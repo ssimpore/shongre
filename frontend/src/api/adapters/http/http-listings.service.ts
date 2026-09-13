@@ -255,7 +255,7 @@ export class HttpListingsService implements ListingsServiceContract {
     });
   }
 
-  async getOwnListings(_userId: string, marketCode: string) {
+  async getOwnListings(marketCode: string) {
     const result = await apiOperation<
       BackendOwnedListingCollection,
       "getAccountListings"

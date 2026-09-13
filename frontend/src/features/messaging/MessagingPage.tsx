@@ -88,8 +88,8 @@ export const MessagingPage: React.FC = () => {
     setIsLoading(true);
     try {
       const [rawList, blocked] = await Promise.all([
-        services.messaging.getUserConversations(currentUserId),
-        services.messaging.getBlockedUserIds(currentUserId),
+        services.messaging.getUserConversations(),
+        services.messaging.getBlockedUserIds(),
       ]);
       setBlockedUsers(blocked);
 
@@ -162,7 +162,7 @@ export const MessagingPage: React.FC = () => {
           messagingService.mapMessageToTimelineItem(m),
         );
         setTimelineItems(mappedItems);
-        services.messaging.markAsRead(activeConvId, currentUserId);
+        services.messaging.markAsRead(activeConvId);
       }
     });
   }, [activeConvId, currentUserId]);
@@ -222,7 +222,6 @@ export const MessagingPage: React.FC = () => {
     try {
       const savedMsg = await services.messaging.sendMessage({
         conversationId: activeConvId,
-        senderId: currentUserId,
         text: text || (attachmentUrl ? "Photo partagée" : ""),
         attachments: attachmentUrl ? [attachmentUrl] : undefined,
       });
@@ -264,7 +263,7 @@ export const MessagingPage: React.FC = () => {
     const isCurrentlyBlocked = blockedUsers.includes(counterpart.id);
 
     if (isCurrentlyBlocked) {
-      await services.messaging.unblockUser(currentUserId, counterpart.id);
+      await services.messaging.unblockUser(counterpart.id);
       setBlockedUsers((prev) => prev.filter((id) => id !== counterpart.id));
       toast.success(`${counterpart.name} a été débloqué.`);
     } else {
@@ -274,7 +273,7 @@ export const MessagingPage: React.FC = () => {
 
   const confirmBlock = async () => {
     if (!blockModalTarget) return;
-    await services.messaging.blockUser(currentUserId, blockModalTarget);
+    await services.messaging.blockUser(blockModalTarget);
     setBlockedUsers((prev) => [...prev, blockModalTarget]);
     setBlockModalTarget(null);
     toast.info(
@@ -300,12 +299,7 @@ export const MessagingPage: React.FC = () => {
 
   const handleSendOffer = async (amount: number) => {
     if (!activeConvId || !currentUser) return;
-    const offer = await services.messaging.makeOffer(
-      activeConvId,
-      currentUserId,
-      currentUser.name,
-      amount,
-    );
+    const offer = await services.messaging.makeOffer(activeConvId, amount);
     const timelineOffer = messagingService.mapMessageToTimelineItem(offer);
     setTimelineItems((previous) =>
       previous.some((item) => item.id === offer.id)
@@ -324,12 +318,7 @@ export const MessagingPage: React.FC = () => {
     amount?: number,
   ) => {
     if (!activeConvId || !currentUser) return;
-    const updated = await services.messaging.respondToOffer(
-      offerId,
-      currentUserId,
-      currentUser.name,
-      accept,
-    );
+    const updated = await services.messaging.respondToOffer(offerId, accept);
     setTimelineItems((previous) =>
       previous.map((item) =>
         item.id === offerId
@@ -357,10 +346,7 @@ export const MessagingPage: React.FC = () => {
 
   const handleWithdrawOffer = async (offerId: string) => {
     if (!activeConvId) return;
-    const updated = await services.messaging.withdrawOffer(
-      offerId,
-      currentUserId,
-    );
+    const updated = await services.messaging.withdrawOffer(offerId);
     setTimelineItems((previous) =>
       previous.map((item) =>
         item.id === offerId

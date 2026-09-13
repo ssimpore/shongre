@@ -65,14 +65,8 @@ export const DigitalSellerWorkspacePage: React.FC = () => {
     try {
       const [nextPolicy, nextProfile, nextTasks] = await Promise.all([
         services.digitalProducts.getPolicy(activeMarket.code),
-        services.digitalProducts.getSellerProfile(
-          activeMarket.code,
-          currentUser.id,
-        ),
-        services.digitalProducts.listSellerProvisioningTasks(
-          activeMarket.code,
-          currentUser.id,
-        ),
+        services.digitalProducts.getSellerProfile(activeMarket.code),
+        services.digitalProducts.listSellerProvisioningTasks(activeMarket.code),
       ]);
       setPolicy(nextPolicy);
       setProfile(nextProfile);
@@ -125,7 +119,6 @@ export const DigitalSellerWorkspacePage: React.FC = () => {
     try {
       const next = await services.digitalProducts.acceptSellerResponsibilities(
         activeMarket.code,
-        currentUser.id,
         selected,
         policy.version,
       );

@@ -20,7 +20,6 @@ import { Card } from "@shongre/ui/web";
 import { deterministicUuid } from "@shongre/shared/deterministic-id";
 import { services } from "../../api/client/service-registry";
 import { analyticsClient } from "../../analytics/analytics.client";
-import type { DeliveryActor } from "../../api/contracts/delivery.contract";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -61,6 +60,12 @@ const VEHICLE_TYPES: DeliveryVehicleType[] = [
   "van",
 ];
 
+interface DeliveryViewer {
+  userId: string;
+  displayName: string;
+  verified: boolean;
+}
+
 const vehicleOptions = (t: ReturnType<typeof useTranslation>["t"]) =>
   VEHICLE_TYPES.map((value) => ({
     value,
@@ -79,7 +84,7 @@ const toIso = (value: string) => new Date(value).toISOString();
 
 function actorFromUser(
   user: ReturnType<typeof useAuth>["currentUser"],
-): DeliveryActor | null {
+): DeliveryViewer | null {
   if (!user) return null;
   return {
     userId: user.id,
@@ -353,7 +358,7 @@ export function DeliveryRequestDetailPage() {
     Promise.all([
       services.delivery.getPublicRequest(requestId, activeMarket.code),
       actor
-        ? services.delivery.getCourierProfile(actor, activeMarket.code)
+        ? services.delivery.getCourierProfile(activeMarket.code)
         : Promise.resolve(null),
     ])
       .then(([nextRequest, nextProfile]) => {
@@ -413,22 +418,17 @@ export function DeliveryRequestDetailPage() {
       return;
     setSubmitting(true);
     try {
-      await services.delivery.submitApplication(
-        actor,
-        request.id,
-        activeMarket.code,
-        {
-          availabilityNote: availabilityNote.trim(),
-          message: message.trim(),
-          quote: quote
-            ? {
-                amountMinor: Math.round(Number(quote) * 100),
-                currency: activeMarket.currency,
-              }
-            : undefined,
-          idempotencyKey: `web-${actor.userId}-${request.id}`,
-        },
-      );
+      await services.delivery.submitApplication(request.id, activeMarket.code, {
+        availabilityNote: availabilityNote.trim(),
+        message: message.trim(),
+        quote: quote
+          ? {
+              amountMinor: Math.round(Number(quote) * 100),
+              currency: activeMarket.currency,
+            }
+          : undefined,
+        idempotencyKey: `web-${actor.userId}-${request.id}`,
+      });
       toast.success(t("delivery.request.applicationSent"));
       setAvailabilityNote("");
       setMessage("");
@@ -803,7 +803,7 @@ export function DeliveryCreatePage() {
     if (sourceOrderId && sourceOrderState !== "valid") return;
     setSubmitting(true);
     try {
-      const draft = await services.delivery.createDraft(actor, {
+      const draft = await services.delivery.createDraft({
         marketCode: activeMarket.code,
         origin: sourceOrderId ? "order" : "standalone",
         sourceOrderId,
@@ -848,11 +848,7 @@ export function DeliveryCreatePage() {
           JSON.stringify({ actorId: actor.userId, sourceOrderId, fields }),
         )}`,
       });
-      await services.delivery.publishRequest(
-        actor,
-        draft.id,
-        activeMarket.code,
-      );
+      await services.delivery.publishRequest(draft.id, activeMarket.code);
       toast.success(t("delivery.create.success"));
       navigate(routes.delivery.workspace(draft.id));
     } catch {
@@ -1097,9 +1093,7 @@ export function DeliveryWorkspacePage() {
     }
     setLoading(true);
     try {
-      setRequests(
-        await services.delivery.listOwnRequests(actor, activeMarket.code),
-      );
+      setRequests(await services.delivery.listOwnRequests(activeMarket.code));
     } catch {
       setRequests([]);
     } finally {
@@ -1121,7 +1115,6 @@ export function DeliveryWorkspacePage() {
     setAccepting(true);
     try {
       await services.delivery.acceptApplication(
-        actor,
         pendingSelection.request.id,
         pendingSelection.application.id,
         activeMarket.code,
@@ -1144,7 +1137,6 @@ export function DeliveryWorkspacePage() {
     setTransitioning(status);
     try {
       await services.delivery.transition(
-        actor,
         request.id,
         activeMarket.code,
         status,
@@ -1404,8 +1396,8 @@ export function DeliveryCourierWorkspacePage() {
     setLoading(true);
     try {
       const [profile, ownApplications] = await Promise.all([
-        services.delivery.getCourierProfile(actor, activeMarket.code),
-        services.delivery.listOwnApplications(actor, activeMarket.code),
+        services.delivery.getCourierProfile(activeMarket.code),
+        services.delivery.listOwnApplications(activeMarket.code),
       ]);
       if (profile) {
         setStatus(profile.status === "suspended" ? "paused" : profile.status);
@@ -1424,11 +1416,7 @@ export function DeliveryCourierWorkspacePage() {
           .filter((application) => application.status === "accepted")
           .map((application) =>
             services.delivery
-              .getPrivateRequest(
-                actor,
-                application.requestId,
-                activeMarket.code,
-              )
+              .getPrivateRequest(application.requestId, activeMarket.code)
               .catch(() => null),
           ),
       );
@@ -1452,7 +1440,6 @@ export function DeliveryCourierWorkspacePage() {
     setSaving(true);
     try {
       const savedProfile = await services.delivery.saveCourierProfile(
-        actor,
         activeMarket.code,
         {
           status,
@@ -1488,7 +1475,6 @@ export function DeliveryCourierWorkspacePage() {
     setTransitioning(nextStatus);
     try {
       await services.delivery.transition(
-        actor,
         request.id,
         activeMarket.code,
         nextStatus,

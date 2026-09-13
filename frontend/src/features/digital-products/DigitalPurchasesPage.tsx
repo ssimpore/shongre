@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   DIGITAL_ACCESS_REPORT_DESCRIPTION_MAX_LENGTH,
   type DigitalEntitlementProjection,
@@ -103,10 +103,7 @@ export const DigitalPurchasesPage: React.FC = () => {
     setLeaving(null);
     try {
       setItems(
-        await services.digitalProducts.listEntitlements(
-          activeMarket.code,
-          currentUser.id,
-        ),
+        await services.digitalProducts.listEntitlements(activeMarket.code),
       );
     } catch {
       setItems([]);
@@ -130,30 +127,25 @@ export const DigitalPurchasesPage: React.FC = () => {
       const grant = assetId
         ? await services.digitalProducts.createDownloadGrant(
             activeMarket.code,
-            currentUser.id,
             entitlement.id,
             assetId,
           )
         : await services.digitalProducts.createRevealGrant(
             activeMarket.code,
-            currentUser.id,
             entitlement.id,
           );
       const access = await services.digitalProducts.consumeAccessGrant(
-        currentUser.id,
         grant.id,
       );
       if (access.kind === "DOWNLOAD") {
-        if (!access.simulated) {
-          const anchor = document.createElement("a");
-          anchor.href = access.url;
-          anchor.download = access.fileName;
-          anchor.rel = "noopener noreferrer";
-          anchor.style.display = "none";
-          document.body.appendChild(anchor);
-          anchor.click();
-          anchor.remove();
-        }
+        const anchor = document.createElement("a");
+        anchor.href = access.url;
+        anchor.download = access.fileName;
+        anchor.rel = "noopener noreferrer";
+        anchor.style.display = "none";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
       } else if (access.kind === "EXTERNAL_LINK") {
         setLeaving(access);
       } else {
@@ -194,7 +186,6 @@ export const DigitalPurchasesPage: React.FC = () => {
       const type: DigitalAccessReportType = "INVALID_CREDENTIALS";
       await services.digitalProducts.reportInvalidAccess(
         activeMarket.code,
-        currentUser.id,
         entitlementId,
         type,
         reportText.trim(),
@@ -208,11 +199,6 @@ export const DigitalPurchasesPage: React.FC = () => {
       setBusyId(null);
     }
   };
-
-  const hasSimulatedItems = useMemo(
-    () => items.some((item) => item.simulated),
-    [items],
-  );
 
   return (
     <div className="space-y-6">
@@ -229,11 +215,6 @@ export const DigitalPurchasesPage: React.FC = () => {
         <p className="mt-1 max-w-3xl text-sm text-text-secondary">
           {t("digital.purchases.description")}
         </p>
-        {hasSimulatedItems ? (
-          <Badge variant="warning" className="mt-3">
-            {t("digital.common.simulated")}
-          </Badge>
-        ) : null}
       </header>
 
       {error ? (

@@ -150,24 +150,21 @@ export const VerificationCenterPage: React.FC = () => {
     setEvaluationError(null);
     try {
       setDecision(
-        await services.verification.getVerificationRequirements(
-          currentUser.id,
-          {
-            requestedAction,
-            jurisdiction: currentUser.country || activeMarket.countryCode,
-            marketCode: activeMarket.code,
-            transactionContext:
-              requestedAction === "receive_payout" ||
-              requestedAction === "accept_online_payment"
-                ? {
-                    transactionType: "direct_purchase",
-                    contractConclusionMode: "platform",
-                    paymentFlow: "psp_marketplace",
-                    currency: activeMarket.currency,
-                  }
-                : undefined,
-          },
-        ),
+        await services.verification.getVerificationRequirements({
+          requestedAction,
+          jurisdiction: currentUser.country || activeMarket.countryCode,
+          marketCode: activeMarket.code,
+          transactionContext:
+            requestedAction === "receive_payout" ||
+            requestedAction === "accept_online_payment"
+              ? {
+                  transactionType: "direct_purchase",
+                  contractConclusionMode: "platform",
+                  paymentFlow: "psp_marketplace",
+                  currency: activeMarket.currency,
+                }
+              : undefined,
+        }),
       );
     } catch (cause) {
       setEvaluationError(
@@ -246,7 +243,6 @@ export const VerificationCenterPage: React.FC = () => {
       if (!currentUser) return;
       try {
         await services.verification.requestManualReview({
-          userId: currentUser.id,
           dimension,
         });
         toast.success("Demande de revue enregistrée.");

@@ -66,13 +66,9 @@ export interface DigitalAdminOverview {
 
 export interface DigitalProductsServiceContract {
   getPolicy(marketCode: string): Promise<DigitalPolicyProjection>;
-  getSellerProfile(
-    marketCode: string,
-    sellerId: string,
-  ): Promise<DigitalSellerProfile | null>;
+  getSellerProfile(marketCode: string): Promise<DigitalSellerProfile | null>;
   acceptSellerResponsibilities(
     marketCode: string,
-    sellerId: string,
     fulfillmentTypes: FulfillmentType[],
     acceptedPolicyVersion: number,
   ): Promise<DigitalSellerProfile>;
@@ -161,32 +157,22 @@ export interface DigitalProductsServiceContract {
   >;
   listSellerProvisioningTasks(
     marketCode: string,
-    sellerId: string,
   ): Promise<DigitalProvisioningTask[]>;
-  listEntitlements(
-    marketCode: string,
-    buyerId: string,
-  ): Promise<DigitalEntitlementProjection[]>;
+  listEntitlements(marketCode: string): Promise<DigitalEntitlementProjection[]>;
   getEntitlement(
     marketCode: string,
-    buyerId: string,
     entitlementId: string,
   ): Promise<DigitalEntitlementProjection>;
   createDownloadGrant(
     marketCode: string,
-    buyerId: string,
     entitlementId: string,
     assetId: string,
   ): Promise<DigitalAccessGrant>;
   createRevealGrant(
     marketCode: string,
-    buyerId: string,
     entitlementId: string,
   ): Promise<DigitalAccessGrant>;
-  consumeAccessGrant(
-    buyerId: string,
-    grantId: string,
-  ): Promise<ConsumedDigitalAccess>;
+  consumeAccessGrant(grantId: string): Promise<ConsumedDigitalAccess>;
   submitProvisionedAccess(
     marketCode: string,
     entitlementId: string,
@@ -194,7 +180,6 @@ export interface DigitalProductsServiceContract {
   ): Promise<void>;
   reportInvalidAccess(
     marketCode: string,
-    buyerId: string,
     entitlementId: string,
     reportType: DigitalAccessReportType,
     description: string,

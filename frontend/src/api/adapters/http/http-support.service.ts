@@ -6,6 +6,7 @@ import type {
   SupportCaseNoteCreate,
   SupportCaseUpdate,
   SupportCaseCreate,
+  SupportHelpArticle,
 } from "@shongre/contracts/support";
 import { apiOperation } from "./generated-api-operation";
 import type {
@@ -14,6 +15,17 @@ import type {
 } from "../../contracts/support.contract";
 
 export class HttpSupportService implements SupportServiceContract {
+  async listHelpArticles(marketCode: string, locale: string) {
+    const result = await apiOperation<
+      { items: SupportHelpArticle[] },
+      "getSupportHelpArticles"
+    >("getSupportHelpArticles", {
+      query: { locale },
+      headers: { "X-Shongre-Market": marketCode },
+    });
+    return result.items;
+  }
+
   createCase(input: SupportCaseCreate) {
     return apiOperation<SupportCase, "postSupportCases">("postSupportCases", {
       body: input,

@@ -92,10 +92,7 @@ export interface AutoServiceContract {
   getAdminOverview(marketCode: string): Promise<AutoAdminOverview>;
   searchVehicles(query: VehicleSearchQuery): Promise<VehicleSearchResponse>;
   getVehicle(idOrSlug: string, marketCode: string): Promise<VehiclePublic>;
-  getOrCreateDraft(
-    ownerUserId: string,
-    marketCode: string,
-  ): Promise<VehicleDraft>;
+  getOrCreateDraft(marketCode: string): Promise<VehicleDraft>;
   getDraft(draftId: string): Promise<VehicleDraft | null>;
   saveDraft(draft: VehicleDraft): Promise<VehicleDraft>;
   checkDuplicateIdentity(
@@ -125,12 +122,8 @@ export interface AutoServiceContract {
     fileName?: string,
     idempotencyKey?: string,
   ): Promise<InventoryImport>;
-  getFavoriteVehicleIds(
-    accountId: string,
-    marketCode: string,
-  ): Promise<string[]>;
+  getFavoriteVehicleIds(marketCode: string): Promise<string[]>;
   setFavoriteVehicle(
-    accountId: string,
     vehicleId: string,
     marketCode: string,
     isFavorite: boolean,

@@ -6,6 +6,7 @@ import type {
   SupportCaseNote,
   SupportCasePriority,
   SupportCaseStatus,
+  SupportHelpArticle,
 } from "@shongre/contracts/support";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
@@ -18,6 +19,10 @@ export interface SupportCaseFilter {
 }
 
 export interface ISupportRepository {
+  listHelpArticles(
+    marketCode: string,
+    locale: string,
+  ): Promise<SupportHelpArticle[]>;
   getSlaResolutionMinutes(
     category: SupportCaseCategory,
     priority: SupportCasePriority,
@@ -45,6 +50,10 @@ const SLA_MINUTES: Record<SupportCasePriority, number> = {
 export class DemoSupportRepository implements ISupportRepository {
   private readonly cases = new Map<string, SupportCase>();
   private readonly notes = new Map<string, SupportCaseNote[]>();
+
+  async listHelpArticles(): Promise<SupportHelpArticle[]> {
+    return [];
+  }
 
   async getSlaResolutionMinutes(
     _category: SupportCaseCategory,
@@ -150,7 +159,47 @@ function mapNote(row: any): SupportCaseNote {
   };
 }
 
+function mapHelpArticle(row: any): SupportHelpArticle {
+  return {
+    id: row.id,
+    locale: row.locale,
+    marketCode: row.market_code ?? null,
+    category: row.category,
+    question: row.question,
+    answer: row.answer,
+    linkText: row.link_text ?? undefined,
+    linkHref: row.link_href ?? undefined,
+    sortOrder: Number(row.sort_order),
+    updatedAt: row.updated_at,
+  };
+}
+
+function supportLocale(locale: string): "fr-FR" | "en-US" {
+  return locale.toLowerCase().startsWith("en") ? "en-US" : "fr-FR";
+}
+
 export class PostgresSupportRepository implements ISupportRepository {
+  async listHelpArticles(
+    marketCode: string,
+    locale: string,
+  ): Promise<SupportHelpArticle[]> {
+    try {
+      const supabase = getSupabaseAdminClient() as any;
+      const { data, error } = await supabase
+        .from("support_help_articles")
+        .select("*")
+        .eq("locale", supportLocale(locale))
+        .eq("is_published", true)
+        .or(`market_code.is.null,market_code.eq.${marketCode}`)
+        .order("sort_order", { ascending: true })
+        .limit(100);
+      if (error) databaseFailure("support.listHelpArticles", error);
+      return (data ?? []).map(mapHelpArticle);
+    } catch (error) {
+      databaseFailure("support.listHelpArticles", error);
+    }
+  }
+
   async getSlaResolutionMinutes(
     category: SupportCaseCategory,
     priority: SupportCasePriority,

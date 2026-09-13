@@ -127,9 +127,8 @@ export interface CoursesServiceContract {
     decision: "accept" | "decline" | "invalid",
     declineReason?: string,
   ): Promise<CourseLead>;
-  getSavedTutorIds(accountId: string, marketCode: string): Promise<string[]>;
+  getSavedTutorIds(marketCode: string): Promise<string[]>;
   setSavedTutor(
-    accountId: string,
     tutorProfileId: string,
     marketCode: string,
     isFavorite: boolean,

@@ -6,7 +6,6 @@ import type {
   SolutionLifecycle,
   SolutionLifecycleHistoryEntry,
   SolutionListOptions,
-  SolutionsAdminActor,
   UpdateSolutionInput,
 } from "../../../domains/solutions/solutions.types";
 import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
@@ -91,19 +90,14 @@ export class HttpSolutionsService implements SolutionsServiceContract {
     );
   }
 
-  listAdminSolutions(
-    _actor: SolutionsAdminActor,
-  ): Promise<SolutionDefinition[]> {
+  listAdminSolutions(): Promise<SolutionDefinition[]> {
     return apiOperation<SolutionDefinition[], "getAdminSolutions">(
       "getAdminSolutions",
       {},
     );
   }
 
-  createSolution(
-    input: CreateSolutionInput,
-    _actor: SolutionsAdminActor,
-  ): Promise<SolutionDefinition> {
+  createSolution(input: CreateSolutionInput): Promise<SolutionDefinition> {
     return apiOperation<SolutionDefinition, "postAdminSolution">(
       "postAdminSolution",
       { body: input, headers: mutationHeaders("create") },
@@ -113,7 +107,6 @@ export class HttpSolutionsService implements SolutionsServiceContract {
   updateSolution(
     solutionId: string,
     input: UpdateSolutionInput,
-    _actor: SolutionsAdminActor,
   ): Promise<SolutionDefinition> {
     return apiOperation<SolutionDefinition, "patchAdminSolution">(
       "patchAdminSolution",
@@ -127,7 +120,6 @@ export class HttpSolutionsService implements SolutionsServiceContract {
 
   reorderSolutions(
     solutionIds: readonly string[],
-    _actor: SolutionsAdminActor,
   ): Promise<SolutionDefinition[]> {
     return apiOperation<SolutionDefinition[], "putAdminSolutionsOrder">(
       "putAdminSolutionsOrder",
@@ -138,7 +130,7 @@ export class HttpSolutionsService implements SolutionsServiceContract {
   transitionLifecycle(
     solutionId: string,
     lifecycle: SolutionLifecycle,
-    options: { explanation: string; actor: SolutionsAdminActor },
+    options: { explanation: string },
   ): Promise<SolutionDefinition> {
     return apiOperation<SolutionDefinition, "postAdminSolutionLifecycle">(
       "postAdminSolutionLifecycle",
@@ -152,7 +144,6 @@ export class HttpSolutionsService implements SolutionsServiceContract {
 
   listLifecycleHistory(
     solutionId: string,
-    _actor: SolutionsAdminActor,
   ): Promise<SolutionLifecycleHistoryEntry[]> {
     return apiOperation<
       SolutionLifecycleHistoryEntry[],

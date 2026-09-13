@@ -1509,6 +1509,15 @@ export const messagesFr = {
   "support.helpCenterPage.questionsFrequentes": "Questions fréquentes",
   "support.helpCenterPage.vousNAvezPasTrouve":
     "Vous n'avez pas trouvé votre réponse ?",
+  "support.helpCenterPage.articlesUnavailable":
+    "Les articles d’aide ne sont pas disponibles pour le moment.",
+  "support.helpCenterPage.categoryAll": "Toutes les questions",
+  "support.helpCenterPage.categoryTransactions": "Paiements et remboursements",
+  "support.helpCenterPage.categoryListings": "Annonces et vente",
+  "support.helpCenterPage.categoryDelivery": "Livraison et retrait",
+  "support.helpCenterPage.categoryAccount": "Mon compte",
+  "support.helpCenterPage.categoryPro": "Espace Pro",
+  "support.helpCenterPage.categorySafety": "Sécurité et fraude",
 
   // --- support.supportRequestDetailPage ---
   "support.supportRequestDetailPage.ecrivezVotreMessageOuVos":
@@ -2881,7 +2890,7 @@ export const messagesFr = {
   "verification.businessVerificationModal.jeCertifieSurLHonneur":
     "Je certifie sur l'honneur l'exactitude des pièces fournies et accepte la vérification de conformité Shongre.",
   "verification.businessVerificationModal.validationInstantaneeParSimulationDu":
-    "Validation instantanée par simulation du registre RCS",
+    "Validation via le registre officiel configuré",
 
   // --- verification.identityVerificationModal ---
   "verification.identityVerificationModal.verificationDIdentiteOfficielleKyc":
@@ -2905,7 +2914,7 @@ export const messagesFr = {
   "verification.identityVerificationModal.regardezLObjectifSansLunettes":
     "Regardez l'objectif sans lunettes de soleil ni couvre-chef.",
   "verification.identityVerificationModal.validationInstantaneeParSimulationOcr":
-    "Validation instantanée par simulation OCR / Liveness",
+    "Vérification d’identité via le prestataire configuré",
 
   // --- security.requireAuth ---
   "security.requireAuth.cettePageEstReserveeAux":

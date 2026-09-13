@@ -66,7 +66,7 @@ export const ProDashboardPage: React.FC = () => {
         if (!cancelled) setLoadState("error");
       });
     void services.messaging
-      .getUserConversations(currentUser.id)
+      .getUserConversations()
       .then((conversations) => {
         if (!cancelled)
           setUnreadContactCount(

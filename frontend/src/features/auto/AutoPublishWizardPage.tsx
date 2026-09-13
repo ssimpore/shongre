@@ -93,20 +93,22 @@ const TOTAL_STEPS = AUTO_CONSTRAINTS.publication.stepCount;
 export const AutoPublishWizardPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { activeMarket } = useMarketLocation();
+  if (!currentUser) return null;
   return (
     <AutoPublicationEditor
-      key={`${currentUser?.id ?? "guest"}:${activeMarket.code}`}
+      key={`${currentUser.id}:${activeMarket.code}`}
+      accountId={currentUser.id}
     />
   );
 };
 
-const AutoPublicationEditor: React.FC = () => {
+const AutoPublicationEditor: React.FC<{ accountId: string }> = ({
+  accountId,
+}) => {
   const { t } = useTranslation();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
-  const { currentUser } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
-  const accountId = currentUser?.id || "guest";
   const [catalog, setCatalog] = useState<AutoCatalog | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -144,7 +146,7 @@ const AutoPublicationEditor: React.FC = () => {
     let active = true;
     Promise.all([
       services.auto.getCatalog(activeMarket.code),
-      services.auto.getOrCreateDraft(accountId, activeMarket.code),
+      services.auto.getOrCreateDraft(activeMarket.code),
     ])
       .then(([nextCatalog, remote]) => {
         if (!active) return;

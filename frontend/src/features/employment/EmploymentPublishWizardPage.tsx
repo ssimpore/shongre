@@ -166,21 +166,24 @@ const hydrateDraftData = (value: Record<string, unknown>): DraftData => {
 export const EmploymentPublishWizardPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { activeMarket } = useMarketLocation();
+  if (!currentUser) return null;
   return (
     <EmploymentPublicationEditor
-      key={`${currentUser?.id ?? "guest"}:${activeMarket.code}`}
+      key={`${currentUser.id}:${activeMarket.code}`}
+      accountId={currentUser.id}
     />
   );
 };
 
-const EmploymentPublicationEditor: React.FC = () => {
+const EmploymentPublicationEditor: React.FC<{ accountId: string }> = ({
+  accountId,
+}) => {
   const { t } = useTranslation();
-  const { currentUser, can } = useAuth();
+  const { can } = useAuth();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const toast = useToast();
-  const accountId = currentUser?.id || "guest";
   const [draftId, setDraftId] = useState("");
   const [loadError, setLoadError] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -217,7 +220,6 @@ const EmploymentPublicationEditor: React.FC = () => {
     Promise.all([
       services.employment.getCatalog(activeMarket.code),
       services.employment.getOrCreateDraft(
-        accountId,
         activeMarket.code,
         searchParams.get("draft") || undefined,
       ),

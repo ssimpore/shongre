@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Search,
@@ -16,132 +16,86 @@ import {
 import { Button } from "../../design-system/primitives/Button";
 import { useStaticPageSeo } from "../../hooks/useStaticPageSeo";
 import { useTranslation } from "../../i18n/I18nProvider";
-
-interface HelpArticle {
-  id: string;
-  category: string;
-  question: string;
-  answer: string;
-  linkText?: string;
-  linkHref?: string;
-}
-
-const FAQ_ARTICLES: HelpArticle[] = [
-  {
-    id: "faq-1",
-    category: "transactions",
-    question: "Comment fonctionne le paiement en ligne ?",
-    answer:
-      "Le paiement est traité par Stripe et son avancement est reflété dans la commande. Selon le mode de livraison et le statut transmis par le prestataire, le versement au vendeur peut rester en attente pendant la remise ou l'examen d'un litige. Consultez toujours le statut de la commande avant de remettre l'article.",
-    linkText: "En savoir plus sur les paiements",
-    linkHref: "/securite",
-  },
-  {
-    id: "faq-2",
-    category: "transactions",
-    question:
-      "Quelle est la différence entre l'achat direct et la réservation ?",
-    answer:
-      "L'Achat Direct est adapté à la livraison : vous payez la commande et la livraison, puis le vendeur expédie le colis. La Réservation sert à organiser une remise en main propre : les conditions et le montant à payer sont affichés avant toute confirmation.",
-    linkText: "Voir mes transactions",
-    linkHref: "/compte/achats",
-  },
-  {
-    id: "faq-3",
-    category: "listings",
-    question: "Combien de temps mon annonce reste-t-elle en ligne ?",
-    answer:
-      "Votre annonce reste active gratuitement pendant 60 jours. Vous recevrez une notification 3 jours avant expiration pour la prolonger gratuitement en 1 clic.",
-    linkText: "Gérer mes annonces",
-    linkHref: "/compte/annonces",
-  },
-  {
-    id: "faq-4",
-    category: "delivery",
-    question: "Comment expédier un colis vendu via Shongre ?",
-    answer:
-      "Vérifiez d’abord que la commande indique un paiement confirmé. Convenez ensuite du transporteur avec l’acheteur, expédiez le colis avec suivi et renseignez le transporteur ainsi que le numéro de suivi depuis votre espace ventes. Shongre ne fournit pas encore de bordereau prépayé.",
-    linkText: "Mes ventes en cours",
-    linkHref: "/compte/achats",
-  },
-  {
-    id: "faq-5",
-    category: "account",
-    question: "Comment faire vérifier mon profil vendeur ?",
-    answer:
-      "Rendez-vous dans « Mon profil » pour vérifier votre numéro de téléphone et votre pièce d'identité. Le badge vérifié renforce la confiance des acheteurs et accélère vos ventes.",
-    linkText: "Vérifier mon profil",
-    linkHref: "/compte/profil",
-  },
-  {
-    id: "faq-6",
-    category: "pro",
-    question: "Quels sont les avantages d'un compte professionnel ?",
-    answer:
-      "Les professionnels bénéficient d'une vitrine personnalisée, d'un badge Pro certifié avec numéro SIRET, de statistiques avancées, d'un volume d'annonces illimité et d'une facturation avec TVA déductible.",
-    linkText: "Découvrir les offres Pro",
-    linkHref: "/solutions-pro",
-  },
-  {
-    id: "faq-7",
-    category: "safety",
-    question:
-      "Que faire en cas de tentative d'escroquerie ou de message suspect ?",
-    answer:
-      "Ne communiquez jamais vos coordonnées bancaires, votre mot de passe ou vos codes SMS. Utilisez toujours le bouton « Signaler » présent sur chaque annonce et conversation pour alerter instantanément nos modérateurs.",
-    linkText: "Conseils anti-fraude",
-    linkHref: "/securite",
-  },
-];
+import type { SupportHelpArticle } from "@shongre/contracts/support";
+import { services } from "../../api/client/service-registry";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 export const HelpCenterPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket, currentLocale } = useMarketLocation();
   useStaticPageSeo("/aide");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
+  const [articles, setArticles] = useState<SupportHelpArticle[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retry, setRetry] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setLoadError(false);
+    void services.support
+      .listHelpArticles(activeMarket.code, currentLocale)
+      .then((items) => {
+        if (active) setArticles(items);
+      })
+      .catch(() => {
+        if (active) {
+          setArticles([]);
+          setLoadError(true);
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, currentLocale, retry]);
 
   const categories = [
     {
       id: "all",
-      label: "Toutes les questions",
+      label: t("support.helpCenterPage.categoryAll"),
       icon: <HelpCircle className="w-icon-md h-icon-md" />,
     },
     {
       id: "transactions",
-      label: "Paiements & Remboursements",
+      label: t("support.helpCenterPage.categoryTransactions"),
       icon: <CreditCard className="w-icon-md h-icon-md" />,
     },
     {
       id: "listings",
-      label: "Annonces & Vente",
+      label: t("support.helpCenterPage.categoryListings"),
       icon: <Tag className="w-icon-md h-icon-md" />,
     },
     {
       id: "delivery",
-      label: "Livraison & Retrait",
+      label: t("support.helpCenterPage.categoryDelivery"),
       icon: <Truck className="w-icon-md h-icon-md" />,
     },
     {
       id: "account",
-      label: "Mon compte",
+      label: t("support.helpCenterPage.categoryAccount"),
       icon: <User className="w-icon-md h-icon-md" />,
     },
     {
       id: "pro",
-      label: "Espace Pro",
+      label: t("support.helpCenterPage.categoryPro"),
       icon: <Briefcase className="w-icon-md h-icon-md" />,
     },
     {
       id: "safety",
-      label: "Sécurité & Fraude",
+      label: t("support.helpCenterPage.categorySafety"),
       icon: <ShieldCheck className="w-icon-md h-icon-md" />,
     },
   ];
 
   const filteredArticles = useMemo(() => {
-    return FAQ_ARTICLES.filter((article) => {
+    return articles.filter((article) => {
       const matchCat =
         selectedCategory === "all" || article.category === selectedCategory;
       const matchQuery =
@@ -150,7 +104,7 @@ export const HelpCenterPage: React.FC = () => {
         article.answer.toLowerCase().includes(searchQuery.toLowerCase());
       return matchCat && matchQuery;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [articles, selectedCategory, searchQuery]);
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10">
@@ -211,7 +165,32 @@ export const HelpCenterPage: React.FC = () => {
           {t("support.helpCenterPage.questionsFrequentes")}
         </h2>
 
-        {filteredArticles.length === 0 ? (
+        {isLoading ? (
+          <div
+            className="space-y-3 py-3"
+            aria-busy="true"
+            aria-label={t("common.loading")}
+          >
+            {[0, 1, 2].map((item) => (
+              <div
+                key={item}
+                className="h-12 animate-pulse rounded-control bg-bg-muted"
+              />
+            ))}
+          </div>
+        ) : loadError ? (
+          <div className="space-y-3 py-8 text-center" role="alert">
+            <p className="text-xs text-text-tertiary">
+              {t("support.helpCenterPage.articlesUnavailable")}
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => setRetry((value) => value + 1)}
+            >
+              {t("common.retry")}
+            </Button>
+          </div>
+        ) : filteredArticles.length === 0 ? (
           <div className="text-center py-8 text-text-tertiary text-xs">
             {t("support.helpCenterPage.aucunArticleNeCorrespondA")}
           </div>

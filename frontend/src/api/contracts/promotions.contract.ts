@@ -21,7 +21,6 @@ export interface PromotionsServiceContract {
   ): Promise<PromotionActivationResult>;
   subscribeToProPlan(
     marketContext: MarketContext,
-    sellerId: string,
     planId: string,
   ): Promise<{ success: boolean; plan: ProPlan }>;
 }

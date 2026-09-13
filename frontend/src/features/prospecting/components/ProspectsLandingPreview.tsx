@@ -13,73 +13,42 @@ interface ProspectsLandingPreviewProps {
   variant?: "hero" | "dossier";
 }
 
-const candidates = [
-  {
-    initials: "HM",
-    name: "Atelier Horizon Mobilité",
-    location: "Montreuil · Automobile",
-    score: 88,
-    selected: true,
-  },
-  {
-    initials: "MS",
-    name: "Maison Seconde Vie",
-    location: "Lyon · Maison et mobilier",
-    score: 79,
-    selected: false,
-  },
-  {
-    initials: "TL",
-    name: "Talent Local Partners",
-    location: "Bruxelles · Recrutement",
-    score: 82,
-    selected: false,
-  },
-] as const;
-
 function CandidateList() {
   return (
     <div className="hidden min-w-0 border-r border-border-base md:col-span-2 md:block">
       <div className="border-b border-border-base p-4">
         <div className="flex h-control-md items-center gap-2 rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-secondary">
           <Search className="h-icon-sm w-icon-sm shrink-0" aria-hidden="true" />
-          <span className="truncate">ateliers automobiles multimarques</span>
+          <span className="truncate">Critères de recherche</span>
         </div>
         <div className="mt-3 flex items-center justify-between text-micro font-bold text-text-muted">
-          <span>RÉSULTATS DE DÉMONSTRATION</span>
-          <span>Score</span>
+          <span>RÉSULTATS</span>
+          <span>ADÉQUATION</span>
         </div>
       </div>
       <div className="divide-y divide-border-subtle">
-        {candidates.map((candidate) => (
+        {[true, false, false].map((selected, index) => (
           <div
-            key={candidate.name}
+            key={index}
+            aria-hidden="true"
             className={`flex items-center gap-3 p-4 ${
-              candidate.selected
+              selected
                 ? "border-l-2 border-primary bg-primary-light"
                 : "border-l-2 border-transparent bg-bg-surface"
             }`}
           >
             <span
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-xs font-bold ${
-                candidate.selected
+                selected
                   ? "bg-surface-inverse text-text-inverse"
                   : "bg-bg-muted text-text-secondary"
               }`}
-            >
-              {candidate.initials}
+            />
+            <span className="min-w-0 flex-1 space-y-2">
+              <span className="block h-2.5 w-3/4 rounded-full bg-bg-muted" />
+              <span className="block h-2 w-1/2 rounded-full bg-bg-subtle" />
             </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-bold text-text-main">
-                {candidate.name}
-              </span>
-              <span className="mt-0.5 block truncate text-micro text-text-secondary">
-                {candidate.location}
-              </span>
-            </span>
-            <span className="text-xs font-bold tabular-nums text-success">
-              {candidate.score}/100
-            </span>
+            <span className="h-2.5 w-8 rounded-full bg-success-surface" />
           </div>
         ))}
       </div>
@@ -97,29 +66,22 @@ function CandidateList() {
 function CompanyHeader() {
   return (
     <div className="flex items-start gap-3 border-b border-border-base p-4 sm:p-5">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-surface-inverse text-xs font-bold text-text-inverse">
-        HM
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-surface-inverse text-text-inverse">
+        <Building2 className="h-icon-md w-icon-md" aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">
-        {/*
-         * Sample data illustrating the product, not page content. As an `h3`
-         * it entered the document outline directly under the page `h1`, so a
-         * screen-reader user navigating by heading landed on a fictional
-         * company before reaching any real section.
-         */}
         <p className="truncate text-sm font-bold text-text-main sm:text-base">
-          Atelier Horizon Mobilité
+          Dossier d’entreprise
         </p>
         <p className="mt-0.5 flex items-center gap-1 text-xs text-text-muted">
-          <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
-          Montreuil · Automobile
+          Identité, activité et provenance
         </p>
       </div>
       <div className="text-right">
-        <p className="text-xl font-bold tabular-nums text-success sm:text-2xl">
-          88<span className="text-xs text-text-secondary">/100</span>
+        <p className="text-micro font-semibold uppercase tracking-wide text-text-muted">
+          Score calculé
         </p>
-        <p className="text-micro font-semibold text-success">Confiance 91%</p>
+        <span className="mt-2 block h-2.5 w-14 rounded-full bg-success-surface" />
       </div>
     </div>
   );
@@ -135,11 +97,11 @@ function EvidenceTimeline({ compact = false }: { compact?: boolean }) {
           </span>
           <div>
             <p className="text-xs font-bold text-text-main">
-              Pourquoi ce prospect
+              Critères d’adéquation
             </p>
             <p className="mt-1 text-xs leading-relaxed text-text-secondary">
-              Activité multimarque locale, présence professionnelle récente et
-              marché correspondant au profil cible.
+              Les critères appliqués et les preuves correspondantes sont fournis
+              par le backend pour chaque résultat.
             </p>
           </div>
         </div>
@@ -157,14 +119,14 @@ function EvidenceTimeline({ compact = false }: { compact?: boolean }) {
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success"
                 aria-hidden="true"
               />
-              Atelier automobile multimarque
+              Informations issues des sources autorisées
             </li>
             <li className="flex gap-2">
               <Check
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success"
                 aria-hidden="true"
               />
-              Entreprise active en Île-de-France
+              Provenance et date de collecte conservées
             </li>
           </ul>
         </div>
@@ -177,10 +139,10 @@ function EvidenceTimeline({ compact = false }: { compact?: boolean }) {
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold text-text-main">Preuve actuelle</p>
           <p className="mt-1 text-xs leading-relaxed text-text-secondary">
-            Registre professionnel de démonstration
+            Source vérifiée par le backend
           </p>
           <p className="mt-0.5 text-micro font-semibold text-success">
-            Instantané déterministe du 15 août 2026
+            Horodatage fourni avec le résultat
           </p>
         </div>
       </div>
@@ -225,24 +187,22 @@ function DossierPreview({
       <div className="flex items-center gap-2 border-b border-border-base px-4 py-3 text-micro font-semibold text-text-muted sm:px-5">
         <span>Prospects</span>
         <span aria-hidden="true">/</span>
-        <span className="text-text-main">Atelier Horizon Mobilité</span>
+        <span className="text-text-main">Dossier d’entreprise</span>
       </div>
       <CompanyHeader />
       <div className="flex items-center gap-2 border-b border-border-base px-4 py-2.5 text-xs font-semibold text-success sm:px-5">
         <Check className="h-icon-sm w-icon-sm shrink-0" aria-hidden="true" />
-        Aucun doublon confirmé
+        Contrôle des doublons et des preuves
       </div>
       <div className="grid gap-px border-b border-border-base bg-border-base sm:grid-cols-3">
         {[
-          ["Score d’adéquation", "95/100"],
-          ["Score d’opportunité", "77/100"],
-          ["Confiance des données", "91%"],
-        ].map(([label, value]) => (
+          "Score d’adéquation",
+          "Score d’opportunité",
+          "Confiance des données",
+        ].map((label) => (
           <div key={label} className="bg-bg-surface px-4 py-3 sm:px-5">
             <p className="text-micro font-semibold text-text-muted">{label}</p>
-            <p className="mt-1 text-sm font-bold tabular-nums text-text-main">
-              {value}
-            </p>
+            <span className="mt-2 block h-2.5 w-16 rounded-full bg-bg-muted" />
           </div>
         ))}
       </div>

@@ -73,12 +73,4 @@ describe("NotificationService", () => {
 
     expect(notificationService.calculateUnreadCount(notifs)).toBe(2);
   });
-
-  it("provides comprehensive default preferences with mandatory flags", () => {
-    const prefs = notificationService.getDefaultPreferences("user_test");
-    expect(prefs.userId).toBe("user_test");
-    expect(prefs.transactions.isMandatory).toBe(true);
-    expect(prefs.security.isMandatory).toBe(true);
-    expect(prefs.marketing.inApp).toBe(false);
-  });
 });

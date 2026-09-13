@@ -7,10 +7,7 @@ import { apiOperation } from "./generated-api-operation";
 import type { WatchSubscriptionsServiceContract } from "../../contracts/watch-subscriptions.contract";
 
 export class HttpWatchSubscriptionsService implements WatchSubscriptionsServiceContract {
-  async list(
-    _userId: string,
-    _marketCode: string,
-  ): Promise<WatchSubscription[]> {
+  async list(): Promise<WatchSubscription[]> {
     const result = await apiOperation<
       { items: WatchSubscription[] },
       "getWatchSubscriptions"
@@ -19,7 +16,6 @@ export class HttpWatchSubscriptionsService implements WatchSubscriptionsServiceC
   }
 
   async createOrReplace(
-    _userId: string,
     input: CreateWatchSubscriptionInput,
   ): Promise<WatchSubscription> {
     return apiOperation<WatchSubscription, "postWatchSubscription">(
@@ -29,8 +25,6 @@ export class HttpWatchSubscriptionsService implements WatchSubscriptionsServiceC
   }
 
   async update(
-    _userId: string,
-    _marketCode: string,
     id: string,
     input: UpdateWatchSubscriptionInput,
   ): Promise<WatchSubscription> {
@@ -40,11 +34,7 @@ export class HttpWatchSubscriptionsService implements WatchSubscriptionsServiceC
     );
   }
 
-  async remove(
-    _userId: string,
-    _marketCode: string,
-    id: string,
-  ): Promise<void> {
+  async remove(id: string): Promise<void> {
     await apiOperation<{ success: true }, "deleteWatchSubscription">(
       "deleteWatchSubscription",
       { path: { id: id } },

@@ -48,8 +48,8 @@ export type OrderReturnReason = OrderReturn["reason"];
 
 export interface OrdersServiceContract {
   getOrderById(orderId: string): Promise<Transaction | null>;
-  getPurchases(userId: string): Promise<Transaction[]>;
-  getSales(userId: string): Promise<Transaction[]>;
+  getPurchases(): Promise<Transaction[]>;
+  getSales(): Promise<Transaction[]>;
   quoteDirectPurchase(input: {
     listingId: string;
     deliveryMethod: DeliveryType;

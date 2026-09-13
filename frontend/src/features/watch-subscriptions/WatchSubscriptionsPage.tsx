@@ -61,12 +61,7 @@ export const WatchSubscriptionsPage = ({
     setLoading(true);
     setError("");
     try {
-      setItems(
-        await services.watchSubscriptions.list(
-          currentUser.id,
-          activeMarket.code,
-        ),
-      );
+      setItems(await services.watchSubscriptions.list());
     } catch (reason) {
       setError(
         reason instanceof Error ? reason.message : t("watch.error.loading"),
@@ -82,17 +77,12 @@ export const WatchSubscriptionsPage = ({
 
   const update = async (
     item: WatchSubscription,
-    changes: Parameters<typeof services.watchSubscriptions.update>[3],
+    changes: Parameters<typeof services.watchSubscriptions.update>[1],
   ) => {
     if (!currentUser) return;
     setPendingId(item.id);
     try {
-      const next = await services.watchSubscriptions.update(
-        currentUser.id,
-        activeMarket.code,
-        item.id,
-        changes,
-      );
+      const next = await services.watchSubscriptions.update(item.id, changes);
       setItems((current) =>
         current.map((candidate) =>
           candidate.id === next.id ? next : candidate,
@@ -127,11 +117,7 @@ export const WatchSubscriptionsPage = ({
     if (!currentUser) return;
     setPendingId(item.id);
     try {
-      await services.watchSubscriptions.remove(
-        currentUser.id,
-        activeMarket.code,
-        item.id,
-      );
+      await services.watchSubscriptions.remove(item.id);
       setItems((current) =>
         current.filter((candidate) => candidate.id !== item.id),
       );

@@ -136,7 +136,7 @@ export class HttpMessagingService implements MessagingServiceContract {
       signal,
     });
   }
-  async getUserConversations(_userId: string): Promise<Conversation[]> {
+  async getUserConversations(): Promise<Conversation[]> {
     const page = await apiOperation<
       {
         items: BackendConversation[];
@@ -200,12 +200,7 @@ export class HttpMessagingService implements MessagingServiceContract {
     return mapMessage(message);
   }
 
-  async makeOffer(
-    conversationId: string,
-    _senderId: string,
-    _senderName: string,
-    amount: number,
-  ): Promise<Message> {
+  async makeOffer(conversationId: string, amount: number): Promise<Message> {
     const message = await apiOperation<BackendMessage, "postMessagingOffer">(
       "postMessagingOffer",
       {
@@ -218,12 +213,7 @@ export class HttpMessagingService implements MessagingServiceContract {
     return mapMessage(message);
   }
 
-  async respondToOffer(
-    offerId: string,
-    _userId: string,
-    _userName: string,
-    accept: boolean,
-  ): Promise<Message> {
+  async respondToOffer(offerId: string, accept: boolean): Promise<Message> {
     const message = await apiOperation<
       BackendMessage,
       "postMessagingOfferResponse"
@@ -231,7 +221,7 @@ export class HttpMessagingService implements MessagingServiceContract {
     return mapMessage(message);
   }
 
-  async withdrawOffer(offerId: string, _userId: string): Promise<Message> {
+  async withdrawOffer(offerId: string): Promise<Message> {
     const message = await apiOperation<
       BackendMessage,
       "postMessagingOffersIdWithdraw"
@@ -254,25 +244,25 @@ export class HttpMessagingService implements MessagingServiceContract {
     return mapMessage(message);
   }
 
-  async markAsRead(conversationId: string, _userId: string): Promise<void> {
+  async markAsRead(conversationId: string): Promise<void> {
     await apiOperation<void, "postMessagingRead">("postMessagingRead", {
       body: { conversationId },
     });
   }
 
-  async blockUser(_userId: string, targetUserId: string): Promise<void> {
+  async blockUser(targetUserId: string): Promise<void> {
     await apiOperation<void, "postMessagingBlock">("postMessagingBlock", {
       body: { targetUserId },
     });
   }
 
-  async unblockUser(_userId: string, targetUserId: string): Promise<void> {
+  async unblockUser(targetUserId: string): Promise<void> {
     await apiOperation<void, "postMessagingUnblock">("postMessagingUnblock", {
       body: { targetUserId },
     });
   }
 
-  async getBlockedUserIds(_userId: string): Promise<string[]> {
+  async getBlockedUserIds(): Promise<string[]> {
     const response = await apiOperation<
       { userIds: string[] },
       "getMessagingBlocked"

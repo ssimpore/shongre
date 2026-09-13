@@ -72,7 +72,6 @@ describe("critical HTTP adapter boundaries", () => {
     });
     await new HttpModerationService().submitAppeal(
       "case/with space",
-      "ignored",
       "Décision contestée",
     );
     expect(apiOperation).toHaveBeenCalledWith("postModerationCaseAppeal", {
@@ -81,7 +80,6 @@ describe("critical HTTP adapter boundaries", () => {
     });
     await new HttpMessagingService().sendMessage({
       conversationId: "thread/other",
-      senderId: "user-1",
       text: "Bonjour",
     });
     expect(apiOperation).toHaveBeenCalledWith(
@@ -133,12 +131,9 @@ describe("critical HTTP adapter boundaries", () => {
 
   it("keeps watch mutations typed, encoded, and scoped to their endpoint", async () => {
     vi.mocked(apiOperation).mockResolvedValue({ id: "watch/1" });
-    await new HttpWatchSubscriptionsService().update(
-      "account",
-      "FR",
-      "watch/1",
-      { status: "paused" },
-    );
+    await new HttpWatchSubscriptionsService().update("watch/1", {
+      status: "paused",
+    });
     expect(apiOperation).toHaveBeenCalledWith("patchWatchSubscription", {
       path: { id: "watch/1" },
       body: { status: "paused" },

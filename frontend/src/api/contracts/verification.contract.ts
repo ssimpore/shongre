@@ -37,22 +37,18 @@ export interface VerificationServiceContract {
   }): Promise<ManualReviewCase>;
   listComplianceAudit(limit?: number): Promise<ComplianceAuditEvent[]>;
   requestManualReview(input: {
-    userId: string;
     dimension: VerificationDimension;
   }): Promise<ManualReviewCase>;
-  getComplianceStatus(userId: string): Promise<ComplianceSubject>;
+  getComplianceStatus(): Promise<ComplianceSubject>;
   getVerificationRequirements(
-    userId: string,
     input: ComplianceEvaluationInput,
   ): Promise<ComplianceRequirementDecision>;
   startIdentitySession(input: {
-    userId: string;
     dimension: Extract<VerificationDimension, "identity" | "age" | "address">;
     jurisdiction: string;
     returnTo: string;
   }): Promise<{ sessionId: string; redirectUrl: string; expiresAt: string }>;
   startPaymentOnboarding(input: {
-    userId: string;
     jurisdiction: string;
     returnTo: string;
     contactEmail: string;
@@ -73,8 +69,5 @@ export interface VerificationServiceContract {
   lookupCompanyBySiret(
     siretOrSiren: string,
   ): Promise<KYBCompanyLookupResult | null>;
-  submitBusinessRegistration(
-    userId: string,
-    siret: string,
-  ): Promise<{ status: "verified" }>;
+  submitBusinessRegistration(siret: string): Promise<{ status: "verified" }>;
 }

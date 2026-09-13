@@ -5,7 +5,6 @@ import type {
   ModerationAppeal,
   OwnModerationCase,
 } from "../../api/contracts/moderation.contract";
-import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import {
@@ -41,10 +40,8 @@ export const ModerationAppealsPage: React.FC = () => {
     canonicalPath: "/compte/recours",
     noIndex: true,
   });
-  const { currentUser } = useAuth();
   const toast = useToast();
   const { currentLocale } = useMarketLocation();
-  const userId = currentUser?.id || "user-thomas";
   const [cases, setCases] = useState<OwnModerationCase[]>([]);
   const [appeals, setAppeals] = useState<ModerationAppeal[]>([]);
   const [selectedCase, setSelectedCase] = useState<OwnModerationCase | null>(
@@ -58,15 +55,15 @@ export const ModerationAppealsPage: React.FC = () => {
     setIsLoading(true);
     try {
       const [ownCases, ownAppeals] = await Promise.all([
-        services.moderation.listOwnCases(userId),
-        services.moderation.listOwnAppeals(userId),
+        services.moderation.listOwnCases(),
+        services.moderation.listOwnAppeals(),
       ]);
       setCases(ownCases);
       setAppeals(ownAppeals);
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     void load();
@@ -84,11 +81,7 @@ export const ModerationAppealsPage: React.FC = () => {
     }
     setIsSubmitting(true);
     try {
-      await services.moderation.submitAppeal(
-        selectedCase.id,
-        userId,
-        reason.trim(),
-      );
+      await services.moderation.submitAppeal(selectedCase.id, reason.trim());
       setSelectedCase(null);
       setReason("");
       toast.success(

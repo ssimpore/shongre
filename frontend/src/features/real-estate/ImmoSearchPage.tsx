@@ -651,7 +651,7 @@ export const ImmoSearchPage: React.FC = () => {
       location: query.city || t("watch.immo.defaultLocation"),
     });
     try {
-      await services.watchSubscriptions.createOrReplace(currentUser.id, {
+      await services.watchSubscriptions.createOrReplace({
         marketCode: activeMarket.code,
         targetType: "saved_search",
         targetId: id,

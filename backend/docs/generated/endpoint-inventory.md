@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **542**
-- Specification SHA-256: `8f9e23144e543b86`
+- Operations: **543**
+- Specification SHA-256: `d72963d78847b1bd`
 
 ## account
 
@@ -800,6 +800,7 @@
 | `GET` | `/support/cases/mine` | `getSupportCasesMine` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/support/cases` | `getSupportCases` | `permission` | `support.case.read` | `200` |
 | `POST` | `/support/cases` | `postSupportCases` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/support/help-articles` | `getSupportHelpArticles` | `public` | — | `200` |
 | `GET` | `/support/metrics` | `getSupportMetrics` | `permission` | `support.case.read` | `200` |
 
 ## taxonomy

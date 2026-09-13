@@ -22,7 +22,6 @@ export const NotificationPreferencesPage: React.FC = () => {
 
   const { currentUser } = useAuth();
   const toast = useToast();
-  const currentUserId = currentUser ? currentUser.id : "user-thomas";
 
   const [preferences, setPreferences] =
     useState<NotificationPreferences | null>(null);
@@ -30,11 +29,11 @@ export const NotificationPreferencesPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    services.notifications.getPreferences(currentUserId).then((prefs) => {
+    services.notifications.getPreferences().then((prefs) => {
       setPreferences(prefs);
       setIsLoading(false);
     });
-  }, [currentUserId]);
+  }, [currentUser?.id]);
 
   const handleToggle = (
     categoryKey: keyof Omit<NotificationPreferences, "userId" | "updatedAt">,
@@ -66,10 +65,7 @@ export const NotificationPreferencesPage: React.FC = () => {
     if (!preferences) return;
     setIsSaving(true);
     try {
-      await services.notifications.updatePreferences(
-        currentUserId,
-        preferences,
-      );
+      await services.notifications.updatePreferences(preferences);
       toast.success(
         "Vos préférences de notifications ont été enregistrées avec succès.",
       );

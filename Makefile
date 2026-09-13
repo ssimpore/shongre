@@ -9,7 +9,7 @@ endif
 .PHONY: help setup doctor info env-info urls env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
 	dev-down dev-restart dev-status dev-logs dev-reset dev-clean api-export api-generate api-check docker-up docker-down docker-restart logs-backend logs-worker logs-frontend logs-supabase mail-up mail-down mail-status redis-up redis-down redis-status redis-logs \
 	dev dev-web dev-development dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
-	frontend frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e test-web-api-transport frontend-check frontend-clean frontend-logs seo-check seo-audit \
+	frontend frontend-start frontend-build frontend-lint frontend-api-only-check frontend-typecheck frontend-test frontend-test-e2e test-web-api-transport frontend-check frontend-clean frontend-logs seo-check seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
 	brand-sync brand-check brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
@@ -217,6 +217,8 @@ frontend-build: brand-check ## Build the production Web artifact
 	@source scripts/env.sh && NODE_ENV=production npm run build --workspace=frontend
 frontend-lint:
 	@npm run lint --workspace=frontend
+frontend-api-only-check: ## Reject Web demo data, direct Supabase, and non-HTTP service loaders
+	@npm run check:api-only --workspace=frontend
 frontend-typecheck:
 	@npm run typecheck --workspace=frontend
 frontend-test: ## Run Web unit and component tests

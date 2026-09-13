@@ -685,7 +685,7 @@ export const AutoSearchPage: React.FC = () => {
           make: params.get("make") || t("watch.auto.allVehicles"),
         });
     try {
-      await services.watchSubscriptions.createOrReplace(currentUser.id, {
+      await services.watchSubscriptions.createOrReplace({
         marketCode: query.marketCode,
         targetType: "saved_search",
         targetId: id,

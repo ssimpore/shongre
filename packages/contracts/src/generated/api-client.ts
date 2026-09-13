@@ -5510,6 +5510,18 @@ export function getReviewsUserByUserId(
     "application/json",
   );
 }
+export function getSupportHelpArticles(
+  transport: ApiTransport,
+  input: ApiInput<"getSupportHelpArticles">,
+): Promise<ApiResponse<"getSupportHelpArticles">> {
+  return executeApiOperation<"getSupportHelpArticles">(
+    transport,
+    "GET",
+    "/support/help-articles",
+    input,
+    "application/json",
+  );
+}
 export function getSupportCases(
   transport: ApiTransport,
   input: ApiInput<"getSupportCases">,
@@ -6832,6 +6844,7 @@ export const generatedApiOperations = {
   getOrderReviewEligibility,
   postReviewsSubmit,
   getReviewsUserByUserId,
+  getSupportHelpArticles,
   getSupportCases,
   postSupportCases,
   getSupportCasesById,

@@ -32,8 +32,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(true);
     try {
       const [items, count] = await Promise.all([
-        services.notifications.getUserNotifications(currentUserId),
-        services.notifications.getUnreadCount(currentUserId),
+        services.notifications.getUserNotifications(),
+        services.notifications.getUnreadCount(),
       ]);
       setRecentNotifications(items.slice(0, PAGE_SIZES.notificationPreview));
       setUnreadCount(count);
@@ -65,7 +65,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const markAllAsRead = async () => {
     if (!currentUserId) return;
-    await services.notifications.markAllAsRead(currentUserId);
+    await services.notifications.markAllAsRead();
     setRecentNotifications((prev) =>
       prev.map((n) => ({ ...n, isRead: true, status: "read" })),
     );

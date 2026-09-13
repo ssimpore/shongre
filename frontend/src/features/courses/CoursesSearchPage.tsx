@@ -384,10 +384,7 @@ export const CoursesSearchPage: React.FC = () => {
       return;
     }
     try {
-      const ids = await services.courses.getSavedTutorIds(
-        currentUserId,
-        activeMarket.code,
-      );
+      const ids = await services.courses.getSavedTutorIds(activeMarket.code);
       setSavedState((current) =>
         current.scope === scope
           ? { scope, ids: Array.from(new Set(ids)), loadState: "ready" }
@@ -554,7 +551,6 @@ export const CoursesSearchPage: React.FC = () => {
     }
     try {
       const isSaved = await services.courses.setSavedTutor(
-        currentUserId,
         id,
         activeMarket.code,
         !savedIds.includes(id),

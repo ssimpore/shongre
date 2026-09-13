@@ -252,31 +252,6 @@ function unavailableResponse(
 
 export async function proxy(request: NextRequest) {
   const environment = webEnvironmentFromEnvironment();
-  // The API transport validates the exact Web host/origin itself. Marketplace
-  // canonical redirects must not turn /api/v1 into /be/api/v1 or render HTML.
-  if (request.nextUrl.pathname.startsWith("/api/v1/")) {
-    try {
-      decodeURIComponent(request.nextUrl.pathname);
-    } catch {
-      return NextResponse.json(
-        {
-          error: {
-            code: "BAD_REQUEST",
-            statusCode: 400,
-            message: "Le chemin de la requête est invalide.",
-          },
-        },
-        {
-          status: 400,
-          headers: {
-            "Cache-Control": "no-store",
-            "X-Request-Id": crypto.randomUUID(),
-          },
-        },
-      );
-    }
-    return NextResponse.next();
-  }
   const hostname = requestHostname(request);
   const applications = createApplicationRegistry({
     environment: environment.environment,
@@ -498,6 +473,9 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!(?:healthz|readyz)$|_next/static|_next/image|favicon\\.ico|favicon\\.svg|images/|fonts/).*)",
+    // The route handler under app/api/v1 owns the same-origin backend relay.
+    // Keeping it outside marketplace canonicalization also prevents the root
+    // optional catch-all from winning dynamic API route resolution in Next.
+    "/((?!(?:healthz|readyz)$|api/v1(?:/|$)|_next/static|_next/image|favicon\\.ico|favicon\\.svg|images/|fonts/).*)",
   ],
 };

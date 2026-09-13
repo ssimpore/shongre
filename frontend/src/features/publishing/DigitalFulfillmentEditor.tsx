@@ -125,7 +125,7 @@ export const DigitalFulfillmentEditor: React.FC<
     Promise.all([
       services.digitalProducts.getPolicy(marketCode),
       sellerId
-        ? services.digitalProducts.getSellerProfile(marketCode, sellerId)
+        ? services.digitalProducts.getSellerProfile(marketCode)
         : Promise.resolve(null),
     ])
       .then(([nextPolicy, nextProfile]) => {

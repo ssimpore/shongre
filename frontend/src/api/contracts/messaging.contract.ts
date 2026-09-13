@@ -10,7 +10,6 @@ export const MESSAGE_INPUT_CONSTRAINTS = {
 
 export interface SendMessageInput {
   conversationId: string;
-  senderId: string;
   text: string;
   attachments?: string[];
   offerPrice?: number;
@@ -18,10 +17,6 @@ export interface SendMessageInput {
 
 export interface CreateOrGetConversationInput {
   listingId: string;
-  buyerId?: string;
-  buyerName?: string;
-  sellerId?: string;
-  sellerName?: string;
   initialMessage?: string;
 }
 
@@ -34,34 +29,24 @@ export interface MessagingServiceContract {
     conversationIds: readonly string[],
     signal?: AbortSignal,
   ): Promise<ConversationPresencePage>;
-  getUserConversations(userId: string): Promise<Conversation[]>;
+  getUserConversations(): Promise<Conversation[]>;
   getConversationById(id: string): Promise<Conversation | null>;
   getMessages(conversationId: string, cursor?: string): Promise<Message[]>;
   createOrGetConversation(
     input: CreateOrGetConversationInput,
   ): Promise<Conversation>;
   sendMessage(input: SendMessageInput): Promise<Message>;
-  makeOffer(
-    conversationId: string,
-    senderId: string,
-    senderName: string,
-    amount: number,
-  ): Promise<Message>;
-  respondToOffer(
-    offerId: string,
-    userId: string,
-    userName: string,
-    accept: boolean,
-  ): Promise<Message>;
-  withdrawOffer(offerId: string, userId: string): Promise<Message>;
+  makeOffer(conversationId: string, amount: number): Promise<Message>;
+  respondToOffer(offerId: string, accept: boolean): Promise<Message>;
+  withdrawOffer(offerId: string): Promise<Message>;
   schedulePickup(
     conversationId: string,
     date: string,
     timeSlot: string,
     address: string,
   ): Promise<Message>;
-  markAsRead(conversationId: string, userId: string): Promise<void>;
-  blockUser(userId: string, targetUserId: string): Promise<void>;
-  unblockUser(userId: string, targetUserId: string): Promise<void>;
-  getBlockedUserIds(userId: string): Promise<string[]>;
+  markAsRead(conversationId: string): Promise<void>;
+  blockUser(targetUserId: string): Promise<void>;
+  unblockUser(targetUserId: string): Promise<void>;
+  getBlockedUserIds(): Promise<string[]>;
 }

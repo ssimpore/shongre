@@ -28,9 +28,37 @@ export const supportCaseStatuses = [
   "closed",
 ] as const;
 
+export const supportHelpArticleCategories = [
+  "transactions",
+  "listings",
+  "delivery",
+  "account",
+  "pro",
+  "safety",
+] as const;
+
 export const supportCaseCategorySchema = z.enum(supportCaseCategories);
 export const supportCasePrioritySchema = z.enum(supportCasePriorities);
 export const supportCaseStatusSchema = z.enum(supportCaseStatuses);
+export const supportHelpArticleCategorySchema = z.enum(
+  supportHelpArticleCategories,
+);
+
+export const supportHelpArticleSchema = z.object({
+  id: z.string().min(1),
+  locale: z.string().min(2).max(32),
+  marketCode: z.string().min(2).max(16).nullable(),
+  category: supportHelpArticleCategorySchema,
+  question: z.string().min(5).max(240),
+  answer: z.string().min(20).max(4_000),
+  linkText: z.string().min(2).max(120).optional(),
+  linkHref: z
+    .string()
+    .regex(/^\/[^/]/)
+    .optional(),
+  sortOrder: z.number().int().nonnegative(),
+  updatedAt: z.string().datetime({ offset: true }),
+});
 
 export const supportCaseSchema = z.object({
   id: z.string().min(1),
@@ -119,3 +147,7 @@ export type SupportCaseUpdate = z.infer<typeof supportCaseUpdateSchema>;
 export type SupportCaseNoteCreate = z.infer<typeof supportCaseNoteCreateSchema>;
 export type SupportCaseFilter = z.infer<typeof supportCaseFilterSchema>;
 export type SupportCaseMetrics = z.infer<typeof supportCaseMetricsSchema>;
+export type SupportHelpArticleCategory = z.infer<
+  typeof supportHelpArticleCategorySchema
+>;
+export type SupportHelpArticle = z.infer<typeof supportHelpArticleSchema>;

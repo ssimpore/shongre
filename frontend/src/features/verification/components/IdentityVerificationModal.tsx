@@ -31,7 +31,6 @@ export const IdentityVerificationModal: React.FC<
     setError(null);
     try {
       const session = await services.verification.startIdentitySession({
-        userId: currentUser.id,
         dimension: "identity",
         jurisdiction: currentUser.country || activeMarket.countryCode,
         returnTo,

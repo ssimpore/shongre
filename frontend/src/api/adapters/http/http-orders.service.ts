@@ -87,7 +87,7 @@ export class HttpOrdersService implements OrdersServiceContract {
     return order ? mapOrder(order) : null;
   }
 
-  async getPurchases(_userId: string): Promise<Transaction[]> {
+  async getPurchases(): Promise<Transaction[]> {
     return (
       await apiOperation<BackendOrder[], "getOrdersPurchases">(
         "getOrdersPurchases",
@@ -96,7 +96,7 @@ export class HttpOrdersService implements OrdersServiceContract {
     ).map(mapOrder);
   }
 
-  async getSales(_userId: string): Promise<Transaction[]> {
+  async getSales(): Promise<Transaction[]> {
     return (
       await apiOperation<BackendOrder[], "getOrdersSales">("getOrdersSales", {})
     ).map(mapOrder);

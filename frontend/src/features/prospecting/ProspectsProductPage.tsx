@@ -131,8 +131,7 @@ export function ProspectsProductPage() {
                   className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-success"
                   aria-hidden="true"
                 />
-                Données locales déterministes · Aucun fournisseur externe
-                contacté
+                Données chargées depuis votre espace · Sources autorisées
               </p>
             </div>
 
@@ -149,7 +148,7 @@ export function ProspectsProductPage() {
       >
         <Container>
           <h2 id="prospects-trust" className="sr-only">
-            Garanties de la démonstration
+            Garanties de la solution
           </h2>
           <div className="grid grid-cols-2 divide-x divide-y divide-border-base sm:grid-cols-4 sm:divide-y-0">
             {trustPoints.map(([Icon, label]) => (
@@ -395,7 +394,7 @@ export function ProspectsProductPage() {
           <div className="mt-7 grid gap-5 sm:grid-cols-3 sm:divide-x sm:divide-border-inverse-subtle">
             {[
               [Ban, "Aucun contact automatique"],
-              [ShieldCheck, "Aucun fournisseur activé en démo"],
+              [ShieldCheck, "Fournisseurs soumis à activation"],
               [Database, "Données isolées par organisation"],
             ].map(([Icon, label]) => {
               const ItemIcon = Icon as typeof Ban;

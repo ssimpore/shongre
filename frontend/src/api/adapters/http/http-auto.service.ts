@@ -43,10 +43,7 @@ export class HttpAutoService implements AutoServiceContract {
       { path: { id: idOrSlug }, headers: { "X-Shongre-Market": marketCode } },
     );
   }
-  getOrCreateDraft(
-    _ownerUserId: string,
-    marketCode: string,
-  ): Promise<VehicleDraft> {
+  getOrCreateDraft(marketCode: string): Promise<VehicleDraft> {
     return apiOperation<VehicleDraft, "postAutoDrafts">("postAutoDrafts", {
       body: { marketCode },
     });
@@ -134,10 +131,7 @@ export class HttpAutoService implements AutoServiceContract {
       body: { type, fileName, idempotencyKey },
     });
   }
-  async getFavoriteVehicleIds(
-    _accountId: string,
-    marketCode: string,
-  ): Promise<string[]> {
+  async getFavoriteVehicleIds(marketCode: string): Promise<string[]> {
     const result = await apiOperation<
       { vehicleIds: string[] },
       "getAutoFavorites"
@@ -145,7 +139,6 @@ export class HttpAutoService implements AutoServiceContract {
     return result.vehicleIds;
   }
   async setFavoriteVehicle(
-    _accountId: string,
     vehicleId: string,
     marketCode: string,
     isFavorite: boolean,

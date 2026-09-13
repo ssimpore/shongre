@@ -1372,7 +1372,7 @@ export function createSeedListingPromotion(
   )
     return undefined;
 
-  const reference = `local-seed:${listing.id}:${listing.marketCode}`;
+  const reference = `local-seed:${listing.id}:${listing.marketCode}:${listing.promotionType}`;
   return {
     id: localSeedUuid("listing-market-promotion", reference),
     listing_id: listing.id,
@@ -1393,6 +1393,26 @@ export function createSeedListingPromotion(
     starts_at: listing.promotionStartAt,
     ends_at: listing.promotionEndAt,
   };
+}
+
+async function reconcileSeedListingPromotion(listing: Listing): Promise<void> {
+  const client = getSupabaseAdminClient();
+  const promotion = createSeedListingPromotion(listing);
+  let stalePromotions = client
+    .from("listing_promotions")
+    .update({ status: "cancelled" })
+    .eq("listing_id", listing.id)
+    .eq("source_type", "admin_grant")
+    .like("admin_grant_reference", `local-seed:${listing.id}:%`);
+  if (promotion) stalePromotions = stalePromotions.neq("id", promotion.id!);
+  const { error: stalePromotionError } = await stalePromotions;
+  if (stalePromotionError) throw stalePromotionError;
+
+  if (!promotion) return;
+  const { error } = await client
+    .from("listing_promotions")
+    .upsert(promotion, { onConflict: "id" });
+  if (error) throw error;
 }
 
 async function seedGenericListings(
@@ -1478,13 +1498,7 @@ async function seedGenericListings(
       if (fulfillmentResult.error) throw fulfillmentResult.error;
       await repository.save(listing);
     }
-    const promotion = createSeedListingPromotion(listing);
-    if (promotion) {
-      const result = await getSupabaseAdminClient()
-        .from("listing_promotions")
-        .upsert(promotion, { onConflict: "id" });
-      if (result.error) throw result.error;
-    }
+    await reconcileSeedListingPromotion(listing);
     const deleteResult = await client
       .from("listing_media")
       .delete()

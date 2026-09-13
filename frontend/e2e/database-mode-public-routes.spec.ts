@@ -39,6 +39,7 @@ const PUBLIC_ROUTES = [
   "/immo",
   "/auto",
   "/education",
+  "/aide",
 ] as const;
 
 test.describe("database-mode public routes", () => {
@@ -81,6 +82,11 @@ test.describe("database-mode public routes", () => {
   test("opens the Canopée storefront alias and its profile tabs", async ({
     page,
   }) => {
+    const reviewsLoaded = page.waitForResponse(
+      (apiResponse) =>
+        apiResponse.status() === 200 &&
+        apiResponse.url().includes("/api/v1/reviews/user/"),
+    );
     const response = await page.goto("/boutique/agence-canopee", {
       waitUntil: "load",
     });
@@ -92,6 +98,7 @@ test.describe("database-mode public routes", () => {
     await expect(
       page.getByText("Profil introuvable", { exact: true }),
     ).toHaveCount(0);
+    await reviewsLoaded;
     const reviews = page.getByRole("tab", { name: /Avis vérifiés/ });
     await reviews.click();
     await expect(reviews).toHaveAttribute("aria-selected", "true");
@@ -117,6 +124,26 @@ test.describe("database-mode public routes", () => {
   }) => {
     const response = await request.get("/professionnels");
     expect(response.status()).toBe(200);
+  });
+
+  test("renders help articles returned by the database-backed API", async ({
+    page,
+  }) => {
+    const helpArticleCalls: string[] = [];
+    page.on("response", (response) => {
+      if (response.url().includes("/api/v1/support/help-articles")) {
+        helpArticleCalls.push(`${response.status()} ${response.url()}`);
+      }
+    });
+
+    const response = await page.goto("/aide", { waitUntil: "load" });
+    expect(response?.status()).toBe(200);
+    await expect(
+      page.getByRole("button", {
+        name: "Comment fonctionne le paiement en ligne ?",
+      }),
+    ).toBeVisible();
+    expect(helpArticleCalls.some((call) => call.startsWith("200 "))).toBe(true);
   });
 
   test("names the category in the server-rendered h1", async ({ request }) => {

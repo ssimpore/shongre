@@ -29,7 +29,6 @@ import {
   Textarea,
 } from "../../design-system/primitives/FormField";
 import { services } from "../../api/client/service-registry";
-import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { solutionLifecycleLabel } from "../../domains/solutions/solutions.presentation";
@@ -38,7 +37,6 @@ import {
   type SolutionDefinition,
   type SolutionLifecycle,
   type SolutionLifecycleHistoryEntry,
-  type SolutionsAdminActor,
 } from "../../domains/solutions/solutions.types";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -96,7 +94,6 @@ function lifecycleVariant(lifecycle: SolutionLifecycle) {
 }
 
 export function AdminSolutionsPage() {
-  const { currentUser, can } = useAuth();
   const { selectableCountries } = useMarketLocation();
   const toast = useToast();
   const { t } = useTranslation(adminCatalogueFr);
@@ -127,19 +124,10 @@ export function AdminSolutionsPage() {
     noIndex: true,
   });
 
-  const actor = useMemo<SolutionsAdminActor>(
-    () => ({
-      id: currentUser?.id || "anonymous",
-      name: currentUser?.name || "Utilisateur non identifié",
-      canManage: can("admin.configuration.manage"),
-    }),
-    [can, currentUser?.id, currentUser?.name],
-  );
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const values = await services.solutions.listAdminSolutions(actor);
+      const values = await services.solutions.listAdminSolutions();
       setSolutions(values);
       setSelectedId((current) => current || values[0]?.id || "");
     } catch (reason) {
@@ -149,7 +137,7 @@ export function AdminSolutionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [actor, toast]);
+  }, [toast]);
 
   useEffect(() => {
     void load();
@@ -221,7 +209,6 @@ export function AdminSolutionsPage() {
     try {
       const saved = await services.solutions.reorderSolutions(
         reordered.map((solution) => solution.id),
-        actor,
       );
       setSolutions(saved);
       toast.success(t("admin.solutions.order.saved"));
@@ -243,11 +230,9 @@ export function AdminSolutionsPage() {
     if (visibilitySavingId || reorderingId || hasUnsavedDraft) return;
     setVisibilitySavingId(solutionId);
     try {
-      const updated = await services.solutions.updateSolution(
-        solutionId,
-        { catalogVisible },
-        actor,
-      );
+      const updated = await services.solutions.updateSolution(solutionId, {
+        catalogVisible,
+      });
       setSolutions((current) =>
         current.map((solution) =>
           solution.id === updated.id ? updated : solution,
@@ -271,13 +256,13 @@ export function AdminSolutionsPage() {
     setSaving(true);
     try {
       if (creating) {
-        const created = await services.solutions.createSolution(draft, actor);
+        const created = await services.solutions.createSolution(draft);
         setCreating(false);
         setSelectedId(created.id);
-        toast.success("Solution créée dans le catalogue de démonstration.");
+        toast.success("Solution créée dans le catalogue.");
       } else if (selected) {
         const { lifecycle: _lifecycle, ...changes } = draft;
-        await services.solutions.updateSolution(selected.id, changes, actor);
+        await services.solutions.updateSolution(selected.id, changes);
         toast.success("Solution enregistrée.");
       }
       await load();
@@ -308,15 +293,12 @@ export function AdminSolutionsPage() {
     setSaving(true);
     try {
       if (transition === "MAINTENANCE") {
-        await services.solutions.updateSolution(
-          selected.id,
-          { maintenanceMessage: explanation.trim() },
-          actor,
-        );
+        await services.solutions.updateSolution(selected.id, {
+          maintenanceMessage: explanation.trim(),
+        });
       }
       await services.solutions.transitionLifecycle(selected.id, transition, {
         explanation,
-        actor,
       });
       toast.success("Transition enregistrée dans l’historique.");
       setConfirmOpen(false);
@@ -334,9 +316,7 @@ export function AdminSolutionsPage() {
   const openHistory = async () => {
     if (!selected) return;
     try {
-      setHistory(
-        await services.solutions.listLifecycleHistory(selected.id, actor),
-      );
+      setHistory(await services.solutions.listLifecycleHistory(selected.id));
       setHistoryOpen(true);
     } catch (reason) {
       toast.error(
@@ -1155,7 +1135,7 @@ export function AdminSolutionsPage() {
         message={
           transition === "RETIRED"
             ? "La solution disparaîtra immédiatement du catalogue public. Son historique sera conservé."
-            : `Cette transition sera attribuée à ${actor.name} et horodatée dans le registre de démonstration.`
+            : "Cette transition sera attribuée à votre session et horodatée dans le registre d’audit."
         }
         confirmText="Appliquer la transition"
         variant={transition === "RETIRED" ? "danger" : "warning"}

@@ -39,13 +39,19 @@ describe("shared backend marketplace scenario projection", () => {
         placement_type: type,
         label,
         source_type: "admin_grant",
-        admin_grant_reference: `local-seed:${id}:FR`,
+        admin_grant_reference: `local-seed:${id}:FR:${type}`,
         starts_at: listing.promotionStartAt,
         ends_at: listing.promotionEndAt,
       });
       expect(grant?.source_order_id).toBeUndefined();
       expect(grant?.source_entitlement_id).toBeUndefined();
       expect(createSeedListingPromotion(listing)).toEqual(grant);
+      expect(
+        createSeedListingPromotion({
+          ...listing,
+          promotionType: type === "featured" ? "search_bump" : "featured",
+        })?.id,
+      ).not.toBe(grant?.id);
       expect(
         createSeedListingPromotion({ ...listing, status: "draft" }),
       ).toBeUndefined();

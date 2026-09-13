@@ -6,6 +6,7 @@ import type {
   SupportCaseNote,
   SupportCaseNoteCreate,
   SupportCaseUpdate,
+  SupportHelpArticle,
 } from "@shongre/contracts/support";
 
 export interface SupportCaseDetail {
@@ -15,6 +16,10 @@ export interface SupportCaseDetail {
 
 /** Public frontend boundary for customer assistance and the staff queue. */
 export interface SupportServiceContract {
+  listHelpArticles(
+    marketCode: string,
+    locale: string,
+  ): Promise<SupportHelpArticle[]>;
   createCase(input: SupportCaseCreate): Promise<SupportCase>;
   listOwnCases(): Promise<SupportCase[]>;
   getCase(caseId: string): Promise<SupportCaseDetail>;

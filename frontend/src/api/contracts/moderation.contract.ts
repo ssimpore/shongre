@@ -45,13 +45,9 @@ export interface ModerationServiceContract {
     reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
     details: string;
   }): Promise<{ id: string; status: "pending" }>;
-  listOwnCases(userId: string): Promise<OwnModerationCase[]>;
-  listOwnAppeals(userId: string): Promise<ModerationAppeal[]>;
-  submitAppeal(
-    caseId: string,
-    userId: string,
-    reason: string,
-  ): Promise<ModerationAppeal>;
+  listOwnCases(): Promise<OwnModerationCase[]>;
+  listOwnAppeals(): Promise<ModerationAppeal[]>;
+  submitAppeal(caseId: string, reason: string): Promise<ModerationAppeal>;
   listCases(status?: ModerationCaseStatus): Promise<OwnModerationCase[]>;
   listAppeals(status?: ModerationAppeal["status"]): Promise<ModerationAppeal[]>;
   decideAppeal(

@@ -58,7 +58,6 @@ export interface ListingsServiceContract {
     deliveryMethod?: DeliveryType,
   ): Promise<ListingPriceQuote>;
   getOwnListings(
-    userId: string,
     marketCode: string,
   ): Promise<{ listings: Listing[]; total: number }>;
   /** Public, market-scoped card projections used for guest-owned local sets. */
@@ -72,19 +71,10 @@ export interface ListingsServiceContract {
     page: number;
     totalPages: number;
   }>;
-  createListingDraft(
-    marketCode: string,
-    userId?: string,
-  ): Promise<PublicationDraftState>;
+  createListingDraft(marketCode: string): Promise<PublicationDraftState>;
   getListingDraft(marketCode: string): Promise<PublicationDraftState | null>;
-  saveListingDraft(
-    draft: PublicationDraftState,
-    userId?: string,
-  ): Promise<void>;
-  publishListing(
-    draft: PublicationDraftState,
-    sellerId: string,
-  ): Promise<Listing>;
+  saveListingDraft(draft: PublicationDraftState): Promise<void>;
+  publishListing(draft: PublicationDraftState): Promise<Listing>;
   uploadListingPhoto(file: File): Promise<{ assetId: string; url: string }>;
   getBulkImportTemplate(locale: string): Promise<BulkListingImportTemplate>;
   parseBulkImportCsv(

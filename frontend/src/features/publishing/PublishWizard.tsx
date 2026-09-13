@@ -994,20 +994,17 @@ export const PublishWizard: React.FC = () => {
       ] as const;
       for (const requestedAction of actions) {
         const requirement =
-          await services.verification.getVerificationRequirements(
-            currentUser.id,
-            {
-              requestedAction,
-              jurisdiction: draft.location.countryCode || defaultMarketCode,
-              marketCode: draft.marketCode,
-              categoryId: draft.taxonomyNodeId,
-              transactionContext: {
-                transactionType: "classified",
-                contractConclusionMode: "off_platform",
-                paymentFlow: "none",
-              },
+          await services.verification.getVerificationRequirements({
+            requestedAction,
+            jurisdiction: draft.location.countryCode || defaultMarketCode,
+            marketCode: draft.marketCode,
+            categoryId: draft.taxonomyNodeId,
+            transactionContext: {
+              transactionType: "classified",
+              contractConclusionMode: "off_platform",
+              paymentFlow: "none",
             },
-          );
+          });
         if (!requirement.allowed) {
           toast.info(
             "Votre brouillon est conservé. Complétez uniquement la vérification nécessaire pour continuer.",
@@ -1019,10 +1016,7 @@ export const PublishWizard: React.FC = () => {
         }
       }
 
-      const published = await services.listings.publishListing(
-        publishDraft,
-        currentUser.id,
-      );
+      const published = await services.listings.publishListing(publishDraft);
       analyticsService.track("publication_completed", {
         listingId: published.id,
         categoryId: draft.taxonomyNodeId,

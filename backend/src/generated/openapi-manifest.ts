@@ -4409,6 +4409,17 @@ export const OPENAPI_OPERATIONS = {
     successStatus: 200,
     queryParameters: {},
   },
+  "GET /support/help-articles": {
+    operationId: "getSupportHelpArticles",
+    access: "public",
+    permission: null,
+    denyStaffMarketplace: false,
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {
+      locale: "string",
+    },
+  },
   "GET /support/cases": {
     operationId: "getSupportCases",
     access: "permission",
