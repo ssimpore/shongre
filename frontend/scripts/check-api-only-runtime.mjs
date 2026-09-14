@@ -79,9 +79,9 @@ for (const path of walk(adapterRoot)) {
 
 const registryPath = join(sourceRoot, "api/client/service-registry.ts");
 const registrySource = readFileSync(registryPath, "utf8");
-const loaderImports = [...registrySource.matchAll(/import\(["']([^"']+)["']\)/g)].map(
-  (match) => match[1],
-);
+const loaderImports = [
+  ...registrySource.matchAll(/import\(["']([^"']+)["']\)/g),
+].map((match) => match[1]);
 if (
   loaderImports.length === 0 ||
   loaderImports.some((value) => !value.startsWith("../adapters/http/http-"))

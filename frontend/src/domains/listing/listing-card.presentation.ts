@@ -45,11 +45,10 @@ function presentPublishedDecisionDetails(
   taxonomy: VehiclePublic["taxonomy"],
   locale: string,
 ): ListingDecisionDetail[] {
-  return (taxonomy?.cardCharacteristics ?? [])
-    .map((field) => ({
-      label: `${localizeTaxonomyLabels(field.labels, locale)} : ${localizeTaxonomyLabels(field.values, locale)}`,
-      icon: field.icon ?? ("tag" as const),
-    }));
+  return (taxonomy?.cardCharacteristics ?? []).map((field) => ({
+    label: `${localizeTaxonomyLabels(field.labels, locale)} : ${localizeTaxonomyLabels(field.values, locale)}`,
+    icon: field.icon ?? ("tag" as const),
+  }));
 }
 
 function presentEmploymentDecisionDetails(
@@ -220,12 +219,14 @@ export function presentVehicleListingCard(
     marketCode,
   );
   const decisionDetails = decisionDetailsProjection(
-    presentPublishedDecisionDetails(vehicle.taxonomy, locale).filter(
-      ({ label }) =>
-        !label
-          .toLocaleLowerCase(locale)
-          .endsWith(`: ${vehicle.makeLabel.toLocaleLowerCase(locale)}`),
-    ).slice(0, 3),
+    presentPublishedDecisionDetails(vehicle.taxonomy, locale)
+      .filter(
+        ({ label }) =>
+          !label
+            .toLocaleLowerCase(locale)
+            .endsWith(`: ${vehicle.makeLabel.toLocaleLowerCase(locale)}`),
+      )
+      .slice(0, 3),
   );
   return {
     id: vehicle.id,

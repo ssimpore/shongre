@@ -583,6 +583,25 @@ export const messagesEn: MessageCatalogue = {
   "shell.marketDetection.openingSoon": "Coming soon",
   "shell.marketDetection.unavailable": "Unavailable",
   "shell.marketDetection.countryOpeningSoon": "{country} — coming soon",
+  "shell.marketDetection.gatewayHomeAria": "SHONGRE. international home",
+  "shell.marketDetection.gatewaySignIn": "Sign in",
+  "shell.marketDetection.gatewayTitle":
+    "Shongre, the local marketplace on a global scale",
+  "shell.marketDetection.gatewaySubtitle":
+    "Choose your country to find listings, services, and professionals near you.",
+  "shell.marketDetection.gatewayFeatureTrustTitle": "Local and trusted",
+  "shell.marketDetection.gatewayFeatureTrustDesc":
+    "Listings and professionals with trust cues tailored to each market.",
+  "shell.marketDetection.gatewayFeatureLocalTitle": "Close to you",
+  "shell.marketDetection.gatewayFeatureLocalDesc":
+    "Search and services that stay strictly within your selected country without silent mixing.",
+  "shell.marketDetection.gatewayFeatureSimpleTitle": "Simple and convenient",
+  "shell.marketDetection.gatewayFeatureSimpleDesc":
+    "A single Shongre account and the same experience across any market.",
+  "shell.marketDetection.gatewayLegalNav": "Legal links",
+  "shell.marketDetection.gatewaySecurity": "Security",
+  "shell.marketDetection.gatewayPrivacy": "Privacy",
+  "shell.marketDetection.gatewayTerms": "Terms of service",
   "shell.errorBoundary.uneErreurInattendueEstSurvenue":
     "Something unexpected went wrong",
   "shell.errorBoundary.applicationARencontreUnProbleme":

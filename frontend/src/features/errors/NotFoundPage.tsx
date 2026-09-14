@@ -29,7 +29,10 @@ export const NotFoundPage: React.FC = () => {
   /* The same copy the server 404 boundary resolves, so a dead listing says
      "Annonce introuvable" and points at `/recherche` on both paths instead of
      the generic wording drifting from the per-resource wording. */
-  const presentation = resolveNotFoundPresentation(undefined, location.pathname);
+  const presentation = resolveNotFoundPresentation(
+    undefined,
+    location.pathname,
+  );
   usePageMeta({
     title: presentation.title,
     description: presentation.description,

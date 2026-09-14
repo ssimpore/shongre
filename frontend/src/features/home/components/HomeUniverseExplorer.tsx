@@ -49,7 +49,7 @@ const UniverseRail: React.FC<{ group: ResolvedUniverseGroup }> = ({
     <section
       aria-labelledby={headingId}
       data-home-universe-group={group.categoryId}
-      className={`[contain-intrinsic-size:auto_28rem] [content-visibility:auto] ${homepageVisibilityClass(group)}`}
+      className={homepageVisibilityClass(group)}
     >
       <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
         <div className="flex min-w-0 items-center gap-3">

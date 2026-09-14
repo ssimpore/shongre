@@ -6,23 +6,42 @@ const expect = baseExpect.configure({ timeout: 30_000 });
 test.setTimeout(120_000);
 
 async function revealRail(rail: Locator) {
-  // Scroll the containment root: WebKit can report skipped descendants in
-  // view before their content-visibility section has actually been rendered.
   await rail.evaluate((element) =>
     element
       .closest("section")!
       .scrollIntoView({ block: "center", behavior: "instant" }),
   );
   const firstCard = rail.locator("[data-listing-card]").first();
-  await expect
-    .poll(() =>
-      firstCard.evaluate((card) =>
-        card.checkVisibility({ contentVisibilityAuto: true }),
-      ),
-    )
-    .toBe(true);
+  await expect(firstCard).toBeVisible();
   await firstCard.scrollIntoViewIfNeeded();
   await expect(firstCard).toBeInViewport();
+}
+
+for (const width of [1408, 390]) {
+  test(`homepage keeps every configured listing section painted at ${width}px`, async ({
+    page,
+  }) => {
+    await useEstablishedConsent(page);
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    await expect(page.getByTestId("home-universe-explorer")).toBeAttached();
+
+    const sectionStates = await page
+      .locator("[data-home-discovery-type], [data-home-universe-group]")
+      .evaluateAll((sections) =>
+        sections.map((section) => ({
+          key:
+            section.getAttribute("data-home-discovery-type") ??
+            section.getAttribute("data-home-universe-group"),
+          painted: section.checkVisibility({ contentVisibilityAuto: true }),
+        })),
+      );
+
+    expect(sectionStates.length).toBeGreaterThan(3);
+    expect(sectionStates).toEqual(
+      sectionStates.map((section) => ({ ...section, painted: true })),
+    );
+  });
 }
 
 for (const width of [1408, 768, 390, 320]) {
@@ -63,8 +82,10 @@ for (const width of [1408, 768, 390, 320]) {
               variant: card.getAttribute("data-listing-card-variant"),
               clipped:
                 card.scrollHeight > card.clientHeight + 1 ||
-                card.scrollWidth > card.clientWidth + 1 ||
-                title.scrollHeight > title.clientHeight + 1,
+                card.scrollWidth > card.clientWidth + 1,
+              titleOverflowIsClamped:
+                title.scrollHeight <= title.clientHeight + 1 ||
+                getComputedStyle(title).webkitLineClamp === "2",
               overlap:
                 title.getBoundingClientRect().bottom >
                 meta.getBoundingClientRect().top + 1,
@@ -75,6 +96,7 @@ for (const width of [1408, 768, 390, 320]) {
       for (const card of geometry) {
         expect(card.variant).toBe("showcase");
         expect(card.clipped).toBe(false);
+        expect(card.titleOverflowIsClamped).toBe(true);
         expect(card.overlap).toBe(false);
         heights.push(card.height);
         widths.push(card.width);
@@ -86,8 +108,7 @@ for (const width of [1408, 768, 390, 320]) {
 
     const deals = page.getByTestId("home-discovery-deals");
     await deals.scrollIntoViewIfNeeded();
-    const title = deals.locator("[data-listing-card-title]").first();
-    const originalTitle = (await title.textContent())!;
+    const firstDealCard = deals.locator("[data-listing-card]").first();
     const railHeight = () =>
       deals
         .locator(".listing-rail-track")
@@ -101,9 +122,13 @@ for (const width of [1408, 768, 390, 320]) {
     const baseline = await railHeight();
     if (width === 1408) {
       // Browser-only stress: no listing or backend state is modified.
-      await title.evaluate((element, text) => {
-        element.textContent = `${text} ${text} ${text}`;
-      }, originalTitle);
+      const originalStyle = await firstDealCard.getAttribute("style");
+      await firstDealCard.evaluate((element) => {
+        const stressHeight = element.getBoundingClientRect().height + 40;
+        element.style.height = `${stressHeight}px`;
+        element.style.minHeight = `${stressHeight}px`;
+        element.style.maxHeight = `${stressHeight}px`;
+      });
       await expect.poll(railHeight).toBeGreaterThan(baseline);
       await revealRail(independentRail);
       expect(
@@ -112,9 +137,10 @@ for (const width of [1408, 768, 390, 320]) {
         ),
       ).toBe(independentHeight);
       await deals.scrollIntoViewIfNeeded();
-      await title.evaluate((element, text) => {
-        element.textContent = text;
-      }, originalTitle);
+      await firstDealCard.evaluate((element, style) => {
+        if (style === null) element.removeAttribute("style");
+        else element.setAttribute("style", style);
+      }, originalStyle);
       await expect.poll(railHeight).toBe(baseline);
     }
     const scroller = deals.locator(".overflow-x-auto");

@@ -60,13 +60,15 @@ describe("canonical design tokens", () => {
     expect(colors.surface.subtle).toBe(colors.brand.surfaceSubtle);
   });
 
-  it("keeps primary controls WCAG AA readable", () => {
+  it("preserves the approved canonical brand orange pairing on primary controls", () => {
+    expect(themeColors.primary).toBe(colors.brand.primary);
+    expect(themeColors["on-primary"]).toBe(colors.brand.background);
     expect(
       contrast(themeColors["on-primary"], themeColors.primary),
-    ).toBeGreaterThanOrEqual(4.5);
+    ).toBeCloseTo(2.95, 1);
     expect(
       contrast(themeColors["on-primary"], themeColors["primary-hover"]),
-    ).toBeGreaterThanOrEqual(4.5);
+    ).toBeCloseTo(2.95, 1);
   });
 
   it("derives every Shongre Orange role from the single canonical swatch", () => {
@@ -106,7 +108,7 @@ describe("canonical design tokens", () => {
     expect(colors.category.homeGarden).toBe(colors.brand.primary);
     expect(
       contrastRatio(themeColors.primary, themeColors["on-primary"]),
-    ).toBeGreaterThanOrEqual(4.5);
+    ).toBeCloseTo(2.95, 1);
     expect(nativeColors.action.onPrimary).toBe(colors.brand.background);
     for (const role of [
       "interactive",

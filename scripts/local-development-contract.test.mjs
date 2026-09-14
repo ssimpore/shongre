@@ -334,7 +334,7 @@ test("local Supabase tooling is installed and runtime credentials stay ignored",
     ]);
   const packageJson = JSON.parse(packageSource);
 
-  assert.equal(packageJson.devDependencies.supabase, "2.116.0");
+  assert.equal(packageJson.devDependencies.supabase, "^2.117.0");
   assert.match(gitignore, /^\.runtime\/$/m);
   assert.match(service, /source "\$SHONGRE_ROOT\/\.runtime\/supabase\.env"/);
   assert.match(service, /run make supabase-up/);

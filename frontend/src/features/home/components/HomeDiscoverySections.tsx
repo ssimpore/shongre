@@ -82,7 +82,7 @@ export const HomeDiscoverySection: React.FC<{
       aria-labelledby={headingId}
       data-testid={`home-discovery-${type}`}
       data-home-discovery-type={type}
-      className={`[contain-intrinsic-size:auto_28rem] [content-visibility:auto] ${homepageVisibilityClass(section)}`}
+      className={homepageVisibilityClass(section)}
     >
       {section.status === "error" ||
       (section.status !== "loading" && listings.length === 0) ? (

@@ -61231,7 +61231,6 @@
           },
           "schemaVersion": {
             "type": "integer",
-            "minimum": 0,
             "exclusiveMinimum": 0
           },
           "vertical": {
@@ -61631,7 +61630,6 @@
           },
           "schemaVersion": {
             "type": "integer",
-            "minimum": 0,
             "exclusiveMinimum": 0
           },
           "vertical": {
@@ -61760,12 +61758,10 @@
                 },
                 "durationMinutes": {
                   "type": "integer",
-                  "minimum": 0,
                   "exclusiveMinimum": 0
                 },
                 "lessonCount": {
                   "type": "integer",
-                  "minimum": 0,
                   "exclusiveMinimum": 0
                 },
                 "isActive": {

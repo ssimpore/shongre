@@ -598,6 +598,25 @@ export const messagesFr = {
   "shell.marketDetection.openingSoon": "À venir",
   "shell.marketDetection.unavailable": "Indisponible",
   "shell.marketDetection.countryOpeningSoon": "{country} — ouverture prochaine",
+  "shell.marketDetection.gatewayHomeAria": "Accueil international SHONGRE.",
+  "shell.marketDetection.gatewaySignIn": "Se connecter",
+  "shell.marketDetection.gatewayTitle":
+    "Shongre, le marché local à l’échelle du monde",
+  "shell.marketDetection.gatewaySubtitle":
+    "Choisissez votre pays pour retrouver les annonces, les services et les professionnels près de chez vous.",
+  "shell.marketDetection.gatewayFeatureTrustTitle": "Local et de confiance",
+  "shell.marketDetection.gatewayFeatureTrustDesc":
+    "Des annonces et des professionnels avec des repères de confiance adaptés à chaque marché.",
+  "shell.marketDetection.gatewayFeatureLocalTitle": "Proche de vous",
+  "shell.marketDetection.gatewayFeatureLocalDesc":
+    "Une recherche et des services qui restent dans le pays choisi, sans mélange silencieux.",
+  "shell.marketDetection.gatewayFeatureSimpleTitle": "Simple et pratique",
+  "shell.marketDetection.gatewayFeatureSimpleDesc":
+    "Un seul compte Shongre et la même expérience, quel que soit le marché.",
+  "shell.marketDetection.gatewayLegalNav": "Liens légaux",
+  "shell.marketDetection.gatewaySecurity": "Sécurité",
+  "shell.marketDetection.gatewayPrivacy": "Confidentialité",
+  "shell.marketDetection.gatewayTerms": "Conditions d’utilisation",
 
   // --- shell.errorBoundary ---
   "shell.errorBoundary.uneErreurInattendueEstSurvenue":

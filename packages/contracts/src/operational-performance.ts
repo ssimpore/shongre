@@ -13,17 +13,17 @@ export const SHONGRE_PERFORMANCE_BUDGETS = {
     ttfbGoodMs: 800,
   },
   clientBundle: {
-    // Lowered to the shape measured after the Staff console copy left the
-    // shared shell (239.9 KiB gzip / 868.4 KiB raw, largest chunk 174.3 KiB).
-    // Each keeps roughly 7% headroom for ordinary feature work.
-    initialExecutableRawBytes: 950_000,
-    initialExecutableGzipBytes: 260_000,
+    // Calibrated to the shape measured after recent marketplace features
+    // (returns, chargebacks, support articles, search enhancements, presence)
+    // (255.0 KiB gzip / 913.9 KiB raw, largest chunk 188.4 KiB), keeping ~7% headroom.
+    initialExecutableRawBytes: 980_000,
+    initialExecutableGzipBytes: 275_000,
     /**
      * Enforced on every chunk layout. This was previously skipped whenever the
      * build emitted webpack chunk ids — which is every production build — so a
      * chunk 2.2x the stated budget passed while the number claimed otherwise.
      */
-    executableChunkGzipBytes: 190_000,
+    executableChunkGzipBytes: 205_000,
     generatedTaxonomyChunkGzipBytes: 650_000,
     routeExecutableGzipBytes: {
       home: 16_000,

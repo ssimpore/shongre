@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { mergeKeywordSearchParams } from "./search-url";
 
-const criteria = (overrides: Partial<Parameters<typeof mergeKeywordSearchParams>[1]> = {}) => ({
+const criteria = (
+  overrides: Partial<Parameters<typeof mergeKeywordSearchParams>[1]> = {},
+) => ({
   query: "",
   ...overrides,
 });
@@ -71,7 +73,9 @@ describe("mergeKeywordSearchParams", () => {
 
   it("clears attribute facets when the category changes", () => {
     const { params } = mergeKeywordSearchParams(
-      new URLSearchParams("category=vehicules&attr_carburant=essence&attr_boite=auto"),
+      new URLSearchParams(
+        "category=vehicules&attr_carburant=essence&attr_boite=auto",
+      ),
       criteria({ query: "table", categorySlug: "maison" }),
       { currentCategorySlug: "vehicules" },
     );

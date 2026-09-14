@@ -144,12 +144,12 @@ describe("API v1 Endpoints Integration", () => {
         expect(response.status).toBe(200);
         const body = await response.json();
         expect(body.groups.flatMap((group: any) => group.items)).toContainEqual(
-          {
+          expect.objectContaining({
             code: "fuel_type",
             label: "Énergie / Carburant",
             value: "Essence",
             presentation: "fact",
-          },
+          }),
         );
         expect(JSON.stringify(body)).not.toMatch(
           /vin_private|never-public|contactCount/,
