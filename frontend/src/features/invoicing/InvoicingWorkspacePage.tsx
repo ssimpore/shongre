@@ -694,7 +694,7 @@ export function InvoicingWorkspacePage() {
                   id="invoice-recipient"
                   value={customerPartyId}
                   onChange={(event) => setCustomerPartyId(event.target.value)}
-                  className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                  className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
                 >
                   {parties.map((party) => (
                     <option key={party.id} value={party.id}>
@@ -733,7 +733,7 @@ export function InvoicingWorkspacePage() {
                     maxLength={INVOICING_LINE_DESCRIPTION_MAX_LENGTH}
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
-                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
                   />
                 </label>
                 <label className="text-micro font-semibold text-text-secondary">
@@ -744,7 +744,7 @@ export function InvoicingWorkspacePage() {
                     pattern="[0-9]+([.,][0-9]{1,6})?"
                     value={quantity}
                     onChange={(event) => setQuantity(event.target.value)}
-                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
                   />
                 </label>
                 <label className="text-micro font-semibold text-text-secondary">
@@ -755,7 +755,7 @@ export function InvoicingWorkspacePage() {
                     pattern="[0-9]+([.,][0-9]{1,2})?"
                     value={unitPrice}
                     onChange={(event) => setUnitPrice(event.target.value)}
-                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
                   />
                 </label>
                 <label className="text-micro font-semibold text-text-secondary">
@@ -765,7 +765,7 @@ export function InvoicingWorkspacePage() {
                     onChange={(event) =>
                       setTaxRateBps(Number(event.target.value))
                     }
-                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
                   >
                     <option value={2000}>20 %</option>
                     <option value={1000}>10 %</option>

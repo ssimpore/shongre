@@ -168,7 +168,7 @@ export function OAuthCallbackPage() {
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="h-control-touch w-full rounded-control border border-border-disabled bg-bg-surface px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+              className="h-control-touch w-full rounded-control border border-border-disabled bg-bg-surface px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
             />
             {error ? (
               <p role="alert" className="text-xs font-semibold text-danger">

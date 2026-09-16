@@ -983,7 +983,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                       aria-haspopup={hasMenu ? "menu" : undefined}
                       aria-controls={hasMenu ? CATEGORY_MENU_ID : undefined}
                       aria-expanded={hasMenu ? isExpanded : undefined}
-                      className={`relative inline-flex min-h-control-touch items-center gap-2 whitespace-nowrap rounded-control px-2.5 text-sm tracking-tight lg:px-3 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary-ring ${
+                      className={`relative inline-flex min-h-control-touch items-center gap-2 whitespace-nowrap rounded-control px-2.5 text-sm tracking-tight lg:px-3 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-focus ${
                         isActive || isExpanded
                           ? "bg-primary-light font-bold text-text-main after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-primary md:after:inset-x-2"
                           : "font-medium text-text-strong hover:bg-bg-subtle hover:text-text-main"

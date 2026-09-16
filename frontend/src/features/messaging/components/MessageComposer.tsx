@@ -121,7 +121,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             )}
             aria-label={t("messaging.messageComposer.votreMessage")}
             aria-describedby={keyboardHintId}
-            className="block min-h-control-touch max-h-28 w-full resize-none overflow-y-hidden rounded-control border border-border-base bg-bg-base px-3.5 py-2.5 text-sm font-medium leading-5 text-text-main placeholder:text-text-muted focus:border-primary focus:bg-bg-surface focus:outline-none focus:ring-2 focus:ring-primary-light"
+            className="block min-h-control-touch max-h-28 w-full resize-none overflow-y-hidden rounded-control border border-border-base bg-bg-base px-3.5 py-2.5 text-sm font-medium leading-5 text-text-main placeholder:text-text-muted focus:border-primary focus:bg-bg-surface focus:outline-none focus:ring-2 focus:ring-focus"
           />
           <span id={keyboardHintId} className="sr-only">
             {t("messaging.messageComposer.keyboardHint")}

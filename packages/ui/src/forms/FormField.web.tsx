@@ -137,7 +137,7 @@ const fieldSizeClasses: Record<ControlSize, string> = {
 const fieldStateClasses = (error?: boolean) =>
   error
     ? "border-danger focus:border-danger focus:ring-2 focus:ring-danger/20"
-    : "border-border-base hover:border-border-hover focus:border-primary focus:ring-2 focus:ring-primary-ring";
+    : "border-border-base hover:border-border-hover focus:border-primary focus:ring-2 focus:ring-focus";
 
 /**
  * A width supplied by the caller, which must win over the field default.

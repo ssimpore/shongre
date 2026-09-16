@@ -180,15 +180,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const isPhoneVerified = Boolean(currentUser?.isPhoneVerified);
   const isIdentityVerified = Boolean(currentUser?.isIdentityVerified);
 
-  const hydrateProductProjection = async (fallback: UserProfile) => {
-    try {
-      return (await services.auth.getCurrentUser()) ?? fallback;
-    } catch {
-      return fallback;
-    }
-  };
+  const hydrateProductProjection = useCallback(
+    async (fallback: UserProfile) => {
+      try {
+        return (await services.auth.getCurrentUser()) ?? fallback;
+      } catch {
+        return fallback;
+      }
+    },
+    [],
+  );
 
-  const login = async (
+  const login = useCallback(async (
     email: string,
     password: string,
     options?: { rememberMe?: boolean },
@@ -205,9 +208,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       analyticsService.track("login_completed", { source: "email_password" });
     }
     return result;
-  };
+  }, [hydrateProductProjection]);
 
-  const loginWithMFA = async (
+  const loginWithMFA = useCallback(async (
     tempToken: string,
     code: string,
   ): Promise<AuthResult> => {
@@ -219,9 +222,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       analyticsService.track("login_completed", { source: "mfa" });
     }
     return result;
-  };
+  }, [hydrateProductProjection]);
 
-  const registerIndividual = async (data: {
+  const registerIndividual = useCallback(async (data: {
     name: string;
     email: string;
     password: string;
@@ -239,9 +242,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       analyticsService.track("signup_completed", { source: "individual" });
     }
     return result;
-  };
+  }, [hydrateProductProjection]);
 
-  const registerProfessional = async (data: {
+  const registerProfessional = useCallback(async (data: {
     name: string;
     email: string;
     password: string;
@@ -267,9 +270,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       analyticsService.track("signup_completed", { source: "professional" });
     }
     return result;
-  };
+  }, [hydrateProductProjection]);
 
-  const upgradeToPro = async (proData: {
+  const upgradeToPro = useCallback(async (proData: {
     companyName: string;
     sirenSiret: string;
     legalForm: string;
@@ -288,76 +291,104 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setCurrentUser(result.user);
     }
     return result;
-  };
+  }, [currentUser]);
 
-  const switchRole = async (newRole: UserRole) => {
+  const switchRole = useCallback(async (newRole: UserRole) => {
     const user = await services.auth.switchRole(newRole);
     setCurrentUser(user);
     announceAuthChange(user ? "login" : "logout");
-  };
+  }, []);
 
-  const updateProfile = async (updates: AuthProfileUpdate) => {
+  const updateProfile = useCallback(async (updates: AuthProfileUpdate) => {
     if (!currentUser) return;
     const updated = await services.auth.updateProfile(updates);
     setCurrentUser(updated);
-  };
+  }, [currentUser]);
 
-  const can = (
+  const can = useCallback((
     permission: Permission,
     resource?: ResourceOwnershipContext | any,
     options?: AuthorizationContextOptions,
   ): boolean => {
     return authorizationService.can(currentUser, permission, resource, options);
-  };
+  }, [currentUser]);
 
-  const canAccessMarket = (countryCode?: string): boolean => {
+  const canAccessMarket = useCallback((countryCode?: string): boolean => {
     return authorizationService.canAccessMarket(currentUser, countryCode);
-  };
+  }, [currentUser]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     analyticsService.track("logout_completed");
     await services.auth.logout();
     setCurrentUser(null);
     announceAuthChange("logout");
-  };
+  }, []);
 
-  const loginAs = (targetRole: UserRole) => {
+  const loginAs = useCallback((targetRole: UserRole) => {
     switchRole(targetRole);
-  };
+  }, [switchRole]);
 
-  return (
-    <AuthContext.Provider
-      value={{
-        currentUser,
-        role: (currentUser?.role as UserRole) || "guest",
-        platformRole,
-        accountType,
-        effectivePermissions,
-        isAuthenticated: Boolean(currentUser && platformRole !== "guest"),
-        isRestoring,
-        isSuspended,
-        isLimited,
-        isPro,
-        isEmailVerified,
-        isPhoneVerified,
-        isIdentityVerified,
-        login,
-        loginWithMFA,
-        registerIndividual,
-        registerProfessional,
-        upgradeToPro,
-        refreshUser,
-        switchRole,
-        updateProfile,
-        can,
-        canAccessMarket,
-        logout,
-        loginAs,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  /*
+   * A fresh object literal here re-rendered all ~90 `useAuth()` consumers on
+   * every provider render, and the handlers above were plain declarations, so
+   * `React.memo` could not hold anywhere downstream either.
+   */
+  const value = useMemo<AuthContextType>(
+    () => ({
+      currentUser,
+      role: (currentUser?.role as UserRole) || "guest",
+      platformRole,
+      accountType,
+      effectivePermissions,
+      isAuthenticated: Boolean(currentUser && platformRole !== "guest"),
+      isRestoring,
+      isSuspended,
+      isLimited,
+      isPro,
+      isEmailVerified,
+      isPhoneVerified,
+      isIdentityVerified,
+      login,
+      loginWithMFA,
+      registerIndividual,
+      registerProfessional,
+      upgradeToPro,
+      refreshUser,
+      switchRole,
+      updateProfile,
+      can,
+      canAccessMarket,
+      logout,
+      loginAs,
+    }),
+    [
+      currentUser,
+      platformRole,
+      accountType,
+      effectivePermissions,
+      isRestoring,
+      isSuspended,
+      isLimited,
+      isPro,
+      isEmailVerified,
+      isPhoneVerified,
+      isIdentityVerified,
+      login,
+      loginWithMFA,
+      registerIndividual,
+      registerProfessional,
+      upgradeToPro,
+      refreshUser,
+      switchRole,
+      updateProfile,
+      can,
+      canAccessMarket,
+      logout,
+      loginAs,
+    ],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export function useAuth(): AuthContextType {

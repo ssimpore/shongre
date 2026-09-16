@@ -502,7 +502,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           role="search"
           aria-label={t("ui.globalSearchBar.rechercheGlobale")}
           onSubmit={handleSubmit}
-          className={`flex items-stretch h-control-md w-full min-w-0 bg-bg-base border border-border-base rounded-control overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-ring-strong focus-within:bg-bg-surface focus-within:shadow-xs ${CONTROL_MOTION_CLASS} ${className}`}
+          className={`flex items-stretch h-control-md w-full min-w-0 bg-bg-base border border-border-base rounded-control overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-focus focus-within:bg-bg-surface focus-within:shadow-xs ${CONTROL_MOTION_CLASS} ${className}`}
         >
           {/* Category Trigger Dropdown.
               Hidden below `lg`: between 768px and 1024px the category picker and
@@ -523,7 +523,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 aria-haspopup="dialog"
                 aria-controls={`${idPrefix}-header-category-menu`}
                 aria-label={t("ui.globalSearchBar.selectionnerUneCategorie")}
-                className={`h-full flex items-center gap-1.5 px-3 border-r border-border-base text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer rounded-l-control focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary-ring-strong focus-visible:ring-inset min-w-0 w-full ${
+                className={`h-full flex items-center gap-1.5 px-3 border-r border-border-base text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer rounded-l-control focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset min-w-0 w-full ${
                   selectedCategorySlug
                     ? "bg-primary-light text-text-main hover:bg-primary-surface-soft"
                     : "text-text-emphasis hover:bg-bg-subtle"
@@ -735,7 +735,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           className={`space-y-2.5 ${className}`}
         >
           <div
-            className={`flex h-control-md min-w-0 items-stretch rounded-control border border-border-base bg-bg-base focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-ring ${CONTROL_MOTION_CLASS}`}
+            className={`flex h-control-md min-w-0 items-stretch rounded-control border border-border-base bg-bg-base focus-within:border-primary focus-within:ring-2 focus-within:ring-focus ${CONTROL_MOTION_CLASS}`}
           >
             <input
               ref={searchInputRef}
@@ -1025,7 +1025,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               }}
               onFocus={() => setIsAutocompleteOpen(true)}
               onKeyDown={handleInputKeyDown}
-              className="w-full h-control-touch pl-10 pr-9 bg-bg-base text-sm text-text-main rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
+              className="w-full h-control-touch pl-10 pr-9 bg-bg-base text-sm text-text-main rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus"
             />
             {query && (
               <button
@@ -1219,7 +1219,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
         {/* 2. Keyword Search Query Input */}
         <div
-          className={`flex-1 flex items-center gap-2.5 px-3.5 h-control-touch bg-bg-base rounded-control border border-border-base hover:border-border-hover focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-light focus-within:bg-bg-surface ${CONTROL_MOTION_CLASS}`}
+          className={`flex-1 flex items-center gap-2.5 px-3.5 h-control-touch bg-bg-base rounded-control border border-border-base hover:border-border-hover focus-within:border-primary focus-within:ring-2 focus-within:ring-focus focus-within:bg-bg-surface ${CONTROL_MOTION_CLASS}`}
         >
           <Search className="w-icon-md h-icon-md text-text-disabled shrink-0" />
           <input

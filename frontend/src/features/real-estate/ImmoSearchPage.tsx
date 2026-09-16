@@ -805,6 +805,7 @@ export const ImmoSearchPage: React.FC = () => {
               showDesktopFilters ? "lg:grid-cols-sidebar" : "lg:grid-cols-1"
             }`}
           >
+            <h2 className="sr-only">{t("search.resultsHeading")}</h2>
             {showDesktopFilters ? (
               <aside
                 className="sticky top-24 hidden lg:block"

@@ -278,6 +278,117 @@ test.describe("keyboard and focus", () => {
     ).toEqual([]);
   });
 
+  /*
+   * The test above stops at the header, and it asks only whether an indicator
+   * is *painted*. Both limits hid the same defect: every listing-card link drew
+   * its ring from a 40%-alpha tint, which is present and opaque enough to pass
+   * — and measures 1.57:1 against the card it sits on, well under the 3:1 that
+   * WCAG 2.2 SC 2.4.11 requires. Cards are the marketplace's primary navigation
+   * unit, so this covers main content and checks contrast, not presence.
+   */
+  test("focus indicators in main content meet SC 2.4.11 contrast", async ({
+    page,
+  }) => {
+    await usePersona(page, "individual_buyer");
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/recherche", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    // Start the walk inside main content rather than at the document top.
+    await page.evaluate(() => {
+      const main = document.querySelector("main");
+      const first = main?.querySelector<HTMLElement>("a[href], button");
+      first?.focus();
+    });
+
+    const weak: string[] = [];
+    let checked = 0;
+    // The toolbar takes the first ~6 stops; the walk has to run well past it to
+    // reach the card links, which are the controls this test exists for.
+    for (let attempt = 0; attempt < 70 && checked < 16; attempt += 1) {
+      await page.keyboard.press("Tab");
+      await page.waitForTimeout(250);
+      const info = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        if (!el || el === document.body) return null;
+        if (el.closest("nextjs-portal")) return { skip: true };
+        if (!el.closest("main")) return { skip: true };
+
+        const parse = (color: string): [number, number, number, number] => {
+          const m = color.match(/rgba?\(([^)]+)\)/);
+          if (!m) return [0, 0, 0, 0];
+          const p = m[1].split(",").map((n) => parseFloat(n));
+          return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+        };
+        const lum = ([r, g, b]: number[]) => {
+          const s = [r, g, b].map((v) => {
+            const n = v / 255;
+            return n <= 0.03928 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4;
+          });
+          return 0.2126 * s[0] + 0.7152 * s[1] + 0.0722 * s[2];
+        };
+        const ratio = (a: number[], b: number[]) => {
+          const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+          return (hi + 0.05) / (lo + 0.05);
+        };
+        // The indicator is composited over whatever it sits on.
+        const over = (fg: number[], alpha: number, bg: number[]) =>
+          fg.map((v, i) => v * alpha + bg[i] * (1 - alpha));
+
+        /** Nearest ancestor that actually paints a background. */
+        const groundOf = (node: Element): number[] => {
+          let cur: Element | null = node;
+          while (cur) {
+            const [r, g, b, a] = parse(getComputedStyle(cur).backgroundColor);
+            if (a > 0) return [r, g, b];
+            cur = cur.parentElement;
+          }
+          return [255, 255, 255];
+        };
+
+        let best = 0;
+        let node: Element | null = el;
+        for (let depth = 0; node && depth < 3; depth += 1) {
+          const style = getComputedStyle(node);
+          const ground = groundOf(node.parentElement ?? node);
+
+          if (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0) {
+            const [r, g, b, a] = parse(style.outlineColor);
+            best = Math.max(best, ratio(over([r, g, b], a, ground), ground));
+          }
+          for (const shadow of style.boxShadow.split(/,(?![^(]*\))/)) {
+            const lengths = shadow.match(/-?[\d.]+px/g) ?? [];
+            if (!lengths.some((l) => Math.abs(parseFloat(l)) >= 1)) continue;
+            const [r, g, b, a] = parse(shadow);
+            if (a === 0) continue;
+            best = Math.max(best, ratio(over([r, g, b], a, ground), ground));
+          }
+          node = node.parentElement;
+        }
+
+        const label = (
+          el.getAttribute("aria-label") ||
+          el.textContent ||
+          el.tagName
+        )
+          .trim()
+          .slice(0, 40);
+        return { skip: false, ratio: best, label, tag: el.tagName };
+      });
+      if (!info || info.skip) continue;
+      checked += 1;
+      if (info.ratio < 3)
+        weak.push(`${info.tag} "${info.label}" — ${info.ratio.toFixed(2)}:1`);
+    }
+
+    // Guard the guard: if the walk stops short of the cards it proves nothing.
+    expect(checked).toBeGreaterThanOrEqual(12);
+    expect(
+      weak,
+      `focus indicators below the 3:1 floor:\n  ${weak.join("\n  ")}`,
+    ).toEqual([]);
+  });
+
   test("the mobile drawer traps focus and closes on Escape", async ({
     page,
   }) => {

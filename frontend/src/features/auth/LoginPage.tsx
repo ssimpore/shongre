@@ -140,7 +140,7 @@ export const LoginPage: React.FC = () => {
               placeholder={t("auth.loginPage.ex123456Ou84921049")}
               autoFocus
               required
-              className="w-full px-4 py-3 text-center tracking-widest text-lg font-bold bg-surface-soft border border-border-prominent rounded-control text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring focus:bg-bg-surface h-control-touch"
+              className="w-full px-4 py-3 text-center tracking-widest text-lg font-bold bg-surface-soft border border-border-prominent rounded-control text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus focus:bg-bg-surface h-control-touch"
             />
           </div>
 
@@ -190,7 +190,7 @@ export const LoginPage: React.FC = () => {
                   placeholder={t("auth.loginPage.votreEmailExempleFr")}
                   required
                   autoComplete="email"
-                  className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main placeholder:text-text-tertiary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main placeholder:text-text-tertiary focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
                 />
                 <Mail className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
               </div>

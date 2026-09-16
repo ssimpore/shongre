@@ -1269,7 +1269,7 @@ export const PublishWizard: React.FC = () => {
                   )}
                   value={categorySearchQuery}
                   onChange={(e) => setCategorySearchQuery(e.target.value)}
-                  className="w-full h-control-md pl-9 pr-3 bg-bg-base text-xs text-text-main rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring font-medium"
+                  className="w-full h-control-md pl-9 pr-3 bg-bg-base text-xs text-text-main rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus font-medium"
                 />
               </div>
 
@@ -1628,7 +1628,7 @@ export const PublishWizard: React.FC = () => {
             ))}
 
             {draft.photos.length < maximumPhotoCount && (
-              <label className="aspect-square rounded-xl border-2 border-dashed border-border-base hover:border-primary bg-bg-base flex flex-col items-center justify-center gap-1.5 text-text-tertiary hover:text-primary transition-colors cursor-pointer p-4 focus-within:ring-2 focus-within:ring-primary-ring-strong">
+              <label className="aspect-square rounded-xl border-2 border-dashed border-border-base hover:border-primary bg-bg-base flex flex-col items-center justify-center gap-1.5 text-text-tertiary hover:text-primary transition-colors cursor-pointer p-4 focus-within:ring-2 focus-within:ring-focus">
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"

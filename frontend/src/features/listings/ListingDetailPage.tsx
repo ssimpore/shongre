@@ -226,7 +226,7 @@ const PurchasePriceDisclosure: React.FC<{ listing: Listing }> = ({
           <dt className="font-medium text-text-secondary">
             {t("listings.pricing.itemPrice")}
           </dt>
-          <dd className="font-bold tabular-nums text-text-primary">
+          <dd className="font-bold tabular-nums text-text-main">
             {formatPrice(listing.price, {
               sourceCurrency: listing.currency,
             })}
@@ -238,7 +238,7 @@ const PurchasePriceDisclosure: React.FC<{ listing: Listing }> = ({
               <dt className="font-medium text-text-secondary">
                 {t("listings.pricing.buyerProtection")}
               </dt>
-              <dd className="font-semibold tabular-nums text-text-primary">
+              <dd className="font-semibold tabular-nums text-text-main">
                 {money(quote.protectionFeeMinor, quote.currency)}
               </dd>
             </div>
@@ -246,12 +246,12 @@ const PurchasePriceDisclosure: React.FC<{ listing: Listing }> = ({
               <dt className="font-medium text-text-secondary">
                 {t("listings.pricing.delivery")}
               </dt>
-              <dd className="font-semibold text-right tabular-nums text-text-primary">
+              <dd className="font-semibold text-right tabular-nums text-text-main">
                 {deliveryValue(quote)}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3 border-t border-border-subtle pt-2">
-              <dt className="font-bold text-text-primary">
+              <dt className="font-bold text-text-main">
                 {t("listings.pricing.total")}
               </dt>
               <dd className="text-right font-bold tabular-nums text-primary">

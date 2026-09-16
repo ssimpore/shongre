@@ -208,7 +208,7 @@ export const VerifyEmailPage: React.FC = () => {
                 onChange={(e) => setTokenInput(e.target.value)}
                 placeholder={t("auth.verifyEmailPage.collezIciVotreJetonDe")}
                 required
-                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-mono text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-mono text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
             </div>
 

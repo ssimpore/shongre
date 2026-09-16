@@ -5,6 +5,7 @@ export * from "./primitives/Typography.web";
 export * from "./primitives/Badge.web";
 export * from "./primitives/Avatar.web";
 export * from "./primitives/Card.web";
+export * from "./primitives/PageHeader.web";
 export * from "./primitives/Spinner.web";
 export * from "./identity/identity-status.types";
 export * from "./identity/VerifiedIcon.web";

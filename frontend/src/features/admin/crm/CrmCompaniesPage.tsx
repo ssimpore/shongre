@@ -296,7 +296,7 @@ export const CrmCompaniesPage: React.FC = () => {
               setSelectedViewId("");
             }}
             placeholder={t("admin.crmCompaniesPage.nomDomaineOuSecteur")}
-            className="h-control-md w-full rounded-control border border-border-disabled bg-surface-soft pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
+            className="h-control-md w-full rounded-control border border-border-disabled bg-surface-soft pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-focus"
           />
         </label>
         <div className="flex min-w-0 items-center gap-2 overflow-x-auto">

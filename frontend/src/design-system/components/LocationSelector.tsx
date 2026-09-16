@@ -25,7 +25,7 @@ const variantClasses: Record<
   string
 > = {
   header:
-    "hidden xl:flex h-full max-w-45 min-w-0 shrink-0 items-center gap-1.5 border-l border-border-base px-3.5 text-xs font-medium text-text-emphasis hover:bg-bg-subtle focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-ring-strong",
+    "hidden xl:flex h-full max-w-45 min-w-0 shrink-0 items-center gap-1.5 border-l border-border-base px-3.5 text-xs font-medium text-text-emphasis hover:bg-bg-subtle focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus",
   minimal:
     "h-control-md w-full items-center justify-between rounded-control border border-border-base bg-bg-base px-2.5 text-xs font-semibold text-text-emphasis hover:bg-bg-subtle",
   "search-page":

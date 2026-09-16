@@ -201,7 +201,7 @@ export function ProspectsAppLayout() {
               id="prospects-section-navigation"
               value={activePath}
               onChange={(event) => navigate(event.target.value)}
-              className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-bold text-text-main outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
+              className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-bold text-text-main outline-none focus:border-primary focus:ring-2 focus:ring-focus"
             >
               {visibleNavigation.map((item) => (
                 <option key={item.to} value={item.to}>

@@ -25,6 +25,7 @@ export * from "./primitives/Image";
 export * from "./primitives/Layout";
 export * from "./primitives/Modal";
 export * from "./primitives/Card";
+export * from "./primitives/PageHeader";
 export * from "./primitives/ScrollRail";
 export * from "./primitives/ScrollableRegion";
 export * from "./primitives/SelectableCard";
@@ -47,23 +48,25 @@ export * from "./components/Tabs";
 
 // Marketplace components and patterns. These retain their stable filenames
 // while the public API classifies them above the primitive layer.
-/* `CategoryFilterRail` is deliberately NOT re-exported here.
+/* `CategoryFilterRail` and `ListingCard` are deliberately NOT re-exported here.
  *
- * It statically imports `domains/taxonomy/taxonomy.data`, whose module scope
- * eagerly builds the taxonomy projection from a ~616 KiB gzip generated bundle.
- * Because that evaluation is a module side effect the bundler cannot drop it,
- * so re-exporting the rail from this barrel pulled the whole taxonomy into the
- * initial client bundle of every route that touches the design system —
- * including pages with no categories at all, like /connexion.
+ * The original reason was a bundle incident: the rail statically imported
+ * `domains/taxonomy/taxonomy.data`, whose module scope eagerly built the
+ * taxonomy projection from a ~616 KiB gzip generated bundle. Because that
+ * evaluation was a module side effect the bundler could not drop it, so
+ * re-exporting the rail pulled the whole taxonomy into the initial client
+ * bundle of every route touching the design system — including /connexion.
  *
- * No feature imports the rail; its test imports the file directly. Anything
- * that needs it should import it by path so the cost lands on that route only:
+ * That specific hazard is gone: `taxonomy.data` no longer exists, and the rail
+ * now imports only `taxonomy.labels` (a ~1.7 KB pure formatter). The exclusion
+ * stands on the narrower rule it established — a barrel plus one side-effectful
+ * module is enough to defeat tree-shaking for the entire app, so route-owned
+ * components are imported by path and the cost lands on that route alone:
  *   import { CategoryFilterRail } from "@/design-system/primitives/CategoryFilterRail";
  *
- * `ListingCard` follows the same route-owned rule. All card consumers import
- * its canonical adapter directly, so re-exporting it here would hydrate the
- * card projection, localized pricing and taxonomy data on routes without any
- * listings.
+ * `ListingCard` follows the same rule: its adapter hydrates the card
+ * projection and localized pricing, which routes without listings should not
+ * pay for.
  */
 export * from "./primitives/CategoryIcon";
 export * from "./primitives/CountryFlag";

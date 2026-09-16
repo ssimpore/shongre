@@ -807,7 +807,7 @@ export const ProspectingWorkspacePage: React.FC<
                   }}
                   aria-describedby="prospecting-query-help prospecting-query-count"
                   placeholder="Ex. ateliers automobiles spécialisés en carrosserie à Lyon avec un site professionnel, une expérience de plus de 10 ans et des avis clients positifs"
-                  className="min-h-32 w-full resize-y rounded-control border border-border-hover bg-bg-surface py-4 pl-12 pr-20 text-sm leading-6 text-text-main outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary-ring sm:min-h-36 sm:text-base"
+                  className="min-h-32 w-full resize-y rounded-control border border-border-hover bg-bg-surface py-4 pl-12 pr-20 text-sm leading-6 text-text-main outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-focus sm:min-h-36 sm:text-base"
                 />
                 <span
                   id="prospecting-query-count"

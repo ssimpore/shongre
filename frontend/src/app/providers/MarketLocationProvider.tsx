@@ -993,9 +993,14 @@ export const MarketLocationProvider: React.FC<{
     ],
   );
 
-  return (
-    <MarketLocationContext.Provider
-      value={{
+  /*
+   * Every handler below is already `useCallback`-stable, but the value object
+   * was rebuilt inline on each render, so all ~130 `useMarketLocation()`
+   * consumers re-rendered whenever any of this provider's 19 state hooks moved
+   * — including purely local UI state like the location modal being open.
+   */
+  const value = useMemo<MarketContextType>(
+    () => ({
         marketContext: resolvedMarketContext,
         activeMarket,
         effectiveConfig,
@@ -1037,8 +1042,54 @@ export const MarketLocationProvider: React.FC<{
         isPreferencesModalOpen,
         openPreferencesModal,
         closePreferencesModal,
-      }}
-    >
+    }),
+    [
+      resolvedMarketContext,
+      activeMarket,
+      effectiveConfig,
+      availableMarkets,
+      selectableCountries,
+      setMarket,
+      manualMarketSelection,
+      resetManualMarketSelection,
+      marketRecommendation,
+      isDetectingMarket,
+      marketDetectionIssue,
+      retryMarketDetection,
+      acceptMarketRecommendation,
+      dismissMarketRecommendation,
+      requestPreciseLocation,
+      pendingMarketChange,
+      isChangingMarket,
+      marketChangeFailed,
+      confirmMarketChange,
+      cancelMarketChange,
+      location,
+      setLocation,
+      resetLocation,
+      popularCities,
+      currentLocale,
+      setLocale,
+      currentCurrency,
+      setCurrency,
+      availableCurrencies,
+      currencyCatalogStatus,
+      currencyConversionIssue,
+      convertMoney,
+      currencySymbol,
+      formatPrice,
+      isLocationModalOpen,
+      locationModalOptions,
+      openLocationModal,
+      closeLocationModal,
+      isPreferencesModalOpen,
+      openPreferencesModal,
+      closePreferencesModal,
+    ],
+  );
+
+  return (
+    <MarketLocationContext.Provider value={value}>
       {children}
     </MarketLocationContext.Provider>
   );

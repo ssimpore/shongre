@@ -102,7 +102,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           aria-describedby={
             error ? `${id}-error` : showStrength ? `${id}-hint` : undefined
           }
-          className={`w-full h-control-touch pl-10 py-2.5 pr-12 bg-bg-surface border rounded-control text-sm text-text-main placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary-ring transition-all ${
+          className={`w-full h-control-touch pl-10 py-2.5 pr-12 bg-bg-surface border rounded-control text-sm text-text-main placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-focus transition-all ${
             error
               ? "border-danger focus:border-danger bg-danger-surface/20"
               : "border-border-disabled focus:border-primary"

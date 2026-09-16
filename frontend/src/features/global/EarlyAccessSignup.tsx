@@ -93,7 +93,7 @@ export function EarlyAccessSignup({
             onChange={(event) => setEmail(event.target.value)}
             placeholder="votre@email.com"
             disabled={isSubmitting}
-            className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-10 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
+            className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-10 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-focus"
           />
         </label>
         <Button

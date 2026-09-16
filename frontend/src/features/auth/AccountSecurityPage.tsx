@@ -379,7 +379,7 @@ export function AccountSecurityPage() {
               value={reauthPassword}
               onChange={(event) => setReauthPassword(event.target.value)}
               aria-label={t("auth.security.currentPassword")}
-              className="h-control-touch min-w-0 flex-1 rounded-control border border-border-prominent bg-bg-surface px-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+              className="h-control-touch min-w-0 flex-1 rounded-control border border-border-prominent bg-bg-surface px-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
             />
             <Button
               type="submit"

@@ -560,7 +560,7 @@ export function ListingCard({
       data-listing-card-variant={variant}
       className={`listing-card-shell relative overflow-hidden border-border-subtle ${
         interactive
-          ? "group surface-interactive focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary-ring-strong"
+          ? "group surface-interactive focus-within:ring-2 focus-within:ring-inset focus-within:ring-focus"
           : ""
       } ${
         horizontal

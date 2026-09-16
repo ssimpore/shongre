@@ -35,6 +35,37 @@ export const SHONGRE_PERFORMANCE_BUDGETS = {
       listingDetail: 25_000,
     },
   },
+  /**
+   * Ceilings for the server-rendered document itself.
+   *
+   * `clientBundle` above measures JS chunks only, which left the largest
+   * regression this project has shipped invisible: the full marketplace
+   * taxonomy moved out of the JS bundle and into the inlined RSC payload,
+   * where it was 79% of a 1.14 MB `/recherche` document while the bundle
+   * budget reported "within bounds". Payload that reaches the browser as HTML
+   * costs the same parse and transfer as payload that reaches it as script, so
+   * it gets a budget in the same place.
+   *
+   * Calibrated against measured dev-server output, which is the upper bound —
+   * a production build serves less. Gzip is the number that matters on the
+   * wire; raw is kept because it drives parse and memory cost.
+   */
+  serverDocument: {
+    routeGzipBytes: {
+      home: 24_000,
+      search: 60_000,
+      category: 36_000,
+      employment: 40_000,
+      login: 14_000,
+    },
+    routeRawBytes: {
+      home: 130_000,
+      search: 560_000,
+      category: 240_000,
+      employment: 280_000,
+      login: 55_000,
+    },
+  },
   api: {
     monthlyAvailability: 0.999,
     p95Ms: 750,

@@ -118,7 +118,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t("transactions.disputeModal.expliquezCeQuiSEst")}
-            className="w-full p-4 bg-bg-surface text-text-main rounded-control border border-border-disabled/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring resize-none font-medium transition-colors min-h-control-touch"
+            className="w-full p-4 bg-bg-surface text-text-main rounded-control border border-border-disabled/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus resize-none font-medium transition-colors min-h-control-touch"
           />
         </div>
 

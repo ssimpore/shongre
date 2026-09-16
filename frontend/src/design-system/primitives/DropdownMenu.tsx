@@ -375,7 +375,7 @@ export function DropdownMenu<T extends string | number = string>({
           aria-controls={isOpen ? listboxId : undefined}
           aria-activedescendant={searchable ? undefined : activeDescendant}
           aria-label={ariaLabel}
-          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-text-strong font-semibold ${CONTROL_MOTION_CLASS} cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-bg-base ${CONTROL_FOCUS_CLASS} ${
+          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-text-strong font-semibold ${CONTROL_MOTION_CLASS} cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-bg-base ${CONTROL_FOCUS_CLASS} ${
             fullWidth ? "w-full" : ""
           } ${
             isOpen

@@ -195,7 +195,7 @@ export function TaxonomyRevisionEditor() {
         </p>
       </div>
       {error && (
-        <div role="alert" className="text-sm text-error">
+        <div role="alert" className="text-sm text-danger">
           {error}{" "}
           <Button
             variant="secondary"

@@ -240,7 +240,7 @@ export const CapabilityOverridesModal: React.FC<
                 onChange={(event) => setQuery(event.target.value)}
                 aria-label={t("admin.capabilities.searchLabel")}
                 placeholder={t("admin.capabilities.searchPlaceholder")}
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-9 pr-3 text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-9 pr-3 text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
               />
             </div>
 

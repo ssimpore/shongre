@@ -132,7 +132,7 @@ export const HelpCenterPage: React.FC = () => {
             aria-label={t("support.helpCenterPage.rechercherUneQuestionDansL")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-control-lg pl-12 pr-4 text-xs sm:text-sm font-semibold bg-bg-surface border border-border-base rounded-control shadow-xs focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none transition-all placeholder:text-text-muted"
+            className="w-full h-control-lg pl-12 pr-4 text-xs sm:text-sm font-semibold bg-bg-surface border border-border-base rounded-control shadow-xs focus:border-primary focus:ring-2 focus:ring-focus focus:outline-none transition-all placeholder:text-text-muted"
           />
         </div>
       </div>

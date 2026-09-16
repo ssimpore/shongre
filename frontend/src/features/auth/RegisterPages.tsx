@@ -217,7 +217,7 @@ export const RegisterIndividualPage: React.FC = () => {
                 placeholder="ex: Thomas Laurent"
                 required
                 autoComplete="name"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
               <User className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -239,7 +239,7 @@ export const RegisterIndividualPage: React.FC = () => {
                 placeholder="thomas.laurent@exemple.fr"
                 required
                 autoComplete="email"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
               <Mail className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -281,7 +281,7 @@ export const RegisterIndividualPage: React.FC = () => {
                 onChange={(e) => setPostalCode(e.target.value)}
                 placeholder="Code postal"
                 required
-                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
             </div>
 
@@ -299,7 +299,7 @@ export const RegisterIndividualPage: React.FC = () => {
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="ex: Paris"
                 required
-                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
             </div>
           </div>
@@ -619,7 +619,7 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="ex: Sophie Marchand"
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
                   />
                   <User className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
@@ -641,7 +641,7 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="contact@boutiquedeco.fr"
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
                   />
                   <Mail className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
@@ -662,7 +662,7 @@ export const RegisterProPage: React.FC = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="01 42 68 90 12"
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
                   />
                   <Phone className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
@@ -765,7 +765,7 @@ export const RegisterProPage: React.FC = () => {
                 onChange={(event) => setLegalForm(event.target.value)}
                 required
                 autoComplete="organization-title"
-                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
             </div>
           </div>
@@ -786,7 +786,7 @@ export const RegisterProPage: React.FC = () => {
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="ex: Atelier Nordique SAS"
                 required
-                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
               <Building2 className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -808,7 +808,7 @@ export const RegisterProPage: React.FC = () => {
                 onChange={(e) => setSirenSiret(e.target.value)}
                 placeholder="Numéro d’immatriculation"
                 required
-                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
             </div>
 
@@ -825,7 +825,7 @@ export const RegisterProPage: React.FC = () => {
                 value={vatNumber}
                 onChange={(e) => setVatNumber(e.target.value)}
                 placeholder="Numéro de TVA"
-                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
             </div>
           </div>
@@ -846,7 +846,7 @@ export const RegisterProPage: React.FC = () => {
                 onChange={(e) => setBusinessAddress(e.target.value)}
                 placeholder={t("auth.registerPages.14RueDesAntiquaires")}
                 required
-                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
               <MapPin className="w-icon-md h-icon-md text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -867,7 +867,7 @@ export const RegisterProPage: React.FC = () => {
                 onChange={(e) => setPostalCode(e.target.value)}
                 placeholder="Code postal"
                 required
-                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
             </div>
 
@@ -885,7 +885,7 @@ export const RegisterProPage: React.FC = () => {
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="Bordeaux"
                 required
-                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
               />
             </div>
           </div>

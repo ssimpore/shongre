@@ -458,7 +458,7 @@ export const AdminLayout: React.FC = () => {
                     value={navQuery}
                     onChange={(event) => setNavQuery(event.target.value)}
                     placeholder="Rechercher une section"
-                    className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
+                    className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-focus"
                   />
                 </label>
               </div>
@@ -518,7 +518,7 @@ export const AdminLayout: React.FC = () => {
                 value={navQuery}
                 onChange={(event) => setNavQuery(event.target.value)}
                 placeholder="Rechercher"
-                className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
+                className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-focus"
               />
             </label>
 

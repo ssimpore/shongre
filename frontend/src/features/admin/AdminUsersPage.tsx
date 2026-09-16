@@ -246,7 +246,7 @@ export const AdminUsersPage: React.FC = () => {
                 "admin.adminUsersPage.rechercherUnNomEmailEntreprise",
               )}
               aria-label={t("admin.adminUsersPage.rechercherUnUtilisateur")}
-              className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring bg-bg-base h-control-touch"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus bg-bg-base h-control-touch"
             />
           </div>
 

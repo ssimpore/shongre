@@ -102,7 +102,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             onChange={(e) => setCompanyName(e.target.value)}
             placeholder={t("auth.upgradeToProModal.exAtelierEbenisterieDupont")}
             required
-            className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+            className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
           />
         </div>
 
@@ -118,7 +118,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               onChange={(e) => setSirenSiret(e.target.value)}
               placeholder="Numéro d’immatriculation"
               required
-              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
             />
           </div>
 
@@ -135,7 +135,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               onChange={(event) => setLegalForm(event.target.value)}
               required
               autoComplete="organization-title"
-              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
             />
           </div>
         </div>
@@ -150,7 +150,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               value={vatNumber}
               onChange={(e) => setVatNumber(e.target.value)}
               placeholder="Numéro de TVA"
-              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
             />
           </div>
 
@@ -163,7 +163,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="01 23 45 67 89"
-              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
             />
           </div>
         </div>
@@ -179,7 +179,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             onChange={(e) => setBusinessAddress(e.target.value)}
             placeholder={t("auth.upgradeToProModal.12RueDuCommerce75011")}
             required
-            className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+            className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus h-control-touch"
           />
         </div>
 

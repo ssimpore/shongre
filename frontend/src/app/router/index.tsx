@@ -11,6 +11,7 @@ import { MainLayout } from "../layouts/MainLayout";
 import { FocusedLayout } from "../layouts/FocusedLayout";
 import { ProductLayout } from "../layouts/ProductLayout";
 import { PageSuspense } from "../layouts/PageSuspense";
+import { RouteErrorBoundary } from "./RouteErrorBoundary";
 import { routes } from "../../configuration/routes";
 
 // Security & RBAC Guards
@@ -792,6 +793,7 @@ const APP_ROUTES: RouteObject[] = [
   {
     path: "/solutions",
     element: <SolutionsLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: withSuspense(SolutionsPage) },
       { path: ":solutionSlug", element: withSuspense(SolutionDetailPage) },
@@ -813,6 +815,7 @@ const APP_ROUTES: RouteObject[] = [
         footerDescription="La facturation multi-marché de votre organisation, avec des contrôles de production explicites."
       />
     ),
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: withSuspense(FacturationProductPage) },
       {
@@ -853,6 +856,7 @@ const APP_ROUTES: RouteObject[] = [
         workspacePolicyId="standaloneProspects"
       />
     ),
+    errorElement: <RouteErrorBoundary />,
     children: [
       { path: "prospects", element: withSuspense(ProspectsProductPage) },
       {
@@ -967,6 +971,7 @@ const APP_ROUTES: RouteObject[] = [
   {
     path: "/",
     element: <FocusedLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         path: "deposer",
@@ -1024,6 +1029,7 @@ const APP_ROUTES: RouteObject[] = [
   {
     path: "/",
     element: <MainLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       { index: true, element: withSuspense(HomePage) },
       { path: "categories", element: withSuspense(CategoriesPage) },
@@ -1798,6 +1804,7 @@ function routesForApplication(
   const authentication: RouteObject = {
     path: "/",
     element: <FocusedLayout />,
+    errorElement: <RouteErrorBoundary />,
     children: AUTH_ROUTES,
   };
 
@@ -1807,6 +1814,7 @@ function routesForApplication(
       {
         path: "/",
         element: withSuspense(SolutionsLayout),
+        errorElement: <RouteErrorBoundary />,
         children: [
           { index: true, element: withSuspense(SolutionsPage) },
           { path: ":solutionSlug", element: withSuspense(SolutionDetailPage) },

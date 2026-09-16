@@ -74,7 +74,7 @@ export const ProDirectoryPage: React.FC = () => {
             aria-label={t("proDirectory.rechercherUneBoutiqueProfessionnelle")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-control-touch pl-10 pr-3 bg-bg-surface text-xs sm:text-sm rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
+            className="w-full h-control-touch pl-10 pr-3 bg-bg-surface text-xs sm:text-sm rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus"
           />
         </div>
         {/* Live, so filtering announces its own result. The count also stops

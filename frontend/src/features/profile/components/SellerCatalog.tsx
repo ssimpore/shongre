@@ -230,7 +230,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Rechercher parmi les annonces de ${seller.name}...`}
               aria-label={`Rechercher parmi les annonces de ${seller.name}`}
-              className="w-full pl-9 pr-8 py-2 bg-bg-base border border-border-base rounded-control text-xs sm:text-sm text-text-main placeholder:text-text-tertiary focus:bg-bg-surface focus:outline-hidden focus:ring-2 focus:ring-primary-ring focus:border-primary transition-all h-control-touch"
+              className="w-full pl-9 pr-8 py-2 bg-bg-base border border-border-base rounded-control text-xs sm:text-sm text-text-main placeholder:text-text-tertiary focus:bg-bg-surface focus:outline-hidden focus:ring-2 focus:ring-focus focus:border-primary transition-all h-control-touch"
             />
             {searchQuery && (
               <button

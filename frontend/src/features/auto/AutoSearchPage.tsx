@@ -879,6 +879,7 @@ export const AutoSearchPage: React.FC = () => {
               </SearchSortControl>
             }
           />
+          <h2 className="sr-only">{t("search.resultsHeading")}</h2>
           {loading && viewMode === "map" ? (
             <div
               role="status"

@@ -21,7 +21,8 @@
     "check": "npm run typecheck && npm run test"
   },
   "dependencies": {
-    "@shongre/design-tokens": "1.0.0"
+    "@shongre/design-tokens": "1.0.0",
+    "tailwind-merge": "^3.7.0"
   },
   "peerDependencies": {
     "lucide-react": ">=0.500.0",

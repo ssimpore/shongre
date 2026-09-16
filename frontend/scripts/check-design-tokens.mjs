@@ -373,6 +373,68 @@ const containerTokens = declaredIn(bothCss, "container");
 const isColorValue = (v) => colorTokens.has(v) || COLOR_KEYWORDS.has(v);
 
 /**
+ * Tint tokens are for fills, not for text.
+ *
+ * `--color-primary-light` is `#FF65000D` — the canonical orange at 5% alpha,
+ * correct behind `bg-primary-light` and invisible as `text-primary-light`. It
+ * shipped as the `/emploi` hero eyebrow, rendering `rgba(255,101,0,0.05)` on a
+ * dark panel, and neither the undeclared-token guard nor axe-in-CI could see it:
+ * the token is declared and perfectly valid, just semantically misapplied.
+ *
+ * Any `--color-*` below this alpha cannot carry legible text on any ground, so
+ * naming one in a foreground utility is always a mistake.
+ *
+ * Scope is text only. `fill-*` and `stroke-*` name a foreground too, but a
+ * decorative SVG shape — the blurred halo behind the auth lock, for instance —
+ * is a legitimate low-alpha fill, so including them reports correct code.
+ */
+const LEGIBLE_ALPHA_FLOOR = 0.5;
+const FOREGROUND_UTILITIES = ["text", "placeholder", "caret"];
+
+const tokenAlpha = (value) => {
+  const hex = value.trim().match(/^#([\da-f]{6})([\da-f]{2})$/i);
+  if (hex) return Number.parseInt(hex[2], 16) / 255;
+  const fn = value.trim().match(/^rgba?\([^)]*?[,/]\s*([\d.]+%?)\s*\)$/i);
+  if (fn) {
+    const raw = fn[1];
+    return raw.endsWith("%") ? Number.parseFloat(raw) / 100 : Number.parseFloat(raw);
+  }
+  return 1;
+};
+
+const colorTokenAlpha = new Map(
+  Array.from(
+    bothCss.matchAll(/--color-([a-z0-9-]+)\s*:\s*([^;]+);/gi),
+    (m) => [m[1].toLowerCase(), tokenAlpha(m[2])],
+  ),
+);
+const tintOnlyTokens = new Set(
+  Array.from(colorTokenAlpha)
+    .filter(([, alpha]) => alpha < LEGIBLE_ALPHA_FLOOR)
+    .map(([name]) => name),
+);
+
+const TINT_AS_FOREGROUND = new RegExp(
+  `(?:^|[\\s"'\`{])(?:[a-z0-9-]+:)*(${FOREGROUND_UTILITIES.join("|")})-([a-z0-9-]+)(?=$|[\\s"'\`}])`,
+  "g",
+);
+
+const tintForegroundMisuse = [];
+
+function checkTintForeground(line, file, lineNo) {
+  for (const m of line.matchAll(TINT_AS_FOREGROUND)) {
+    if (tintOnlyTokens.has(m[2])) {
+      tintForegroundMisuse.push({
+        file,
+        line: lineNo,
+        found: `${m[1]}-${m[2]}`,
+        alpha: `${Math.round(colorTokenAlpha.get(m[2]) * 100)}%`,
+      });
+    }
+  }
+}
+
+/**
  * `bg-*` is shared with gradients, sizing, clipping and repetition, none of
  * which name a colour token. `divide-y` / `border-x` are complete utilities
  * whose trailing letter is a side, not a value.
@@ -380,6 +442,24 @@ const isColorValue = (v) => colorTokens.has(v) || COLOR_KEYWORDS.has(v);
 const NON_COLOR_BG =
   /^(?:gradient|linear|radial|conic|clip|origin|repeat|blend|none|cover|contain|fixed|local|scroll|auto|center|top|bottom|left|right|position|size)\b/;
 const BARE_SIDE = /^(?:t|r|b|l|x|y|s|e|tl|tr|br|bl|ss|se|ee|es|reverse)$/;
+
+const typeScaleTokens = declaredIn(bothCss, "text");
+
+/*
+ * `text-`, `border-`, `ring-` and `outline-` also name a colour, but unlike the
+ * namespaces above they are shared with the type scale, border widths and line
+ * styles — which is why they were originally left out, and why
+ * `text-text-primary` (×4 on the listing price breakdown) and `text-error`
+ * (on a role="alert") were able to ship as inert classes.
+ *
+ * Each is admitted here with its non-colour vocabulary enumerated, so a value
+ * that is neither a declared colour nor a known keyword is reported.
+ */
+const TEXT_NON_COLOR =
+  /^(?:left|center|right|justify|start|end|wrap|nowrap|balance|pretty|ellipsis|clip|auto|opacity-)/;
+const LINE_STYLE =
+  /^(?:solid|dashed|dotted|double|hidden|none|groove|ridge|inset|outset|collapse|separate|spacing-|opacity-)/;
+const RING_NON_COLOR = /^(?:inset|offset|transparent|current|opacity-)/;
 
 /**
  * Prefix → validator, matched longest-first so `min-h-` never parses as `min-`
@@ -417,6 +497,26 @@ const NAMESPACES = [
     (v) =>
       spacingTokens.has(v) || containerTokens.has(v) || SIZE_KEYWORDS.has(v),
     "--spacing-*",
+  ],
+  [
+    "text",
+    (v) => isColorValue(v) || typeScaleTokens.has(v) || TEXT_NON_COLOR.test(v),
+    "--color-* / --text-*",
+  ],
+  [
+    "border",
+    (v) => isColorValue(v) || LINE_STYLE.test(v),
+    "--color-*",
+  ],
+  [
+    "ring",
+    (v) => isColorValue(v) || RING_NON_COLOR.test(v),
+    "--color-*",
+  ],
+  [
+    "outline",
+    (v) => isColorValue(v) || LINE_STYLE.test(v) || RING_NON_COLOR.test(v),
+    "--color-*",
   ],
   ["bg", isColorValue, "--color-*"],
   ["placeholder", isColorValue, "--color-*"],
@@ -669,8 +769,10 @@ for (const file of ALL_FILES) {
       !/\.test\.tsx?$/.test(file) &&
       !file.endsWith(".css") &&
       !isMapRendererModule(file)
-    )
+    ) {
       checkNamespaces(line, relative(".", file), i + 1);
+      checkTintForeground(line, relative(".", file), i + 1);
+    }
   });
 }
 
@@ -908,6 +1010,29 @@ if (namespaceMisses.length > 0) {
   console.error("");
 }
 
+if (tintForegroundMisuse.length > 0) {
+  console.error(
+    `\n✘ design tokens: ${tintForegroundMisuse.length} foreground utility(ies) name a tint token.\n`,
+  );
+  console.error(
+    "  These tokens carry a low alpha and are meant for fills. As a text,",
+  );
+  console.error(
+    "  icon or caret colour they render effectively invisible — the way",
+  );
+  console.error(
+    "  `text-primary-light` (5% alpha) shipped as the /emploi hero eyebrow.\n",
+  );
+  for (const v of tintForegroundMisuse.slice(0, 40)) {
+    console.error(
+      `  ${v.file}:${v.line}\n      ${v.found}  →  ${v.alpha} alpha; use the solid or on-dark role instead`,
+    );
+  }
+  if (tintForegroundMisuse.length > 40)
+    console.error(`\n  …and ${tintForegroundMisuse.length - 40} more.`);
+  console.error("");
+}
+
 if (
   violations.length === 0 &&
   undeclared.length === 0 &&
@@ -916,6 +1041,7 @@ if (
   colorSourceViolations.length === 0 &&
   inlineTypography.length === 0 &&
   fontArchitectureViolations.length === 0 &&
+  tintForegroundMisuse.length === 0 &&
   contrastFailures.length === 0
 ) {
   console.log(
@@ -931,6 +1057,7 @@ if (
     fontArchitectureViolations.length > 0 ||
     namespaceMisses.length > 0 ||
     colorSourceViolations.length > 0 ||
+    tintForegroundMisuse.length > 0 ||
     contrastFailures.length > 0)
 )
   process.exit(1);

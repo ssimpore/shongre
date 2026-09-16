@@ -453,7 +453,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
                 />
               </div>
 
@@ -466,7 +466,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="06 12 34 56 78"
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
                 />
               </div>
             </div>
@@ -481,7 +481,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Paris"
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
                 />
               </div>
 
@@ -494,7 +494,7 @@ export const AccountOverviewPage: React.FC = () => {
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
                   placeholder="75011"
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
                 />
               </div>
             </div>
@@ -512,7 +512,7 @@ export const AccountOverviewPage: React.FC = () => {
                 placeholder={t(
                   "sellerworkspace.accountOverviewPage.presentezVousBrievementAuxAutres",
                 )}
-                className="min-h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
+                className="min-h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus"
               />
             </div>
 

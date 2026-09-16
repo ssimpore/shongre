@@ -740,6 +740,7 @@ export const CoursesSearchPage: React.FC = () => {
             }
           />
 
+          <h2 className="sr-only">{t("search.resultsHeading")}</h2>
           {isLoading && viewMode === "map" ? (
             <div
               role="status"

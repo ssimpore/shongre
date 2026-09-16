@@ -136,7 +136,15 @@ export const themeColors = {
   "brand-background": brandPalette.white,
   "brand-surface-subtle": brandPalette.mist,
 
-  /* Solid controls share the logo's orange and white foreground. */
+  /*
+   * Solid controls and orange-on-light text draw from the readable ramp, not
+   * the canonical swatch. The logo is an image asset and `brand-primary` below
+   * keeps the exact swatch, so nothing about the mark changes — but the
+   * canonical orange is 2.95:1 against white in both directions, which made
+   * every primary CTA and every card price fail WCAG AA. Orange on *dark*
+   * grounds is the opposite problem and keeps the canonical swatch via
+   * `primary-on-dark`, where it already measures ~6:1.
+   */
   primary: themeBrandOrange.interactive,
   "on-primary": brandPalette.white,
   "primary-hover": themeBrandOrange.hover,

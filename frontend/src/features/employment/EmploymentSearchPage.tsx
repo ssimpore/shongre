@@ -626,7 +626,7 @@ export const EmploymentSearchPage: React.FC = () => {
       <section className="border-b border-border-base bg-surface-inverse text-text-inverse">
         <Container className="py-5 sm:py-8">
           <div className="max-w-3xl">
-            <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary-light">
+            <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary-on-dark">
               <BriefcaseBusiness
                 className="h-icon-sm w-icon-sm"
                 aria-hidden="true"
@@ -779,6 +779,7 @@ export const EmploymentSearchPage: React.FC = () => {
             </aside>
           ) : null}
           <section aria-live="polite" aria-busy={loading} className="min-w-0">
+            <h2 className="sr-only">{t("search.resultsHeading")}</h2>
             {loading && viewMode === "map" ? (
               <div
                 role="status"
