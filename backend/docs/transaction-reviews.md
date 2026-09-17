@@ -17,7 +17,8 @@ contract dated 2026-09-07. Caller-selected authors, recipients and titles and
 unbound submissions are no longer accepted. All repository consumers are
 migrated together; there is no insecure compatibility fallback. Deployment
 must verify that any separately distributed client uses the generated contract
-before releasing this change. Mobile has no review submission UI yet.
+before releasing this change. Mobile submits reviews from its orders screen
+through the same two operations.
 
 Migration `00114_transaction_verified_reviews.sql` locks and rechecks the
 completed order at insert, derives the recipient/title, enforces one review per
@@ -38,11 +39,25 @@ purchase history or relabel them as verified.
 
 Profile review reads return the latest 100 reviews; full history pagination
 and aggregate-distribution APIs remain future work. Review content is escaped
-by React. The report action submits the author's public ID and review
-reference to the existing moderation workflow, not a second review queue.
-Dedicated review redaction, seller replies, moderation evidence/history and
-notification delivery remain to be implemented before claiming a complete
-reputation platform.
+by React. The report action submits the review as a first-class moderation
+target (`review_id` on reports and cases, migration
+`00143_review_replies_votes_reports.sql`); a Staff resolution that removes
+the target calls `remove_review`, which hides the review from every public
+projection and rebuilds the recipient's aggregate. Removed reviews are kept
+for appeal history, never deleted.
+
+Sellers answer a review once, publicly, through `POST /reviews/{id}/reply`
+(`review.update.own`: only the recipient of the review). Any signed-in member
+except the author votes a review helpful through `PUT /reviews/{id}/helpful`;
+the vote is idempotent and the count is maintained by trigger. Both
+interactions are read back in the public projection (`reply`,
+`helpfulCount`, `viewerMarkedHelpful`).
+
+Completed orders stamp `orders.completed_at`; the hourly `review_reminders`
+worker asks each participant who has not reviewed yet, once per order, 48
+hours after completion (`order_review_reminders` records the send). The
+reminder is a notification, not an email campaign, and honours the recipient's
+notification preferences like every other notification.
 
 The obsolete profile-report repository writer is removed. Existing admin
 read/resolution methods for previously stored demo reports remain intentionally

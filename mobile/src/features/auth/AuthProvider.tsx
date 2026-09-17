@@ -14,7 +14,11 @@ import type {
   LoginRequest,
 } from "@shongre/contracts";
 import { authService } from "./auth.service";
-import type { MobileLoginResult, SocialProvider } from "./auth.service";
+import type {
+  MobileLoginResult,
+  MobileRegisterInput,
+  SocialProvider,
+} from "./auth.service";
 import { parseNativeAuthCallback } from "./native-callback";
 import { notificationsService } from "@/services/notifications/notifications.service";
 
@@ -26,6 +30,8 @@ interface AuthContextValue {
   pendingSocialCompletion: boolean;
   socialNotice: string;
   login(input: LoginRequest): Promise<MobileLoginResult>;
+  register(input: MobileRegisterInput): Promise<void>;
+  requestPasswordReset(email: string): Promise<void>;
   completeMfa(tempMfaToken: string, code: string): Promise<void>;
   loginWithProvider(provider: SocialProvider): Promise<void>;
   completePendingSocialRegistration(email: string): Promise<void>;
@@ -134,6 +140,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
     return result;
   }, []);
 
+  const register = useCallback(async (input: MobileRegisterInput) => {
+    setUser(await authService.register(input));
+  }, []);
+
+  const requestPasswordReset = useCallback(
+    (email: string) => authService.requestPasswordReset(email),
+    [],
+  );
+
   const completeMfa = useCallback(
     async (tempMfaToken: string, code: string) => {
       setUser(await authService.completeMfa(tempMfaToken, code));
@@ -193,6 +208,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       pendingSocialCompletion: Boolean(pendingCompletionHandle),
       socialNotice,
       login,
+      register,
+      requestPasswordReset,
       completeMfa,
       loginWithProvider,
       completePendingSocialRegistration,
@@ -208,6 +225,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       pendingCompletionHandle,
       socialNotice,
       login,
+      register,
+      requestPasswordReset,
       completeMfa,
       loginWithProvider,
       completePendingSocialRegistration,

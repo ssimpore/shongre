@@ -82,6 +82,13 @@ export interface ListingsServiceContract {
   ): Promise<BulkListingImportRow[]>;
   publishBulkListings(input: PublishBulkListingsInput): Promise<Listing[]>;
   updateListing(id: string, updates: Partial<Listing>): Promise<Listing>;
+  /** What comparable items sold for; advisory for the seller choosing a price. */
+  estimatePrice(input: {
+    categoryId: string;
+    brand?: string;
+    model?: string;
+    condition?: string;
+  }): Promise<ListingPriceEstimate>;
   markListingSold(id: string): Promise<Listing>;
   deleteListing(id: string): Promise<boolean>;
   setFavorite(
@@ -91,3 +98,16 @@ export interface ListingsServiceContract {
   ): Promise<boolean>;
   getFavoriteCollection(marketCode: string): Promise<FavoriteListingCollection>;
 }
+
+export type ListingPriceEstimate =
+  | {
+      basis: "sold" | "asking";
+      categoryId: string;
+      sampleSize: number;
+      currency: string;
+      p25Minor: number;
+      medianMinor: number;
+      p75Minor: number;
+      narrowedBy: Array<"brand" | "model" | "condition">;
+    }
+  | { basis: "none"; categoryId: string };

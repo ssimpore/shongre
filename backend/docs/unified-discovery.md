@@ -53,3 +53,13 @@ Application rollback is safe while legacy columns remain: deploy the prior appli
 - Publication preview: `POST /api/v1/publication/entitlements`.
 - Search events are privacy-safe and contain filter keys/counts, not private messages or raw personal content.
 - Refunded, failed and cancelled orders revoke their promotions through the order-status trigger.
+- Suggestions and corrections read `listing_search_terms`, a per-market
+  vocabulary of the words on discoverable listings (migration
+  `00142_listing_search_vocabulary.sql`). `GET /api/v1/listings/suggestions`
+  answers the autocomplete box; a search with no result asks
+  `correct_listing_search_query` for a `didYouMean`. Both use `pg_trgm`
+  similarity and never leak a term that no active publication carries. The
+  `search_vocabulary_refresh` scheduled job rebuilds the vocabulary every 15
+  minutes; the browser fixture rebuilds it at start-up. In demo mode the same
+  vocabulary is derived in memory with the shared normalisation in
+  `@shongre/shared/text/search-normalization`.

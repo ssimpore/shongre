@@ -146,6 +146,11 @@ export interface AppConfig {
   notificationEmailFrom: string;
   pushProvider: PushProviderMode;
   expoPushAccessToken: string;
+  /**
+   * VAPID identity for Web Push, or null when browsers cannot be reached.
+   * The public key is handed to browsers; the private key signs each push.
+   */
+  webPush: { subject: string; publicKey: string; privateKey: string } | null;
   /** Bearer token guarding GET /metrics. Absent means the endpoint is 404. */
   metricsToken: string;
   googleOAuth: OAuthProviderConfig;
@@ -209,6 +214,28 @@ interface AppleOAuthProviderConfig extends OAuthProviderConfig {
 interface FacebookOAuthProviderConfig extends OAuthProviderConfig {
   authorizationUrl: string;
   graphApiBaseUrl: string;
+}
+
+/**
+ * Web Push is opt-in per deployment: all three values or none. A partial
+ * configuration is a mistake, not a mode, and fails startup so it cannot
+ * ship as "push works on phones but silently not in browsers".
+ */
+function resolveWebPushConfig(): AppConfig["webPush"] {
+  const subject = process.env.WEB_PUSH_SUBJECT || "";
+  const publicKey = process.env.WEB_PUSH_VAPID_PUBLIC_KEY || "";
+  const privateKey = process.env.WEB_PUSH_VAPID_PRIVATE_KEY || "";
+  if (!subject && !publicKey && !privateKey) return null;
+  if (
+    !/^(mailto:[^\s@]+@[^\s@]+|https:\/\/\S+)$/.test(subject) ||
+    !/^[A-Za-z0-9_-]{80,100}$/.test(publicKey) ||
+    !/^[A-Za-z0-9_-]{40,50}$/.test(privateKey)
+  ) {
+    throw new Error(
+      "[Config Error] WEB_PUSH_SUBJECT (mailto: or https URL), WEB_PUSH_VAPID_PUBLIC_KEY and WEB_PUSH_VAPID_PRIVATE_KEY must all be set to valid VAPID values, or all be empty.",
+    );
+  }
+  return { subject, publicKey, privateKey };
 }
 
 function resolveDataMode(): BackendDataMode {
@@ -1194,6 +1221,7 @@ const candidateConfig: AppConfig = {
     "disabled",
   ),
   expoPushAccessToken: process.env.EXPO_PUSH_ACCESS_TOKEN || "",
+  webPush: resolveWebPushConfig(),
   metricsToken: process.env.METRICS_TOKEN || "",
   googleOAuth: {
     enabled: envFlag("ENABLE_GOOGLE_AUTH", false),

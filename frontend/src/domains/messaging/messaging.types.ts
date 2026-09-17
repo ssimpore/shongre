@@ -48,6 +48,9 @@ export interface ConversationParticipant {
   isVerified?: boolean;
   rating?: number;
   reviewCount?: number;
+  /** The participant's declared absence, as the API published it. */
+  awayUntil?: string;
+  awayMessage?: string;
 }
 
 export interface ListingConversationContext {
@@ -114,6 +117,8 @@ export interface UserTimelineMessage extends BaseTimelineItem {
   offerCurrency?: string;
   offerStatus?: OfferStatus;
   offerExpiresAt?: string;
+  /** Advisory scam markers the API assessed at send time. */
+  safetyFlags?: string[];
   isRead: boolean;
 }
 

@@ -171,6 +171,34 @@ describe("environment safety", () => {
     ).toThrow(/databaseInfrastructureMode/);
   });
 
+  it("accepts an isolated test API serving the local PostgreSQL repositories", () => {
+    expect(() =>
+      assertEnvironmentSafety({
+        config: configFor("test"),
+        backendDataMode: "database",
+        databaseInfrastructureMode: "local",
+        paymentMode: "test",
+        emailMode: "console",
+        aiMode: "mock",
+        analyticsMode: "test",
+      }),
+    ).not.toThrow();
+  });
+
+  it("rejects a test API pointed at hosted database infrastructure", () => {
+    expect(() =>
+      assertEnvironmentSafety({
+        config: configFor("test"),
+        backendDataMode: "database",
+        databaseInfrastructureMode: "hosted",
+        paymentMode: "test",
+        emailMode: "console",
+        aiMode: "mock",
+        analyticsMode: "test",
+      }),
+    ).toThrow(/databaseInfrastructureMode/);
+  });
+
   it("accepts the explicit local deterministic backend demo", () => {
     expect(() =>
       assertEnvironmentSafety({

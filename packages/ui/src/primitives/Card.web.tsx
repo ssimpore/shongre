@@ -15,14 +15,7 @@ export interface CardProps extends HTMLAttributes<HTMLElement> {
    * stalled an earlier consolidation attempt.
    */
   padding?:
-    | "none"
-    | "sm"
-    | "md"
-    | "lg"
-    | "flat-sm"
-    | "flat-md"
-    | "flat-lg"
-    | "flat-xl";
+    "none" | "sm" | "md" | "lg" | "flat-sm" | "flat-md" | "flat-lg" | "flat-xl";
   elevation?: "none" | "xs" | "sm" | "md";
 }
 

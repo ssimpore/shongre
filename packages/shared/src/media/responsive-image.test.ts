@@ -122,8 +122,11 @@ describe("IMAGE_SIZES", () => {
     });
   });
 
-  it("matches a full-width mobile card and the fixed desktop rail width", () => {
-    expect(IMAGE_SIZES.card).toContain("calc(100vw - 2rem)");
+  it("matches the capped mobile card and the fixed desktop rail width", () => {
+    // The phone slot is the viewport minus gutters, capped at the mobile card
+    // width the stylesheet applies (`listing-card-mobile-max`).
+    expect(IMAGE_SIZES.card).toContain("(max-width: 252px) calc(100vw - 2rem)");
+    expect(IMAGE_SIZES.card).toContain("(max-width: 639px) 13.75rem");
     expect(IMAGE_SIZES.card).toMatch(/208px$/);
     expect(IMAGE_SIZES.compact).toBe("208px");
   });

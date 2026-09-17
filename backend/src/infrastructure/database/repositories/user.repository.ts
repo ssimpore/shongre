@@ -7,6 +7,7 @@ import { toPublicSellerProfile } from "../../../shared/public-projections.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 import { identifierColumn } from "./repository-identifier.js";
+import type { DemoListingRepository } from "./listing.repository.js";
 import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
 import {
@@ -44,6 +45,21 @@ export interface IUserRepository {
   linkAuthUserId(userId: string, authUserId: string): Promise<void>;
   save(user: UserProfile): Promise<UserProfile>;
   update(id: string, updates: Partial<UserProfile>): Promise<UserProfile>;
+  /**
+   * Declares an absence and pauses the seller's active publications until it
+   * ends (00144). The window is bounded to 90 days by the database.
+   */
+  setAway(input: {
+    userId: string;
+    until: string;
+    message?: string;
+  }): Promise<{ pausedPublications: number }>;
+  /** Ends the absence now and resumes what it paused. */
+  clearAway(userId: string): Promise<{ resumedPublications: number }>;
+  /** The worker's pass: sellers whose absence has ended come back. */
+  resumeReturnedSellers(
+    limit: number,
+  ): Promise<Array<{ userId: string; resumedPublications: number }>>;
   upgradeToProfessional(
     userId: string,
     input: ProfessionalAccountUpgrade,
@@ -286,6 +302,8 @@ export class DemoUserRepository implements IUserRepository {
 
   constructor(
     initialUsers: Record<string, UserProfile> = CANONICAL_DEMO_USERS,
+    /** The fixture's listings, so an absence pauses their publications too. */
+    private readonly listings?: DemoListingRepository,
   ) {
     this.reset(initialUsers);
   }
@@ -378,6 +396,69 @@ export class DemoUserRepository implements IUserRepository {
     const updated = { ...existing, ...updates };
     this.users.set(id, updated);
     return { ...updated };
+  }
+
+  async setAway(input: {
+    userId: string;
+    until: string;
+    message?: string;
+  }): Promise<{ pausedPublications: number }> {
+    const untilMs = Date.parse(input.until);
+    if (
+      !Number.isFinite(untilMs) ||
+      untilMs <= Date.now() ||
+      untilMs > Date.now() + 90 * 86_400_000
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "La date de retour doit être comprise entre demain et 90 jours.",
+      });
+    }
+    const existing = this.users.get(input.userId);
+    if (!existing) {
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    }
+    const message = input.message?.trim() || undefined;
+    this.users.set(input.userId, {
+      ...existing,
+      awayUntil: new Date(untilMs).toISOString(),
+      awayMessage: message,
+    });
+    return {
+      pausedPublications:
+        this.listings?.setSellerPublicationsPaused(input.userId, true) ?? 0,
+    };
+  }
+
+  async clearAway(userId: string): Promise<{ resumedPublications: number }> {
+    const existing = this.users.get(userId);
+    if (!existing) {
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    }
+    this.users.set(userId, {
+      ...existing,
+      awayUntil: undefined,
+      awayMessage: undefined,
+    });
+    return {
+      resumedPublications:
+        this.listings?.setSellerPublicationsPaused(userId, false) ?? 0,
+    };
+  }
+
+  async resumeReturnedSellers(
+    limit: number,
+  ): Promise<Array<{ userId: string; resumedPublications: number }>> {
+    const now = Date.now();
+    const returned: Array<{ userId: string; resumedPublications: number }> = [];
+    for (const user of this.users.values()) {
+      if (returned.length >= limit) break;
+      if (!user.awayUntil || Date.parse(user.awayUntil) > now) continue;
+      const { resumedPublications } = await this.clearAway(user.id);
+      returned.push({ userId: user.id, resumedPublications });
+    }
+    return returned;
   }
 
   async upgradeToProfessional(
@@ -558,6 +639,8 @@ export class PostgresUserRepository implements IUserRepository {
       reviewCount: Number(row.review_count || 0),
       responseRatePercent: Number(row.response_rate_percent || 100),
       responseTimeText: row.response_time_text || undefined,
+      awayUntil: row.away_until || undefined,
+      awayMessage: row.away_message || undefined,
       createdAt: row.created_at,
     };
   }
@@ -584,7 +667,7 @@ export class PostgresUserRepository implements IUserRepository {
     return (
       getSupabaseAdminClient().from("public_profiles" as any) as any
     ).select(
-      "id, slug, name, avatar_url, city, country, bio, account_family, is_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at",
+      "id, slug, name, avatar_url, city, country, bio, account_family, is_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, away_until, away_message, created_at",
     );
   }
 
@@ -607,6 +690,8 @@ export class PostgresUserRepository implements IUserRepository {
       reviewCount: Number(data.review_count || 0),
       responseRatePercent: Number(data.response_rate_percent || 0),
       responseTimeText: data.response_time_text || undefined,
+      awayUntil: data.away_until || undefined,
+      awayMessage: data.away_message || undefined,
       createdAt: data.created_at || undefined,
     };
   }
@@ -812,6 +897,56 @@ export class PostgresUserRepository implements IUserRepository {
       await this.syncAuthRoleMetadata(updated);
     }
     return updated;
+  }
+
+  async setAway(input: {
+    userId: string;
+    until: string;
+    message?: string;
+  }): Promise<{ pausedPublications: number }> {
+    const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+      "set_seller_away",
+      {
+        p_user_id: input.userId,
+        p_until: input.until,
+        p_message: input.message ?? null,
+      },
+    );
+    if (error?.code === "22023")
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "La date de retour doit être comprise entre demain et 90 jours.",
+      });
+    if (error?.code === "P0002")
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    if (error) databaseFailure("users.setAway", error);
+    return { pausedPublications: Number(data || 0) };
+  }
+
+  async clearAway(userId: string): Promise<{ resumedPublications: number }> {
+    const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+      "clear_seller_away",
+      { p_user_id: userId },
+    );
+    if (error?.code === "P0002")
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    if (error) databaseFailure("users.clearAway", error);
+    return { resumedPublications: Number(data || 0) };
+  }
+
+  async resumeReturnedSellers(
+    limit: number,
+  ): Promise<Array<{ userId: string; resumedPublications: number }>> {
+    const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+      "resume_returned_sellers",
+      { p_limit: limit },
+    );
+    if (error) databaseFailure("users.resumeReturnedSellers", error);
+    return ((data || []) as any[]).map((row) => ({
+      userId: String(row.user_id),
+      resumedPublications: Number(row.resumed_publications || 0),
+    }));
   }
 
   async upgradeToProfessional(

@@ -49,11 +49,28 @@ export interface ListingSafetyAnalysis {
   recommendedAction: "approve" | "request_clarification" | "hide" | "delete";
 }
 
+/** A draft the seller edits; nothing here is stored or published by itself. */
+export interface ListingPhotoSuggestion {
+  /** A published category of the market, or null when nothing fit. */
+  category: { id: string; slug: string; label: string } | null;
+  title: string;
+  description: string;
+  brand?: string;
+  model?: string;
+  /** 0 to 100. */
+  confidence: number;
+}
+
 export interface AiServiceContract {
   /** Drafts a listing from a seller's rough input. */
   generateListingAssistance(
     request: ListingAssistanceRequest,
   ): Promise<ListingAssistanceResult>;
+  /** Drafts a listing from the seller's uploaded photos. */
+  suggestListingFromPhotos(
+    imageUrls: string[],
+    locale?: string,
+  ): Promise<ListingPhotoSuggestion>;
   /** Scores a listing for moderation triage. */
   analyzeListingSafety(
     request: ListingSafetyRequest,

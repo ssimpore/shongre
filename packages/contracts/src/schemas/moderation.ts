@@ -13,6 +13,7 @@ export const reportInputSchema = z
     listingId: z.string().optional(),
     reportedUserId: z.string().optional(),
     deliveryRequestId: z.string().uuid().optional(),
+    reviewId: z.string().uuid().optional(),
     reason: z.enum([
       "fraud",
       "counterfeit",
@@ -28,15 +29,24 @@ export const reportInputSchema = z
   .refine(
     (value) =>
       Boolean(
-        value.listingId || value.reportedUserId || value.deliveryRequestId,
+        value.listingId ||
+        value.reportedUserId ||
+        value.deliveryRequestId ||
+        value.reviewId,
       ),
-    { message: "A listing, user, or delivery request target is required." },
+    {
+      message:
+        "A listing, user, delivery request, or review target is required.",
+    },
   )
   .refine(
     (value) =>
-      [value.listingId, value.reportedUserId, value.deliveryRequestId].filter(
-        Boolean,
-      ).length === 1,
+      [
+        value.listingId,
+        value.reportedUserId,
+        value.deliveryRequestId,
+        value.reviewId,
+      ].filter(Boolean).length === 1,
     { message: "A report must target exactly one resource." },
   );
 export type ReportInput = z.infer<typeof reportInputSchema>;

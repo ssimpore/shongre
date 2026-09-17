@@ -1,3 +1,4 @@
+import type { SearchSuggestion } from "../api/contracts/search.contract";
 import type { Category } from "../types";
 
 /** Shared search copy for wide and compact search controls. */
@@ -21,9 +22,8 @@ export interface CategorySuggestion {
   compactLabel: string;
   parentName?: string;
   parentSlug?: string;
-  icon?: string;
+  iconName?: string;
   isSubCategory: boolean;
-  categoryObj: Category;
 }
 
 export interface AutocompleteResults {
@@ -33,15 +33,18 @@ export interface AutocompleteResults {
 }
 
 /**
- * Combines API-owned keyword suggestions with API-owned taxonomy nodes. This
- * helper intentionally contains no marketplace examples or popularity data.
+ * Combines the API's ranked completions with the taxonomy projection already
+ * loaded for the category picker. The API owns matching: its completions are
+ * not re-filtered here, because a corrected word ("vélo" for "velo") would
+ * not survive a naive substring test. This helper intentionally contains no
+ * marketplace examples or popularity data.
  */
 export function getSearchSuggestions(
   rawInput: string,
   _activeCategorySlug?: string,
   categories: readonly Category[] = [],
   limit = 5,
-  keywordSuggestions: readonly string[] = [],
+  apiSuggestions: readonly SearchSuggestion[] = [],
   popularKeywords: readonly string[] = [],
 ): AutocompleteResults {
   const query = rawInput.trim().toLowerCase();
@@ -55,11 +58,31 @@ export function getSearchSuggestions(
   }
 
   const matchedCategories: CategorySuggestion[] = [];
+  const seenCategorySlugs = new Set<string>();
+  const pushCategory = (suggestion: CategorySuggestion) => {
+    if (seenCategorySlugs.has(suggestion.slug)) return;
+    seenCategorySlugs.add(suggestion.slug);
+    matchedCategories.push(suggestion);
+  };
   const compactLabelFor = (node: {
     name: string;
     label?: string;
     shortLabel?: string;
   }) => node.shortLabel || node.label || node.name;
+
+  for (const suggestion of apiSuggestions) {
+    if (suggestion.kind !== "category") continue;
+    pushCategory({
+      id: suggestion.categoryId,
+      name: suggestion.label,
+      slug: suggestion.categorySlug,
+      compactLabel: suggestion.label,
+      parentName: suggestion.parentLabel,
+      parentSlug: suggestion.parentSlug,
+      iconName: suggestion.iconName,
+      isSubCategory: Boolean(suggestion.parentSlug),
+    });
+  }
 
   categories.forEach((category) => {
     const compactLabel = compactLabelFor(category);
@@ -68,13 +91,13 @@ export function getSearchSuggestions(
       category.slug.toLowerCase().includes(query) ||
       compactLabel.toLowerCase().includes(query)
     ) {
-      matchedCategories.push({
+      pushCategory({
         id: category.id,
         name: category.name,
         slug: category.slug,
         compactLabel,
+        iconName: category.iconName,
         isSubCategory: false,
-        categoryObj: category,
       });
     }
 
@@ -85,24 +108,25 @@ export function getSearchSuggestions(
         subcategory.slug.toLowerCase().includes(query) ||
         subcategoryLabel.toLowerCase().includes(query)
       ) {
-        matchedCategories.push({
+        pushCategory({
           id: subcategory.id,
           name: subcategory.name,
           slug: subcategory.slug,
           compactLabel: subcategoryLabel,
           parentName: compactLabel,
           parentSlug: category.slug,
+          iconName: subcategory.iconName ?? category.iconName,
           isSubCategory: true,
-          categoryObj: category,
         });
       }
     });
   });
 
-  const keywords = keywordSuggestions
-    .filter((keyword) => keyword.toLowerCase().includes(query))
-    .slice(0, limit)
-    .map((keyword) => ({ keyword }));
+  const keywords = apiSuggestions
+    .flatMap((suggestion) =>
+      suggestion.kind === "term" ? [{ keyword: suggestion.query }] : [],
+    )
+    .slice(0, limit);
 
   return {
     categories: matchedCategories.slice(0, limit),

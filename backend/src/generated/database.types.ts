@@ -19522,6 +19522,7 @@ export type Database = {
           listing_id: string;
           localized_content: Json;
           market_code: string;
+          paused_reason: string | null;
           price_minor: number;
           promoted_at: string | null;
           promotion_end_at: string | null;
@@ -19545,6 +19546,7 @@ export type Database = {
           listing_id: string;
           localized_content?: Json;
           market_code: string;
+          paused_reason?: string | null;
           price_minor: number;
           promoted_at?: string | null;
           promotion_end_at?: string | null;
@@ -19568,6 +19570,7 @@ export type Database = {
           listing_id?: string;
           localized_content?: Json;
           market_code?: string;
+          paused_reason?: string | null;
           price_minor?: number;
           promoted_at?: string | null;
           promotion_end_at?: string | null;
@@ -19899,6 +19902,30 @@ export type Database = {
           },
         ];
       };
+      listing_search_terms: {
+        Row: {
+          display_term: string;
+          listing_count: number;
+          market_code: string;
+          refreshed_at: string;
+          term: string;
+        };
+        Insert: {
+          display_term: string;
+          listing_count: number;
+          market_code: string;
+          refreshed_at?: string;
+          term: string;
+        };
+        Update: {
+          display_term?: string;
+          listing_count?: number;
+          market_code?: string;
+          refreshed_at?: string;
+          term?: string;
+        };
+        Relationships: [];
+      };
       listing_view_rollup_state: {
         Row: {
           id: boolean;
@@ -19926,6 +19953,7 @@ export type Database = {
           allowed_delivery: Database["public"]["Enums"]["delivery_type"][];
           attributes: Json;
           attributes_schema_version: number;
+          auto_renew: boolean;
           brand: string | null;
           bumped_at: string | null;
           category_id: string;
@@ -19950,6 +19978,7 @@ export type Database = {
           id: string;
           is_featured: boolean;
           is_urgent: boolean;
+          last_renewed_at: string | null;
           latitude: number | null;
           listing_intent: string | null;
           listing_type_id: string | null;
@@ -19983,11 +20012,14 @@ export type Database = {
           publisher_user_id: string;
           publisher_verification_status: string;
           region: string | null;
+          renewal_count: number;
           safety_risk_score: number | null;
+          scheduled_publish_at: string | null;
           search_vector: unknown;
           search_vector_version: number;
           seller_id: string;
           shipping_cost: number | null;
+          sold_at: string | null;
           status: Database["public"]["Enums"]["listing_status"];
           store_id: string | null;
           subscription_id: string | null;
@@ -20005,6 +20037,7 @@ export type Database = {
           allowed_delivery?: Database["public"]["Enums"]["delivery_type"][];
           attributes?: Json;
           attributes_schema_version?: number;
+          auto_renew?: boolean;
           brand?: string | null;
           bumped_at?: string | null;
           category_id: string;
@@ -20029,6 +20062,7 @@ export type Database = {
           id?: string;
           is_featured?: boolean;
           is_urgent?: boolean;
+          last_renewed_at?: string | null;
           latitude?: number | null;
           listing_intent?: string | null;
           listing_type_id?: string | null;
@@ -20062,11 +20096,14 @@ export type Database = {
           publisher_user_id: string;
           publisher_verification_status?: string;
           region?: string | null;
+          renewal_count?: number;
           safety_risk_score?: number | null;
+          scheduled_publish_at?: string | null;
           search_vector?: unknown;
           search_vector_version?: number;
           seller_id: string;
           shipping_cost?: number | null;
+          sold_at?: string | null;
           status?: Database["public"]["Enums"]["listing_status"];
           store_id?: string | null;
           subscription_id?: string | null;
@@ -20084,6 +20121,7 @@ export type Database = {
           allowed_delivery?: Database["public"]["Enums"]["delivery_type"][];
           attributes?: Json;
           attributes_schema_version?: number;
+          auto_renew?: boolean;
           brand?: string | null;
           bumped_at?: string | null;
           category_id?: string;
@@ -20108,6 +20146,7 @@ export type Database = {
           id?: string;
           is_featured?: boolean;
           is_urgent?: boolean;
+          last_renewed_at?: string | null;
           latitude?: number | null;
           listing_intent?: string | null;
           listing_type_id?: string | null;
@@ -20141,11 +20180,14 @@ export type Database = {
           publisher_user_id?: string;
           publisher_verification_status?: string;
           region?: string | null;
+          renewal_count?: number;
           safety_risk_score?: number | null;
+          scheduled_publish_at?: string | null;
           search_vector?: unknown;
           search_vector_version?: number;
           seller_id?: string;
           shipping_cost?: number | null;
+          sold_at?: string | null;
           status?: Database["public"]["Enums"]["listing_status"];
           store_id?: string | null;
           subscription_id?: string | null;
@@ -22470,6 +22512,7 @@ export type Database = {
           offer_status: string | null;
           pickup_details: Json | null;
           read_by: string[] | null;
+          safety_flags: string[];
           sender_id: string;
           text: string;
         };
@@ -22488,6 +22531,7 @@ export type Database = {
           offer_status?: string | null;
           pickup_details?: Json | null;
           read_by?: string[] | null;
+          safety_flags?: string[];
           sender_id: string;
           text: string;
         };
@@ -22506,6 +22550,7 @@ export type Database = {
           offer_status?: string | null;
           pickup_details?: Json | null;
           read_by?: string[] | null;
+          safety_flags?: string[];
           sender_id?: string;
           text?: string;
         };
@@ -22688,6 +22733,7 @@ export type Database = {
           resolution_reason: string | null;
           resolved_at: string | null;
           resolved_by: string | null;
+          review_id: string | null;
           severity: string;
           status: string;
           target_state_before: Json;
@@ -22709,6 +22755,7 @@ export type Database = {
           resolution_reason?: string | null;
           resolved_at?: string | null;
           resolved_by?: string | null;
+          review_id?: string | null;
           severity?: string;
           status?: string;
           target_state_before?: Json;
@@ -22730,6 +22777,7 @@ export type Database = {
           resolution_reason?: string | null;
           resolved_at?: string | null;
           resolved_by?: string | null;
+          review_id?: string | null;
           severity?: string;
           status?: string;
           target_state_before?: Json;
@@ -22813,6 +22861,13 @@ export type Database = {
             columns: ["resolved_by"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "moderation_cases_review_id_fkey";
+            columns: ["review_id"];
+            isOneToOne: false;
+            referencedRelation: "reviews";
             referencedColumns: ["id"];
           },
         ];
@@ -26131,6 +26186,46 @@ export type Database = {
           },
         ];
       };
+      order_review_reminders: {
+        Row: {
+          order_id: string;
+          sent_at: string;
+          user_id: string;
+        };
+        Insert: {
+          order_id: string;
+          sent_at?: string;
+          user_id: string;
+        };
+        Update: {
+          order_id?: string;
+          sent_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_review_reminders_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_review_reminders_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_review_reminders_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       orders: {
         Row: {
           buyer_id: string;
@@ -26145,6 +26240,7 @@ export type Database = {
           checkout_session_id: string | null;
           commission_calculation_id: string | null;
           commission_snapshot_hash: string | null;
+          completed_at: string | null;
           created_at: string;
           currency: string;
           delivery_confirmed_at: string | null;
@@ -26210,6 +26306,7 @@ export type Database = {
           checkout_session_id?: string | null;
           commission_calculation_id?: string | null;
           commission_snapshot_hash?: string | null;
+          completed_at?: string | null;
           created_at?: string;
           currency: string;
           delivery_confirmed_at?: string | null;
@@ -26275,6 +26372,7 @@ export type Database = {
           checkout_session_id?: string | null;
           commission_calculation_id?: string | null;
           commission_snapshot_hash?: string | null;
+          completed_at?: string | null;
           created_at?: string;
           currency?: string;
           delivery_confirmed_at?: string | null;
@@ -26801,6 +26899,8 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"];
           auth_user_id: string | null;
           avatar_url: string | null;
+          away_message: string | null;
+          away_until: string | null;
           bio: string | null;
           capability_override_version: number;
           city: string | null;
@@ -26837,6 +26937,8 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"];
           auth_user_id?: string | null;
           avatar_url?: string | null;
+          away_message?: string | null;
+          away_until?: string | null;
           bio?: string | null;
           capability_override_version?: number;
           city?: string | null;
@@ -26873,6 +26975,8 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"];
           auth_user_id?: string | null;
           avatar_url?: string | null;
+          away_message?: string | null;
+          away_until?: string | null;
           bio?: string | null;
           capability_override_version?: number;
           city?: string | null;
@@ -29268,6 +29372,7 @@ export type Database = {
           resolution_action: string | null;
           resolved_at: string | null;
           resolved_by: string | null;
+          review_id: string | null;
           status: Database["public"]["Enums"]["report_status"];
           updated_at: string;
         };
@@ -29283,6 +29388,7 @@ export type Database = {
           resolution_action?: string | null;
           resolved_at?: string | null;
           resolved_by?: string | null;
+          review_id?: string | null;
           status?: Database["public"]["Enums"]["report_status"];
           updated_at?: string;
         };
@@ -29298,6 +29404,7 @@ export type Database = {
           resolution_action?: string | null;
           resolved_at?: string | null;
           resolved_by?: string | null;
+          review_id?: string | null;
           status?: Database["public"]["Enums"]["report_status"];
           updated_at?: string;
         };
@@ -29358,6 +29465,53 @@ export type Database = {
             referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "reports_review_id_fkey";
+            columns: ["review_id"];
+            isOneToOne: false;
+            referencedRelation: "reviews";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      review_helpful_votes: {
+        Row: {
+          created_at: string;
+          review_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          review_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          review_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "review_helpful_votes_review_id_fkey";
+            columns: ["review_id"];
+            isOneToOne: false;
+            referencedRelation: "reviews";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "review_helpful_votes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "review_helpful_votes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
         ];
       };
       reviews: {
@@ -29365,30 +29519,48 @@ export type Database = {
           author_id: string;
           comment: string;
           created_at: string;
+          helpful_count: number;
           id: string;
           listing_title: string | null;
           order_id: string | null;
           rating: number;
+          removed_at: string | null;
+          removed_by: string | null;
+          reply_comment: string | null;
+          reply_created_at: string | null;
+          reply_updated_at: string | null;
           target_user_id: string;
         };
         Insert: {
           author_id: string;
           comment: string;
           created_at?: string;
+          helpful_count?: number;
           id?: string;
           listing_title?: string | null;
           order_id?: string | null;
           rating: number;
+          removed_at?: string | null;
+          removed_by?: string | null;
+          reply_comment?: string | null;
+          reply_created_at?: string | null;
+          reply_updated_at?: string | null;
           target_user_id: string;
         };
         Update: {
           author_id?: string;
           comment?: string;
           created_at?: string;
+          helpful_count?: number;
           id?: string;
           listing_title?: string | null;
           order_id?: string | null;
           rating?: number;
+          removed_at?: string | null;
+          removed_by?: string | null;
+          reply_comment?: string | null;
+          reply_created_at?: string | null;
+          reply_updated_at?: string | null;
           target_user_id?: string;
         };
         Relationships: [
@@ -29411,6 +29583,20 @@ export type Database = {
             columns: ["order_id"];
             isOneToOne: false;
             referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reviews_removed_by_fkey";
+            columns: ["removed_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reviews_removed_by_fkey";
+            columns: ["removed_by"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
             referencedColumns: ["id"];
           },
           {
@@ -33139,6 +33325,8 @@ export type Database = {
         Row: {
           account_family: string | null;
           avatar_url: string | null;
+          away_message: string | null;
+          away_until: string | null;
           bio: string | null;
           city: string | null;
           country: string | null;
@@ -33157,6 +33345,8 @@ export type Database = {
         Insert: {
           account_family?: string | null;
           avatar_url?: string | null;
+          away_message?: string | null;
+          away_until?: string | null;
           bio?: string | null;
           city?: string | null;
           country?: string | null;
@@ -33175,6 +33365,8 @@ export type Database = {
         Update: {
           account_family?: string | null;
           avatar_url?: string | null;
+          away_message?: string | null;
+          away_until?: string | null;
           bio?: string | null;
           city?: string | null;
           country?: string | null;
@@ -33963,6 +34155,7 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      clear_seller_away: { Args: { p_user_id: string }; Returns: number };
       complete_account_deletion: {
         Args: { p_reason?: string; p_user_id: string };
         Returns: {
@@ -33970,6 +34163,8 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"];
           auth_user_id: string | null;
           avatar_url: string | null;
+          away_message: string | null;
+          away_until: string | null;
           bio: string | null;
           capability_override_version: number;
           city: string | null;
@@ -34307,6 +34502,10 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      correct_listing_search_query: {
+        Args: { p_market_code: string; p_query: string };
+        Returns: string;
+      };
       create_digital_asset_upload_record: {
         Args: {
           p_asset_id: string;
@@ -34516,6 +34715,26 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      estimate_listing_price: {
+        Args: {
+          p_brand?: string;
+          p_category_ids: string[];
+          p_condition?: string;
+          p_market_code: string;
+          p_min_sample?: number;
+          p_model?: string;
+          p_window_days?: number;
+        };
+        Returns: {
+          basis: string;
+          currency: string;
+          median_minor: number;
+          narrowed_by: string[];
+          p25_minor: number;
+          p75_minor: number;
+          sample_size: number;
+        }[];
       };
       evaluate_watch_event: { Args: { p_event_id: string }; Returns: number };
       expire_stale_order_returns: {
@@ -34819,6 +35038,14 @@ export type Database = {
           job_id: string;
         }[];
       };
+      listing_search_stopwords: { Args: never; Returns: string[] };
+      listing_search_terms_from_text: {
+        Args: { p_text: string };
+        Returns: {
+          display_term: string;
+          term: string;
+        }[];
+      };
       mark_conversation_read: {
         Args: { p_conversation_id: string; p_user_id: string };
         Returns: undefined;
@@ -35081,6 +35308,16 @@ export type Database = {
         };
         Returns: string;
       };
+      publish_scheduled_listings: {
+        Args: { p_limit?: number };
+        Returns: {
+          id: string;
+          market_code: string;
+          seller_id: string;
+          status: string;
+          title: string;
+        }[];
+      };
       publish_taxonomy_revision: {
         Args: {
           p_actor_profile_id: string;
@@ -35229,6 +35466,7 @@ export type Database = {
           checkout_session_id: string | null;
           commission_calculation_id: string | null;
           commission_snapshot_hash: string | null;
+          completed_at: string | null;
           created_at: string;
           currency: string;
           delivery_confirmed_at: string | null;
@@ -35304,6 +35542,10 @@ export type Database = {
         Args: { p_listing_id: string; p_market_code: string };
         Returns: undefined;
       };
+      refresh_listing_search_terms: {
+        Args: { p_market_code: string };
+        Returns: number;
+      };
       refresh_taxonomy_draft_snapshot: { Args: never; Returns: undefined };
       reindex_multilingual_search_batch: {
         Args: { p_limit?: number };
@@ -35320,6 +35562,16 @@ export type Database = {
       release_scheduled_job_for_retry: {
         Args: { p_job_name: string; p_owner_id: string };
         Returns: undefined;
+      };
+      renew_expiring_listings: {
+        Args: { p_limit?: number; p_max_cycles?: number };
+        Returns: {
+          expires_at: string;
+          id: string;
+          market_code: string;
+          seller_id: string;
+          title: string;
+        }[];
       };
       renew_scheduled_job_lease: {
         Args: {
@@ -35435,6 +35687,13 @@ export type Database = {
           p_offer_id: string;
         };
         Returns: Json;
+      };
+      resume_returned_sellers: {
+        Args: { p_limit?: number };
+        Returns: {
+          resumed_publications: number;
+          user_id: string;
+        }[];
       };
       retire_staff_marketplace_inventory: {
         Args: { p_user_id: string };
@@ -35612,6 +35871,14 @@ export type Database = {
         };
         Returns: boolean;
       };
+      set_review_helpful_vote: {
+        Args: { p_helpful: boolean; p_review_id: string; p_user_id: string };
+        Returns: number;
+      };
+      set_seller_away: {
+        Args: { p_message?: string; p_until: string; p_user_id: string };
+        Returns: number;
+      };
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { "": string }; Returns: string[] };
       solution_catalog_document: {
@@ -35672,6 +35939,15 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      suggest_listing_search_terms: {
+        Args: { p_limit?: number; p_market_code: string; p_query: string };
+        Returns: {
+          display_term: string;
+          listing_count: number;
+          match_kind: string;
+          term: string;
+        }[];
       };
       support_case_metrics: {
         Args: { p_now: string };
@@ -36032,6 +36308,8 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"];
           auth_user_id: string | null;
           avatar_url: string | null;
+          away_message: string | null;
+          away_until: string | null;
           bio: string | null;
           capability_override_version: number;
           city: string | null;

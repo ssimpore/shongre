@@ -13,47 +13,53 @@ import { mobileEnvironment } from "@/config/environment";
 import { getCountryConfig } from "@shongre/contracts";
 
 /**
- * The sign-in screen offered email/password and social providers, and nothing
- * else: a person who forgot their password had no route out of the form, and a
- * new user could only join through a social provider. Until native screens
- * exist, both hand off to the market's Web flow — so the links have to be real,
- * market-scoped, and actually rendered.
+ * The sign-in screen used to offer email/password and social providers and
+ * nothing else: a person who forgot their password had no route out of the
+ * form, and a new user could only join through a social provider. Individual
+ * registration and password recovery are native screens now; professional
+ * registration still hands off to the market's Web flow because it collects
+ * legal identifiers, so that link has to be real and market-scoped.
  */
 describe("native account recovery entry points", () => {
   it.each(["FR", "BE", "CH"])(
-    "builds market-scoped registration and reset links for %s",
+    "builds a market-scoped professional registration link for %s",
     (marketCode) => {
       const country = getCountryConfig(marketCode);
       expect(country).toBeTruthy();
       const links = mobileEnvironment.linksFor(country!);
-
-      for (const url of [links.registerUrl, links.passwordResetUrl]) {
-        expect(() => new URL(url)).not.toThrow();
-      }
-      expect(links.registerUrl).toContain("/inscription");
-      expect(links.passwordResetUrl).toContain("/mot-de-passe-oublie");
-
+      expect(() => new URL(links.registerUrl)).not.toThrow();
       // Market scoping comes from the shared builder, never a concatenated
       // prefix: France has no path prefix, the others carry theirs.
       const basePath = country!.basePath === "/" ? "" : country!.basePath;
       expect(new URL(links.registerUrl).pathname).toBe(
         `${basePath}/inscription`,
       );
-      expect(new URL(links.passwordResetUrl).pathname).toBe(
-        `${basePath}/mot-de-passe-oublie`,
-      );
     },
   );
 
-  it("renders both entry points on the sign-in screen", () => {
+  it("routes the sign-in screen to the native registration and recovery screens", () => {
     const source = readFileSync(
       new URL("../app/auth/login.tsx", import.meta.url),
       "utf8",
     );
-    expect(source).toContain("marketLinks.passwordResetUrl");
-    expect(source).toContain("marketLinks.registerUrl");
+    expect(source).toContain('"/auth/forgot-password"');
+    expect(source).toContain('"/auth/register"');
     expect(source).toContain("Mot de passe oublié ?");
     expect(source).toContain("Créer un compte");
+    for (const route of [
+      "../app/auth/register.tsx",
+      "../app/auth/forgot-password.tsx",
+    ]) {
+      expect(() =>
+        readFileSync(new URL(route, import.meta.url), "utf8"),
+      ).not.toThrow();
+    }
+    // Professionals keep the Web flow, from the registration screen.
+    const register = readFileSync(
+      new URL("../app/auth/register.tsx", import.meta.url),
+      "utf8",
+    );
+    expect(register).toContain("marketLinks.registerUrl");
   });
 
   it("keeps every input-bearing screen inside keyboard avoidance", () => {

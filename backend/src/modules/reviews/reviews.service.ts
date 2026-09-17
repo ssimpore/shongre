@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { transactionReviewInputSchema } from "@shongre/contracts/reviews";
 import type { components } from "@shongre/contracts/openapi";
+import { z } from "zod";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
   repositories,
@@ -12,6 +13,13 @@ import {
 
 type SubmitReviewInput = components["schemas"]["SubmitTransactionReview"];
 
+/** Mirrors `ReviewReplyInput` and the `reply_comment` check in 00143. */
+const reviewReplySchema = z.object({
+  comment: z.string().trim().min(10).max(2000),
+});
+/** Mirrors `ReviewHelpfulInput`. */
+const reviewHelpfulSchema = z.object({ helpful: z.boolean() });
+
 export class ReviewsService {
   constructor(
     private reviewRepo: IReviewRepository = repositories.reviews,
@@ -20,8 +28,9 @@ export class ReviewsService {
     private listingRepo: IListingRepository = repositories.listings,
   ) {}
 
-  getUserReviews(userId: string) {
-    return this.reviewRepo.getUserReviews(userId);
+  /** `viewerId` is the signed-in reader, when there is one. */
+  getUserReviews(userId: string, viewerId?: string) {
+    return this.reviewRepo.getUserReviews(userId, viewerId);
   }
 
   private async requireParticipant(orderId: string, authorId: string) {
@@ -92,8 +101,50 @@ export class ReviewsService {
       comment: value.comment,
       listingTitle: listing.title,
       verifiedTransaction: true,
+      helpfulCount: 0,
       createdAt: new Date().toISOString(),
     });
+  }
+
+  /**
+   * The recipient's one public answer. Only the person the review is about
+   * may answer; a 404 rather than a 403 keeps other people's reviews from
+   * being probed by identifier.
+   */
+  async replyToReview(userId: string, reviewId: string, input: unknown) {
+    const parsed = reviewReplySchema.safeParse(input);
+    if (!parsed.success)
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Une réponse de 10 à 2 000 caractères est requise.",
+      });
+    const review = await this.reviewRepo.findById(reviewId);
+    if (!review || review.removedAt || review.targetUserId !== userId)
+      throw new AppError({ code: "NOT_FOUND", message: "Avis introuvable." });
+    return this.reviewRepo.saveReply({
+      reviewId,
+      comment: parsed.data.comment,
+      at: new Date().toISOString(),
+    });
+  }
+
+  async markHelpful(
+    userId: string,
+    reviewId: string,
+    input: unknown,
+  ): Promise<components["schemas"]["ReviewHelpfulResult"]> {
+    const parsed = reviewHelpfulSchema.safeParse(input);
+    if (!parsed.success)
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Indiquez si l’avis vous a été utile.",
+      });
+    const helpfulCount = await this.reviewRepo.setHelpful({
+      reviewId,
+      userId,
+      helpful: parsed.data.helpful,
+    });
+    return { reviewId, helpfulCount, viewerMarkedHelpful: parsed.data.helpful };
   }
 }
 

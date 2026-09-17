@@ -18,6 +18,8 @@ interface BackendParticipant {
   avatarUrl?: string;
   accountType?: "individual" | "professional";
   sellerType?: "individual" | "pro";
+  awayUntil?: string;
+  awayMessage?: string;
 }
 
 interface BackendConversation {
@@ -53,6 +55,7 @@ interface BackendMessage {
   offerStatus?: Message["offerStatus"];
   offerExpiresAt?: string;
   isPickupProposal?: boolean;
+  safetyFlags?: string[];
   createdAt: string;
 }
 
@@ -95,6 +98,7 @@ const mapMessage = (message: BackendMessage): Message => ({
   offerExpiresAt: message.offerExpiresAt,
   attachmentUrl: message.attachments?.[0],
   attachmentType: message.attachments?.length ? "image" : undefined,
+  ...(message.safetyFlags?.length ? { safetyFlags: message.safetyFlags } : {}),
   createdAt: message.createdAt,
   isRead: false,
 });
@@ -112,6 +116,10 @@ const mapConversation = (conversation: BackendConversation): Conversation => ({
   sellerId: conversation.sellerId,
   sellerName: conversation.seller?.name || "Vendeur",
   sellerAvatarUrl: conversation.seller?.avatarUrl,
+  buyerAwayUntil: conversation.buyer?.awayUntil,
+  buyerAwayMessage: conversation.buyer?.awayMessage,
+  sellerAwayUntil: conversation.seller?.awayUntil,
+  sellerAwayMessage: conversation.seller?.awayMessage,
   sellerType: (conversation.seller?.sellerType ||
     (conversation.seller?.accountType === "professional"
       ? "pro"

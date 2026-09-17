@@ -165,7 +165,12 @@ export function buildSrcSet(
 }
 
 export const IMAGE_SIZES = {
-  card: "(max-width: 639px) calc(100vw - 2rem), (max-width: 767px) calc((100vw - 3rem) / 2), (max-width: 1023px) calc((100vw - 4rem) / 3), 208px",
+  // Below `sm` the standard card is capped at `listing-card-mobile-max`
+  // (13.75rem = 220px) and centred, so the slot only follows the viewport
+  // while the viewport minus its 2rem of gutters is narrower than the cap;
+  // claiming the full viewport width made phones fetch a 640w source for a
+  // 220px slot.
+  card: "(max-width: 252px) calc(100vw - 2rem), (max-width: 639px) 13.75rem, (max-width: 767px) calc((100vw - 3rem) / 2), (max-width: 1023px) calc((100vw - 4rem) / 3), 208px",
   thumbnail: "(max-width: 640px) 100vw, 220px",
   compact: "208px",
   gallery: "(max-width: 1024px) 100vw, 900px",

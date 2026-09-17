@@ -67,7 +67,11 @@ describe("canonical design tokens", () => {
 
   it("clears WCAG AA on primary controls in every interaction state", () => {
     expect(themeColors["on-primary"]).toBe(colors.brand.background);
-    for (const state of ["primary", "primary-hover", "primary-active"] as const) {
+    for (const state of [
+      "primary",
+      "primary-hover",
+      "primary-active",
+    ] as const) {
       expect(
         contrast(themeColors["on-primary"], themeColors[state]),
         `${state} must reach 4.5:1 against on-primary`,

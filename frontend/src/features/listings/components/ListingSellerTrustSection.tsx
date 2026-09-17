@@ -1,4 +1,5 @@
 import React from "react";
+import { SellerAwayNotice } from "../../profile/components/SellerAwayNotice";
 import { Link } from "react-router-dom";
 import { ProBadge, VerificationBadge } from "@shongre/ui/web";
 import { ShieldCheck, Star, Clock, MapPin, ChevronRight } from "lucide-react";
@@ -70,6 +71,8 @@ export const ListingSellerTrustSection: React.FC<
           <ChevronRight className="w-icon-md h-icon-md" />
         </Link>
       </div>
+
+      {seller.awayUntil ? <SellerAwayNotice seller={seller} /> : null}
 
       {/* Main Seller Identity Card */}
       <div className="flex items-start gap-4">

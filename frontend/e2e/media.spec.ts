@@ -41,9 +41,14 @@ async function paintedImages(
     Array.from(document.querySelectorAll("img"))
       .filter((img) => {
         const r = img.getBoundingClientRect();
-        // Only judge images that are actually laid out and CDN-resizable.
+        // Only judge images that are laid out, CDN-resizable, and for which
+        // the browser has already selected a candidate. A lazy image below
+        // the fold has no `currentSrc` yet; judging its `src` fallback would
+        // grade a download that never happened.
         return (
-          r.width > 0 && /images\.unsplash\.com/.test(img.currentSrc || img.src)
+          r.width > 0 &&
+          img.currentSrc !== "" &&
+          /images\.unsplash\.com/.test(img.currentSrc)
         );
       })
       .map((img) => {

@@ -199,6 +199,7 @@ class MessagingService {
             url: msg.attachmentUrl,
           }
         : undefined,
+      ...(msg.safetyFlags?.length ? { safetyFlags: msg.safetyFlags } : {}),
       isRead: !!msg.isRead,
       createdAt: msg.createdAt,
     };

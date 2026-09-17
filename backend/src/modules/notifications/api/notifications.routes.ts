@@ -80,6 +80,12 @@ export function registerNotificationsRoutes(routes: RouteRegistrar): void {
     },
   );
   routes.addRoute(
+    "GET",
+    "/notifications/web-push/config",
+    permission("marketplace.customer.access"),
+    async () => notificationsService.getWebPushConfig(),
+  );
+  routes.addRoute(
     "POST",
     "/notifications/devices/unregister",
     permission("marketplace.customer.access"),

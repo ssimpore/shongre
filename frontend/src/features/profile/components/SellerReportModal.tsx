@@ -37,8 +37,11 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
   const [selectedReason, setSelectedReason] = useState(REPORT_REASONS[0].id);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // A review is a report target of its own, so the identifier no longer
+  // travels in the free text; the chosen motive still does, which also keeps
+  // the details above the moderation minimum when the comment is left empty.
   const reportContext = reviewId
-    ? `Review: ${reviewId}`
+    ? `Avis signalé : ${REPORT_REASONS.find((r) => r.id === selectedReason)?.label ?? selectedReason}`
     : `Profile report: ${selectedReason}`;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,7 +50,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
 
     try {
       await services.moderation.submitReport({
-        reportedUserId: seller.id,
+        ...(reviewId ? { reviewId } : { reportedUserId: seller.id }),
         reason:
           selectedReason === "scam" ||
           selectedReason === "offline_payment" ||

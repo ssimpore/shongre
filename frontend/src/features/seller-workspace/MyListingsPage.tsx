@@ -9,6 +9,8 @@ import {
   Download,
   Upload,
   Globe,
+  RefreshCw,
+  CalendarClock,
 } from "lucide-react";
 import { Listing } from "../../types";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -22,8 +24,10 @@ import { Tabs, TabPanel, EmptyState, Skeleton } from "../../design-system";
 import { Modal } from "../../design-system/primitives/Modal";
 import { DataTable } from "../../design-system/primitives/DataTable";
 import { BulkImportModal } from "./components/BulkImportModal";
+import { SellerAwayPanel } from "./components/SellerAwayPanel";
 import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { sellerCatalogueFr } from "../../i18n/seller.catalogue.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { getListingCategoryLabel } from "../../domains/taxonomy/listing-category.display";
 import { resolveListingPhotoUrl } from "../../domains/listing/listing-media";
@@ -84,7 +88,7 @@ const LISTING_STATUS_PRESENTATION = {
 >;
 
 export const MyListingsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(sellerCatalogueFr);
   const marketPromotions = useMarketPromotions();
   const publishLabel = t("sellerworkspace.myListingsPage.deposerUneAnnonce");
   usePageMeta({
@@ -97,7 +101,8 @@ export const MyListingsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const toast = useToast();
   const { activeMarket, currentLocale, formatPrice } = useMarketLocation();
-  const { formatMoney } = useRegionalFormatters();
+  const { formatMoney, formatDate: formatRegionalDate } =
+    useRegionalFormatters();
   const publishCta = usePublishCta();
 
   const [activeTab, setActiveTab] = useState<string>("all");
@@ -153,6 +158,35 @@ export const MyListingsPage: React.FC = () => {
         error instanceof Error
           ? error.message
           : "L’annonce n’a pas pu être marquée comme vendue.",
+      );
+    }
+  };
+
+  const handleToggleAutoRenew = async (listing: Listing) => {
+    const autoRenew = !listing.autoRenew;
+    try {
+      // Confirmed by the API rather than optimistic: the toggle is a setting
+      // the worker acts on, so the list must show what is actually stored.
+      const updated = await services.listings.updateListing(listing.id, {
+        autoRenew,
+      });
+      setMyListings((current) =>
+        current.map((item) =>
+          item.id === listing.id
+            ? { ...item, autoRenew: updated.autoRenew ?? autoRenew }
+            : item,
+        ),
+      );
+      toast.success(
+        autoRenew
+          ? t("sellerworkspace.autoRenew.enabledToast")
+          : t("sellerworkspace.autoRenew.disabledToast"),
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("sellerworkspace.autoRenew.error"),
       );
     }
   };
@@ -314,6 +348,27 @@ export const MyListingsPage: React.FC = () => {
             Vedette
           </Badge>
         )}
+        {listing.status === "draft" && listing.scheduledPublishAt && (
+          <Badge variant="primary" size="sm">
+            <CalendarClock
+              className="h-icon-xs w-icon-xs mr-1 inline"
+              aria-hidden="true"
+            />
+            {t("sellerworkspace.scheduled.badge", {
+              date: formatRegionalDate(listing.scheduledPublishAt, {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            })}
+          </Badge>
+        )}
+        {listing.status === "active" && listing.autoRenew && (
+          <Badge variant="neutral" size="sm">
+            {t("sellerworkspace.autoRenew.badge")}
+          </Badge>
+        )}
       </div>
     );
   };
@@ -362,6 +417,23 @@ export const MyListingsPage: React.FC = () => {
             title="Marquer comme vendu"
           >
             Vendu
+          </button>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={listing.autoRenew === true}
+            onClick={() => void handleToggleAutoRenew(listing)}
+            className={`inline-flex h-control-sm w-control-sm items-center justify-center rounded-control motion-interactive ${
+              listing.autoRenew
+                ? "bg-primary-light text-primary"
+                : "text-text-muted hover:bg-bg-subtle"
+            }`}
+            title={t("sellerworkspace.autoRenew.toggle")}
+            aria-label={t("sellerworkspace.autoRenew.toggle")}
+            data-listing-auto-renew={listing.id}
+          >
+            <RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />
           </button>
         </>
       )}
@@ -502,6 +574,8 @@ export const MyListingsPage: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      <SellerAwayPanel />
 
       {/* Filter tabs */}
       <div className="bg-bg-surface rounded-2xl border border-border-base p-4 sm:p-6 shadow-xs space-y-4">

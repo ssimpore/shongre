@@ -4,6 +4,7 @@ import {
   DEFAULT_DISCOVERY_CONFIGURATION,
   majorToMinorAmount,
   minorToMajorAmount,
+  normalizeSearchText,
   runUnifiedDiscovery,
   scoreOrganicListing,
 } from "@shongre/shared";
@@ -15,6 +16,7 @@ import {
   type DiscoveryConfiguration,
   type PublisherVerificationStatus,
 } from "@shongre/contracts";
+import type { MarketContext } from "@shongre/contracts/market-country";
 import {
   DELIVERY_FEATURE_FLAG_KEY,
   DELIVERY_TAXONOMY_CATEGORY_ID,
@@ -56,6 +58,45 @@ export interface DiscoverySearchResult {
   };
   requestId: string;
   rankingVersion: string;
+  /**
+   * The nearest spelling the catalogue contains, offered only when the query
+   * found nothing. Advisory: the client proposes it, the visitor decides.
+   */
+  didYouMean?: string;
+}
+
+export type DiscoverySearchSuggestion =
+  | {
+      kind: "term";
+      /** The complete query to run: what was typed, completed. */
+      query: string;
+      label: string;
+      listingCount: number;
+    }
+  | {
+      kind: "category";
+      categoryId: string;
+      categorySlug: string;
+      label: string;
+      parentLabel?: string;
+      parentSlug?: string;
+      iconName?: string;
+    };
+
+export interface DiscoverySuggestionResult {
+  items: DiscoverySearchSuggestion[];
+}
+
+const SUGGESTION_LIMIT_DEFAULT = 8;
+const SUGGESTION_LIMIT_MAX = 12;
+const CATEGORY_SUGGESTION_LIMIT = 3;
+
+function categoryLabel(
+  labels: Record<string, string> | undefined,
+  locale: string,
+): string {
+  if (!labels) return "";
+  return labels[locale] || labels["fr-FR"] || Object.values(labels)[0] || "";
 }
 
 interface DiscoveryCursorPayload {
@@ -569,6 +610,92 @@ export class UnifiedDiscoveryService {
     );
   }
 
+  /**
+   * Completions for the search field. Categories are matched in memory on the
+   * published snapshot; words come from the market's catalogue vocabulary.
+   * Both are public data, so the response carries nothing about the visitor.
+   */
+  async suggest(input: {
+    marketContext: MarketContext;
+    query: string;
+    locale: string;
+    limit?: number;
+  }): Promise<DiscoverySuggestionResult> {
+    const marketCode = requireMarketCode(input.marketContext.countryCode);
+    const query = input.query.trim().replace(/\s+/g, " ");
+    const limit = Math.min(
+      Math.max(input.limit ?? SUGGESTION_LIMIT_DEFAULT, 1),
+      SUGGESTION_LIMIT_MAX,
+    );
+    if (!query) return { items: [] };
+
+    const taxonomy = await taxonomyV1Service.snapshot();
+    const folded = normalizeSearchText(query);
+    const categories: DiscoverySearchSuggestion[] = folded
+      ? taxonomy
+          .listTree(input.marketContext)
+          .flatMap((node) => {
+            const label = categoryLabel(node.labels, input.locale);
+            const short = categoryLabel(node.shortLabels, input.locale);
+            const matches = [label, short, node.slug].some((candidate) =>
+              normalizeSearchText(candidate).startsWith(folded),
+            );
+            if (!matches || !label) return [];
+            const parent = node.parentId
+              ? taxonomy.findCategory(node.parentId)
+              : undefined;
+            return [
+              {
+                kind: "category" as const,
+                categoryId: node.id,
+                categorySlug: node.slug,
+                label,
+                ...(parent
+                  ? {
+                      parentLabel: categoryLabel(parent.labels, input.locale),
+                      parentSlug: parent.slug,
+                    }
+                  : {}),
+                iconName: node.iconName,
+                level: node.level,
+              },
+            ];
+          })
+          .sort((left, right) => left.level - right.level)
+          .slice(0, CATEGORY_SUGGESTION_LIMIT)
+          .map(({ level: _level, ...suggestion }) => suggestion)
+      : [];
+
+    // Only the word being typed is completed; the words before it are kept
+    // as typed so "iphone 15 pr" completes to "iphone 15 pro".
+    const words = query.split(" ");
+    const tail = words[words.length - 1] ?? "";
+    const head = words.slice(0, -1).join(" ");
+    const terms = await this.listingRepository.suggestSearchTerms({
+      marketCode,
+      query: tail,
+      limit,
+    });
+    const seen = new Set<string>();
+    const termSuggestions: DiscoverySearchSuggestion[] = [];
+    for (const term of terms) {
+      const completed = head ? `${head} ${term.label}` : term.label;
+      const key = normalizeSearchText(completed);
+      if (!key || seen.has(key) || key === folded) continue;
+      seen.add(key);
+      termSuggestions.push({
+        kind: "term",
+        query: completed,
+        label: completed,
+        listingCount: term.listingCount,
+      });
+    }
+
+    return {
+      items: [...categories, ...termSuggestions].slice(0, limit),
+    };
+  }
+
   async search(filters: SearchFilters = {}): Promise<DiscoverySearchResult> {
     const startedAt = Date.now();
     const requestId = randomUUID();
@@ -715,6 +842,13 @@ export class UnifiedDiscoveryService {
         error: error instanceof Error ? error.message : "unknown",
       });
     }
+    // A correction is offered only for a first page that found nothing: a
+    // later page of an empty result cannot exist, and a query that matched
+    // needs no second guess.
+    const didYouMean =
+      items.length === 0 && filters.query?.trim() && !cursor
+        ? await this.suggestCorrection(marketCode, filters.query)
+        : undefined;
     return {
       items,
       total,
@@ -728,7 +862,31 @@ export class UnifiedDiscoveryService {
       },
       requestId,
       rankingVersion: ranked.event.rankingVersion,
+      ...(didYouMean ? { didYouMean } : {}),
     };
+  }
+
+  private async suggestCorrection(
+    marketCode: string,
+    query: string,
+  ): Promise<string | undefined> {
+    try {
+      const corrected = await this.listingRepository.correctSearchQuery({
+        marketCode,
+        query,
+      });
+      if (!corrected) return undefined;
+      return normalizeSearchText(corrected) === normalizeSearchText(query)
+        ? undefined
+        : corrected;
+    } catch (error) {
+      // The correction is a courtesy on top of an empty result; a vocabulary
+      // outage must not turn "no results" into an error page.
+      logger.warn("search_query_correction_failed", {
+        error: error instanceof Error ? error.message : "unknown",
+      });
+      return undefined;
+    }
   }
 }
 

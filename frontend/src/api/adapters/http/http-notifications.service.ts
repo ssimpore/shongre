@@ -111,6 +111,27 @@ export class HttpNotificationsService implements NotificationsServiceContract {
       { body: preferences },
     );
   }
+
+  async getWebPushConfig(): Promise<{ enabled: boolean; publicKey?: string }> {
+    return apiOperation<
+      { enabled: boolean; publicKey?: string },
+      "getNotificationsWebPushConfig"
+    >("getNotificationsWebPushConfig", {});
+  }
+
+  async registerWebPushDevice(subscription: string): Promise<void> {
+    await apiOperation<{ success: boolean }, "postNotificationsDevices">(
+      "postNotificationsDevices",
+      { body: { token: subscription, platform: "web" } },
+    );
+  }
+
+  async unregisterWebPushDevice(subscription: string): Promise<void> {
+    await apiOperation<
+      { success: boolean },
+      "postNotificationsDevicesUnregister"
+    >("postNotificationsDevicesUnregister", { body: { token: subscription } });
+  }
 }
 
 export const httpNotificationsService = new HttpNotificationsService();

@@ -45,6 +45,12 @@ export type OrderRecord = Omit<Transaction, "listing" | "buyer" | "seller"> & {
   payoutFailedAt?: string;
   /** Running total of item value refunded. Drives full-vs-partial decisions. */
   refundedBaseTotalMinor?: number;
+  /**
+   * When the exchange reached `completed`. Stamped by the database on the
+   * transition (00143), so it does not move with later payout events the way
+   * `updatedAt` does.
+   */
+  completedAt?: string;
 };
 
 /** One provider refund against an order. */
@@ -114,6 +120,16 @@ export interface IOrderRepository {
   getSales(userId: string): Promise<OrderRecord[]>;
   listUnsettledCheckouts(
     beforeIso: string,
+    limit: number,
+  ): Promise<OrderRecord[]>;
+  /**
+   * Completed exchanges between two distinct people whose completion falls in
+   * the window, oldest first. The review reminder worker decides per
+   * participant whether a reminder is still owed.
+   */
+  listCompletedBetween(
+    notBeforeIso: string,
+    notAfterIso: string,
     limit: number,
   ): Promise<OrderRecord[]>;
   create(order: OrderRecord): Promise<OrderRecord>;
@@ -286,6 +302,27 @@ export class DemoOrderRepository implements IOrderRepository {
       .map((order) => ({ ...order }));
   }
 
+  async listCompletedBetween(
+    notBeforeIso: string,
+    notAfterIso: string,
+    limit: number,
+  ): Promise<OrderRecord[]> {
+    return Array.from(this.orders.values())
+      .filter(
+        (order) =>
+          order.status === "completed" &&
+          order.buyerId !== order.sellerId &&
+          Boolean(order.completedAt) &&
+          order.completedAt! >= notBeforeIso &&
+          order.completedAt! <= notAfterIso,
+      )
+      .sort((left, right) =>
+        left.completedAt!.localeCompare(right.completedAt!),
+      )
+      .slice(0, Math.max(0, limit))
+      .map((order) => ({ ...order }));
+  }
+
   async create(order: OrderRecord): Promise<OrderRecord> {
     this.orders.set(order.id, { ...order });
     return { ...order };
@@ -302,10 +339,15 @@ export class DemoOrderRepository implements IOrderRepository {
         message: "Commande introuvable.",
       });
 
+    const now = new Date().toISOString();
     const updated = {
       ...existing,
       ...updates,
-      updatedAt: new Date().toISOString(),
+      updatedAt: now,
+      // Mirrors the `orders_stamp_completed_at` trigger.
+      ...(updates.status === "completed" && existing.status !== "completed"
+        ? { completedAt: existing.completedAt ?? now }
+        : {}),
     };
     this.orders.set(id, updated as OrderRecord);
     return { ...(updated as OrderRecord) };
@@ -580,6 +622,7 @@ export class PostgresOrderRepository implements IOrderRepository {
       payoutFailureCode: row.payout_failure_code || undefined,
       payoutFailedAt: row.payout_failed_at || undefined,
       refundedBaseTotalMinor: Number(row.refunded_base_total_minor || 0),
+      completedAt: row.completed_at || undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -685,6 +728,32 @@ export class PostgresOrderRepository implements IOrderRepository {
       return data.map((row: any) => this.mapRowToOrder(row));
     } catch (error) {
       databaseFailure("orders.listUnsettledCheckouts", error);
+    }
+  }
+
+  async listCompletedBetween(
+    notBeforeIso: string,
+    notAfterIso: string,
+    limit: number,
+  ): Promise<OrderRecord[]> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .eq("status", "completed")
+        .gte("completed_at", notBeforeIso)
+        .lte("completed_at", notAfterIso)
+        .order("completed_at", { ascending: true })
+        .limit(Math.min(Math.max(limit, 1), 500));
+      if (error || !data) {
+        databaseFailure("orders.listCompletedBetween", error);
+      }
+      return data
+        .map((row: any) => this.mapRowToOrder(row))
+        .filter((order) => order.buyerId !== order.sellerId);
+    } catch (error) {
+      databaseFailure("orders.listCompletedBetween", error);
     }
   }
 

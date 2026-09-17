@@ -460,7 +460,7 @@ export class DemoMessagingRepository implements IMessagingRepository {
 
 export class PostgresMessagingRepository implements IMessagingRepository {
   private static readonly CONVERSATION_PROJECTION =
-    "id, listing_id, buyer_id, seller_id, last_message_text, last_message_at, created_at, listings:listing_id(id,title,price,currency,status,listing_media(url,sort_order,is_primary)), buyer:buyer_id(id,name,avatar_url,account_family,is_verified), seller:seller_id(id,name,avatar_url,account_family,is_verified)";
+    "id, listing_id, buyer_id, seller_id, last_message_text, last_message_at, created_at, listings:listing_id(id,title,price,currency,status,listing_media(url,sort_order,is_primary)), buyer:buyer_id(id,name,avatar_url,account_family,is_verified,away_until,away_message), seller:seller_id(id,name,avatar_url,account_family,is_verified,away_until,away_message)";
 
   private mapRowToConversation(row: any): Conversation {
     const mapParticipant = (profile: any): Partial<UserProfile> | undefined =>
@@ -476,6 +476,8 @@ export class PostgresMessagingRepository implements IMessagingRepository {
             sellerType:
               profile.account_family === "professional" ? "pro" : "individual",
             isVerified: Boolean(profile.is_verified),
+            awayUntil: profile.away_until || undefined,
+            awayMessage: profile.away_message || undefined,
           }
         : undefined;
     return {
@@ -541,6 +543,9 @@ export class PostgresMessagingRepository implements IMessagingRepository {
       offerStatus: row.offer_status || undefined,
       isPickupProposal: Boolean(row.is_pickup_proposal),
       pickupDetails: row.pickup_details || undefined,
+      ...(Array.isArray(row.safety_flags) && row.safety_flags.length
+        ? { safetyFlags: row.safety_flags }
+        : {}),
       createdAt: row.created_at,
     };
   }
@@ -649,6 +654,7 @@ export class PostgresMessagingRepository implements IMessagingRepository {
       offer_expires_at: message.offerExpiresAt || null,
       is_pickup_proposal: Boolean(message.isPickupProposal),
       pickup_details: message.pickupDetails || null,
+      safety_flags: message.safetyFlags || [],
       created_at: message.createdAt,
     };
 

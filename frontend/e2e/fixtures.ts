@@ -1,7 +1,12 @@
 import { readFileSync } from "node:fs";
 
 export interface BrowserFixtures {
-  accounts: Record<string, { email: string; recoveryCodes: string[] }>;
+  /** Which repository family the isolated API serves. */
+  dataMode: "demo" | "database";
+  accounts: Record<
+    string,
+    { id: string; email: string; recoveryCodes: string[] }
+  >;
   listingIds: Record<string, string>;
 }
 

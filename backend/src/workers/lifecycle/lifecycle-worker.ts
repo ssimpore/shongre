@@ -1,6 +1,7 @@
 import { logger } from "../../infrastructure/logging/logger.js";
 import { getSupabaseAdminClient } from "../../infrastructure/supabase/supabase-client.js";
 import { retryDatabaseSerializationFailure } from "../../infrastructure/database/serialization-retry.js";
+import { notificationsService } from "../../modules/notifications/notifications.service.js";
 
 export class LifecycleWorker {
   async runExpiredListingsCleanup(): Promise<number> {
@@ -14,13 +15,37 @@ export class LifecycleWorker {
           .update({ status: "archived", updated_at: now })
           .eq("status", "published")
           .lt("expires_at", now)
-          .select("id"),
+          .select("id, seller_id, title, market_code"),
       );
       if (error) throw error;
 
       const count = data?.length || 0;
       if (count > 0) {
         logger.info(`Lifecycle Worker archived ${count} expired listings.`);
+      }
+      // The seller learns that the listing is gone and where to republish it;
+      // an opted-in listing was renewed by the automation pass before this.
+      for (const row of (data || []) as Array<{
+        id: string;
+        seller_id: string;
+        title: string;
+        market_code: string;
+      }>) {
+        try {
+          await notificationsService.dispatchNotification(
+            row.seller_id,
+            "listing_expired",
+            "Votre annonce a expiré",
+            `« ${row.title} » n’est plus en ligne. Republiez-la depuis votre espace vendeur si l’article est toujours disponible.`,
+            "/compte/annonces",
+            "listings",
+            row.market_code,
+          );
+        } catch (notificationError: any) {
+          logger.error(
+            `Lifecycle Worker could not notify expiry for ${row.id}: ${notificationError.message}`,
+          );
+        }
       }
       return count;
     } catch (err: any) {

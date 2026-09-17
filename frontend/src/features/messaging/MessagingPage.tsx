@@ -111,6 +111,8 @@ export const MessagingPage: React.FC = () => {
             avatarUrl: counterpartAvatar,
             accountType:
               c.sellerType === "pro" && isBuyer ? "pro" : "individual",
+            awayUntil: isBuyer ? c.sellerAwayUntil : c.buyerAwayUntil,
+            awayMessage: isBuyer ? c.sellerAwayMessage : c.buyerAwayMessage,
           },
           context: {
             type: "listing",

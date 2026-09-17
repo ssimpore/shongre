@@ -9,6 +9,7 @@ import {
   repositories,
 } from "../../infrastructure/database/repositories/index.js";
 import { realtimeBroadcaster } from "../../infrastructure/realtime/realtime-broadcaster.js";
+import { aiService } from "../ai/ai.service.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { randomUUID } from "node:crypto";
 import type { IListingRepository } from "../../infrastructure/database/repositories/listing.repository.js";
@@ -134,12 +135,15 @@ export class MessagingService {
         message: "Utilisez le parcours d’offre de prix dédié.",
       });
     }
+    // Assessed once, at send time, so every device shows the same warning.
+    const safetyFlags = text ? aiService.assessMessageSafety(text) : [];
     const message: Message = {
       id: randomUUID(),
       conversationId: input.conversationId,
       senderId: input.senderId,
       text,
       attachments,
+      ...(safetyFlags.length ? { safetyFlags } : {}),
       createdAt: new Date().toISOString(),
     };
 

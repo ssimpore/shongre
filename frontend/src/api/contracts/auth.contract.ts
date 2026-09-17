@@ -197,4 +197,19 @@ export interface AuthServiceContract {
    * server-side for data the account can already read.
    */
   exportAccountData(): Promise<AccountDataExport>;
+  /**
+   * Declares an absence (publications pause until `until`) or ends it with
+   * `until: null`. Buyers see the absence on the profile and listings.
+   */
+  setAwayMode(input: {
+    until: string | null;
+    message?: string;
+  }): Promise<AccountAwayState>;
+}
+
+export interface AccountAwayState {
+  awayUntil: string | null;
+  awayMessage: string | null;
+  pausedPublications?: number;
+  resumedPublications?: number;
 }

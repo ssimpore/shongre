@@ -16,6 +16,7 @@ import {
 } from "./public-route-data";
 import { COUNTRY_REGISTRY } from "@shongre/contracts";
 import { projectTaxonomyForRoute } from "../../domains/taxonomy/taxonomy.seo";
+import { projectListingForSearchCard } from "../../domains/listing/listing-search-card.projection";
 import { fetchPublicSitemapListingPage } from "../../api/adapters/http/http-sitemap.service";
 
 const serverServices = createServiceRegistry();
@@ -420,7 +421,10 @@ async function resolveUncached(
         // single-node SEO lookup; the client refetches the tree it renders from.
         taxonomy: projectTaxonomyForRoute(taxonomy, categorySlug),
         pathname,
-        items: result.listings,
+        // The same idea for the rows: the initial page carries card fields,
+        // not the detail projection, so 26 results do not cost 30% of the
+        // document.
+        items: result.listings.map(projectListingForSearchCard),
         total: result.total,
         page: result.page,
         totalPages: result.totalPages,

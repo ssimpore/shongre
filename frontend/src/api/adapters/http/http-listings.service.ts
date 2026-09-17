@@ -4,6 +4,7 @@ import { apiOperation } from "./generated-api-operation";
 import {
   BulkListingImportTemplate,
   BulkListingImportRow,
+  ListingPriceEstimate,
   ListingsServiceContract,
   ParseBulkListingImportInput,
   PublishBulkListingsInput,
@@ -207,6 +208,8 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     createdAt: listing.createdAt,
     updatedAt: listing.updatedAt,
     expiresAt: listing.expiresAt,
+    autoRenew: listing.autoRenew,
+    scheduledPublishAt: listing.scheduledPublishAt,
   };
 };
 
@@ -418,10 +421,30 @@ export class HttpListingsService implements ListingsServiceContract {
           city: updates.city,
           postalCode: updates.postalCode,
           attributes: updates.attributes,
+          autoRenew: updates.autoRenew,
         },
       },
     );
     return mapBackendListing(listing);
+  }
+
+  async estimatePrice(input: {
+    categoryId: string;
+    brand?: string;
+    model?: string;
+    condition?: string;
+  }): Promise<ListingPriceEstimate> {
+    return apiOperation<ListingPriceEstimate, "getListingsPriceEstimate">(
+      "getListingsPriceEstimate",
+      {
+        query: {
+          categoryId: input.categoryId,
+          ...(input.brand ? { brand: input.brand } : {}),
+          ...(input.model ? { model: input.model } : {}),
+          ...(input.condition ? { condition: input.condition } : {}),
+        },
+      },
+    );
   }
 
   async markListingSold(id: string): Promise<Listing> {

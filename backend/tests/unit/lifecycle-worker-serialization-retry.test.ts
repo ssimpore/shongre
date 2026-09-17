@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   getSupabaseAdminClient: vi.fn(),
   info: vi.fn(),
   error: vi.fn(),
+  dispatchNotification: vi.fn(async () => ({})),
 }));
 
 vi.mock("../../src/infrastructure/supabase/supabase-client.js", () => ({
@@ -17,10 +18,27 @@ vi.mock("../../src/infrastructure/logging/logger.js", () => ({
   },
 }));
 
+vi.mock("../../src/modules/notifications/notifications.service.js", () => ({
+  notificationsService: { dispatchNotification: mocks.dispatchNotification },
+}));
+
 import { LifecycleWorker } from "../../src/workers/lifecycle/lifecycle-worker.js";
 
+type ArchivedRow = {
+  id: string;
+  seller_id: string;
+  title: string;
+  market_code: string;
+};
+const archivedRow: ArchivedRow = {
+  id: "listing-1",
+  seller_id: "seller-1",
+  title: "Vélo gravel",
+  market_code: "FR",
+};
+
 function mockArchiveMutation(
-  results: Array<{ data: Array<{ id: string }> | null; error: unknown }>,
+  results: Array<{ data: ArchivedRow[] | null; error: unknown }>,
 ) {
   const select = vi.fn();
   for (const result of results) select.mockResolvedValueOnce(result);
@@ -44,7 +62,7 @@ describe("lifecycle listing serialization retry", () => {
     const { client, builder } = mockArchiveMutation([
       { data: null, error: { code: "40001" } },
       { data: null, error: { code: "40001" } },
-      { data: [{ id: "listing-1" }], error: null },
+      { data: [archivedRow], error: null },
     ]);
 
     await expect(
@@ -54,6 +72,13 @@ describe("lifecycle listing serialization retry", () => {
     expect(builder.select).toHaveBeenCalledTimes(3);
     expect(mocks.info).toHaveBeenCalledOnce();
     expect(mocks.error).not.toHaveBeenCalled();
+    // The seller is told the listing expired, once, in the listing's market.
+    expect(mocks.dispatchNotification).toHaveBeenCalledOnce();
+    expect(mocks.dispatchNotification.mock.calls[0]?.slice(0, 2)).toEqual([
+      "seller-1",
+      "listing_expired",
+    ]);
+    expect(mocks.dispatchNotification.mock.calls[0]?.[6]).toBe("FR");
   });
 
   it("does not retry a non-serialization database error", async () => {

@@ -160,6 +160,10 @@ export interface PublicationDraftState {
     longitude?: number;
     hideExactAddress: boolean;
   };
+  /** Publish later: ISO date-time the worker publishes the draft at. */
+  scheduledPublishAt?: string;
+  /** Extend the expiry automatically when reached, up to three times. */
+  autoRenew?: boolean;
   currentStep: number;
   updatedAt: string;
 }

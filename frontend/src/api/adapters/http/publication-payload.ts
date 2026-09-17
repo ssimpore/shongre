@@ -40,5 +40,9 @@ export function publicationPayload(draft: PublicationDraftState) {
     fulfillmentTypes: draft.fulfillmentTypes ?? ["PHYSICAL"],
     digitalFulfillment: draft.digitalFulfillment,
     condition: draft.condition,
+    ...(draft.scheduledPublishAt
+      ? { scheduledPublishAt: draft.scheduledPublishAt }
+      : {}),
+    ...(draft.autoRenew ? { autoRenew: true } : {}),
   };
 }

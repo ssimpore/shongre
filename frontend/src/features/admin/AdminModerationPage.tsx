@@ -20,6 +20,13 @@ import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type AppealDecision = "upheld" | "overturned" | "rejected";
 
+const REPORT_TARGET_LABELS: Record<AdminReportSummary["targetType"], string> = {
+  listing: "Annonce",
+  user: "Compte",
+  delivery_request: "Demande de livraison",
+  review: "Avis",
+};
+
 export const AdminModerationPage: React.FC = () => {
   const { t } = useTranslation(adminCatalogueFr);
   const { can } = useAuth();
@@ -40,7 +47,7 @@ export const AdminModerationPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [reportDecision, setReportDecision] = useState<{
     reportId: string;
-    action: "dismiss" | "remove_listing";
+    action: "dismiss" | "remove_listing" | "remove_review";
   } | null>(null);
   const [appealDecision, setAppealDecision] = useState<{
     appealId: string;
@@ -217,8 +224,8 @@ export const AdminModerationPage: React.FC = () => {
                       </time>
                     </div>
                     <p className="text-xs text-text-secondary">
-                      Annonce {report.listingId} · signalé par{" "}
-                      {report.reporterName}
+                      {REPORT_TARGET_LABELS[report.targetType]}{" "}
+                      {report.targetId} · signalé par {report.reporterName}
                     </p>
                   </div>
                   <div className="flex shrink-0 flex-wrap gap-2">
@@ -234,18 +241,34 @@ export const AdminModerationPage: React.FC = () => {
                     >
                       Classer sans suite
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="danger"
-                      onClick={() =>
-                        setReportDecision({
-                          reportId: report.id,
-                          action: "remove_listing",
-                        })
-                      }
-                    >
-                      Retirer l’annonce
-                    </Button>
+                    {report.targetType === "listing" && (
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() =>
+                          setReportDecision({
+                            reportId: report.id,
+                            action: "remove_listing",
+                          })
+                        }
+                      >
+                        Retirer l’annonce
+                      </Button>
+                    )}
+                    {report.targetType === "review" && (
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() =>
+                          setReportDecision({
+                            reportId: report.id,
+                            action: "remove_review",
+                          })
+                        }
+                      >
+                        Retirer l’avis
+                      </Button>
+                    )}
                   </div>
                 </article>
               ))}

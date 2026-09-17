@@ -10,6 +10,7 @@ import { Badge } from "../../design-system/primitives/Badge";
 import { Skeleton } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { WebPushDevicePanel } from "./components/WebPushDevicePanel";
 
 export const NotificationPreferencesPage: React.FC = () => {
   const { t } = useTranslation();
@@ -218,6 +219,8 @@ export const NotificationPreferencesPage: React.FC = () => {
           Enregistrer
         </Button>
       </div>
+
+      <WebPushDevicePanel />
 
       {/* Matrix Header */}
       <div className="bg-bg-surface rounded-3xl border border-border-base p-6 shadow-xs space-y-6">

@@ -4,13 +4,14 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **543**
-- Specification SHA-256: `51c0c2c4b92f8f4d`
+- Operations: **550**
+- Specification SHA-256: `6f9693987669c4be`
 
 ## account
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `PUT` | `/account/away` | `putAccountAway` | `permission` | `profile.update.own` | `200` |
 | `POST` | `/account/delete` | `postAccountDelete` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/account/export` | `getAccountExport` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/account/listings` | `getAccountListings` | `permission` | `marketplace.customer.access` | `200` |
@@ -171,6 +172,7 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `POST` | `/ai/listing-assistance` | `postAiListingAssistance` | `permission` | `listing.create` | `200` |
+| `POST` | `/ai/listing-from-photos` | `postAiListingFromPhotos` | `permission` | `listing.create` | `200` |
 | `POST` | `/ai/listing-safety` | `postAiListingSafety` | `permission` | `listing.create` | `200` |
 
 ## analytics
@@ -532,9 +534,11 @@
 | `POST` | `/listings/bulk-import/publish` | `postListingsBulkimportPublish` | `permission` | `listing.publish` | `200` |
 | `GET` | `/listings/bulk-import/template` | `getListingsBulkimportTemplate` | `permission` | `listing.create` | `200` |
 | `POST` | `/listings/cards` | `postListingsCards` | `public` | — | `200` |
+| `GET` | `/listings/price-estimate` | `getListingsPriceEstimate` | `permission` | `listing.create` | `200` |
 | `POST` | `/listings/publish` | `postListingsPublish` | `permission` | `listing.publish` | `200` |
 | `GET` | `/listings/search` | `getListingsSearch` | `public` | — | `200` |
 | `POST` | `/listings/search` | `postListingsSearch` | `public` | — | `200` |
+| `GET` | `/listings/suggestions` | `getListingsSuggestions` | `public` | — | `200` |
 | `GET` | `/listings` | `getListings` | `public` | — | `200` |
 
 ## marketing
@@ -680,6 +684,7 @@
 | `PUT` | `/notifications/preferences` | `putNotificationPreferences` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/notifications/read-all` | `postNotificationsReadAll` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/notifications/unread-count` | `getNotificationsUnreadCount` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/notifications/web-push/config` | `getNotificationsWebPushConfig` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/notifications` | `getNotifications` | `permission` | `marketplace.customer.access` | `200` |
 
 ## operations
@@ -780,6 +785,8 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/orders/{id}/review` | `getOrderReviewEligibility` | `permission` | `review.create` | `200` |
+| `PUT` | `/reviews/{id}/helpful` | `putReviewsByIdHelpful` | `permission` | `review.create` | `200` |
+| `POST` | `/reviews/{id}/reply` | `postReviewsByIdReply` | `permission` | `review.update.own` | `200` |
 | `POST` | `/reviews/submit` | `postReviewsSubmit` | `permission` | `review.create` | `200` |
 | `GET` | `/reviews/user/{userId}` | `getReviewsUserByUserId` | `public` | — | `200` |
 

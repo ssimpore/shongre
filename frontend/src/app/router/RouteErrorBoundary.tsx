@@ -1,4 +1,8 @@
-import { isRouteErrorResponse, useNavigate, useRouteError } from "react-router-dom";
+import {
+  isRouteErrorResponse,
+  useNavigate,
+  useRouteError,
+} from "react-router-dom";
 import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "../../design-system/primitives/Button";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -24,10 +28,7 @@ export function RouteErrorBoundary() {
 
   // A 404 thrown by a loader is routing, not a crash, and is reported elsewhere.
   if (!isRouteErrorResponse(error)) {
-    telemetryService.captureException(
-      { error },
-      "react-router-error-element",
-    );
+    telemetryService.captureException({ error }, "react-router-error-element");
   }
 
   return (
@@ -52,7 +53,9 @@ export function RouteErrorBoundary() {
           size="md"
           fullWidth
           onClick={() => navigate(0)}
-          leftIcon={<RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />}
+          leftIcon={
+            <RefreshCw className="h-icon-md w-icon-md" aria-hidden="true" />
+          }
         >
           {t("shell.errorBoundary.actualiserLaPage")}
         </Button>
@@ -61,7 +64,9 @@ export function RouteErrorBoundary() {
           size="md"
           fullWidth
           onClick={() => navigate(-1)}
-          leftIcon={<ArrowLeft className="h-icon-md w-icon-md" aria-hidden="true" />}
+          leftIcon={
+            <ArrowLeft className="h-icon-md w-icon-md" aria-hidden="true" />
+          }
         >
           {t("common.back")}
         </Button>

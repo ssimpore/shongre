@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { PublicSellerProfile, UserProfile } from "../../shared/types/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
@@ -34,6 +35,12 @@ import {
   type PasswordIdentityProvider,
 } from "../auth/password-identity.provider.js";
 import { sha256 } from "../auth/oauth-provider.client.js";
+
+/** Mirrors `AccountAwayRequest`; the database bounds the window again. */
+const accountAwayRequestSchema = z.object({
+  until: z.string().datetime({ offset: true }).nullable(),
+  message: z.string().trim().max(300).optional(),
+});
 
 export class UsersService {
   /** Full-account reads are expensive; one copy a day is enough to exercise the right. */
@@ -76,6 +83,39 @@ export class UsersService {
     marketCode: string,
   ): Promise<PublicSellerProfile[]> {
     return this.userRepo.listPublicProfessionals(marketCode);
+  }
+
+  /**
+   * Declares or ends an absence. `until: null` ends it now. The publications
+   * paused for the absence resume when it ends, by this call or by the
+   * scheduled worker once the date passes.
+   */
+  async setAwayMode(
+    userId: string,
+    input: unknown,
+  ): Promise<components["schemas"]["AccountAwayState"]> {
+    const parsed = accountAwayRequestSchema.safeParse(input);
+    if (!parsed.success)
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Indiquez une date de retour (entre demain et 90 jours) et, si vous le souhaitez, un message de 300 caractères maximum.",
+      });
+    if (parsed.data.until === null) {
+      const { resumedPublications } = await this.userRepo.clearAway(userId);
+      return { awayUntil: null, awayMessage: null, resumedPublications };
+    }
+    const { pausedPublications } = await this.userRepo.setAway({
+      userId,
+      until: parsed.data.until,
+      message: parsed.data.message,
+    });
+    const profile = await this.userRepo.findById(userId);
+    return {
+      awayUntil: profile?.awayUntil ?? parsed.data.until,
+      awayMessage: profile?.awayMessage ?? null,
+      pausedPublications,
+    };
   }
 
   async updateUserProfile(

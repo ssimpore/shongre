@@ -52,6 +52,9 @@ export interface UserProfile {
   reviewCount: number;
   responseRatePercent: number;
   responseTimeText?: string;
+  /** The seller's declared absence (00144): public, chosen by the seller. */
+  awayUntil?: string;
+  awayMessage?: string;
   createdAt?: string;
 }
 
@@ -76,6 +79,9 @@ export interface PublicSellerProfile {
   reviewCount: number;
   responseRatePercent: number;
   responseTimeText?: string;
+  /** The seller's declared absence (00144): public, chosen by the seller. */
+  awayUntil?: string;
+  awayMessage?: string;
   createdAt?: string;
 }
 
@@ -114,6 +120,8 @@ export interface ListingMarketPublication {
   localizedContent?: Record<string, unknown>;
   availableServices?: Record<string, unknown>;
   complianceState: "pending" | "approved" | "restricted" | "rejected";
+  /** Why a paused publication is paused; only the absence resumes on its own. */
+  pausedReason?: "seller_away";
   publishedAt?: string;
   sortDate: string;
   promotionState?: "inactive" | "active";
@@ -231,6 +239,12 @@ export interface Listing {
   favoriteCount: number;
   safetyRiskScore?: number;
   attributes: Record<string, any>;
+  /** The seller's opt-in to extend the expiry automatically (00144). */
+  autoRenew?: boolean;
+  renewalCount?: number;
+  lastRenewedAt?: string;
+  /** A draft the worker publishes at this time. */
+  scheduledPublishAt?: string;
   createdAt: string;
   updatedAt: string;
   expiresAt: string;
@@ -427,6 +441,11 @@ export interface Message {
     "pending" | "accepted" | "declined" | "countered" | "withdrawn" | "expired";
   isPickupProposal?: boolean;
   pickupDetails?: Record<string, any>;
+  /**
+   * Advisory scam markers assessed when the message was sent (00145). Shown
+   * to the recipient as a warning; delivery is never withheld for them.
+   */
+  safetyFlags?: string[];
   createdAt: string;
 }
 

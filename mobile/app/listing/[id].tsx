@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, Image, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   MODERATION_CONSTRAINTS,
@@ -533,7 +533,16 @@ export default function ListingDetailScreen() {
       ) : null}
 
       {listing.seller ? (
-        <View style={styles.seller}>
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel={`Voir le profil de ${listing.seller.name}`}
+          onPress={() =>
+            router.push(
+              `/seller/${encodeURIComponent(listing.seller!.id)}` as never,
+            )
+          }
+          style={styles.seller}
+        >
           <Text style={styles.sellerName}>{listing.seller.name}</Text>
           <View style={styles.sellerIdentityStatus}>
             <Text style={styles.muted}>
@@ -554,7 +563,8 @@ export default function ListingDetailScreen() {
               />
             ) : null}
           </View>
-        </View>
+          <Text style={styles.muted}>Voir le profil et les avis</Text>
+        </Pressable>
       ) : null}
       <Button
         label={

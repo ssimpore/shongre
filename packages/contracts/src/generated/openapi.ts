@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    readonly "/account/away": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /**
+         * Declare or end an absence
+         * @description Pauses the caller's active publications until the date, shows the absence to buyers, and resumes everything when the absence ends — by this call with null, or by the scheduled worker once the date passes.
+         */
+        readonly put: operations["putAccountAway"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/account/delete": {
         readonly parameters: {
             readonly query?: never;
@@ -1347,6 +1367,26 @@ export interface paths {
         readonly put?: never;
         /** POST /ai/listing-assistance */
         readonly post: operations["postAiListingAssistance"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/ai/listing-from-photos": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Draft a listing from photos
+         * @description Reads up to five uploaded photos and proposes a category, title, description and any visible brand or model. The category is re-resolved against the published taxonomy of the market; the seller reviews everything before publishing. Degrades to a 503 when no AI provider is configured.
+         */
+        readonly post: operations["postAiListingFromPhotos"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -5596,6 +5636,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/listings/price-estimate": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * What comparable items sold for
+         * @description Percentiles of recent sale prices in the category and its published descendants, narrowed by brand, model and condition while the sample stays meaningful. Asking prices when sales are too few. Arithmetic over the catalogue, not a model; advisory for the seller choosing a price.
+         */
+        readonly get: operations["getListingsPriceEstimate"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/listings/publish": {
         readonly parameters: {
             readonly query?: never;
@@ -5628,6 +5688,26 @@ export interface paths {
         readonly put?: never;
         /** POST /listings/search */
         readonly post: operations["postListingsSearch"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/listings/suggestions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Completions for the search field
+         * @description Market-scoped completions for what the visitor is typing: published categories whose label starts with the text, and words from the catalogue vocabulary that complete or correct the last word. Answers from public catalogue data only; nothing about the visitor or previous queries is read or stored.
+         */
+        readonly get: operations["getListingsSuggestions"];
+        readonly put?: never;
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -7113,7 +7193,10 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /** POST /notifications/devices */
+        /**
+         * POST /notifications/devices
+         * @description Platform `web` registers a browser: the token is the serialized Web Push subscription (`endpoint` and `keys`).
+         */
         readonly post: operations["postNotificationsDevices"];
         readonly delete?: never;
         readonly options?: never;
@@ -7182,6 +7265,26 @@ export interface paths {
         };
         /** GET /notifications/unread-count */
         readonly get: operations["getNotificationsUnreadCount"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/notifications/web-push/config": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Browser push availability
+         * @description Tells a signed-in browser whether Web Push is available and which VAPID public key to subscribe with. The subscription is then registered as a device with platform `web` and the serialized subscription as its token.
+         */
+        readonly get: operations["getNotificationsWebPushConfig"];
         readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
@@ -8040,6 +8143,46 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/reviews/{id}/helpful": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /**
+         * Mark a review helpful
+         * @description States whether the caller finds the review helpful. Idempotent; the review's author and recipient are refused.
+         */
+        readonly put: operations["putReviewsByIdHelpful"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/reviews/{id}/reply": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Answer a review left about you
+         * @description The review's recipient publishes one public answer; a second call replaces it. The answer is visible wherever the review is.
+         */
+        readonly post: operations["postReviewsByIdReply"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/reviews/submit": {
         readonly parameters: {
             readonly query?: never;
@@ -8548,6 +8691,23 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Declares an absence until `until`, or ends it now with null. Active publications pause for the absence and resume when it ends. */
+        readonly AccountAwayRequest: {
+            /** @description Shown to buyers on the profile, listings and conversations. */
+            readonly message?: string;
+            /**
+             * Format: date-time
+             * @description Between tomorrow and 90 days from now; null ends the absence.
+             */
+            readonly until: string | null;
+        };
+        readonly AccountAwayState: {
+            readonly awayMessage: string | null;
+            /** Format: date-time */
+            readonly awayUntil: string | null;
+            readonly pausedPublications?: number;
+            readonly resumedPublications?: number;
+        };
         /** @description A portable copy of everything the account owns, as required by data-portability rules. Contains only the requester's own records; counterparties appear as identifiers, never as profiles. */
         readonly AccountDataExport: {
             readonly consents: readonly {
@@ -8588,6 +8748,25 @@ export interface components {
         };
         readonly AddressSuggestions: {
             readonly results: readonly components["schemas"]["GeocodingResult"][];
+        };
+        /** @description A draft the seller edits before publishing; nothing here is stored or published by itself. */
+        readonly AiListingPhotoSuggestion: {
+            readonly brand?: string;
+            /** @description A published, publishable category of the market, or null when the photos could not be classified. */
+            readonly category: {
+                readonly id: string;
+                readonly label: string;
+                readonly slug: string;
+            } | null;
+            readonly confidence: number;
+            readonly description: string;
+            readonly model?: string;
+            readonly title: string;
+        };
+        readonly AiListingPhotoSuggestionRequest: {
+            /** @description Public HTTPS media URLs of the seller's uploaded photos. */
+            readonly imageUrls: readonly string[];
+            readonly locale?: string;
         };
         readonly AnalyticsAcquisition: {
             readonly channels: readonly {
@@ -11389,6 +11568,19 @@ export interface components {
             /** @enum {string} */
             readonly status: "draft" | "pending_review" | "active" | "paused" | "suspended" | "rejected" | "expired";
         };
+        /** @description What comparable items sold for (`sold`), were listed at when sales are too few (`asking`), or nothing when the category has no usable inventory (`none`). */
+        readonly ListingPriceEstimate: {
+            /** @enum {string} */
+            readonly basis: "sold" | "asking" | "none";
+            readonly categoryId: string;
+            readonly currency?: string;
+            readonly medianMinor?: number;
+            /** @description Which of the given facts the sample was narrowed by; the rest were relaxed to keep the sample meaningful. */
+            readonly narrowedBy?: readonly ("brand" | "model" | "condition")[];
+            readonly p25Minor?: number;
+            readonly p75Minor?: number;
+            readonly sampleSize?: number;
+        };
         readonly ListingPriceQuote: {
             readonly currency: string;
             readonly deliveryMethod: components["schemas"]["ListingDeliveryMethod"];
@@ -11999,13 +12191,25 @@ export interface components {
             readonly comment: string;
             /** Format: date-time */
             readonly createdAt: string;
+            /** @description Readers who found the review helpful. The author and the recipient cannot vote. */
+            readonly helpfulCount: number;
             readonly id: string;
             readonly listingTitle: string;
             readonly rating: number;
+            /** @description The recipient's one public answer to the review. */
+            readonly reply?: {
+                readonly comment: string;
+                /** Format: date-time */
+                readonly createdAt: string;
+                /** Format: date-time */
+                readonly updatedAt: string;
+            };
             /** @enum {string} */
             readonly reviewerRole?: "buyer" | "seller";
             readonly targetUserId: string;
             readonly verifiedTransaction: boolean;
+            /** @description Whether the signed-in caller marked this review helpful. Absent for anonymous reads. */
+            readonly viewerMarkedHelpful?: boolean;
         };
         readonly MarketResolvedListingPromotion: {
             /** Format: date-time */
@@ -12581,6 +12785,8 @@ export interface components {
             readonly attributes: {
                 readonly [key: string]: components["schemas"]["JsonValue"];
             };
+            /** @description The seller's opt-in to extend the expiry automatically, up to three times. */
+            readonly autoRenew?: boolean;
             readonly brand?: string;
             /** Format: date-time */
             readonly bumpedAt?: string;
@@ -12652,6 +12858,11 @@ export interface components {
             readonly publisherVerificationStatus?: "unverified" | "email_verified" | "phone_verified" | "identity_verified" | "business_verified" | "suspended";
             readonly region?: string;
             readonly requiresPhysicalDelivery: boolean;
+            /**
+             * Format: date-time
+             * @description For a draft: when the scheduled worker publishes it.
+             */
+            readonly scheduledPublishAt?: string;
             readonly seller?: components["schemas"]["PublicSellerProfile"];
             readonly sellerId: string;
             readonly shippingCost?: number;
@@ -12720,6 +12931,8 @@ export interface components {
             readonly west?: number;
         };
         readonly PublicListingSearchResult: {
+            /** @description The nearest spelling the market's catalogue contains, present only when the first page found nothing. Advisory: the client proposes it and the visitor decides. */
+            readonly didYouMean?: string;
             readonly items: readonly components["schemas"]["PublicListing"][];
             readonly page: number;
             readonly pageInfo: {
@@ -12755,11 +12968,40 @@ export interface components {
             /** @description MapLibre style document URL. */
             readonly styleUrl: string;
         };
+        readonly PublicSearchSuggestion: {
+            /** @enum {string} */
+            readonly kind: "term";
+            readonly label: string;
+            /** @description Discoverable listings in the market whose title, brand or model contains the completed word. */
+            readonly listingCount: number;
+            /** @description The complete query to run: what was typed, with the last word completed. */
+            readonly query: string;
+        } | {
+            readonly categoryId: string;
+            readonly categorySlug: string;
+            /** @description The taxonomy node's authored icon, so clients render the same glyph as category navigation. */
+            readonly iconName?: string;
+            /** @enum {string} */
+            readonly kind: "category";
+            readonly label: string;
+            readonly parentLabel?: string;
+            readonly parentSlug?: string;
+        };
+        readonly PublicSearchSuggestions: {
+            readonly items: readonly components["schemas"]["PublicSearchSuggestion"][];
+        };
         /** @description Public seller facts safe for marketplace discovery. Authentication, contact and Staff fields are excluded. */
         readonly PublicSellerProfile: {
             /** @enum {string} */
             readonly accountType: "individual" | "professional";
             readonly avatarUrl?: string;
+            /** @description The seller's note to buyers for the absence. */
+            readonly awayMessage?: string;
+            /**
+             * Format: date-time
+             * @description The seller declared an absence until this time; their publications are paused meanwhile.
+             */
+            readonly awayUntil?: string;
             readonly bio?: string;
             readonly city?: string;
             readonly country: components["schemas"]["MarketCode"];
@@ -13023,7 +13265,7 @@ export interface components {
         readonly ReorderSolutionsInput: {
             readonly solutionIds: readonly string[];
         };
-        /** @description Exactly one of listingId, reportedUserId, or deliveryRequestId is required. */
+        /** @description Exactly one of listingId, reportedUserId, deliveryRequestId, or reviewId is required. */
         readonly ReportInput: {
             /** Format: uuid */
             readonly deliveryRequestId?: string;
@@ -13032,9 +13274,23 @@ export interface components {
             /** @enum {string} */
             readonly reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
             readonly reportedUserId?: string;
+            /** Format: uuid */
+            readonly reviewId?: string;
         };
         readonly ReverseGeocodingResult: {
             readonly result: components["schemas"]["GeocodingResult"] | null;
+        };
+        /** @description The exact vote the caller wants; retries are idempotent. */
+        readonly ReviewHelpfulInput: {
+            readonly helpful: boolean;
+        };
+        readonly ReviewHelpfulResult: {
+            readonly helpfulCount: number;
+            readonly reviewId: string;
+            readonly viewerMarkedHelpful: boolean;
+        };
+        readonly ReviewReplyInput: {
+            readonly comment: string;
         };
         readonly RuntimeHealth: {
             readonly dependencies?: {
@@ -13897,6 +14153,11 @@ export interface components {
         };
         /** @enum {string} */
         readonly WatchTargetType: "listing_price" | "seller" | "saved_search";
+        /** @description Whether browsers can subscribe to push on this deployment, and the VAPID public key they subscribe with. */
+        readonly WebPushConfig: {
+            readonly enabled: boolean;
+            readonly publicKey?: string;
+        };
         readonly WorkspaceProAnalytics: {
             /** @description Completed current-month sales divided by cumulative sampled catalogue views, times 100; not an event-cohort conversion rate. */
             readonly conversionRate: number;
@@ -14013,6 +14274,44 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    readonly putAccountAway: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["AccountAwayRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description The absence as stored, with what it paused or resumed. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AccountAwayState"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly postAccountDelete: {
         readonly parameters: {
             readonly query?: never;
@@ -17072,6 +17371,45 @@ export interface operations {
             readonly 422: components["responses"]["UnprocessableEntity"];
             readonly 429: components["responses"]["TooManyRequests"];
             readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAiListingFromPhotos: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["AiListingPhotoSuggestionRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description The proposal. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AiListingPhotoSuggestion"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+            readonly 503: components["responses"]["InternalError"];
         };
     };
     readonly postAiListingSafety: {
@@ -26623,6 +26961,46 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getListingsPriceEstimate: {
+        readonly parameters: {
+            readonly query: {
+                readonly brand?: string;
+                readonly categoryId: string;
+                readonly condition?: string;
+                readonly model?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The estimate, or `basis: none`. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ListingPriceEstimate"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+            readonly 503: components["responses"]["InternalError"];
+        };
+    };
     readonly postListingsPublish: {
         readonly parameters: {
             readonly query?: never;
@@ -26642,6 +27020,8 @@ export interface operations {
                         readonly attributes: {
                             readonly [key: string]: unknown;
                         };
+                        /** @description Extend the expiry automatically when it is reached, up to three times. */
+                        readonly autoRenew?: boolean;
                         readonly categoryId: string;
                         readonly city: string;
                         readonly condition: string;
@@ -26654,6 +27034,11 @@ export interface operations {
                         readonly marketCode: components["schemas"]["MarketCode"];
                         readonly postalCode: string;
                         readonly price: number;
+                        /**
+                         * Format: date-time
+                         * @description Publish later: between 15 minutes and 30 days from now. The draft is published by the scheduled worker; digital products cannot be scheduled.
+                         */
+                        readonly scheduledPublishAt?: string;
                         readonly taxonomyRevision?: number;
                         /** @constant */
                         readonly taxonomyVersion?: "v1";
@@ -26793,6 +27178,43 @@ export interface operations {
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getListingsSuggestions: {
+        readonly parameters: {
+            readonly query: {
+                readonly limit?: number;
+                readonly locale?: string;
+                /** @description What the visitor typed so far. */
+                readonly q: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Suggestions in display order: categories first, then completions. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PublicSearchSuggestions"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
@@ -30239,6 +30661,35 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getNotificationsWebPushConfig: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The availability and key. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["WebPushConfig"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getOrdersById: {
         readonly parameters: {
             readonly query?: never;
@@ -32203,6 +32654,86 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putReviewsByIdHelpful: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ReviewHelpfulInput"];
+            };
+        };
+        readonly responses: {
+            /** @description The resulting count and the caller's vote. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ReviewHelpfulResult"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postReviewsByIdReply: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ReviewReplyInput"];
+            };
+        };
+        readonly responses: {
+            /** @description The review with its answer. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["MarketplaceReview"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

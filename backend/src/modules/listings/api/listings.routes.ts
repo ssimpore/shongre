@@ -13,6 +13,7 @@ import {
   requireApiMarketContext,
 } from "../../markets/request-market-context.js";
 import { listingsService } from "../listings.service.js";
+import { aiService } from "../../ai/ai.service.js";
 import { ordersService } from "../../orders/orders.service.js";
 import {
   publicListingCardsRequestSchema,
@@ -328,6 +329,21 @@ const listingDeliveryMethodSchema = z.enum([
   "digital",
 ]);
 
+/** Mirrors the `getListingsPriceEstimate` parameters in the OpenAPI contract. */
+const priceEstimateQuerySchema = z.object({
+  categoryId: z.string().trim().min(1).max(200),
+  brand: z.string().trim().max(120).optional(),
+  model: z.string().trim().max(120).optional(),
+  condition: z.string().trim().max(80).optional(),
+});
+
+/** Mirrors the `getListingsSuggestions` parameters in the OpenAPI contract. */
+const searchSuggestionsQuerySchema = z.object({
+  q: z.string().trim().min(1).max(200),
+  locale: z.string().min(2).max(35),
+  limit: z.coerce.number().int().min(1).max(12).optional(),
+});
+
 export const __testing = { parsePublicListingSearchQuery };
 
 export function registerListingsRoutes(routes: RouteRegistrar): void {
@@ -361,6 +377,41 @@ export function registerListingsRoutes(routes: RouteRegistrar): void {
       return listingsService.searchListings(
         parsePublicListingSearchQuery(query, resolved),
       );
+    },
+  );
+  routes.addRoute(
+    "GET",
+    "/listings/suggestions",
+    PUBLIC,
+    async ({ query, marketCode }) => {
+      const market = requireOpenApiRequestMarket(marketCode);
+      const marketContext = requireApiMarketContext(market);
+      const input = searchSuggestionsQuerySchema.parse({
+        q: query.get("q"),
+        locale: query.get("locale") ?? marketContext.locale,
+        limit: query.get("limit") ?? undefined,
+      });
+      return listingsService.suggestSearch({
+        marketContext,
+        query: input.q,
+        locale: input.locale,
+        limit: input.limit,
+      });
+    },
+  );
+  routes.addRoute(
+    "GET",
+    "/listings/price-estimate",
+    permission("listing.create"),
+    async ({ query, marketCode }) => {
+      const market = requireOpenApiRequestMarket(marketCode);
+      const input = priceEstimateQuerySchema.parse({
+        categoryId: query.get("categoryId"),
+        brand: query.get("brand") ?? undefined,
+        model: query.get("model") ?? undefined,
+        condition: query.get("condition") ?? undefined,
+      });
+      return aiService.estimateListingPrice({ marketCode: market, ...input });
     },
   );
   routes.addRoute(

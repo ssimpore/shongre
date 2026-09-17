@@ -397,16 +397,18 @@ const tokenAlpha = (value) => {
   const fn = value.trim().match(/^rgba?\([^)]*?[,/]\s*([\d.]+%?)\s*\)$/i);
   if (fn) {
     const raw = fn[1];
-    return raw.endsWith("%") ? Number.parseFloat(raw) / 100 : Number.parseFloat(raw);
+    return raw.endsWith("%")
+      ? Number.parseFloat(raw) / 100
+      : Number.parseFloat(raw);
   }
   return 1;
 };
 
 const colorTokenAlpha = new Map(
-  Array.from(
-    bothCss.matchAll(/--color-([a-z0-9-]+)\s*:\s*([^;]+);/gi),
-    (m) => [m[1].toLowerCase(), tokenAlpha(m[2])],
-  ),
+  Array.from(bothCss.matchAll(/--color-([a-z0-9-]+)\s*:\s*([^;]+);/gi), (m) => [
+    m[1].toLowerCase(),
+    tokenAlpha(m[2]),
+  ]),
 );
 const tintOnlyTokens = new Set(
   Array.from(colorTokenAlpha)
@@ -503,16 +505,8 @@ const NAMESPACES = [
     (v) => isColorValue(v) || typeScaleTokens.has(v) || TEXT_NON_COLOR.test(v),
     "--color-* / --text-*",
   ],
-  [
-    "border",
-    (v) => isColorValue(v) || LINE_STYLE.test(v),
-    "--color-*",
-  ],
-  [
-    "ring",
-    (v) => isColorValue(v) || RING_NON_COLOR.test(v),
-    "--color-*",
-  ],
+  ["border", (v) => isColorValue(v) || LINE_STYLE.test(v), "--color-*"],
+  ["ring", (v) => isColorValue(v) || RING_NON_COLOR.test(v), "--color-*"],
   [
     "outline",
     (v) => isColorValue(v) || LINE_STYLE.test(v) || RING_NON_COLOR.test(v),

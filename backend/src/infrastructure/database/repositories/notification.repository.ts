@@ -16,6 +16,8 @@ export type NotificationCategory =
   | "security"
   | "marketing";
 export type NotificationDeliveryChannel = "email" | "push";
+/** Where a push device lives; `web` stores a serialized Web Push subscription. */
+export type PushDevicePlatform = "ios" | "android" | "web";
 
 export interface NotificationCategoryPreference {
   inApp: boolean;
@@ -74,10 +76,12 @@ export interface INotificationRepository {
   registerDevice(
     userId: string,
     token: string,
-    platform: "ios" | "android",
+    platform: PushDevicePlatform,
     appVersion?: string,
   ): Promise<void>;
   unregisterDevice(userId: string, token: string): Promise<void>;
+  /** Removes a device the push service reported as gone, whoever owns it. */
+  unregisterDeviceToken(token: string): Promise<void>;
   getPreferences(userId: string): Promise<Partial<NotificationPreferenceSet>>;
   savePreferences(
     userId: string,
@@ -118,7 +122,7 @@ export class DemoNotificationRepository implements INotificationRepository {
   private notifications: Map<string, NotificationItem> = new Map();
   private devices = new Map<
     string,
-    { userId: string; platform: "ios" | "android"; appVersion?: string }
+    { userId: string; platform: PushDevicePlatform; appVersion?: string }
   >();
   private preferences = new Map<string, NotificationPreferenceSet>();
   private deliveries = new Map<
@@ -240,7 +244,7 @@ export class DemoNotificationRepository implements INotificationRepository {
   async registerDevice(
     userId: string,
     token: string,
-    platform: "ios" | "android",
+    platform: PushDevicePlatform,
     appVersion?: string,
   ): Promise<void> {
     this.devices.set(token, { userId, platform, appVersion });
@@ -249,6 +253,10 @@ export class DemoNotificationRepository implements INotificationRepository {
   async unregisterDevice(userId: string, token: string): Promise<void> {
     const device = this.devices.get(token);
     if (device?.userId === userId) this.devices.delete(token);
+  }
+
+  async unregisterDeviceToken(token: string): Promise<void> {
+    this.devices.delete(token);
   }
 
   async getPreferences(
@@ -520,7 +528,7 @@ export class PostgresNotificationRepository implements INotificationRepository {
   async registerDevice(
     userId: string,
     token: string,
-    platform: "ios" | "android",
+    platform: PushDevicePlatform,
     appVersion?: string,
   ): Promise<void> {
     const supabase = getSupabaseAdminClient();
@@ -544,6 +552,16 @@ export class PostgresNotificationRepository implements INotificationRepository {
       .from("push_device_tokens")
       .delete()
       .eq("user_id", userId)
+      .eq("token", token);
+    if (error)
+      throw new Error(`Failed to unregister push device: ${error.message}`);
+  }
+
+  async unregisterDeviceToken(token: string): Promise<void> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase
+      .from("push_device_tokens")
+      .delete()
       .eq("token", token);
     if (error)
       throw new Error(`Failed to unregister push device: ${error.message}`);

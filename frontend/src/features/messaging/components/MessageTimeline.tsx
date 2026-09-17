@@ -24,6 +24,16 @@ import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
 import { DEFAULT_MARKET_CURRENCY } from "../../../configuration/market-baseline";
+import type { MessageKey } from "../../../i18n/messages.fr";
+
+/** The flags the API can raise (`assessMessageSafety`), in the reader's words. */
+const MESSAGE_SAFETY_WARNING_KEYS: Record<string, MessageKey> = {
+  off_platform_payment: "messaging.safety.offPlatformPayment",
+  off_platform_contact: "messaging.safety.offPlatformContact",
+  external_link: "messaging.safety.externalLink",
+  shipping_fee_upfront: "messaging.safety.shippingFeeUpfront",
+  pressure: "messaging.safety.pressure",
+};
 
 interface MessageTimelineProps {
   items: TimelineItem[];
@@ -267,6 +277,29 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                       <p className="leading-relaxed whitespace-pre-wrap break-words">
                         {msg.content}
                       </p>
+
+                      {/* Advisory: the recipient is warned, the message is
+                          delivered untouched. The sender sees nothing. */}
+                      {!isMe && msg.safetyFlags?.length ? (
+                        <div
+                          role="note"
+                          data-message-safety-warning={msg.safetyFlags.join(
+                            ",",
+                          )}
+                          className="mt-2 flex items-start gap-1.5 rounded-control border border-warning-border bg-warning-surface p-2 text-micro text-warning"
+                        >
+                          <AlertCircle
+                            className="w-icon-xs h-icon-xs shrink-0 mt-0.5"
+                            aria-hidden
+                          />
+                          <span>
+                            {t(
+                              MESSAGE_SAFETY_WARNING_KEYS[msg.safetyFlags[0]] ??
+                                "messaging.safety.generic",
+                            )}
+                          </span>
+                        </div>
+                      ) : null}
 
                       {/* Timestamp & Status Ticks */}
                       <div

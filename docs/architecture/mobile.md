@@ -47,6 +47,21 @@ from zsh: Expo's Xcode phases would miss the required identifiers and URLs.
 Unsigned simulator verification covers Release compilation and packaging only;
 signing, archive inspection, and device behavior remain separate release gates.
 
+## Journeys kept on the Web
+
+Mobile now covers individual sign-up and password recovery, orders with the
+transaction review, public seller pages (absence, reviews, replies), category
+browsing, search suggestions, the verification status with the identity check
+(the provider's hosted flow opens in the system browser and returns to the Web
+verification page; the phone reads the outcome back on focus) and the Pro
+headline figures. Four journeys deliberately stay on the Web and are linked
+from the app rather than re-implemented: professional registration and the
+upgrade to a professional account (legal identifiers), business verification
+and payout configuration (registry lookup, provider onboarding), payment,
+handover and disputes on an order, and the vertical workflows (Auto, Immo,
+Emploi, Éducation) beyond their listings, which search and categories already
+surface.
+
 ## Concurrent requests and session rotation
 
 The central transport uses the shared request deadline for both headers and

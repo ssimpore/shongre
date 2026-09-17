@@ -1,4 +1,5 @@
 import {
+  AdminReportSummary,
   AdminServiceContract,
   AdminStatsSummary,
 } from "../../contracts/admin.contract";
@@ -106,30 +107,16 @@ export class HttpAdminService implements AdminServiceContract {
     );
   }
 
-  async getPendingReports(): Promise<
-    Array<{
-      id: string;
-      listingId: string;
-      reason: string;
-      reporterName: string;
-      createdAt: string;
-    }>
-  > {
-    return apiOperation<
-      Array<{
-        id: string;
-        listingId: string;
-        reason: string;
-        reporterName: string;
-        createdAt: string;
-      }>,
-      "getAdminReports"
-    >("getAdminReports", {});
+  async getPendingReports(): Promise<AdminReportSummary[]> {
+    return apiOperation<AdminReportSummary[], "getAdminReports">(
+      "getAdminReports",
+      {},
+    );
   }
 
   async resolveReport(
     reportId: string,
-    action: "dismiss" | "remove_listing" | "ban_user",
+    action: "dismiss" | "remove_listing" | "ban_user" | "remove_review",
     reason: string,
   ): Promise<void> {
     return apiOperation<void, "postAdminReportsByReportIdResolve">(

@@ -21,9 +21,12 @@ import { searchConsoleWorker } from "./analytics/search-console-worker.js";
 import { captureServerException } from "../infrastructure/observability/sentry.js";
 import { providerWebhookWorker } from "./payments/provider-webhook-worker.js";
 import { multilingualSearchReindexWorker } from "./search/multilingual-search-reindex-worker.js";
+import { searchVocabularyWorker } from "./search/search-vocabulary-worker.js";
+import { reviewReminderWorker } from "./reviews/review-reminder-worker.js";
 import { discoveryEventWorker } from "./search/discovery-event-worker.js";
 import { indexNowWorker } from "./search/indexnow-worker.js";
 import { listingEngagementWorker } from "./listings/listing-engagement-worker.js";
+import { sellerAutomationWorker } from "./listings/seller-automation-worker.js";
 import { digitalFulfillmentWorker } from "./digital-products/digital-fulfillment-worker.js";
 import { watchSubscriptionsWorker } from "./watch-subscriptions/watch-subscriptions-worker.js";
 import { deliveryOutboxWorker } from "./delivery/delivery-outbox-worker.js";
@@ -202,6 +205,18 @@ const jobs: ScheduledJob[] = [
     run: () => multilingualSearchReindexWorker.run(),
   },
   {
+    name: "search_vocabulary_refresh",
+    group: "lifecycle",
+    intervalSeconds: 900,
+    run: () => searchVocabularyWorker.run(),
+  },
+  {
+    name: "review_reminders",
+    group: "lifecycle",
+    intervalSeconds: 3_600,
+    run: () => reviewReminderWorker.run(),
+  },
+  {
     name: "provider_webhook_retention",
     group: "lifecycle",
     intervalSeconds: 86_400,
@@ -212,6 +227,9 @@ const jobs: ScheduledJob[] = [
     group: "lifecycle",
     intervalSeconds: 3_600,
     run: async () => {
+      // Renewals and scheduled publications first, so an opted-in listing
+      // that expires this hour is extended rather than archived.
+      await sellerAutomationWorker.run();
       await lifecycleWorker.runExpiredListingsCleanup();
       await lifecycleWorker.runBoostsExpiration();
     },

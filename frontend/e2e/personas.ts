@@ -99,5 +99,9 @@ export async function usePersona(
   }
   const session = await browserApi(page, "/auth/me");
   expect(session.status).toBe(200);
-  expect(session.body.id, `Verified API identity for ${persona}`).toBe(id);
+  // The scenario owns the identity: a fixture key in demo mode, the seeded
+  // profile UUID in database mode.
+  expect(session.body.id, `Verified API identity for ${persona}`).toBe(
+    account.id,
+  );
 }

@@ -2330,6 +2330,85 @@
         "x-shongre-source": "backend/src/modules/users/api/users.routes.ts"
       }
     },
+    "/account/away": {
+      "put": {
+        "operationId": "putAccountAway",
+        "tags": ["account"],
+        "summary": "Declare or end an absence",
+        "description": "Pauses the caller's active publications until the date, shows the absence to buyers, and resumes everything when the absence ends — by this call with null, or by the scheduled worker once the date passes.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountAwayRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The absence as stored, with what it paused or resumed.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountAwayState"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-permission": "profile.update.own",
+        "x-shongre-source": "backend/src/modules/users/api/users.routes.ts"
+      }
+    },
     "/admin/audit-logs": {
       "get": {
         "operationId": "getAdminAuditLogs",
@@ -7782,6 +7861,87 @@
             }
           }
         }
+      }
+    },
+    "/ai/listing-from-photos": {
+      "post": {
+        "operationId": "postAiListingFromPhotos",
+        "tags": ["ai"],
+        "summary": "Draft a listing from photos",
+        "description": "Reads up to five uploaded photos and proposes a category, title, description and any visible brand or model. The category is re-resolved against the published taxonomy of the market; the seller reviews everything before publishing. Degrades to a 503 when no AI provider is configured.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiListingPhotoSuggestionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The proposal.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiListingPhotoSuggestion"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-source": "backend/src/modules/ai/api/ai.routes.ts"
       }
     },
     "/ai/listing-safety": {
@@ -26119,6 +26279,15 @@
                       "taxonomyRevision": {
                         "type": "integer",
                         "minimum": 1
+                      },
+                      "scheduledPublishAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Publish later: between 15 minutes and 30 days from now. The draft is published by the scheduled worker; digital products cannot be scheduled."
+                      },
+                      "autoRenew": {
+                        "type": "boolean",
+                        "description": "Extend the expiry automatically when it is reached, up to three times."
                       }
                     }
                   }
@@ -26518,6 +26687,200 @@
             }
           }
         }
+      }
+    },
+    "/listings/suggestions": {
+      "get": {
+        "operationId": "getListingsSuggestions",
+        "tags": ["listings"],
+        "summary": "Completions for the search field",
+        "description": "Market-scoped completions for what the visitor is typing: published categories whose label starts with the text, and words from the catalogue vocabulary that complete or correct the last word. Answers from public catalogue data only; nothing about the visitor or previous queries is read or stored.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "description": "What the visitor typed so far.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Suggestions in display order: categories first, then completions.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicSearchSuggestions"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/listings/api/listings.routes.ts"
+      }
+    },
+    "/listings/price-estimate": {
+      "get": {
+        "operationId": "getListingsPriceEstimate",
+        "tags": ["listings"],
+        "summary": "What comparable items sold for",
+        "description": "Percentiles of recent sale prices in the category and its published descendants, narrowed by brand, model and condition while the sample stays meaningful. Asking prices when sales are too few. Arithmetic over the catalogue, not a model; advisory for the seller choosing a price.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "model",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            }
+          },
+          {
+            "name": "condition",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 80
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The estimate, or `basis: none`.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingPriceEstimate"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.create",
+        "x-shongre-source": "backend/src/modules/listings/api/listings.routes.ts"
       }
     },
     "/livez": {
@@ -30131,7 +30494,8 @@
               }
             }
           }
-        }
+        },
+        "description": "Platform `web` registers a browser: the token is the serialized Web Push subscription (`endpoint` and `keys`)."
       }
     },
     "/notifications/devices/unregister": {
@@ -30212,6 +30576,62 @@
             }
           }
         }
+      }
+    },
+    "/notifications/web-push/config": {
+      "get": {
+        "operationId": "getNotificationsWebPushConfig",
+        "tags": ["notifications"],
+        "summary": "Browser push availability",
+        "description": "Tells a signed-in browser whether Web Push is available and which VAPID public key to subscribe with. The subscription is then registered as a device with platform `web` and the serialized subscription as its token.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The availability and key.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebPushConfig"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
+        "x-shongre-source": "backend/src/modules/notifications/api/notifications.routes.ts"
       }
     },
     "/notifications/preferences": {
@@ -34745,6 +35165,180 @@
           }
         },
         "x-shongre-permission": "review.create"
+      }
+    },
+    "/reviews/{id}/reply": {
+      "post": {
+        "operationId": "postReviewsByIdReply",
+        "tags": ["reviews"],
+        "summary": "Answer a review left about you",
+        "description": "The review's recipient publishes one public answer; a second call replaces it. The answer is visible wherever the review is.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewReplyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The review with its answer.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarketplaceReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "review.update.own",
+        "x-shongre-source": "backend/src/modules/reviews/api/reviews.routes.ts"
+      }
+    },
+    "/reviews/{id}/helpful": {
+      "put": {
+        "operationId": "putReviewsByIdHelpful",
+        "tags": ["reviews"],
+        "summary": "Mark a review helpful",
+        "description": "States whether the caller finds the review helpful. Idempotent; the review's author and recipient are refused.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewHelpfulInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The resulting count and the caller's vote.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewHelpfulResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "review.create",
+        "x-shongre-source": "backend/src/modules/reviews/api/reviews.routes.ts"
       }
     },
     "/reviews/user/{userId}": {
@@ -40618,7 +41212,8 @@
           "comment",
           "listingTitle",
           "createdAt",
-          "verifiedTransaction"
+          "verifiedTransaction",
+          "helpfulCount"
         ],
         "properties": {
           "id": {
@@ -40654,6 +41249,36 @@
           "reviewerRole": {
             "type": "string",
             "enum": ["buyer", "seller"]
+          },
+          "helpfulCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Readers who found the review helpful. The author and the recipient cannot vote."
+          },
+          "viewerMarkedHelpful": {
+            "type": "boolean",
+            "description": "Whether the signed-in caller marked this review helpful. Absent for anonymous reads."
+          },
+          "reply": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["comment", "createdAt", "updatedAt"],
+            "description": "The recipient's one public answer to the review.",
+            "properties": {
+              "comment": {
+                "type": "string",
+                "minLength": 10,
+                "maxLength": 2000
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
           }
         }
       },
@@ -46674,6 +47299,16 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "awayUntil": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The seller declared an absence until this time; their publications are paused meanwhile."
+          },
+          "awayMessage": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "The seller's note to buyers for the absence."
           }
         }
       },
@@ -47242,6 +47877,15 @@
             "type": "string",
             "enum": ["exact", "city"],
             "description": "How precise `latitude`/`longitude` are. `exact` is the coordinate the row carries; `city` was resolved from the town name and must be rendered at town scale, never as an address. Absent means no coordinate is published and no map should be drawn."
+          },
+          "autoRenew": {
+            "type": "boolean",
+            "description": "The seller's opt-in to extend the expiry automatically, up to three times."
+          },
+          "scheduledPublishAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "For a draft: when the scheduled worker publishes it."
           }
         }
       },
@@ -47378,6 +48022,12 @@
           "rankingVersion": {
             "type": "string",
             "minLength": 1
+          },
+          "didYouMean": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The nearest spelling the market's catalogue contains, present only when the first page found nothing. Advisory: the client proposes it and the visitor decides."
           }
         }
       },
@@ -57349,9 +57999,13 @@
             "type": "string",
             "minLength": 10,
             "maxLength": 2000
+          },
+          "reviewId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
-        "description": "Exactly one of listingId, reportedUserId, or deliveryRequestId is required."
+        "description": "Exactly one of listingId, reportedUserId, deliveryRequestId, or reviewId is required."
       },
       "DeliveryAvailability": {
         "type": "object",
@@ -62524,6 +63178,299 @@
           "zap"
         ],
         "description": "Semantic icon selected by the published taxonomy field definition. Clients render this role without guessing from field codes or labels."
+      },
+      "PublicSearchSuggestion": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "query", "label", "listingCount"],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["term"]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "The complete query to run: what was typed, with the last word completed."
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "listingCount": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Discoverable listings in the market whose title, brand or model contains the completed word."
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "categoryId", "categorySlug", "label"],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["category"]
+              },
+              "categoryId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "categorySlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "parentLabel": {
+                "type": "string",
+                "minLength": 1
+              },
+              "parentSlug": {
+                "type": "string",
+                "minLength": 1
+              },
+              "iconName": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The taxonomy node's authored icon, so clients render the same glyph as category navigation."
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "kind"
+        }
+      },
+      "PublicSearchSuggestions": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 12,
+            "items": {
+              "$ref": "#/components/schemas/PublicSearchSuggestion"
+            }
+          }
+        }
+      },
+      "ReviewReplyInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["comment"],
+        "properties": {
+          "comment": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 2000
+          }
+        }
+      },
+      "ReviewHelpfulInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["helpful"],
+        "description": "The exact vote the caller wants; retries are idempotent.",
+        "properties": {
+          "helpful": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ReviewHelpfulResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reviewId", "helpfulCount", "viewerMarkedHelpful"],
+        "properties": {
+          "reviewId": {
+            "type": "string"
+          },
+          "helpfulCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "viewerMarkedHelpful": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AccountAwayRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["until"],
+        "description": "Declares an absence until `until`, or ends it now with null. Active publications pause for the absence and resume when it ends.",
+        "properties": {
+          "until": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "description": "Between tomorrow and 90 days from now; null ends the absence."
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Shown to buyers on the profile, listings and conversations."
+          }
+        }
+      },
+      "AccountAwayState": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["awayUntil", "awayMessage"],
+        "properties": {
+          "awayUntil": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "awayMessage": {
+            "type": ["string", "null"],
+            "maxLength": 300
+          },
+          "pausedPublications": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "resumedPublications": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "AiListingPhotoSuggestionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["imageUrls"],
+        "properties": {
+          "imageUrls": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "maxLength": 2048
+            },
+            "description": "Public HTTPS media URLs of the seller's uploaded photos."
+          },
+          "locale": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 35
+          }
+        }
+      },
+      "AiListingPhotoSuggestion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["category", "title", "description", "confidence"],
+        "description": "A draft the seller edits before publishing; nothing here is stored or published by itself.",
+        "properties": {
+          "category": {
+            "type": ["object", "null"],
+            "additionalProperties": false,
+            "required": ["id", "slug", "label"],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "slug": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "description": "A published, publishable category of the market, or null when the photos could not be classified."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 600
+          },
+          "brand": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "confidence": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      },
+      "ListingPriceEstimate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["basis", "categoryId"],
+        "description": "What comparable items sold for (`sold`), were listed at when sales are too few (`asking`), or nothing when the category has no usable inventory (`none`).",
+        "properties": {
+          "basis": {
+            "type": "string",
+            "enum": ["sold", "asking", "none"]
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "sampleSize": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "p25Minor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "medianMinor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "p75Minor": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "narrowedBy": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["brand", "model", "condition"]
+            },
+            "description": "Which of the given facts the sample was narrowed by; the rest were relaxed to keep the sample meaningful."
+          }
+        }
+      },
+      "WebPushConfig": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["enabled"],
+        "description": "Whether browsers can subscribe to push on this deployment, and the VAPID public key they subscribe with.",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "publicKey": {
+            "type": "string",
+            "minLength": 80,
+            "maxLength": 100
+          }
+        }
       }
     },
     "responses": {

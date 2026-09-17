@@ -1320,10 +1320,20 @@ France-only happy path is insufficient for market-sensitive work.
   the caller's selection without duplicating tests. Keep bounded concurrency and isolate
   multi-route/persona sweeps according to existing test-runner conventions.
   `make test-web-api-transport` additionally owns an isolated test API and
-  verifies first-party sessions with an API-mode Web build. Hosted staging
-  certification requires all public and authenticated journeys for the exact
-  release, dedicated staging accounts, sandbox providers and real Staff MFA;
-  missing fixtures, skipped tests and flaky retries cannot certify a release.
+  verifies first-party sessions with an API-mode Web build. The isolated
+  test API runs with a per-address rate budget sized for the whole suite
+  (`scripts/e2e.sh`): every worker and the Web server's SSR fetches share one
+  loopback address, and the production budget would lock the suite out
+  mid-run. `make test-web-database-mode` runs the `database-mode-*.spec.ts`
+  journeys against a Postgres-backed test API on the seeded local Supabase
+  stack; it is the only browser gate that exercises the Postgres
+  repositories, so any journey that changes visible state must be `@serial`
+  and restore what it changed, and `make db-migrate` must never run while it
+  is running. CI runs it in the migrations job after `make db-seed`. Hosted
+  staging certification requires all public and authenticated journeys for
+  the exact release, dedicated staging accounts, sandbox providers and real
+  Staff MFA; missing fixtures, skipped tests and flaky retries cannot certify
+  a release.
   The root runner may keep Chromium parallel, but Firefox and WebKit must remain
   single-worker and process-recycled through bounded shards until a full
   sustained matrix proves their browser contexts no longer deadlock during

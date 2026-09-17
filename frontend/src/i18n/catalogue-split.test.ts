@@ -5,6 +5,7 @@ import { messagesFr } from "./messages.fr";
 import { adminCatalogueFr } from "./admin.catalogue.fr";
 import { deliveryCatalogueFr } from "./delivery.catalogue.fr";
 import { digitalMessagesFr } from "./digital.catalogue.fr";
+import { sellerCatalogueFr } from "./seller.catalogue.fr";
 
 /**
  * The Staff console catalogue is loaded with the admin surfaces, not the shared
@@ -62,6 +63,7 @@ describe("message catalogue split", () => {
       ["admin", adminCatalogueFr],
       ["delivery", deliveryCatalogueFr],
       ["digital", digitalMessagesFr],
+      ["seller", sellerCatalogueFr],
     ] as const) {
       for (const key of Object.keys(catalogue)) {
         const previous = seen.get(key);
@@ -70,6 +72,29 @@ describe("message catalogue split", () => {
       }
     }
     expect(duplicates, duplicates.join("\n")).toEqual([]);
+  });
+
+  it("never renders a seller key without loading the seller catalogue", () => {
+    const sellerPrefixes = new Set(
+      Object.keys(sellerCatalogueFr).map((key) =>
+        key.split(".").slice(0, 3).join("."),
+      ),
+    );
+    const rendersSellerCopy = new RegExp(
+      `\\bt\\(\\s*["'\`](?:${[...sellerPrefixes]
+        .map((prefix) => prefix.replace(/\./g, "\\."))
+        .join("|")})\\.`,
+    );
+    const offenders: string[] = [];
+    for (const file of sourceFiles("src")) {
+      const source = readFileSync(file, "utf8");
+      if (!rendersSellerCopy.test(source)) continue;
+      if (!source.includes("sellerCatalogueFr")) offenders.push(file);
+    }
+    expect(
+      offenders,
+      `these render seller copy but never load the catalogue, so the raw key would ship:\n${offenders.join("\n")}`,
+    ).toEqual([]);
   });
 
   it("never renders an admin key without loading the admin catalogue", () => {

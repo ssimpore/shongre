@@ -22,7 +22,7 @@ endif
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
 	production-config-check production-release-check backup-restore-test secret-scan hostname-check deploy deploy-dev deploy-staging deploy-prod rollback remote-health \
-	operations-tooling-check capability-inventory-check capability-inventory-update e2e-triage e2e-baseline-update performance-smoke performance-db-plan performance-check storage-restore-test observability-evidence edge-functions-evidence \
+	operations-tooling-check capability-inventory-check capability-inventory-update e2e-triage e2e-baseline-update web-push-keys performance-smoke performance-db-plan performance-check storage-restore-test observability-evidence edge-functions-evidence \
 	docker-config docker-build docker-build-frontend docker-build-backend docker-start docker-stop docker-status docker-health docker-logs docker-scan docker-audit \
 	tunnel-status tunnel-health tunnel-logs api-schema api-types contracts release-manifest-check deployment-config-check env-matrix-check
 
@@ -225,8 +225,10 @@ frontend-test: ## Run Web unit and component tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend'
 frontend-test-e2e: ## Run the real Playwright browser suite
 	@SHONGRE_ENV=test scripts/e2e.sh $(E2E_ARGS)
-test-web-database-mode: ## Verify public routes against the database-mode stack from make dev
-	@scripts/test-web-database-mode.sh
+web-push-keys: ## Print a fresh VAPID key pair for WEB_PUSH_VAPID_PUBLIC_KEY / WEB_PUSH_VAPID_PRIVATE_KEY
+	@node -e 'const k=require("web-push").generateVAPIDKeys();console.log("WEB_PUSH_VAPID_PUBLIC_KEY="+k.publicKey);console.log("WEB_PUSH_VAPID_PRIVATE_KEY="+k.privateKey)'
+test-web-database-mode: ## Run the browser journeys that assert the PostgreSQL repositories against the seeded local Supabase stack
+	@SHONGRE_ENV=test SHONGRE_E2E_DATA_MODE=database scripts/e2e.sh $(E2E_ARGS)
 e2e-triage: ## Run the browser suite and fail only on failures that are not already recorded
 	@E2E_JSON_REPORT=$(CURDIR)/.runtime/e2e-report.json $(MAKE) frontend-test-e2e E2E_ARGS="$(E2E_ARGS)" || true
 	@node scripts/e2e-triage.mjs --report $(CURDIR)/.runtime/e2e-report.json

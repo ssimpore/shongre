@@ -13,6 +13,7 @@ import {
   type DomainHandoffStartInput,
   type DomainHandoffStartResult,
   type DomainHandoffExchangeResult,
+  type AccountAwayState,
   type AccountDataExport,
 } from "../../contracts/auth.contract";
 import { apiOperation } from "./generated-api-operation";
@@ -354,6 +355,15 @@ export class HttpAuthService implements AuthServiceContract {
 
   async exportAccountData(): Promise<AccountDataExport> {
     return apiOperation("getAccountExport", {});
+  }
+
+  async setAwayMode(input: {
+    until: string | null;
+    message?: string;
+  }): Promise<AccountAwayState> {
+    return apiOperation<AccountAwayState, "putAccountAway">("putAccountAway", {
+      body: input,
+    });
   }
 }
 

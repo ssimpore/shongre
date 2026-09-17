@@ -7,13 +7,16 @@ export type ModerationCaseStatus =
   | "appealed"
   | "closed";
 
+export type ModerationResolutionAction =
+  "dismiss" | "remove_listing" | "ban_user" | "remove_review";
+
 export interface OwnModerationCase {
   id: string;
-  targetType: "listing" | "user" | "delivery_request";
+  targetType: "listing" | "user" | "delivery_request" | "review";
   deliveryRequestId?: string;
   category: string;
   status: ModerationCaseStatus;
-  resolutionAction?: "dismiss" | "remove_listing" | "ban_user";
+  resolutionAction?: ModerationResolutionAction;
   resolutionReason?: string;
   resolvedAt?: string;
   createdAt: string;
@@ -42,6 +45,7 @@ export interface ModerationServiceContract {
     listingId?: string;
     reportedUserId?: string;
     deliveryRequestId?: string;
+    reviewId?: string;
     reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
     details: string;
   }): Promise<{ id: string; status: "pending" }>;

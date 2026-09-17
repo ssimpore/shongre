@@ -67,6 +67,8 @@ export function toPublicSellerProfile(
     reviewCount: profile.reviewCount,
     responseRatePercent: profile.responseRatePercent,
     responseTimeText: profile.responseTimeText,
+    awayUntil: profile.awayUntil,
+    awayMessage: profile.awayMessage,
     createdAt: profile.createdAt,
   };
 }
@@ -202,6 +204,9 @@ export function toPublicListing(
     duplicateGroupId: _duplicateGroupId,
     safetyRiskScore: _safetyRiskScore,
     digitalFulfillmentVersionId: _digitalFulfillmentVersionId,
+    // Renewal history is the seller's business, not the listing's public face.
+    renewalCount: _renewalCount,
+    lastRenewedAt: _lastRenewedAt,
     /*
      * The stored location, removed from the rest spread on purpose.
      *

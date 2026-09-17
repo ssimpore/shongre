@@ -1573,6 +1573,8 @@ export const SearchPage: React.FC = () => {
             <NoResultsFound
               id="search-no-results"
               query={query}
+              didYouMean={searchQuery.data?.didYouMean}
+              onDidYouMean={(corrected) => updateFilter("query", corrected)}
               onClearFilters={clearAllFilters}
               clearFiltersLabel={t("search.searchPage.effacerTousLesFiltres")}
               onSaveSearch={handleSaveSearch}

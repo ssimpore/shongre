@@ -39,7 +39,7 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   onReport,
   publicProfileSlug,
 }) => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const publicProfileUrl = publicProfileSlug
     ? routes.seller.publicPage({
@@ -117,6 +117,21 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
           </div>
 
           <PresenceStatus presence={presence} lastSeen />
+          {counterpart.awayUntil &&
+            Date.parse(counterpart.awayUntil) > Date.now() && (
+              <p
+                className="text-micro font-semibold text-warning"
+                data-conversation-away-notice
+              >
+                {t("messaging.away.notice", {
+                  date: new Date(counterpart.awayUntil).toLocaleDateString(
+                    locale,
+                    { day: "numeric", month: "long" },
+                  ),
+                })}
+                {counterpart.awayMessage ? ` — ${counterpart.awayMessage}` : ""}
+              </p>
+            )}
           <div className="flex items-center gap-2 text-micro text-text-tertiary font-medium">
             {counterpart.rating !== undefined && (
               <span className="flex items-center gap-0.5 text-warning font-bold">

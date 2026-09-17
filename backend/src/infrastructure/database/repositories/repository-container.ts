@@ -234,10 +234,11 @@ export function createRepositoryContainer(
     };
   }
 
-  const users = new DemoUserRepository();
+  const listings = new DemoListingRepository();
+  const users = new DemoUserRepository(undefined, listings);
   return {
     users,
-    listings: new DemoListingRepository(),
+    listings,
     markets: new DemoMarketRepository(),
     currencies: new DemoCurrencyRepository(),
     taxonomy: new PostgresTaxonomyRepository(),

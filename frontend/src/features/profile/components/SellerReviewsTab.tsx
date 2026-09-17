@@ -1,26 +1,92 @@
 import React, { useState, useMemo } from "react";
-import { Star, MessageSquare, ShoppingBag, Calendar } from "lucide-react";
+import {
+  Star,
+  MessageSquare,
+  ShoppingBag,
+  Calendar,
+  ThumbsUp,
+  CornerDownRight,
+} from "lucide-react";
 import { VerificationBadge } from "@shongre/ui/web";
 import { ReviewItem } from "../../../types";
 import { Avatar } from "../../../design-system/primitives/Badge";
+import { Button } from "../../../design-system/primitives/Button";
 import { ProgressBar } from "../../../design-system/primitives/ProgressBar";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+} from "../../../design-system/utils/controlMetrics";
 
 export interface SellerReviewsTabProps {
   reviews: ReviewItem[];
   onReport: (review: ReviewItem) => void;
+  /** The signed-in reader, when there is one. */
+  viewerId?: string;
+  /** Present when the viewer is the person these reviews are about. */
+  onReply?: (review: ReviewItem, comment: string) => Promise<void>;
+  /** Present when a signed-in reader may vote; guests are sent to sign in. */
+  onMarkHelpful?: (review: ReviewItem, helpful: boolean) => Promise<void>;
 }
+
+const REPLY_MIN_LENGTH = 10;
+const REPLY_MAX_LENGTH = 2000;
 
 export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
   reviews,
   onReport,
+  viewerId,
+  onReply,
+  onMarkHelpful,
 }) => {
   const { t } = useTranslation();
   const { formatDate: formatRegionalDate } = useRegionalFormatters();
   const [selectedRatingFilter, setSelectedRatingFilter] = useState<
     number | null
   >(null);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyDraft, setReplyDraft] = useState("");
+  const [replyError, setReplyError] = useState<string | null>(null);
+  const [replySubmitting, setReplySubmitting] = useState(false);
+  const [votingOn, setVotingOn] = useState<string | null>(null);
+
+  const startReply = (review: ReviewItem) => {
+    setReplyingTo(review.id);
+    setReplyDraft(review.reply?.comment ?? "");
+    setReplyError(null);
+  };
+  const submitReply = async (review: ReviewItem) => {
+    if (!onReply) return;
+    const comment = replyDraft.trim();
+    if (
+      comment.length < REPLY_MIN_LENGTH ||
+      comment.length > REPLY_MAX_LENGTH
+    ) {
+      setReplyError(t("reviews.reply.lengthError"));
+      return;
+    }
+    setReplySubmitting(true);
+    setReplyError(null);
+    try {
+      await onReply(review, comment);
+      setReplyingTo(null);
+      setReplyDraft("");
+    } catch {
+      setReplyError(t("reviews.reply.submitError"));
+    } finally {
+      setReplySubmitting(false);
+    }
+  };
+  const toggleHelpful = async (review: ReviewItem) => {
+    if (!onMarkHelpful || votingOn) return;
+    setVotingOn(review.id);
+    try {
+      await onMarkHelpful(review, !review.viewerMarkedHelpful);
+    } finally {
+      setVotingOn(null);
+    }
+  };
 
   // Compute breakdown statistics
   const stats = useMemo(() => {
@@ -236,13 +302,128 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
               <p className="text-xs sm:text-sm text-text-emphasis leading-relaxed whitespace-pre-line pl-1">
                 {rev.comment}
               </p>
-              <button
-                type="button"
-                className="mt-3 text-sm text-text-supporting underline"
-                onClick={() => onReport(rev)}
-              >
-                {t("reviews.report")}
-              </button>
+
+              {rev.reply && replyingTo !== rev.id && (
+                <div
+                  className="mt-3 ml-1 flex gap-2 rounded-xl border border-border-subtle bg-bg-base p-3"
+                  data-review-reply={rev.id}
+                >
+                  <CornerDownRight className="w-icon-sm h-icon-sm shrink-0 text-text-inverse-subtle mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-text-main">
+                      {t("reviews.reply.heading")}
+                      <span className="ml-1.5 font-normal text-text-tertiary">
+                        {formatDate(rev.reply.updatedAt)}
+                      </span>
+                    </p>
+                    <p className="mt-1 text-xs sm:text-sm text-text-emphasis leading-relaxed whitespace-pre-line">
+                      {rev.reply.comment}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {onReply && replyingTo === rev.id && (
+                <form
+                  className="mt-3 ml-1 space-y-2"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void submitReply(rev);
+                  }}
+                >
+                  <label
+                    htmlFor={`review-reply-${rev.id}`}
+                    className="block text-xs font-semibold text-text-main"
+                  >
+                    {t("reviews.reply.label")}
+                  </label>
+                  <textarea
+                    id={`review-reply-${rev.id}`}
+                    value={replyDraft}
+                    onChange={(event) => setReplyDraft(event.target.value)}
+                    maxLength={REPLY_MAX_LENGTH}
+                    rows={3}
+                    aria-describedby={`review-reply-${rev.id}-hint`}
+                    aria-invalid={replyError ? true : undefined}
+                    className="w-full p-3 bg-bg-base border border-border-base rounded-control text-xs text-text-main focus:bg-bg-surface focus:outline-hidden focus:border-primary min-h-control-touch"
+                  />
+                  <p
+                    id={`review-reply-${rev.id}-hint`}
+                    className="text-micro text-text-tertiary"
+                  >
+                    {t("reviews.reply.hint")}
+                  </p>
+                  {replyError && (
+                    <p role="alert" className="text-xs text-danger">
+                      {replyError}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Button type="submit" size="sm" isLoading={replySubmitting}>
+                      {t("reviews.reply.submit")}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setReplyingTo(null)}
+                      disabled={replySubmitting}
+                    >
+                      {t("common.cancel")}
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 pl-1">
+                <button
+                  type="button"
+                  aria-pressed={rev.viewerMarkedHelpful === true}
+                  disabled={
+                    votingOn === rev.id ||
+                    (viewerId !== undefined &&
+                      (viewerId === rev.authorId ||
+                        viewerId === rev.targetUserId))
+                  }
+                  onClick={() => void toggleHelpful(rev)}
+                  className={`inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
+                    rev.viewerMarkedHelpful
+                      ? "bg-primary-light text-text-main"
+                      : "text-text-supporting hover:bg-bg-base"
+                  }`}
+                  data-review-helpful={rev.id}
+                >
+                  <ThumbsUp className="w-icon-sm h-icon-sm" aria-hidden />
+                  <span>
+                    {t("reviews.helpful.action")}
+                    {rev.helpfulCount > 0 && (
+                      <span className="ml-1 text-text-tertiary font-normal">
+                        · {rev.helpfulCount}
+                      </span>
+                    )}
+                  </span>
+                </button>
+                {onReply &&
+                  viewerId === rev.targetUserId &&
+                  replyingTo !== rev.id && (
+                    <button
+                      type="button"
+                      className={`text-xs font-semibold text-primary underline underline-offset-2 rounded-control ${CONTROL_FOCUS_CLASS}`}
+                      onClick={() => startReply(rev)}
+                    >
+                      {rev.reply
+                        ? t("reviews.reply.edit")
+                        : t("reviews.reply.start")}
+                    </button>
+                  )}
+                <button
+                  type="button"
+                  className={`text-xs text-text-supporting underline rounded-control ${CONTROL_FOCUS_CLASS}`}
+                  onClick={() => onReport(rev)}
+                >
+                  {t("reviews.report")}
+                </button>
+              </div>
 
               {rev.listingTitle && (
                 <div className="sm:hidden mt-3 pt-2 border-t border-border-subtle flex items-center gap-1.5 text-xs text-text-tertiary">

@@ -2621,9 +2621,22 @@ function generateSeedSql(source: NormalizedSource): string {
   }
   for (const attribute of source.attributes) {
     lines.push(
-      `UPDATE public.taxonomy_attributes SET icon_name = ${sqlNullable(attribute.iconName)}, source_data_type = ${sqlLiteral(attribute.sourceDataType)}, scope = ${sqlLiteral(attribute.scope)}, cardinality = ${sqlNullable(attribute.cardinality)}, default_value = ${sqlNullable(attribute.defaultValue)}, card_visible = ${attribute.cardVisible}, detail_visible = ${attribute.detailVisible}, is_seo_relevant = ${attribute.seoRelevant}, seller_eligibility = ${jsonLiteral(attribute.sellerEligibility)}, market_availability = ${jsonLiteral(attribute.marketAvailability)}, localized_help_text = ${jsonLiteral(attribute.helpText)}, placeholder = ${jsonLiteral(attribute.placeholder)} WHERE id = ${sqlLiteral(attribute.id)};`,
+      `UPDATE public.taxonomy_attributes SET source_data_type = ${sqlLiteral(attribute.sourceDataType)}, scope = ${sqlLiteral(attribute.scope)}, cardinality = ${sqlNullable(attribute.cardinality)}, default_value = ${sqlNullable(attribute.defaultValue)}, card_visible = ${attribute.cardVisible}, detail_visible = ${attribute.detailVisible}, is_seo_relevant = ${attribute.seoRelevant}, seller_eligibility = ${jsonLiteral(attribute.sellerEligibility)}, market_availability = ${jsonLiteral(attribute.marketAvailability)}, localized_help_text = ${jsonLiteral(attribute.helpText)}, placeholder = ${jsonLiteral(attribute.placeholder)} WHERE id = ${sqlLiteral(attribute.id)};`,
     );
   }
+  // Field icons live in a column migration 00140 adds, but a fresh local
+  // database imports this file before migration 00125 (the reference
+  // conversion needs the reviewed categories). The icons are therefore
+  // assigned only once the column exists: at bootstrap the block is a no-op
+  // and 00140 authors them; a later import converges on the compiled values.
+  lines.push(
+    `DO $attribute_icons$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'taxonomy_attributes' AND column_name = 'icon_name') THEN ${source.attributes
+      .map(
+        (attribute) =>
+          `UPDATE public.taxonomy_attributes SET icon_name = ${sqlNullable(attribute.iconName)} WHERE id = ${sqlLiteral(attribute.id)};`,
+      )
+      .join(" ")} END IF; END $attribute_icons$;`,
+  );
   const editorialMetadata = {
     metadata: source.metadata,
     verticals: source.verticals,

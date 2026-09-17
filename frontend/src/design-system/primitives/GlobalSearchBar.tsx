@@ -12,11 +12,10 @@ import {
   getSearchSuggestions,
   AutocompleteResults,
 } from "../../configuration/search.config";
-import {
-  SearchAutocomplete,
-  AutocompleteSelection,
-} from "./SearchAutocomplete";
+import type { AutocompleteSelection } from "./SearchAutocomplete";
+import { LazySearchAutocomplete as SearchAutocomplete } from "./LazySearchAutocomplete";
 import { useRecentSearches } from "../../hooks/useRecentSearches";
+import type { SearchSuggestion } from "../../api/contracts/search.contract";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
   DROPDOWN_PANEL_CLASSES,
@@ -88,7 +87,11 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { activeMarket, location: userLocation } = useMarketLocation();
+  const {
+    activeMarket,
+    currentLocale,
+    location: userLocation,
+  } = useMarketLocation();
 
   const [query, setQuery] = useState(initialQuery);
   const [selectedCategorySlug, setSelectedCategorySlug] =
@@ -105,7 +108,9 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const { recentSearches, rememberSearch, removeSearch, clearSearches } =
     useRecentSearches();
-  const [keywordSuggestions, setKeywordSuggestions] = useState<string[]>([]);
+  const [keywordSuggestions, setKeywordSuggestions] = useState<
+    SearchSuggestion[]
+  >([]);
   const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
 
   const isCountryWide =
@@ -182,23 +187,27 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     const normalizedQuery = query.trim();
     const timer = window.setTimeout(
       () => {
-        const request = normalizedQuery
-          ? services.search.getSearchSuggestions(
-              normalizedQuery,
-              activeMarket.code,
-            )
-          : services.search.getPopularKeywords(activeMarket.code);
-        void request
-          .then((items) => {
-            if (cancelled) return;
-            if (normalizedQuery) setKeywordSuggestions(items);
-            else setPopularKeywords(items);
-          })
-          .catch(() => {
-            if (cancelled) return;
-            if (normalizedQuery) setKeywordSuggestions([]);
-            else setPopularKeywords([]);
-          });
+        if (normalizedQuery) {
+          void services.search
+            .getSearchSuggestions(normalizedQuery, activeMarket.code, {
+              locale: currentLocale,
+            })
+            .then((items) => {
+              if (!cancelled) setKeywordSuggestions(items);
+            })
+            .catch(() => {
+              if (!cancelled) setKeywordSuggestions([]);
+            });
+        } else {
+          void services.search
+            .getPopularKeywords(activeMarket.code)
+            .then((items) => {
+              if (!cancelled) setPopularKeywords(items);
+            })
+            .catch(() => {
+              if (!cancelled) setPopularKeywords([]);
+            });
+        }
       },
       normalizedQuery ? 180 : 0,
     );
@@ -206,7 +215,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [activeMarket.code, isAutocompleteOpen, query]);
+  }, [activeMarket.code, currentLocale, isAutocompleteOpen, query]);
 
   // Derive autocomplete suggestions
   const suggestions: AutocompleteResults = useMemo(() => {

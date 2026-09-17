@@ -1,6 +1,7 @@
 import {
   SearchResponse,
   SearchServiceContract,
+  SearchSuggestion,
   MarketScopedSearchFilters,
 } from "../../contracts/search.contract";
 import { apiOperation } from "./generated-api-operation";
@@ -14,6 +15,8 @@ import {
 
 type BackendSearchResponse =
   operations["getListingsSearch"]["responses"][200]["content"]["application/json"];
+type BackendSearchSuggestions =
+  operations["getListingsSuggestions"]["responses"][200]["content"]["application/json"];
 
 const MAX_CACHEABLE_SEARCH_QUERY_LENGTH = 1_800;
 
@@ -64,17 +67,43 @@ export class HttpSearchService implements SearchServiceContract {
   async getSearchSuggestions(
     query: string,
     marketCode: string,
-  ): Promise<string[]> {
-    if (!query.trim()) return this.getPopularKeywords(marketCode);
-    const response = await this.search({
-      marketCode,
-      query: query.trim(),
-      sortBy: "relevance",
-      limit: 8,
+    options: { locale?: string; signal?: AbortSignal } = {},
+  ): Promise<SearchSuggestion[]> {
+    const normalized = query.trim();
+    if (!normalized) return [];
+    // Anonymous like the search itself, so the completions are cacheable and
+    // never carry a session into a shared cache.
+    const response = await apiOperation<
+      BackendSearchSuggestions,
+      "getListingsSuggestions"
+    >("getListingsSuggestions", {
+      signal: options.signal,
+      credentials: "omit",
+      query: {
+        q: normalized,
+        ...(options.locale ? { locale: options.locale } : {}),
+        limit: 8,
+      },
+      headers: { "X-Shongre-Market": marketCode },
     });
-    return Array.from(
-      new Set(response.items.map((listing) => listing.title.trim())),
-    ).filter(Boolean);
+    return response.items.map((item) =>
+      item.kind === "term"
+        ? {
+            kind: "term",
+            query: item.query,
+            label: item.label,
+            listingCount: item.listingCount,
+          }
+        : {
+            kind: "category",
+            categoryId: item.categoryId,
+            categorySlug: item.categorySlug,
+            label: item.label,
+            ...(item.parentLabel ? { parentLabel: item.parentLabel } : {}),
+            ...(item.parentSlug ? { parentSlug: item.parentSlug } : {}),
+            ...(item.iconName ? { iconName: item.iconName } : {}),
+          },
+    );
   }
 }
 

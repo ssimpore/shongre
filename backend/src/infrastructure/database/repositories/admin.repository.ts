@@ -21,22 +21,31 @@ export interface AdminAuditLogInput {
   metadata?: Record<string, unknown>;
 }
 
+export type AdminReportTargetType =
+  "listing" | "user" | "delivery_request" | "review";
+
+export interface AdminReportSummary {
+  id: string;
+  /** What was reported; the queue offers the matching resolution. */
+  targetType: AdminReportTargetType;
+  /** The reported resource's identifier for the target type. */
+  targetId: string;
+  /** Kept for the listing queue's existing consumers. */
+  listingId: string;
+  reason: string;
+  reporterName: string;
+  createdAt: string;
+}
+
 export interface IAdminRepository {
   getStats(): Promise<AdminStatsSummary>;
-  getReports(): Promise<
-    Array<{
-      id: string;
-      listingId: string;
-      reason: string;
-      reporterName: string;
-      createdAt: string;
-    }>
-  >;
+  getReports(): Promise<AdminReportSummary[]>;
   createReport(report: {
     reporterId: string;
     listingId?: string;
     reportedUserId?: string;
     deliveryRequestId?: string;
+    reviewId?: string;
     reason: string;
     details: string;
   }): Promise<{ id: string }>;
@@ -52,9 +61,11 @@ export interface IAdminRepository {
   saveAuditLog(log: AdminAuditLogInput): Promise<void>;
 }
 
-const CANONICAL_DEMO_REPORTS = [
+const CANONICAL_DEMO_REPORTS: AdminReportSummary[] = [
   {
     id: "rep_1",
+    targetType: "listing",
+    targetId: "list_suspect",
     listingId: "list_suspect",
     reason: "Prix anormalement bas / Suspicion contrefaçon",
     reporterName: "Thomas Laurent",
@@ -87,15 +98,7 @@ export class DemoAdminRepository implements IAdminRepository {
     };
   }
 
-  async getReports(): Promise<
-    Array<{
-      id: string;
-      listingId: string;
-      reason: string;
-      reporterName: string;
-      createdAt: string;
-    }>
-  > {
+  async getReports(): Promise<AdminReportSummary[]> {
     return [...this.reports];
   }
 
@@ -104,13 +107,28 @@ export class DemoAdminRepository implements IAdminRepository {
     listingId?: string;
     reportedUserId?: string;
     deliveryRequestId?: string;
+    reviewId?: string;
     reason: string;
     details: string;
   }): Promise<{ id: string }> {
     const id = `rep_${this.reports.length + 2}`;
+    const targetType: AdminReportTargetType = report.listingId
+      ? "listing"
+      : report.deliveryRequestId
+        ? "delivery_request"
+        : report.reviewId
+          ? "review"
+          : "user";
     this.reports.push({
       id,
-      listingId: report.listingId || report.deliveryRequestId || "",
+      targetType,
+      targetId:
+        report.listingId ||
+        report.deliveryRequestId ||
+        report.reviewId ||
+        report.reportedUserId ||
+        "",
+      listingId: report.listingId || "",
       reason: report.reason,
       reporterName: "Utilisateur",
       createdAt: new Date().toISOString(),
@@ -205,15 +223,7 @@ export class PostgresAdminRepository implements IAdminRepository {
     }
   }
 
-  async getReports(): Promise<
-    Array<{
-      id: string;
-      listingId: string;
-      reason: string;
-      reporterName: string;
-      createdAt: string;
-    }>
-  > {
+  async getReports(): Promise<AdminReportSummary[]> {
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
@@ -225,6 +235,19 @@ export class PostgresAdminRepository implements IAdminRepository {
       if (error || !data) databaseFailure("admin.getReports", error);
       return data.map((d: any) => ({
         id: d.id,
+        targetType: d.listing_id
+          ? "listing"
+          : d.delivery_request_id
+            ? "delivery_request"
+            : d.review_id
+              ? "review"
+              : "user",
+        targetId:
+          d.listing_id ||
+          d.delivery_request_id ||
+          d.review_id ||
+          d.reported_user_id ||
+          "",
         listingId: d.listing_id || "",
         reason: d.reason,
         reporterName: d.reporter?.name || "Utilisateur",
@@ -240,6 +263,7 @@ export class PostgresAdminRepository implements IAdminRepository {
     listingId?: string;
     reportedUserId?: string;
     deliveryRequestId?: string;
+    reviewId?: string;
     reason: string;
     details: string;
   }): Promise<{ id: string }> {
@@ -250,6 +274,7 @@ export class PostgresAdminRepository implements IAdminRepository {
         listing_id: report.listingId || null,
         reported_user_id: report.reportedUserId || null,
         delivery_request_id: report.deliveryRequestId || null,
+        review_id: report.reviewId || null,
         reason: report.reason,
         details: report.details,
         status: "pending",

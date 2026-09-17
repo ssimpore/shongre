@@ -1,3 +1,4 @@
+import { SellerAwayNotice } from "./SellerAwayNotice";
 import {
   isProSeller,
   showsVerifiedBadge,
@@ -376,6 +377,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
         </div>
 
         {/* Bio description */}
+        <SellerAwayNotice seller={seller} className="mt-4" />
         {seller.bio && (
           <div className="border-t border-border-soft pt-5 mb-5 mt-2">
             <p className="text-sm text-text-supporting leading-relaxed max-w-4xl whitespace-pre-line font-medium">

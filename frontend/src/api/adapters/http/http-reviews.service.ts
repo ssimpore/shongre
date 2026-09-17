@@ -1,5 +1,6 @@
 import {
   ReviewsServiceContract,
+  ReviewHelpfulResult,
   SubmitReviewInput,
   OrderReviewEligibility,
 } from "../../contracts/reviews.contract";
@@ -24,6 +25,23 @@ export class HttpReviewsService implements ReviewsServiceContract {
     return apiOperation<ReviewItem, "postReviewsSubmit">("postReviewsSubmit", {
       body: input,
     });
+  }
+
+  async replyToReview(reviewId: string, comment: string): Promise<ReviewItem> {
+    return apiOperation<ReviewItem, "postReviewsByIdReply">(
+      "postReviewsByIdReply",
+      { path: { id: reviewId }, body: { comment } },
+    );
+  }
+
+  async markHelpful(
+    reviewId: string,
+    helpful: boolean,
+  ): Promise<ReviewHelpfulResult> {
+    return apiOperation<ReviewHelpfulResult, "putReviewsByIdHelpful">(
+      "putReviewsByIdHelpful",
+      { path: { id: reviewId }, body: { helpful } },
+    );
   }
 }
 

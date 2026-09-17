@@ -5,7 +5,10 @@ import {
   repositories,
   AdminStatsSummary,
   IModerationRepository,
+  IReviewRepository,
   DeliveryRepository,
+  type AdminReportSummary,
+  type ModerationResolutionAction,
 } from "../../infrastructure/database/repositories/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { AppError } from "../../shared/errors/app-error.js";
@@ -48,6 +51,7 @@ export class AdminService {
     private moderationRepo: IModerationRepository = repositories.moderation,
     private sessions: SessionService = sessionService,
     private deliveryRepo: DeliveryRepository = repositories.delivery,
+    private reviewRepo: IReviewRepository = repositories.reviews,
   ) {}
 
   async getPlatformStats(): Promise<AdminStatsSummary> {
@@ -502,31 +506,30 @@ export class AdminService {
     return updated;
   }
 
-  async getPendingReports(): Promise<
-    Array<{
-      id: string;
-      listingId: string;
-      reason: string;
-      reporterName: string;
-      createdAt: string;
-    }>
-  > {
+  async getPendingReports(): Promise<AdminReportSummary[]> {
     return this.adminRepo.getReports();
   }
 
   async resolveReport(input: {
     reportId: string;
-    action: "dismiss" | "remove_listing" | "ban_user";
+    action: ModerationResolutionAction;
     reason: string;
     actor: Principal;
   }): Promise<void> {
     requirePermission(input.actor, "report.review");
     if (input.action === "ban_user") {
       requirePermission(input.actor, "user.suspend");
-    } else if (input.action === "remove_listing") {
+    } else if (
+      input.action === "remove_listing" ||
+      input.action === "remove_review"
+    ) {
       requirePermission(input.actor, "moderation.action");
     }
-    if (!new Set(["dismiss", "remove_listing", "ban_user"]).has(input.action)) {
+    if (
+      !new Set(["dismiss", "remove_listing", "ban_user", "remove_review"]).has(
+        input.action,
+      )
+    ) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Action de modération invalide.",
@@ -562,6 +565,7 @@ export class AdminService {
     listingId?: string;
     reportedUserId?: string;
     deliveryRequestId?: string;
+    reviewId?: string;
     reason?: string;
     details?: string;
   }): Promise<{ id: string; status: "pending" }> {
@@ -591,6 +595,18 @@ export class AdminService {
       }
       deliveryRequesterId = request.requesterId;
     }
+    let reviewAuthorId: string | undefined;
+    if (parsed.data.reviewId) {
+      const review = await this.reviewRepo.findById(parsed.data.reviewId);
+      // Reporting one's own review is meaningless; a removed review is gone.
+      if (!review || review.removedAt || review.authorId === input.reporterId) {
+        throw new AppError({
+          code: "NOT_FOUND",
+          message: "Avis introuvable.",
+        });
+      }
+      reviewAuthorId = review.authorId;
+    }
     const report = await this.adminRepo.createReport({
       reporterId: input.reporterId,
       ...parsed.data,
@@ -602,7 +618,8 @@ export class AdminService {
       listingId: parsed.data.listingId,
       reportedUserId: parsed.data.reportedUserId,
       deliveryRequestId: parsed.data.deliveryRequestId,
-      affectedUserId: deliveryRequesterId,
+      reviewId: parsed.data.reviewId,
+      affectedUserId: deliveryRequesterId ?? reviewAuthorId,
       category: parsed.data.reason,
     });
     return { ...report, status: "pending" };

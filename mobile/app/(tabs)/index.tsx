@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import type { ListingCardView } from "@shongre/contracts";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { Button } from "@/components/Button";
 import { ListingCard } from "@/components/ListingCard";
 import { BrandLogo } from "@/components/BrandLogo";
 import { StatePanel } from "@/components/StatePanel";
@@ -22,6 +24,7 @@ import { listingsService } from "@/features/listings/listings.service";
 import { useMarket } from "@/features/market/MarketProvider";
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { activeMarket } = useMarket();
   const { columns } = useLayoutMode();
   const [items, setItems] = useState<ListingCardView[]>([]);
@@ -109,6 +112,11 @@ export default function HomeScreen() {
               Des annonces locales, des vendeurs identifiés et des échanges
               protégés.
             </Text>
+            <Button
+              label="Parcourir les catégories"
+              variant="secondary"
+              onPress={() => router.push("/categories" as never)}
+            />
           </View>
         }
         ListEmptyComponent={

@@ -378,6 +378,18 @@ export function postAccountUpgradeToProfessional(
     "application/json",
   );
 }
+export function putAccountAway(
+  transport: ApiTransport,
+  input: ApiInput<"putAccountAway">,
+): Promise<ApiResponse<"putAccountAway">> {
+  return executeApiOperation<"putAccountAway">(
+    transport,
+    "PUT",
+    "/account/away",
+    input,
+    "application/json",
+  );
+}
 export function getAdminAuditLogs(
   transport: ApiTransport,
   input: ApiInput<"getAdminAuditLogs">,
@@ -1216,6 +1228,18 @@ export function postAiListingAssistance(
     transport,
     "POST",
     "/ai/listing-assistance",
+    input,
+    "application/json",
+  );
+}
+export function postAiListingFromPhotos(
+  transport: ApiTransport,
+  input: ApiInput<"postAiListingFromPhotos">,
+): Promise<ApiResponse<"postAiListingFromPhotos">> {
+  return executeApiOperation<"postAiListingFromPhotos">(
+    transport,
+    "POST",
+    "/ai/listing-from-photos",
     input,
     "application/json",
   );
@@ -4228,6 +4252,30 @@ export function postListingsSearch(
     "application/json",
   );
 }
+export function getListingsSuggestions(
+  transport: ApiTransport,
+  input: ApiInput<"getListingsSuggestions">,
+): Promise<ApiResponse<"getListingsSuggestions">> {
+  return executeApiOperation<"getListingsSuggestions">(
+    transport,
+    "GET",
+    "/listings/suggestions",
+    input,
+    "application/json",
+  );
+}
+export function getListingsPriceEstimate(
+  transport: ApiTransport,
+  input: ApiInput<"getListingsPriceEstimate">,
+): Promise<ApiResponse<"getListingsPriceEstimate">> {
+  return executeApiOperation<"getListingsPriceEstimate">(
+    transport,
+    "GET",
+    "/listings/price-estimate",
+    input,
+    "application/json",
+  );
+}
 export function getCurrencyCatalog(
   transport: ApiTransport,
   input: ApiInput<"getCurrencyCatalog">,
@@ -4812,6 +4860,18 @@ export function postNotificationsDevicesUnregister(
     transport,
     "POST",
     "/notifications/devices/unregister",
+    input,
+    "application/json",
+  );
+}
+export function getNotificationsWebPushConfig(
+  transport: ApiTransport,
+  input: ApiInput<"getNotificationsWebPushConfig">,
+): Promise<ApiResponse<"getNotificationsWebPushConfig">> {
+  return executeApiOperation<"getNotificationsWebPushConfig">(
+    transport,
+    "GET",
+    "/notifications/web-push/config",
     input,
     "application/json",
   );
@@ -5494,6 +5554,30 @@ export function postReviewsSubmit(
     transport,
     "POST",
     "/reviews/submit",
+    input,
+    "application/json",
+  );
+}
+export function postReviewsByIdReply(
+  transport: ApiTransport,
+  input: ApiInput<"postReviewsByIdReply">,
+): Promise<ApiResponse<"postReviewsByIdReply">> {
+  return executeApiOperation<"postReviewsByIdReply">(
+    transport,
+    "POST",
+    "/reviews/{id}/reply",
+    input,
+    "application/json",
+  );
+}
+export function putReviewsByIdHelpful(
+  transport: ApiTransport,
+  input: ApiInput<"putReviewsByIdHelpful">,
+): Promise<ApiResponse<"putReviewsByIdHelpful">> {
+  return executeApiOperation<"putReviewsByIdHelpful">(
+    transport,
+    "PUT",
+    "/reviews/{id}/helpful",
     input,
     "application/json",
   );
@@ -6418,6 +6502,7 @@ export const generatedApiOperations = {
   getAccountExport,
   getAccountListings,
   postAccountUpgradeToProfessional,
+  putAccountAway,
   getAdminAuditLogs,
   getAdminBusinessRules,
   postAdminBusinessRulesDrafts,
@@ -6488,6 +6573,7 @@ export const generatedApiOperations = {
   updateAdminUserStaffStatus,
   putAdminUsersByUserIdVerification,
   postAiListingAssistance,
+  postAiListingFromPhotos,
   postAiListingSafety,
   postAnalyticsEvents,
   getAnalyticsOverview,
@@ -6738,6 +6824,8 @@ export const generatedApiOperations = {
   postListingsPublish,
   getListingsSearch,
   postListingsSearch,
+  getListingsSuggestions,
+  getListingsPriceEstimate,
   getCurrencyCatalog,
   getAdminCurrencyCatalog,
   putAdminCurrency,
@@ -6787,6 +6875,7 @@ export const generatedApiOperations = {
   postNotificationsByIdRead,
   postNotificationsDevices,
   postNotificationsDevicesUnregister,
+  getNotificationsWebPushConfig,
   getNotificationPreferences,
   putNotificationPreferences,
   postNotificationsReadAll,
@@ -6843,6 +6932,8 @@ export const generatedApiOperations = {
   postReports,
   getOrderReviewEligibility,
   postReviewsSubmit,
+  postReviewsByIdReply,
+  putReviewsByIdHelpful,
   getReviewsUserByUserId,
   getSupportHelpArticles,
   getSupportCases,

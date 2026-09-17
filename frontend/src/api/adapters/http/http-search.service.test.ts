@@ -130,4 +130,63 @@ describe("HttpSearchService", () => {
       signal: undefined,
     });
   });
+
+  it("asks the API for completions anonymously in the market's locale", async () => {
+    vi.mocked(apiOperation).mockResolvedValue({
+      items: [
+        {
+          kind: "term",
+          query: "vélo gravel",
+          label: "vélo gravel",
+          listingCount: 2,
+        },
+        {
+          kind: "category",
+          categoryId: "loisirs.velos",
+          categorySlug: "velos",
+          label: "Vélos",
+          parentLabel: "Loisirs",
+          parentSlug: "loisirs",
+          iconName: "Bike",
+        },
+      ],
+    });
+
+    const result = await new HttpSearchService().getSearchSuggestions(
+      " vélo ",
+      "BE",
+      { locale: "fr-BE" },
+    );
+
+    expect(apiOperation).toHaveBeenCalledWith("getListingsSuggestions", {
+      credentials: "omit",
+      signal: undefined,
+      query: { q: "vélo", locale: "fr-BE", limit: 8 },
+      headers: { "X-Shongre-Market": "BE" },
+    });
+    expect(result).toEqual([
+      {
+        kind: "term",
+        query: "vélo gravel",
+        label: "vélo gravel",
+        listingCount: 2,
+      },
+      {
+        kind: "category",
+        categoryId: "loisirs.velos",
+        categorySlug: "velos",
+        label: "Vélos",
+        parentLabel: "Loisirs",
+        parentSlug: "loisirs",
+        iconName: "Bike",
+      },
+    ]);
+  });
+
+  it("does not call the API for an empty query", async () => {
+    await expect(
+      new HttpSearchService().getSearchSuggestions("   ", "FR"),
+    ).resolves.toEqual([]);
+    expect(apiOperation).not.toHaveBeenCalled();
+  });
 });

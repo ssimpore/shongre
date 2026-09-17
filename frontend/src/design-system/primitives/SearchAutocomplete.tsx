@@ -163,7 +163,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                       <div className="flex items-center gap-2.5 truncate">
                         <div className="shrink-0">
                           <CategoryIcon
-                            category={catSuggestion.categoryObj}
+                            iconName={catSuggestion.iconName}
                             size="xs"
                           />
                         </div>

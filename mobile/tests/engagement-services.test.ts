@@ -191,7 +191,8 @@ describe("API-backed mobile engagement services", () => {
       maxPrice: 25.5,
     });
 
-    expect(result).toHaveLength(1);
+    expect(result.items).toHaveLength(1);
+    expect(result.didYouMean).toBeUndefined();
     expect(apiRequest).toHaveBeenCalledWith(
       "/listings/search",
       expect.objectContaining({
@@ -207,6 +208,21 @@ describe("API-backed mobile engagement services", () => {
       }),
       "FR",
     );
+  });
+
+  it("carries the API's spelling correction when nothing matched", async () => {
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      items: [],
+      didYouMean: "vélo",
+    });
+
+    const result = await new HttpListingsService().search({
+      marketCode: "FR",
+      query: "velp",
+      scope: "marketplace",
+    });
+
+    expect(result).toEqual({ items: [], didYouMean: "vélo" });
   });
 
   it("preserves API errors instead of returning listing fixtures", async () => {

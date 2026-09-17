@@ -28,8 +28,13 @@ vi.mock("../../i18n/I18nProvider", () => ({
 }));
 
 vi.mock("../../design-system/primitives/Button", () => ({
-  Button: ({ children, onClick }: { children?: unknown; onClick?: () => void }) =>
-    React.createElement("button", { onClick }, children as React.ReactNode),
+  Button: ({
+    children,
+    onClick,
+  }: {
+    children?: unknown;
+    onClick?: () => void;
+  }) => React.createElement("button", { onClick }, children as React.ReactNode),
 }));
 
 const { RouteErrorBoundary } = await import("./RouteErrorBoundary");

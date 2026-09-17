@@ -65,6 +65,15 @@ async function runSeed() {
   runPsqlFile(databaseUrl, seedSqlPath);
   console.log("Canonical reference data applied in one transaction.");
   const summary = await seedLocalDevelopmentData();
+  // Search suggestions read a per-market vocabulary the scheduled worker
+  // rebuilds every fifteen minutes; a freshly seeded database should answer
+  // the autocomplete box before that first run.
+  const vocabulary = runPsql(
+    databaseUrl,
+    `SELECT COALESCE(SUM(public.refresh_listing_search_terms(code)), 0)
+       FROM public.markets WHERE is_active`,
+  );
+  console.log(`Search vocabulary refreshed: ${vocabulary} terms.`);
   console.log(
     `Local development scenario applied: ${summary.profiles} profiles, ${summary.genericListings} marketplace listings, ${summary.vehicles} vehicles, ${summary.properties} properties, ${summary.tutors} tutors, ${summary.courseOffers} course offers, ${summary.jobs} jobs, ${summary.conversations} conversations, ${summary.messages} messages, ${summary.transactions} transactions, ${summary.notifications} notifications, ${summary.savedSearches} saved searches, ${summary.reviews} reviews, ${summary.trendingTopics} trending topics, and ${summary.publicStorageObjects} public Storage objects.`,
   );

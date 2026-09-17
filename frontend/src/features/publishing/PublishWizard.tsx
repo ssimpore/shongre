@@ -20,6 +20,7 @@ import {
   Store,
   Package,
   Globe,
+  CalendarClock,
 } from "lucide-react";
 import {
   PublicationDraftState,
@@ -40,11 +41,14 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { services } from "../../api/client/service-registry";
 import { ListingAssistanceResult } from "../../api/contracts/ai.contract";
+import type { ListingPriceEstimate } from "../../api/contracts/listings.contract";
+import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { plural } from "../../utilities/formatters";
 import { Image } from "../../design-system/primitives/Image";
 import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { deliveryCatalogueFr } from "../../i18n/delivery.catalogue.fr";
+import { sellerCatalogueFr } from "../../i18n/seller.catalogue.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import {
   CONTROL_FOCUS_CLASS,
@@ -124,6 +128,14 @@ const PHASES = [
 
 const ADVANCED_PANEL = 9;
 const REVIEW_PANEL = 10;
+
+/** `datetime-local` speaks the visitor's wall clock, without a zone. */
+function toDateTimeLocal(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+const SCHEDULE_MIN_LEAD_MS = 15 * 60 * 1000;
+const SCHEDULE_MAX_LEAD_MS = 30 * 24 * 60 * 60 * 1000;
 type PhaseOneStage = "intent" | "category" | "details";
 const WEB_MANAGED_V1_ATTRIBUTES = new Set([
   "title",
@@ -170,8 +182,15 @@ const hasMeaningfulDraftContent = (draft: PublicationDraftState) =>
     draft.pricing.amount > 0,
   );
 
+/** The wizard speaks delivery and seller copy on top of the shell. */
+const PUBLISH_WIZARD_CATALOGUE = {
+  ...deliveryCatalogueFr,
+  ...sellerCatalogueFr,
+};
+
 export const PublishWizard: React.FC = () => {
-  const { t } = useTranslation(deliveryCatalogueFr);
+  const { t } = useTranslation(PUBLISH_WIZARD_CATALOGUE);
+  const { formatMoneyMinor } = useRegionalFormatters();
   const {
     activeMarket,
     availableMarkets,
@@ -211,6 +230,14 @@ export const PublishWizard: React.FC = () => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isGeneratingWithAI, setIsGeneratingWithAI] = useState(false);
+  const [isSuggestingFromPhotos, setIsSuggestingFromPhotos] = useState(false);
+  const [photoCategoryProposal, setPhotoCategoryProposal] = useState<{
+    id: string;
+    slug: string;
+    label: string;
+  } | null>(null);
+  const [priceEstimate, setPriceEstimate] =
+    useState<ListingPriceEstimate | null>(null);
   const [aiPromptKeyword] = useState("");
   const [, setAiGeneratedTips] = useState<string[]>([]);
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
@@ -362,6 +389,56 @@ export const PublishWizard: React.FC = () => {
   const updateDraft = (updates: Partial<PublicationDraftState>) => {
     setDraft((prev) => ({ ...prev, ...updates }));
   };
+
+  // Comparables are loaded once the seller reaches the price, for the chosen
+  // category and whatever brand, model and condition they already gave.
+  const estimateCategoryId = draft.taxonomyNodeId;
+  const estimateBrand = String(draft.attributes.brand ?? "");
+  const estimateModel = String(draft.attributes.model ?? "");
+  const pricingPanelVisible = Boolean(
+    PHASES[currentStep - 1]?.panels.includes(5),
+  );
+  useEffect(() => {
+    if (!pricingPanelVisible || !estimateCategoryId || !currentUser) {
+      return;
+    }
+    let cancelled = false;
+    services.listings
+      .estimatePrice({
+        categoryId: estimateCategoryId,
+        ...(estimateBrand ? { brand: estimateBrand } : {}),
+        ...(estimateModel ? { model: estimateModel } : {}),
+        ...(draft.condition ? { condition: draft.condition } : {}),
+      })
+      .then((estimate) => {
+        if (!cancelled) setPriceEstimate(estimate);
+      })
+      .catch(() => {
+        // Advisory: a missing estimate changes nothing about publishing.
+        if (!cancelled) setPriceEstimate(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    currentUser,
+    draft.condition,
+    estimateBrand,
+    estimateCategoryId,
+    estimateModel,
+    pricingPanelVisible,
+  ]);
+
+  const scheduleInputValue = draft.scheduledPublishAt
+    ? toDateTimeLocal(new Date(draft.scheduledPublishAt))
+    : "";
+  const scheduleError = (() => {
+    if (!draft.scheduledPublishAt) return undefined;
+    const lead = Date.parse(draft.scheduledPublishAt) - Date.now();
+    return lead < SCHEDULE_MIN_LEAD_MS || lead > SCHEDULE_MAX_LEAD_MS
+      ? t("publishing.publishWizard.timing.scheduleError")
+      : undefined;
+  })();
 
   const selectListingIntent = (listingIntent: ListingIntent) => {
     onboarding.selectIntent(listingIntent as TaxonomyV1ListingIntent);
@@ -747,6 +824,54 @@ export const PublishWizard: React.FC = () => {
   };
 
   // AI Assistant
+  const handleSuggestFromPhotos = async () => {
+    const imageUrls = draft.photos.map((photo) => photo.url).slice(0, 5);
+    if (imageUrls.length === 0) {
+      toast.error(t("publishing.publishWizard.photoAssist.noPhotos"));
+      return;
+    }
+    setIsSuggestingFromPhotos(true);
+    try {
+      const proposal = await services.ai.suggestListingFromPhotos(
+        imageUrls,
+        currentLocale,
+      );
+      // The proposal only fills what the seller has not written yet; a
+      // category that differs from the chosen one is offered, not applied.
+      updateDraft({
+        ...(proposal.title && !draft.title.trim()
+          ? { title: proposal.title }
+          : {}),
+        ...(proposal.description && !draft.description.trim()
+          ? { description: proposal.description }
+          : {}),
+        attributes: {
+          ...draft.attributes,
+          ...(proposal.brand && !draft.attributes.brand
+            ? { brand: proposal.brand }
+            : {}),
+          ...(proposal.model && !draft.attributes.model
+            ? { model: proposal.model }
+            : {}),
+        },
+      });
+      setPhotoCategoryProposal(
+        proposal.category && proposal.category.id !== draft.taxonomyNodeId
+          ? proposal.category
+          : null,
+      );
+      toast.success(
+        proposal.title || proposal.category
+          ? t("publishing.publishWizard.photoAssist.applied")
+          : t("publishing.publishWizard.photoAssist.nothingRecognized"),
+      );
+    } catch {
+      toast.error(t("publishing.publishWizard.photoAssist.error"));
+    } finally {
+      setIsSuggestingFromPhotos(false);
+    }
+  };
+
   const handleGenerateWithAI = async () => {
     const promptToUse = aiPromptKeyword.trim() || draft.title.trim();
     if (!promptToUse) {
@@ -971,6 +1096,10 @@ export const PublishWizard: React.FC = () => {
       toast.error(t("publishing.publishWizard.requiredDynamicField"));
       return;
     }
+    if (scheduleError) {
+      toast.error(scheduleError);
+      return;
+    }
     const publishDraft = sanitizePublicationDraftForSubmission({
       draft,
       schema: activeV1Schema,
@@ -1022,6 +1151,18 @@ export const PublishWizard: React.FC = () => {
         categoryId: draft.taxonomyNodeId,
         selectedMarketCodes: draft.selectedMarkets,
       });
+      if (publishDraft.scheduledPublishAt) {
+        toast.success(
+          t("publishing.publishWizard.timing.scheduledToast", {
+            date: new Date(publishDraft.scheduledPublishAt).toLocaleString(
+              "fr-FR",
+              { dateStyle: "long", timeStyle: "short" },
+            ),
+          }),
+        );
+        navigate("/compte/annonces");
+        return;
+      }
       toast.success(
         published.status === "active"
           ? "Votre annonce est publiée."
@@ -1650,6 +1791,50 @@ export const PublishWizard: React.FC = () => {
               </label>
             )}
           </div>
+
+          {draft.photos.length > 0 && (
+            <div className="rounded-xl border border-border-base bg-bg-base p-4 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-start gap-2 min-w-0">
+                  <Sparkles className="w-icon-md h-icon-md text-primary shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-text-main">
+                      {t("publishing.publishWizard.photoAssist.title")}
+                    </p>
+                    <p className="text-xs text-text-tertiary">
+                      {t("publishing.publishWizard.photoAssist.description")}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  isLoading={isSuggestingFromPhotos}
+                  onClick={() => void handleSuggestFromPhotos()}
+                >
+                  {t("publishing.publishWizard.photoAssist.action")}
+                </Button>
+              </div>
+              {photoCategoryProposal && (
+                <p className="text-xs text-text-emphasis" role="status">
+                  {t("publishing.publishWizard.photoAssist.categoryHint", {
+                    label: photoCategoryProposal.label,
+                  })}{" "}
+                  <button
+                    type="button"
+                    className="font-semibold text-primary underline underline-offset-2"
+                    onClick={() => {
+                      selectTaxonomyNode(photoCategoryProposal.id);
+                      setPhotoCategoryProposal(null);
+                    }}
+                  >
+                    {t("publishing.publishWizard.photoAssist.useCategory")}
+                  </button>
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -1761,6 +1946,41 @@ export const PublishWizard: React.FC = () => {
                 : `Définissez votre tarification en ${currencySymbol}.`}
             </p>
           </div>
+
+          {priceEstimate && priceEstimate.basis !== "none" && (
+            <div
+              className="rounded-xl border border-primary-border bg-primary-surface-faint p-4 text-xs text-text-emphasis"
+              data-price-estimate={priceEstimate.basis}
+            >
+              <p className="font-bold text-text-main">
+                {t(
+                  priceEstimate.basis === "sold"
+                    ? "publishing.publishWizard.priceEstimate.soldTitle"
+                    : "publishing.publishWizard.priceEstimate.askingTitle",
+                  { count: priceEstimate.sampleSize },
+                )}
+              </p>
+              <p className="mt-1">
+                {t("publishing.publishWizard.priceEstimate.range", {
+                  low: formatMoneyMinor(
+                    priceEstimate.p25Minor,
+                    priceEstimate.currency,
+                  ),
+                  median: formatMoneyMinor(
+                    priceEstimate.medianMinor,
+                    priceEstimate.currency,
+                  ),
+                  high: formatMoneyMinor(
+                    priceEstimate.p75Minor,
+                    priceEstimate.currency,
+                  ),
+                })}
+              </p>
+              <p className="mt-1 text-text-tertiary">
+                {t("publishing.publishWizard.priceEstimate.advisory")}
+              </p>
+            </div>
+          )}
 
           <div className="space-y-4">
             {priceModelOptions.length > 1 && (
@@ -2333,6 +2553,61 @@ export const PublishWizard: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* PUBLICATION TIMING CARD */}
+          {!draft.digitalFulfillment && (
+            <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-5 shadow-xs">
+              <div className="pb-4 border-b border-border-subtle">
+                <div className="flex items-center gap-2">
+                  <CalendarClock className="w-icon-lg h-icon-lg text-primary" />
+                  <h2 className="text-xl sm:text-2xl font-bold text-text-main">
+                    {t("publishing.publishWizard.timing.title")}
+                  </h2>
+                </div>
+                <p className="text-xs sm:text-sm text-text-tertiary mt-1">
+                  {t("publishing.publishWizard.timing.description")}
+                </p>
+              </div>
+              <FormField
+                label={t("publishing.publishWizard.timing.scheduleLabel")}
+                hint={t("publishing.publishWizard.timing.scheduleHint")}
+                error={scheduleError}
+              >
+                <Input
+                  type="datetime-local"
+                  value={scheduleInputValue}
+                  min={toDateTimeLocal(new Date(Date.now() + 15 * 60 * 1000))}
+                  max={toDateTimeLocal(
+                    new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+                  )}
+                  onChange={(e) =>
+                    updateDraft({
+                      scheduledPublishAt: e.target.value
+                        ? new Date(e.target.value).toISOString()
+                        : undefined,
+                    })
+                  }
+                />
+              </FormField>
+              {draft.scheduledPublishAt && (
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-primary underline underline-offset-2"
+                  onClick={() => updateDraft({ scheduledPublishAt: undefined })}
+                >
+                  {t("publishing.publishWizard.timing.publishNow")}
+                </button>
+              )}
+              <Checkbox
+                label={t("publishing.publishWizard.timing.autoRenewLabel")}
+                description={t(
+                  "publishing.publishWizard.timing.autoRenewDescription",
+                )}
+                checked={draft.autoRenew === true}
+                onChange={(e) => updateDraft({ autoRenew: e.target.checked })}
+              />
+            </div>
+          )}
         </div>
       )}
 

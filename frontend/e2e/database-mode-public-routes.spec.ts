@@ -17,7 +17,8 @@ import { expect, test } from "@playwright/test";
  * route families against a database-mode stack, because that is the class of
  * defect the demo-mode suite structurally cannot see.
  *
- * Run with `make test-web-database-mode` against a running `make dev` stack.
+ * `make test-web-database-mode` boots the isolated database-mode API from the
+ * seeded local Supabase stack and runs every `database-mode-*.spec.ts` file.
  */
 
 const SELLER_ROUTE_FAMILIES = [

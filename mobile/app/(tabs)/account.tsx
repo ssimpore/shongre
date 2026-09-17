@@ -53,6 +53,23 @@ export default function AccountScreen() {
             variant="secondary"
           />
           <Button
+            label="Mes commandes"
+            onPress={() => router.push("/account/orders" as never)}
+            variant="secondary"
+          />
+          <Button
+            label="Vérification du compte"
+            onPress={() => router.push("/account/verification" as never)}
+            variant="secondary"
+          />
+          {user.accountType === "professional" ? (
+            <Button
+              label="Espace Pro"
+              onPress={() => router.push("/account/pro" as never)}
+              variant="pro"
+            />
+          ) : null}
+          <Button
             label="Mes alertes"
             onPress={() => router.push("/account/alerts" as never)}
             variant="secondary"

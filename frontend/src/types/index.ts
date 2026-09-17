@@ -222,6 +222,9 @@ export interface UserProfile {
   responseRatePercent: number;
   responseTimeText: string;
   bio?: string;
+  /** The seller's declared absence; publications pause meanwhile. */
+  awayUntil?: string;
+  awayMessage?: string;
 
   // Authentication & Security
   passwordHash?: string;
@@ -371,6 +374,10 @@ export interface Listing {
   activeReservationId?: string;
   attributes: Record<string, any>;
   status: ListingStatus;
+  /** The seller's opt-in to automatic renewal at expiry. */
+  autoRenew?: boolean;
+  /** For a draft: when the scheduled worker publishes it. */
+  scheduledPublishAt?: string;
   createdAt: string;
   updatedAt: string;
   expiresAt: string;
@@ -572,6 +579,8 @@ export interface Message {
   offerExpiresAt?: string;
   attachmentUrl?: string;
   attachmentType?: "image" | "file";
+  /** Advisory scam markers the API assessed at send time. */
+  safetyFlags?: string[];
   createdAt: string;
   isRead: boolean;
 }
@@ -590,6 +599,11 @@ export interface Conversation {
   sellerName: string;
   sellerAvatarUrl?: string;
   sellerType: SellerType;
+  /** Declared absences of either participant, as the API published them. */
+  buyerAwayUntil?: string;
+  buyerAwayMessage?: string;
+  sellerAwayUntil?: string;
+  sellerAwayMessage?: string;
   lastMessage: string;
   lastMessageAt: string;
   unreadCount: number;
@@ -797,4 +811,10 @@ export interface ReviewItem {
   createdAt: string;
   verifiedTransaction?: boolean;
   reviewerRole?: "buyer" | "seller";
+  /** Readers who found the review helpful. */
+  helpfulCount: number;
+  /** The signed-in reader's own vote; absent when anonymous. */
+  viewerMarkedHelpful?: boolean;
+  /** The reviewed person's one public answer. */
+  reply?: { comment: string; createdAt: string; updatedAt: string };
 }

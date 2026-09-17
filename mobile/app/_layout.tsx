@@ -92,6 +92,14 @@ export default function RootLayout() {
                   options={{ title: "Annonce" }}
                 />
                 <Stack.Screen
+                  name="seller/[id]"
+                  options={{ title: "Vendeur" }}
+                />
+                <Stack.Screen
+                  name="categories/index"
+                  options={{ title: "Catégories" }}
+                />
+                <Stack.Screen
                   name="settings/index"
                   options={{ title: "Réglages" }}
                 />
@@ -122,6 +130,33 @@ export default function RootLayout() {
                 <Stack.Screen
                   name="account/favorites"
                   options={{ title: "Mes favoris" }}
+                />
+                <Stack.Screen
+                  name="account/orders"
+                  options={{ title: "Mes commandes" }}
+                />
+                <Stack.Screen
+                  name="orders/[id]/review"
+                  options={{ title: "Laisser un avis" }}
+                />
+                <Stack.Screen
+                  name="account/verification"
+                  options={{ title: "Vérification" }}
+                />
+                <Stack.Screen
+                  name="account/pro"
+                  options={{ title: "Espace Pro" }}
+                />
+                <Stack.Screen
+                  name="auth/register"
+                  options={{ title: "Créer un compte", presentation: "modal" }}
+                />
+                <Stack.Screen
+                  name="auth/forgot-password"
+                  options={{
+                    title: "Mot de passe oublié",
+                    presentation: "modal",
+                  }}
                 />
                 <Stack.Screen
                   name="account/notification-preferences"

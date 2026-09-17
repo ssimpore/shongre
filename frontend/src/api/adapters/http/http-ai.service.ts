@@ -2,6 +2,7 @@ import {
   AiServiceContract,
   ListingAssistanceRequest,
   ListingAssistanceResult,
+  ListingPhotoSuggestion,
   ListingSafetyAnalysis,
   ListingSafetyRequest,
 } from "../../contracts/ai.contract";
@@ -18,6 +19,16 @@ export class HttpAiService implements AiServiceContract {
     return apiOperation<ListingAssistanceResult, "postAiListingAssistance">(
       "postAiListingAssistance",
       { body: request },
+    );
+  }
+
+  async suggestListingFromPhotos(
+    imageUrls: string[],
+    locale?: string,
+  ): Promise<ListingPhotoSuggestion> {
+    return apiOperation<ListingPhotoSuggestion, "postAiListingFromPhotos">(
+      "postAiListingFromPhotos",
+      { body: { imageUrls, ...(locale ? { locale } : {}) } },
     );
   }
 

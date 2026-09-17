@@ -2,7 +2,10 @@ import React from "react";
 import { SearchX, RotateCcw, Lightbulb, BookmarkPlus } from "lucide-react";
 import { Button } from "./Button";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { CONTROL_MOTION_CLASS } from "../utils/controlMetrics";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+} from "../utils/controlMetrics";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 export interface NoResultsFoundProps {
@@ -12,6 +15,10 @@ export interface NoResultsFoundProps {
   description?: string;
   /** Active search query term if applicable (e.g. "velo vintage") */
   query?: string;
+  /** The API's nearest known spelling of the query, when it offered one. */
+  didYouMean?: string;
+  /** Runs the search again with `didYouMean`. */
+  onDidYouMean?: (query: string) => void;
   /** Callback triggered when clicking the primary "Clear filters" action */
   onClearFilters?: () => void;
   /** Custom label for the clear filters button */
@@ -42,6 +49,8 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
   title,
   description,
   query,
+  didYouMean,
+  onDidYouMean,
   onClearFilters,
   clearFiltersLabel,
   onSaveSearch,
@@ -111,6 +120,23 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
       >
         {displayDescription}
       </p>
+
+      {didYouMean && onDidYouMean && (
+        <p
+          id={`${id}-did-you-mean`}
+          className="mt-3 text-sm text-text-main"
+          data-search-did-you-mean={didYouMean}
+        >
+          {t("ui.noResultsFound.didYouMeanPrefix")}{" "}
+          <button
+            type="button"
+            onClick={() => onDidYouMean(didYouMean)}
+            className={`inline font-semibold text-primary underline underline-offset-2 rounded-control ${CONTROL_FOCUS_CLASS}`}
+          >
+            {t("ui.noResultsFound.didYouMeanQuery", { query: didYouMean })}
+          </button>
+        </p>
+      )}
 
       {/* Helpful Suggestions */}
       {showSuggestions && resolvedSuggestions.length > 0 && (

@@ -61,6 +61,13 @@ export function registerUsersRoutes(routes: RouteRegistrar): void {
       usersService.upgradeOwnAccount(principal.userId, body),
   );
   routes.addRoute(
+    "PUT",
+    "/account/away",
+    permission("profile.update.own"),
+    async ({ principal, body }) =>
+      usersService.setAwayMode(principal.userId, body),
+  );
+  routes.addRoute(
     "GET",
     "/account/listings",
     permission("marketplace.customer.access"),

@@ -98,7 +98,15 @@ export interface PublicationDraftInput {
   externalStockId?: string;
   fulfillmentTypes?: FulfillmentType[];
   digitalFulfillment?: DigitalFulfillmentVersionInput;
+  /** Publish later: the worker publishes the draft at this time. */
+  scheduledPublishAt?: string;
+  /** Extend the expiry automatically, up to three times. */
+  autoRenew?: boolean;
 }
+
+/** Scheduling bounds: soon enough to be a plan, not a parking lot. */
+const SCHEDULED_PUBLICATION_MIN_LEAD_MS = 15 * 60 * 1000;
+const SCHEDULED_PUBLICATION_MAX_LEAD_MS = 30 * 24 * 60 * 60 * 1000;
 
 const LISTING_PRICE_TYPES = [
   "fixed",
@@ -203,6 +211,7 @@ export interface SellerListingUpdate {
   allowedDelivery?: DeliveryType[];
   shippingCost?: number;
   attributes?: Record<string, unknown>;
+  autoRenew?: boolean;
 }
 
 type BulkListingImportRow =
@@ -251,6 +260,7 @@ const SELLER_UPDATE_KEYS = new Set<keyof SellerListingUpdate>([
   "allowedDelivery",
   "shippingCost",
   "attributes",
+  "autoRenew",
 ]);
 
 const DELIVERY_TYPES = new Set<DeliveryType>([
@@ -486,6 +496,15 @@ export class ListingsService {
   async searchListings(params: SearchFilters) {
     const result = await this.discovery.search(params);
     return { ...result, items: await this.projectListings(result.items) };
+  }
+
+  suggestSearch(input: {
+    marketContext: MarketContext;
+    query: string;
+    locale: string;
+    limit?: number;
+  }) {
+    return this.discovery.suggest(input);
   }
 
   async createListingDraft(userId: string, marketCode: string): Promise<any> {
@@ -788,6 +807,15 @@ export class ListingsService {
     }
     const effectivePrice = numericPrice ?? 0;
 
+    const scheduledPublishAt = this.parseScheduledPublishAt(draft);
+    if (scheduledPublishAt && draft.digitalFulfillment !== undefined) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Un produit numérique ne peut pas être programmé : il est publié après vérification.",
+      });
+    }
+
     const marketCode = requireMarketCode(draft.marketCode);
     const primaryMarket = await this.markets.getEffective(marketCode);
     const requestedFulfillmentTypes = draft.fulfillmentTypes?.length
@@ -1035,11 +1063,14 @@ export class ListingsService {
         code: "VALIDATION_ERROR",
         message: "La ville et le code postal sont obligatoires.",
       });
-    const publicationStatus = isDigital
-      ? "draft"
-      : safety.riskScore >= 50
-        ? "pending_review"
-        : "active";
+    // A scheduled draft's publications wait with it; the worker activates
+    // them when it publishes the listing.
+    const publicationStatus =
+      isDigital || scheduledPublishAt
+        ? "draft"
+        : safety.riskScore >= 50
+          ? "pending_review"
+          : "active";
     const marketPublications = selectedMarkets.map((selectedMarket) => {
       const custom = draft.marketPublications?.[selectedMarket.code];
       const currency = (
@@ -1084,7 +1115,9 @@ export class ListingsService {
             ? ("pending" as const)
             : ("approved" as const),
         publishedAt:
-          isDigital || safety.riskScore >= 50 ? undefined : createdAt,
+          isDigital || scheduledPublishAt || safety.riskScore >= 50
+            ? undefined
+            : createdAt,
         sortDate: createdAt,
       } satisfies NonNullable<Listing["marketPublications"]>[number];
     });
@@ -1110,11 +1143,12 @@ export class ListingsService {
       description: draft.description || "",
       price: Number(effectivePrice),
       currency: market.currency,
-      status: isDigital
-        ? "draft"
-        : safety.riskScore >= 50
-          ? "flagged"
-          : "published",
+      status:
+        isDigital || scheduledPublishAt
+          ? "draft"
+          : safety.riskScore >= 50
+            ? "flagged"
+            : "published",
       condition: toApplicationListingCondition(
         draft.attributes || {},
         draft.condition || "bon-etat",
@@ -1150,12 +1184,16 @@ export class ListingsService {
         price_type: priceType,
       },
       externalStockId: draft.externalStockId,
+      autoRenew: draft.autoRenew === true,
+      scheduledPublishAt,
       createdAt,
-      publishedAt: createdAt,
-      organicFreshnessAt: createdAt,
+      // A scheduled draft has no publication date until the worker gives it
+      // one; its expiry already counts from the day it will go live.
+      publishedAt: scheduledPublishAt ? undefined : createdAt,
+      organicFreshnessAt: scheduledPublishAt ? undefined : createdAt,
       updatedAt: createdAt,
       expiresAt: new Date(
-        Date.now() +
+        (scheduledPublishAt ? Date.parse(scheduledPublishAt) : Date.now()) +
           Math.min(
             ...publicationPolicies.map((policy) => policy.durationDays || 60),
           ) *
@@ -1299,6 +1337,31 @@ export class ListingsService {
     );
   }
 
+  private parseScheduledPublishAt(
+    draft: PublicationDraftInput,
+  ): string | undefined {
+    if (
+      draft.scheduledPublishAt === undefined ||
+      draft.scheduledPublishAt === null
+    )
+      return undefined;
+    const at = Date.parse(String(draft.scheduledPublishAt));
+    const lead = at - Date.now();
+    if (
+      !Number.isFinite(at) ||
+      lead < SCHEDULED_PUBLICATION_MIN_LEAD_MS ||
+      lead > SCHEDULED_PUBLICATION_MAX_LEAD_MS
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "La publication programmée doit être prévue entre 15 minutes et 30 jours après maintenant.",
+        details: { field: "scheduledPublishAt" },
+      });
+    }
+    return new Date(at).toISOString();
+  }
+
   private parseSellerUpdate(input: unknown): SellerListingUpdate {
     if (!input || typeof input !== "object" || Array.isArray(input)) {
       throw new AppError({
@@ -1376,6 +1439,15 @@ export class ListingsService {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Les caractéristiques de l’annonce sont invalides.",
+      });
+    }
+    if (
+      updates.autoRenew !== undefined &&
+      typeof updates.autoRenew !== "boolean"
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le renouvellement automatique doit être activé ou désactivé.",
       });
     }
     return updates;

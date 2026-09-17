@@ -25,6 +25,8 @@ export interface MobileListingSearchInput {
   marketCode: string;
   query?: string;
   scope?: MobileSearchScope;
+  /** A published taxonomy node; wins over the scope's canonical root. */
+  categoryId?: string;
   minPrice?: number;
   maxPrice?: number;
 }
@@ -41,9 +43,28 @@ export function mobileSearchCategoryId(
   }[scope];
 }
 
+export interface MobileListingSearchResult {
+  items: ListingCardView[];
+  /** The API's nearest known spelling, offered only when nothing matched. */
+  didYouMean?: string;
+}
+
+/** A completion of what the visitor typed, ranked by the API. */
+export interface MobileSearchSuggestion {
+  /** The complete query to run. */
+  query: string;
+  label: string;
+}
+
 export interface ListingsService {
   list(marketCode: string): Promise<ListingCardView[]>;
-  search(input: MobileListingSearchInput): Promise<ListingCardView[]>;
+  search(input: MobileListingSearchInput): Promise<MobileListingSearchResult>;
+  /** Completions for the search field; categories are folded into queries. */
+  suggest(
+    query: string,
+    marketCode: string,
+    locale?: string,
+  ): Promise<MobileSearchSuggestion[]>;
   get(id: string, marketCode: string): Promise<ListingCardView | null>;
   /** The published characteristics behind a listing's key facts and amenities. */
   characteristics(
@@ -66,9 +87,12 @@ export class HttpListingsService implements ListingsService {
     return response.listings.map(mapBackendListing);
   }
 
-  async search(input: MobileListingSearchInput): Promise<ListingCardView[]> {
+  async search(
+    input: MobileListingSearchInput,
+  ): Promise<MobileListingSearchResult> {
     const query = input.query?.trim();
-    const categoryId = mobileSearchCategoryId(input.scope ?? "marketplace");
+    const categoryId =
+      input.categoryId || mobileSearchCategoryId(input.scope ?? "marketplace");
     const searchPayload: BackendListingSearchRequest = {
       marketCode: input.marketCode,
       ...(query ? { query } : {}),
@@ -81,7 +105,31 @@ export class HttpListingsService implements ListingsService {
       { body: searchPayload },
       input.marketCode,
     );
-    return response.items.map(mapBackendListing);
+    return {
+      items: response.items.map(mapBackendListing),
+      ...(response.didYouMean ? { didYouMean: response.didYouMean } : {}),
+    };
+  }
+
+  async suggest(
+    query: string,
+    marketCode: string,
+    locale?: string,
+  ): Promise<MobileSearchSuggestion[]> {
+    const normalized = query.trim();
+    if (!normalized) return [];
+    const response = await apiOperation(
+      "getListingsSuggestions",
+      { query: { q: normalized, limit: 6, ...(locale ? { locale } : {}) } },
+      marketCode,
+    );
+    // The native search has no category picker yet, so a category becomes a
+    // query for its label rather than a dead end.
+    return response.items.map((item) =>
+      item.kind === "term"
+        ? { query: item.query, label: item.label }
+        : { query: item.label, label: item.label },
+    );
   }
 
   async get(id: string, marketCode: string): Promise<ListingCardView | null> {

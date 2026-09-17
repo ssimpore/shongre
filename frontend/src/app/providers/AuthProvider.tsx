@@ -1,3 +1,4 @@
+import { unsubscribeWebPush } from "../../platform/notifications/web-push";
 import React, {
   createContext,
   useContext,
@@ -191,107 +192,119 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     [],
   );
 
-  const login = useCallback(async (
-    email: string,
-    password: string,
-    options?: { rememberMe?: boolean },
-  ): Promise<AuthResult> => {
-    analyticsService.track("login_started", { source: "email_password" });
-    const result = await services.auth.login({
-      email,
-      password,
-      rememberMe: options?.rememberMe,
-    });
-    if (result.success && result.user) {
-      setCurrentUser(await hydrateProductProjection(result.user));
-      announceAuthChange("login");
-      analyticsService.track("login_completed", { source: "email_password" });
-    }
-    return result;
-  }, [hydrateProductProjection]);
+  const login = useCallback(
+    async (
+      email: string,
+      password: string,
+      options?: { rememberMe?: boolean },
+    ): Promise<AuthResult> => {
+      analyticsService.track("login_started", { source: "email_password" });
+      const result = await services.auth.login({
+        email,
+        password,
+        rememberMe: options?.rememberMe,
+      });
+      if (result.success && result.user) {
+        setCurrentUser(await hydrateProductProjection(result.user));
+        announceAuthChange("login");
+        analyticsService.track("login_completed", { source: "email_password" });
+      }
+      return result;
+    },
+    [hydrateProductProjection],
+  );
 
-  const loginWithMFA = useCallback(async (
-    tempToken: string,
-    code: string,
-  ): Promise<AuthResult> => {
-    analyticsService.track("login_started", { source: "mfa" });
-    const result = await services.auth.loginWithMFA(tempToken, code);
-    if (result.success && result.user) {
-      setCurrentUser(await hydrateProductProjection(result.user));
-      announceAuthChange("login");
-      analyticsService.track("login_completed", { source: "mfa" });
-    }
-    return result;
-  }, [hydrateProductProjection]);
+  const loginWithMFA = useCallback(
+    async (tempToken: string, code: string): Promise<AuthResult> => {
+      analyticsService.track("login_started", { source: "mfa" });
+      const result = await services.auth.loginWithMFA(tempToken, code);
+      if (result.success && result.user) {
+        setCurrentUser(await hydrateProductProjection(result.user));
+        announceAuthChange("login");
+        analyticsService.track("login_completed", { source: "mfa" });
+      }
+      return result;
+    },
+    [hydrateProductProjection],
+  );
 
-  const registerIndividual = useCallback(async (data: {
-    name: string;
-    email: string;
-    password: string;
-    city: string;
-    postalCode: string;
-    country?: string;
-    termsAccepted: boolean;
-    marketingConsent?: boolean;
-  }): Promise<AuthResult> => {
-    analyticsService.track("signup_started", { source: "individual" });
-    const result = await services.auth.registerIndividual(data);
-    if (result.success && result.user) {
-      setCurrentUser(await hydrateProductProjection(result.user));
-      announceAuthChange("login");
-      analyticsService.track("signup_completed", { source: "individual" });
-    }
-    return result;
-  }, [hydrateProductProjection]);
+  const registerIndividual = useCallback(
+    async (data: {
+      name: string;
+      email: string;
+      password: string;
+      city: string;
+      postalCode: string;
+      country?: string;
+      termsAccepted: boolean;
+      marketingConsent?: boolean;
+    }): Promise<AuthResult> => {
+      analyticsService.track("signup_started", { source: "individual" });
+      const result = await services.auth.registerIndividual(data);
+      if (result.success && result.user) {
+        setCurrentUser(await hydrateProductProjection(result.user));
+        announceAuthChange("login");
+        analyticsService.track("signup_completed", { source: "individual" });
+      }
+      return result;
+    },
+    [hydrateProductProjection],
+  );
 
-  const registerProfessional = useCallback(async (data: {
-    name: string;
-    email: string;
-    password: string;
-    companyName: string;
-    professionalVertical: ProfessionalVertical;
-    sirenSiret: string;
-    legalForm: string;
-    vatNumber?: string;
-    businessAddress: string;
-    city: string;
-    postalCode: string;
-    country?: string;
-    phone?: string;
-    termsAccepted: boolean;
-    marketingConsent?: boolean;
-    requestedProduct?: ShongreProductId;
-  }): Promise<AuthResult> => {
-    analyticsService.track("signup_started", { source: "professional" });
-    const result = await services.auth.registerProfessional(data);
-    if (result.success && result.user) {
-      setCurrentUser(await hydrateProductProjection(result.user));
-      announceAuthChange("login");
-      analyticsService.track("signup_completed", { source: "professional" });
-    }
-    return result;
-  }, [hydrateProductProjection]);
+  const registerProfessional = useCallback(
+    async (data: {
+      name: string;
+      email: string;
+      password: string;
+      companyName: string;
+      professionalVertical: ProfessionalVertical;
+      sirenSiret: string;
+      legalForm: string;
+      vatNumber?: string;
+      businessAddress: string;
+      city: string;
+      postalCode: string;
+      country?: string;
+      phone?: string;
+      termsAccepted: boolean;
+      marketingConsent?: boolean;
+      requestedProduct?: ShongreProductId;
+    }): Promise<AuthResult> => {
+      analyticsService.track("signup_started", { source: "professional" });
+      const result = await services.auth.registerProfessional(data);
+      if (result.success && result.user) {
+        setCurrentUser(await hydrateProductProjection(result.user));
+        announceAuthChange("login");
+        analyticsService.track("signup_completed", { source: "professional" });
+      }
+      return result;
+    },
+    [hydrateProductProjection],
+  );
 
-  const upgradeToPro = useCallback(async (proData: {
-    companyName: string;
-    sirenSiret: string;
-    legalForm: string;
-    vatNumber?: string;
-    businessAddress: string;
-    phone?: string;
-  }): Promise<AuthResult> => {
-    if (!currentUser) {
-      return {
-        success: false,
-        errorMessage: "Vous devez être connecté pour effectuer cette action.",
-      };
-    }
-    const result = await services.auth.upgradeToProfessional(proData);
-    if (result.success && result.user) {
-      setCurrentUser(result.user);
-    }
-    return result;
-  }, [currentUser]);
+  const upgradeToPro = useCallback(
+    async (proData: {
+      companyName: string;
+      sirenSiret: string;
+      legalForm: string;
+      vatNumber?: string;
+      businessAddress: string;
+      phone?: string;
+    }): Promise<AuthResult> => {
+      if (!currentUser) {
+        return {
+          success: false,
+          errorMessage: "Vous devez être connecté pour effectuer cette action.",
+        };
+      }
+      const result = await services.auth.upgradeToProfessional(proData);
+      if (result.success && result.user) {
+        setCurrentUser(result.user);
+      }
+      return result;
+    },
+    [currentUser],
+  );
 
   const switchRole = useCallback(async (newRole: UserRole) => {
     const user = await services.auth.switchRole(newRole);
@@ -299,34 +312,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     announceAuthChange(user ? "login" : "logout");
   }, []);
 
-  const updateProfile = useCallback(async (updates: AuthProfileUpdate) => {
-    if (!currentUser) return;
-    const updated = await services.auth.updateProfile(updates);
-    setCurrentUser(updated);
-  }, [currentUser]);
+  const updateProfile = useCallback(
+    async (updates: AuthProfileUpdate) => {
+      if (!currentUser) return;
+      const updated = await services.auth.updateProfile(updates);
+      setCurrentUser(updated);
+    },
+    [currentUser],
+  );
 
-  const can = useCallback((
-    permission: Permission,
-    resource?: ResourceOwnershipContext | any,
-    options?: AuthorizationContextOptions,
-  ): boolean => {
-    return authorizationService.can(currentUser, permission, resource, options);
-  }, [currentUser]);
+  const can = useCallback(
+    (
+      permission: Permission,
+      resource?: ResourceOwnershipContext | any,
+      options?: AuthorizationContextOptions,
+    ): boolean => {
+      return authorizationService.can(
+        currentUser,
+        permission,
+        resource,
+        options,
+      );
+    },
+    [currentUser],
+  );
 
-  const canAccessMarket = useCallback((countryCode?: string): boolean => {
-    return authorizationService.canAccessMarket(currentUser, countryCode);
-  }, [currentUser]);
+  const canAccessMarket = useCallback(
+    (countryCode?: string): boolean => {
+      return authorizationService.canAccessMarket(currentUser, countryCode);
+    },
+    [currentUser],
+  );
 
   const logout = useCallback(async () => {
     analyticsService.track("logout_completed");
+    // This browser stops being the account's device before the session ends,
+    // like the native flow unregisters its push token on logout.
+    try {
+      const subscription = await unsubscribeWebPush();
+      if (subscription) {
+        await services.notifications.unregisterWebPushDevice(subscription);
+      }
+    } catch {
+      // A push registration that outlives the session is removed by the
+      // push service's next 410, and must not keep the visitor signed in.
+    }
     await services.auth.logout();
     setCurrentUser(null);
     announceAuthChange("logout");
   }, []);
 
-  const loginAs = useCallback((targetRole: UserRole) => {
-    switchRole(targetRole);
-  }, [switchRole]);
+  const loginAs = useCallback(
+    (targetRole: UserRole) => {
+      switchRole(targetRole);
+    },
+    [switchRole],
+  );
 
   /*
    * A fresh object literal here re-rendered all ~90 `useAuth()` consumers on

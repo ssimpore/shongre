@@ -5,8 +5,14 @@ import {
   NotificationCategory,
   NotificationCategoryPreference,
   NotificationPreferenceSet,
+  type PushDevicePlatform,
   repositories,
 } from "../../infrastructure/database/repositories/index.js";
+import { config } from "../../app/config/index.js";
+import {
+  parseWebPushSubscription,
+  serializeWebPushSubscription,
+} from "../../integrations/providers/notification-delivery.provider.js";
 import { realtimeBroadcaster } from "../../infrastructure/realtime/realtime-broadcaster.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { getCountryConfig } from "@shongre/contracts";
@@ -55,9 +61,34 @@ export class NotificationsService {
   async registerDevice(
     userId: string,
     token: string,
-    platform: "ios" | "android",
+    platform: PushDevicePlatform,
     appVersion?: string,
   ): Promise<void> {
+    if (platform === "web") {
+      // A browser registers its Web Push subscription; the canonical
+      // serialization is the device token, so the same browser upserts.
+      const subscription = parseWebPushSubscription(String(token || ""));
+      if (!subscription) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message: "Abonnement de notification invalide.",
+        });
+      }
+      if (!config.webPush) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          statusCode: 409,
+          message: "Les notifications navigateur ne sont pas disponibles.",
+        });
+      }
+      await this.notificationRepo.registerDevice(
+        userId,
+        serializeWebPushSubscription(subscription),
+        "web",
+        appVersion?.slice(0, 30),
+      );
+      return;
+    }
     if (!/^Expo(nent)?PushToken\[[A-Za-z0-9_-]+\]$/.test(token || "")) {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -76,6 +107,13 @@ export class NotificationsService {
       platform,
       appVersion?.slice(0, 30),
     );
+  }
+
+  /** What a browser needs to subscribe, or that it cannot. */
+  getWebPushConfig(): { enabled: boolean; publicKey?: string } {
+    return config.webPush
+      ? { enabled: true, publicKey: config.webPush.publicKey }
+      : { enabled: false };
   }
 
   async unregisterDevice(userId: string, token: string): Promise<void> {

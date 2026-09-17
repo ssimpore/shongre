@@ -55,6 +55,32 @@ trap cleanup EXIT INT TERM
 
 export PLAYWRIGHT_NO_COPY_PROMPT=1
 [[ "$APP_ENV" == "test" ]] || { shongre_fail "browser tests require APP_ENV=test"; exit 1; }
+
+# `demo` serves the in-memory fixture repositories; `database` serves the
+# PostgreSQL repositories production uses, from the seeded repository-owned
+# local Supabase stack. The two families diverge silently, so the database
+# run is a separate gate rather than a flag on the same specs.
+export SHONGRE_E2E_DATA_MODE="${SHONGRE_E2E_DATA_MODE:-demo}"
+case "$SHONGRE_E2E_DATA_MODE" in
+  demo | database) ;;
+  *)
+    shongre_fail "SHONGRE_E2E_DATA_MODE must be 'demo' or 'database'"
+    exit 1
+    ;;
+esac
+supabase_runtime_env="$SHONGRE_ROOT/.runtime/supabase.env"
+if [[ "$SHONGRE_E2E_DATA_MODE" == "database" ]]; then
+  [[ -f "$supabase_runtime_env" ]] || {
+    shongre_fail "database-mode browser tests need the local Supabase stack: run make supabase-up, make db-migrate and make db-seed"
+    exit 1
+  }
+  # The local Supabase lifecycle commands are bound to the local profile; the
+  # test profile only proves the stack answers before borrowing it.
+  supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1 || {
+    shongre_fail "local Supabase is not healthy; run make supabase-up"
+    exit 1
+  }
+fi
   export PUBLIC_FR_URL="http://fr.localhost:${E2E_FRONTEND_PORT}"
   export PUBLIC_INTL_URL="http://intl.localhost:${E2E_FRONTEND_PORT}"
   # Exercise direct navigation on the same canonical market host as SSR.
@@ -65,12 +91,42 @@ export PLAYWRIGHT_NO_COPY_PROMPT=1
   export NEXT_PUBLIC_FR_URL="$PUBLIC_FR_URL"
   export NEXT_PUBLIC_INTL_URL="$PUBLIC_INTL_URL"
   export SHONGRE_FACTURATION_ORIGIN="http://facturation.localhost:${E2E_FRONTEND_PORT}"
-  export DEMO_ACCOUNT_PASSWORD="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(24).toString("base64url"))')"
+  if [[ "$SHONGRE_E2E_DATA_MODE" == "demo" ]]; then
+    export DEMO_ACCOUNT_PASSWORD="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(24).toString("base64url"))')"
+  else
+    # The seeded Supabase Auth identities already carry the backend's demo
+    # password; the personas must present the same value the seed used.
+    export DEMO_ACCOUNT_PASSWORD="$(
+      TSX_TSCONFIG_PATH="$SHONGRE_ROOT/backend/tsconfig.json" node --import tsx --input-type=module -e '
+        const { DEMO_ACCOUNT_PASSWORD } = await import("./backend/src/app/bootstrap/demo-account-password.ts");
+        process.stdout.write(DEMO_ACCOUNT_PASSWORD);
+      '
+    )"
+  fi
   export E2E_API_PORT_FILE="$e2e_root/api-port"
   export E2E_ACCOUNTS_FILE="$e2e_root/accounts.json"
-  NODE_ENV=test BACKEND_DATA_MODE=demo \
-    TSX_TSCONFIG_PATH="$SHONGRE_ROOT/backend/tsconfig.json" \
-    node --import tsx backend/tests/fixtures/browser-api-server.ts >"$e2e_root/api.log" 2>&1 &
+  (
+    if [[ "$SHONGRE_E2E_DATA_MODE" == "database" ]]; then
+      # Only the isolated API receives the generated local Supabase
+      # credentials; the Web build and Playwright never see them.
+      set -a
+      # shellcheck disable=SC1090
+      source "$supabase_runtime_env"
+      set +a
+    fi
+    # Every browser worker, the Playwright request fixture and the Web
+    # server's own SSR fetches reach this API from one loopback address, so
+    # the production per-address budget (180 public requests a minute, then a
+    # one-minute lock) is spent within seconds of a route sweep and every
+    # page rendered during the lock answers 503: a hundred unrelated
+    # failures per run, on a different set of tests each time. The isolated
+    # API gets a budget sized for one address standing in for the whole
+    # suite; the limiter itself is proven by its unit test.
+    NODE_ENV=test BACKEND_DATA_MODE="$SHONGRE_E2E_DATA_MODE" \
+      API_PUBLIC_RATE_LIMIT=6000 API_AUTHENTICATED_RATE_LIMIT=6000 \
+      TSX_TSCONFIG_PATH="$SHONGRE_ROOT/backend/tsconfig.json" \
+      exec node --import tsx backend/tests/fixtures/browser-api-server.ts
+  ) >"$e2e_root/api.log" 2>&1 &
   e2e_backend_pid=$!
   # A cold tsx load of the complete API graph can take more than one minute on
   # development machines. Keep a finite two-minute startup deadline while the
@@ -162,7 +218,7 @@ if [[ "$server_ready" != "1" ]]; then
   exit 1
 fi
 
-shongre_info "running Playwright against the isolated standalone server at $E2E_BASE_URL"
+shongre_info "running Playwright ($SHONGRE_E2E_DATA_MODE repositories) against the isolated standalone server at $E2E_BASE_URL"
 shongre_info "phase 1/2: regular browser tests with engine-safe parallelism"
 
 requested_projects=()

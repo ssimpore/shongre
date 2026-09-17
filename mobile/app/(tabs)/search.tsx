@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ListingCardView } from "@shongre/contracts";
 import { majorToMinorAmount } from "@shongre/shared/money";
 import { FormField } from "@/components/FormField";
@@ -27,6 +28,7 @@ import {
   listingsService,
   mobileSearchCategoryId,
   type MobileSearchScope,
+  type MobileSearchSuggestion,
 } from "@/features/listings/listings.service";
 import { parseMobileSearchPriceRange } from "@/features/listings/search-input";
 import { useMarket } from "@/features/market/MarketProvider";
@@ -34,16 +36,29 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { watchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
 
 export default function SearchScreen() {
+  const router = useRouter();
   const { columns } = useLayoutMode();
   const { activeMarket } = useMarket();
   const { user } = useAuth();
+  const params = useLocalSearchParams<{
+    categoryId?: string;
+    categoryLabel?: string;
+  }>();
   const [query, setQuery] = useState("");
   const [scope, setScope] = useState<MobileSearchScope>("marketplace");
+  // A category chosen in the browser: the filter is the route parameter, so
+  // back navigation and a fresh open of the tab agree on what is filtered.
+  const categoryId =
+    typeof params.categoryId === "string" ? params.categoryId : "";
+  const categoryLabel =
+    typeof params.categoryLabel === "string" ? params.categoryLabel : "";
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [alertNotice, setAlertNotice] = useState("");
   const [savingAlert, setSavingAlert] = useState(false);
   const [items, setItems] = useState<ListingCardView[]>([]);
+  const [didYouMean, setDidYouMean] = useState("");
+  const [suggestions, setSuggestions] = useState<MobileSearchSuggestion[]>([]);
   const [error, setError] = useState("");
   const [completedRequestKey, setCompletedRequestKey] = useState("");
   const [retryVersion, setRetryVersion] = useState(0);
@@ -55,7 +70,7 @@ export default function SearchScreen() {
   const hasPriceError = Boolean(
     priceRange.minimumError || priceRange.maximumError,
   );
-  const requestKey = `${activeMarket.code}\u0000${scope}\u0000${query}\u0000${minPrice}\u0000${maxPrice}\u0000${retryVersion}`;
+  const requestKey = `${activeMarket.code}\u0000${scope}\u0000${categoryId}\u0000${query}\u0000${minPrice}\u0000${maxPrice}\u0000${retryVersion}`;
   const loading = !hasPriceError && completedRequestKey !== requestKey;
   const visibleItems = loading ? [] : items;
   const visibleError = loading ? "" : error;
@@ -121,18 +136,21 @@ export default function SearchScreen() {
           marketCode: activeMarket.code,
           query,
           scope,
+          ...(categoryId ? { categoryId } : {}),
           minPrice: priceRange.minimum,
           maxPrice: priceRange.maximum,
         })
         .then((results) => {
           if (currentRequest === requestId.current) {
-            setItems(results);
+            setItems(results.items);
+            setDidYouMean(results.didYouMean ?? "");
             setError("");
           }
         })
         .catch((reason) => {
           if (currentRequest === requestId.current) {
             setItems([]);
+            setDidYouMean("");
             setError(
               reason instanceof Error
                 ? reason.message
@@ -152,6 +170,7 @@ export default function SearchScreen() {
     };
   }, [
     activeMarket.code,
+    categoryId,
     hasPriceError,
     maxPrice,
     minPrice,
@@ -161,6 +180,40 @@ export default function SearchScreen() {
     requestKey,
     scope,
   ]);
+
+  // Completions are a courtesy on top of the results: a failed suggestion
+  // request leaves the list as it was rather than surfacing an error.
+  useEffect(() => {
+    const normalizedQuery = query.trim();
+    if (!normalizedQuery) {
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      listingsService
+        .suggest(normalizedQuery, activeMarket.code, activeMarket.defaultLocale)
+        .then((completions) => {
+          if (!cancelled) {
+            setSuggestions(
+              completions.filter(
+                (completion) =>
+                  completion.query.trim().toLocaleLowerCase() !==
+                  normalizedQuery.toLocaleLowerCase(),
+              ),
+            );
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setSuggestions([]);
+        });
+    }, 180);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [activeMarket.code, activeMarket.defaultLocale, query]);
+
+  const visibleSuggestions = query.trim() ? suggestions : [];
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -193,6 +246,46 @@ export default function SearchScreen() {
               placeholder={`Rechercher en ${activeMarket.name}…`}
               returnKeyType="search"
             />
+            {categoryId ? (
+              <View style={styles.categoryChipRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Retirer le filtre ${categoryLabel || "catégorie"}`}
+                  onPress={() =>
+                    router.setParams({ categoryId: "", categoryLabel: "" })
+                  }
+                  style={styles.categoryChip}
+                >
+                  <Text style={styles.categoryChipText}>
+                    {categoryLabel || "Catégorie"} ✕
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
+            {visibleSuggestions.length ? (
+              <FlatList
+                accessibilityLabel="Suggestions de recherche"
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+                data={visibleSuggestions}
+                keyExtractor={(item) => item.query}
+                contentContainerStyle={styles.suggestions}
+                renderItem={({ item }) => (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Rechercher ${item.label}`}
+                    onPress={() => {
+                      setQuery(item.query);
+                      setError("");
+                    }}
+                    style={styles.suggestion}
+                  >
+                    <Text style={styles.suggestionText}>{item.label}</Text>
+                  </Pressable>
+                )}
+              />
+            ) : null}
             <FlatList
               accessibilityLabel="Type de recherche"
               accessibilityRole="radiogroup"
@@ -286,14 +379,27 @@ export default function SearchScreen() {
               title={visibleError ? "Recherche indisponible" : "Aucun résultat"}
               message={
                 visibleError ||
-                "Essayez un terme plus général ou vérifiez l’orthographe."
+                (didYouMean
+                  ? `Aucune annonce pour « ${query.trim()} ».`
+                  : "Essayez un terme plus général ou vérifiez l’orthographe.")
               }
               tone={visibleError ? "error" : "neutral"}
-              actionLabel={visibleError ? "Réessayer" : undefined}
+              actionLabel={
+                visibleError
+                  ? "Réessayer"
+                  : didYouMean
+                    ? `Essayer « ${didYouMean} »`
+                    : undefined
+              }
               onAction={
                 visibleError
                   ? () => setRetryVersion((version) => version + 1)
-                  : undefined
+                  : didYouMean
+                    ? () => {
+                        setQuery(didYouMean);
+                        setError("");
+                      }
+                    : undefined
               }
             />
           )
@@ -324,6 +430,32 @@ const styles = StyleSheet.create({
     fontSize: nativeTypography.size.headingLg,
     fontFamily: nativeTypography.fontFamily.bold,
     marginBottom: spacing.lg,
+  },
+  categoryChipRow: { flexDirection: "row", marginBottom: spacing.md },
+  categoryChip: {
+    minHeight: nativeSizing.controlTouch,
+    justifyContent: "center",
+    paddingHorizontal: spacing.lg,
+    borderRadius: nativeRadius.pill,
+    backgroundColor: colors.primary,
+  },
+  categoryChipText: {
+    color: colors.onPrimary,
+    fontFamily: nativeTypography.fontFamily.bold,
+  },
+  suggestions: { gap: spacing.sm, paddingBottom: spacing.md },
+  suggestion: {
+    minHeight: nativeSizing.controlTouch,
+    justifyContent: "center",
+    paddingHorizontal: spacing.lg,
+    borderRadius: nativeRadius.pill,
+    borderWidth: nativeBorders.hairline,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceMuted,
+  },
+  suggestionText: {
+    color: colors.text,
+    fontSize: nativeTypography.size.bodySm,
   },
   scopes: { gap: spacing.sm, paddingVertical: spacing.md },
   scope: {

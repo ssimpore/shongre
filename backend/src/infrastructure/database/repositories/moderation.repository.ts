@@ -12,18 +12,22 @@ export type ModerationCaseStatus =
   | "appealed"
   | "closed";
 
+export type ModerationResolutionAction =
+  "dismiss" | "remove_listing" | "ban_user" | "remove_review";
+
 export interface ModerationCaseRecord {
   id: string;
   reportId: string;
-  targetType: "listing" | "user" | "delivery_request";
+  targetType: "listing" | "user" | "delivery_request" | "review";
   listingId?: string;
   reportedUserId?: string;
   deliveryRequestId?: string;
+  reviewId?: string;
   affectedUserId?: string;
   category: string;
   severity: "low" | "medium" | "high" | "critical";
   status: ModerationCaseStatus;
-  resolutionAction?: "dismiss" | "remove_listing" | "ban_user";
+  resolutionAction?: ModerationResolutionAction;
   resolutionReason?: string;
   resolvedBy?: string;
   resolvedAt?: string;
@@ -69,6 +73,7 @@ export interface IModerationRepository {
     listingId?: string;
     reportedUserId?: string;
     deliveryRequestId?: string;
+    reviewId?: string;
     affectedUserId?: string;
     category: string;
   }): Promise<void>;
@@ -77,7 +82,7 @@ export interface IModerationRepository {
   resolveCase(input: {
     reportId: string;
     actorId: string;
-    action: "dismiss" | "remove_listing" | "ban_user";
+    action: ModerationResolutionAction;
     reason: string;
   }): Promise<ModerationCaseRecord>;
   submitAppeal(input: {
@@ -130,6 +135,7 @@ export class DemoModerationRepository implements IModerationRepository {
     listingId?: string;
     reportedUserId?: string;
     deliveryRequestId?: string;
+    reviewId?: string;
     affectedUserId?: string;
     category: string;
   }): Promise<void> {
@@ -148,10 +154,13 @@ export class DemoModerationRepository implements IModerationRepository {
         ? "listing"
         : input.deliveryRequestId
           ? "delivery_request"
-          : "user",
+          : input.reviewId
+            ? "review"
+            : "user",
       listingId: input.listingId,
       reportedUserId: input.reportedUserId,
       deliveryRequestId: input.deliveryRequestId,
+      reviewId: input.reviewId,
       affectedUserId: input.affectedUserId ?? input.reportedUserId,
       category: input.category,
       severity: ["fraud", "counterfeit", "prohibited"].includes(input.category)
@@ -190,7 +199,7 @@ export class DemoModerationRepository implements IModerationRepository {
   async resolveCase(input: {
     reportId: string;
     actorId: string;
-    action: "dismiss" | "remove_listing" | "ban_user";
+    action: ModerationResolutionAction;
     reason: string;
   }): Promise<ModerationCaseRecord> {
     const target = Array.from(this.cases.values()).find(
@@ -209,6 +218,11 @@ export class DemoModerationRepository implements IModerationRepository {
         message: "Cible incompatible.",
       });
     if (input.action === "ban_user" && target.targetType !== "user")
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Cible incompatible.",
+      });
+    if (input.action === "remove_review" && target.targetType !== "review")
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Cible incompatible.",
@@ -313,6 +327,7 @@ export class PostgresModerationRepository implements IModerationRepository {
       listingId: row.listing_id || undefined,
       reportedUserId: row.reported_user_id || undefined,
       deliveryRequestId: row.delivery_request_id || undefined,
+      reviewId: row.review_id || undefined,
       category: row.category,
       severity: row.severity,
       status: row.status,
@@ -379,7 +394,7 @@ export class PostgresModerationRepository implements IModerationRepository {
   async resolveCase(input: {
     reportId: string;
     actorId: string;
-    action: "dismiss" | "remove_listing" | "ban_user";
+    action: ModerationResolutionAction;
     reason: string;
   }): Promise<ModerationCaseRecord> {
     const supabase = getSupabaseAdminClient();

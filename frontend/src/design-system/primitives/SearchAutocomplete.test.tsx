@@ -52,13 +52,52 @@ describe("getSearchSuggestions", () => {
     ).toBe(true);
   });
 
-  it("matches keywords for tech searches", () => {
-    const results = getSearchSuggestions("iPhone", undefined, [], 5, [
-      "iPhone 15 Pro",
+  it("passes the API's completions through without re-filtering them", () => {
+    // "velo" was corrected to "vélo" by the API; a substring test would drop it.
+    const results = getSearchSuggestions("velo", undefined, [], 5, [
+      { kind: "term", query: "vélo", label: "vélo", listingCount: 3 },
+      { kind: "term", query: "velours", label: "velours", listingCount: 1 },
     ]);
+    expect(results.keywords.map((k) => k.keyword)).toEqual(["vélo", "velours"]);
+  });
+
+  it("lists API categories before local matches and de-duplicates by slug", () => {
+    const results = getSearchSuggestions(
+      "vehic",
+      undefined,
+      taxonomyV1TestCategories,
+      5,
+      [
+        {
+          kind: "category",
+          categoryId: "vehicules",
+          categorySlug: "vehicules",
+          label: "Véhicules",
+          iconName: "Car",
+        },
+        {
+          kind: "category",
+          categoryId: "vehicules.utilitaires",
+          categorySlug: "utilitaires",
+          label: "Utilitaires",
+          parentLabel: "Véhicules",
+          parentSlug: "vehicules",
+        },
+      ],
+    );
+    expect(results.categories[0]).toMatchObject({
+      slug: "vehicules",
+      iconName: "Car",
+      isSubCategory: false,
+    });
+    expect(results.categories[1]).toMatchObject({
+      slug: "utilitaires",
+      parentSlug: "vehicules",
+      isSubCategory: true,
+    });
     expect(
-      results.keywords.some((k) => k.keyword.toLowerCase().includes("iphone")),
-    ).toBe(true);
+      results.categories.filter((c) => c.slug === "vehicules"),
+    ).toHaveLength(1);
   });
 });
 
@@ -70,13 +109,7 @@ describe("SearchAutocomplete component", () => {
       slug: "vehicules",
       compactLabel: "Véhicules",
       isSubCategory: false,
-      categoryObj: {
-        id: "cat-1",
-        name: "Véhicules",
-        slug: "vehicules",
-        icon: "Car",
-        subCategories: [],
-      } as any,
+      iconName: "Car",
     },
   ];
 

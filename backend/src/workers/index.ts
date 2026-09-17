@@ -13,4 +13,7 @@ export * from "./digital-products/digital-fulfillment-worker.js";
 export * from "./delivery/delivery-outbox-worker.js";
 export * from "./search/discovery-event-worker.js";
 export * from "./search/indexnow-worker.js";
+export * from "./search/search-vocabulary-worker.js";
+export * from "./reviews/review-reminder-worker.js";
 export * from "./listings/listing-engagement-worker.js";
+export * from "./listings/seller-automation-worker.js";

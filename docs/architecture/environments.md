@@ -195,6 +195,14 @@ server-only. Tracked profiles keep optional providers disabled and credential
 slots empty. The complete provider matrix and activation sequence are in
 [`analytics.md`](analytics.md).
 
+Web Push follows the same model: `WEB_PUSH_SUBJECT`,
+`WEB_PUSH_VAPID_PUBLIC_KEY` and `WEB_PUSH_VAPID_PRIVATE_KEY` are backend-only
+runtime values (generate a pair with `make web-push-keys`); the public key
+reaches the browser through `GET /api/v1/notifications/web-push/config`, never
+through a `NEXT_PUBLIC_*` value, and the channel stays unavailable while the
+slots are empty. See
+[`marketplace-automation.md`](../../backend/docs/marketplace-automation.md).
+
 Sentry source-map publication is build-only. Configure the repository secret
 `SENTRY_AUTH_TOKEN` and repository variables `SENTRY_ORG`,
 `SENTRY_FRONTEND_PROJECT`, `SENTRY_BACKEND_PROJECT`, plus `SENTRY_URL` only for
@@ -238,7 +246,13 @@ content are synthetic; production customer data, payments, messages, private
 documents, and provider credentials are never seed inputs. Seed and reset
 commands require `APP_ENV=local` plus a proven local database target. They
 refuse hosted and production targets even when an operator sets a permissive
-flag.
+flag. A fresh local database imports the reviewed taxonomy before migration
+`00125` (the v1 reference conversion needs the reviewed categories), so the
+compiled seed `taxonomy-v1.generated.sql` must apply against the schema as of
+`00124`: a column a later migration adds — such as `00140`'s field icons — is
+written inside a guarded `DO` block that the bootstrap skips and a later import
+converges on. The seed also rebuilds the search vocabulary so autocomplete
+answers before the scheduled worker's first run.
 
 Local PostgreSQL and isolated browser scenarios share `createSeedListing`.
 It preserves seller pricing in `attributes.price_type` and explicit reservation
@@ -290,7 +304,8 @@ redacted before serialization.
 Pull requests run install, environment/migration validation, formatting, lint,
 typechecks, unit/integration/security/RLS tests, generated OpenAPI drift,
 contract breaking checks, secret and hostname scans, dependency audit, container
-builds, three-browser E2E, and clean-database migration reconstruction.
+builds, three-browser E2E, clean-database migration reconstruction, and the
+database-mode browser journeys against the seeded local Supabase stack.
 
 `build-deploy-dev.yml` runs after successful main CI. Buildx creates exactly one
 frontend and one backend image, attaches OCI SBOM/provenance, scans immutable
@@ -385,6 +400,7 @@ make env-test
 make check
 make test
 make test-e2e
+make test-web-database-mode
 make openapi-check
 
 # Local database only

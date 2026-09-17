@@ -10,6 +10,19 @@ import { MessageCatalogue } from "./messages.fr";
  */
 export const messagesEn: MessageCatalogue = {
   "messaging.presence.online": "Online",
+  "messaging.away.notice": "Away until {date}",
+  "messaging.safety.generic":
+    "Careful: this message shows common signs of a scam. Stay on Shongre to pay and chat.",
+  "messaging.safety.offPlatformPayment":
+    "Careful: this message proposes a payment outside Shongre. Only use the platform's secure payment.",
+  "messaging.safety.offPlatformContact":
+    "Careful: this message invites you to continue outside Shongre. Stay in the messaging to keep the protection.",
+  "messaging.safety.externalLink":
+    "Careful: this message contains an external link. Never enter your credentials or bank details on a third-party site.",
+  "messaging.safety.shippingFeeUpfront":
+    "Careful: this message asks for fees before shipping. Shongre never asks you to pay fees upfront.",
+  "messaging.safety.pressure":
+    "Careful: this message pushes you to act fast. Take the time to check before any decision.",
   "messaging.presence.away": "Away",
   "messaging.presence.offline": "Offline",
   "messaging.presence.unknown": "Status unavailable",
@@ -40,6 +53,18 @@ export const messagesEn: MessageCatalogue = {
   "reviews.form.submitError":
     "Publication was not confirmed. Check your connection and try again.",
   "reviews.verified": "Verified transaction",
+  "reviews.reply.heading": "Seller's reply",
+  "reviews.reply.label": "Your public reply",
+  "reviews.reply.hint":
+    "10 to 2,000 characters. Your reply is visible to everyone, under the review.",
+  "reviews.reply.start": "Reply",
+  "reviews.reply.edit": "Edit my reply",
+  "reviews.reply.submit": "Publish reply",
+  "reviews.reply.lengthError":
+    "Your reply must be between 10 and 2,000 characters.",
+  "reviews.reply.submitError":
+    "The reply was not saved. Check your connection and try again.",
+  "reviews.helpful.action": "Helpful",
   "reviews.summary_one": "Based on {count} review",
   "reviews.summary_other": "Based on {count} reviews",
   "reviews.verificationExplanation":
@@ -712,6 +737,8 @@ export const messagesEn: MessageCatalogue = {
     "No listings match the filters currently selected.",
   "ui.noResultsFound.descriptionForQuery":
     "We could not find a listing that exactly matches your search.",
+  "ui.noResultsFound.didYouMeanPrefix": "Did you mean:",
+  "ui.noResultsFound.didYouMeanQuery": "“{query}”",
   "ui.noResultsFound.clearFilters": "Clear filters",
   "ui.noResultsFound.createAlert": "Create an alert",
   "ui.noResultsFound.suggestionSpelling": "Check the spelling of your keywords",
@@ -1299,6 +1326,47 @@ export const messagesEn: MessageCatalogue = {
     "Parcel delivery (Mondial Relay, Colissimo)",
   "publishing.publishWizard.transportDeMeublesGrosColis":
     "Furniture & bulky item transport (Cocolis)",
+  "publishing.publishWizard.timing.title": "Publication and renewal",
+  "publishing.publishWizard.timing.description":
+    "Publish now or on the date you choose, and keep the listing online without thinking about it.",
+  "publishing.publishWizard.timing.scheduleLabel": "Publish later (optional)",
+  "publishing.publishWizard.timing.scheduleHint":
+    "Between 15 minutes and 30 days. The listing stays a draft until then.",
+  "publishing.publishWizard.timing.scheduleError":
+    "Choose a date between 15 minutes and 30 days from now.",
+  "publishing.publishWizard.timing.publishNow": "Publish now after all",
+  "publishing.publishWizard.timing.autoRenewLabel": "Renew automatically",
+  "publishing.publishWizard.timing.autoRenewDescription":
+    "When it expires, the listing is extended by the same period, up to three times. Its publication date does not change.",
+  "publishing.publishWizard.timing.scheduledToast":
+    "Your listing will be published on {date}.",
+  "publishing.publishWizard.photoAssist.title": "Prefill from your photos",
+  "publishing.publishWizard.photoAssist.description":
+    "The assistant proposes a title, a description and, when it can see them, the brand and model. You stay in control of everything.",
+  "publishing.publishWizard.photoAssist.action": "Analyse photos",
+  "publishing.publishWizard.photoAssist.noPhotos":
+    "Add at least one photo to start the assistant.",
+  "publishing.publishWizard.photoAssist.applied":
+    "Proposal applied to the fields still empty. Review before publishing.",
+  "publishing.publishWizard.photoAssist.nothingRecognized":
+    "The assistant recognised nothing for certain in these photos.",
+  "publishing.publishWizard.photoAssist.error":
+    "Photo assistance is unavailable right now.",
+  "publishing.publishWizard.photoAssist.categoryHint":
+    "These photos look more like “{label}”.",
+  "publishing.publishWizard.photoAssist.useCategory": "Use this category",
+  "publishing.publishWizard.priceEstimate.soldTitle_one":
+    "Price seen on {count} recent sale of comparable items",
+  "publishing.publishWizard.priceEstimate.soldTitle_other":
+    "Prices seen on {count} recent sales of comparable items",
+  "publishing.publishWizard.priceEstimate.askingTitle_one":
+    "Asking price of {count} comparable listing online",
+  "publishing.publishWizard.priceEstimate.askingTitle_other":
+    "Asking prices of {count} comparable listings online",
+  "publishing.publishWizard.priceEstimate.range":
+    "Half sit between {low} and {high}; median price {median}.",
+  "publishing.publishWizard.priceEstimate.advisory":
+    "For guidance only: your price remains yours.",
   "publishing.publishWizard.optionsAvancees": "Advanced options",
   "publishing.publishWizard.garantieSecuriteTransfrontaliere":
     "Cross-border guarantee & safety:",
@@ -2945,6 +3013,22 @@ export const messagesEn: MessageCatalogue = {
     "Every week, an exclusive selection of verified listings, price drops and advice for buying and selling.",
   "newsletter.newsletterSignup.jAccepteDeRecevoirLa":
     "I agree to receive the Shongre newsletter. You can unsubscribe in one click at any time.",
+  "notifications.webPush.title": "Notifications in this browser",
+  "notifications.webPush.off":
+    "Get your messages and alerts even when Shongre is closed.",
+  "notifications.webPush.on":
+    "This browser receives your push notifications. The categories below decide which.",
+  "notifications.webPush.denied":
+    "Notifications are blocked for this site in your browser settings.",
+  "notifications.webPush.unsupported":
+    "This browser does not support push notifications.",
+  "notifications.webPush.enable": "Enable in this browser",
+  "notifications.webPush.disable": "Disable in this browser",
+  "notifications.webPush.enabledToast":
+    "Push notifications are enabled in this browser.",
+  "notifications.webPush.disabledToast":
+    "This browser will no longer receive push notifications.",
+  "notifications.webPush.error": "The setting could not be applied. Try again.",
   "notifications.notificationPreferencesPage.preferencesDeNotifications":
     "Notification preferences",
   "notifications.notificationPreferencesPage.choisissezPrecisementLesAlertesQue":
@@ -2983,6 +3067,9 @@ export const messagesEn: MessageCatalogue = {
   "profile.sellerReportModal.detailsComplementairesFacultatifMaisRecommande":
     "Extra details (optional but recommended):",
   "profile.sellerReportModal.envoyerLeSignalement": "Send report",
+  "profile.away.title": "{name} is away until {date}",
+  "profile.away.description":
+    "Their listings are paused meanwhile; they can answer you when they are back.",
   "profile.sellerReviewsTab.afficherTousLesAvis": "Show all reviews",
   "profile.sellerTrustIndicators.garantiesSignauxDeConfiance":
     "Guarantees & trust signals",
@@ -3262,6 +3349,37 @@ export const messagesEn: MessageCatalogue = {
     "Get a dedicated store with your logo, the verified Pro badge and discounts on boosts.",
   "sellerworkspace.accountOverviewPage.passerEnComptePro":
     "Switch to a Pro account",
+  "sellerworkspace.autoRenew.badge": "Auto-renew",
+  "sellerworkspace.autoRenew.toggle": "Renew automatically at expiry",
+  "sellerworkspace.autoRenew.enabledToast":
+    "Auto-renew enabled: the listing will be extended when it expires, up to three times.",
+  "sellerworkspace.autoRenew.disabledToast": "Auto-renew disabled.",
+  "sellerworkspace.autoRenew.error": "The setting was not saved. Try again.",
+  "sellerworkspace.scheduled.badge": "Scheduled for {date}",
+  "sellerworkspace.away.title": "Away mode",
+  "sellerworkspace.away.description":
+    "Leave with peace of mind: your listings pause and buyers are told when you are back.",
+  "sellerworkspace.away.activeTitle": "Away until {date}",
+  "sellerworkspace.away.activeDescription":
+    "Your listings are paused and come back online automatically when you return.",
+  "sellerworkspace.away.start": "Enable",
+  "sellerworkspace.away.end": "I'm back",
+  "sellerworkspace.away.untilLabel": "Return date",
+  "sellerworkspace.away.untilHint": "Between tomorrow and 90 days.",
+  "sellerworkspace.away.messageLabel": "Message for buyers (optional)",
+  "sellerworkspace.away.messageHint": "{count}/{max} characters",
+  "sellerworkspace.away.messagePlaceholder":
+    "E.g. Back on the 12th, I'll reply as soon as I return.",
+  "sellerworkspace.away.confirm": "Enable away mode",
+  "sellerworkspace.away.enabledToast_one":
+    "Away mode enabled: {count} listing paused.",
+  "sellerworkspace.away.enabledToast_other":
+    "Away mode enabled: {count} listings paused.",
+  "sellerworkspace.away.endedToast_one":
+    "Welcome back! {count} listing is online again.",
+  "sellerworkspace.away.endedToast_other":
+    "Welcome back! {count} listings are online again.",
+  "sellerworkspace.away.error": "Away mode was not saved. Try again.",
   "sellerworkspace.myListingsPage.gestionDeMesAnnonces": "Managing my listings",
   "sellerworkspace.myListingsPage.suivezLesVuesActivezDes":
     "Track views, turn on visibility boosts and manage your stock",

@@ -1,6 +1,7 @@
 import type { DigitalMessageKey } from "./digital.catalogue.fr";
 import type { DeliveryMessageKey } from "./delivery.catalogue.fr";
 import type { AdminMessageKey } from "./admin.catalogue.fr";
+import type { SellerMessageKey } from "./seller.catalogue.fr";
 
 /**
  * The source catalogue. Every key the product uses is declared here first, and
@@ -17,6 +18,19 @@ import type { AdminMessageKey } from "./admin.catalogue.fr";
  */
 export const messagesFr = {
   "messaging.presence.online": "En ligne",
+  "messaging.away.notice": "Absent jusqu’au {date}",
+  "messaging.safety.generic":
+    "Attention : ce message présente des signes courants d’arnaque. Restez sur Shongre pour payer et échanger.",
+  "messaging.safety.offPlatformPayment":
+    "Attention : ce message propose un paiement en dehors de Shongre. Utilisez uniquement le paiement sécurisé de la plateforme.",
+  "messaging.safety.offPlatformContact":
+    "Attention : ce message vous invite à poursuivre l’échange hors de Shongre. Restez sur la messagerie pour bénéficier de la protection.",
+  "messaging.safety.externalLink":
+    "Attention : ce message contient un lien externe. Ne saisissez jamais vos identifiants ou coordonnées bancaires sur un site tiers.",
+  "messaging.safety.shippingFeeUpfront":
+    "Attention : ce message demande des frais avant l’envoi. Shongre ne demande jamais de payer des frais à l’avance.",
+  "messaging.safety.pressure":
+    "Attention : ce message vous presse d’agir vite. Prenez le temps de vérifier avant toute décision.",
   "messaging.presence.away": "Absent",
   "messaging.presence.offline": "Hors ligne",
   "messaging.presence.unknown": "Statut indisponible",
@@ -47,6 +61,18 @@ export const messagesFr = {
   "reviews.form.submitError":
     "La publication n’a pas été confirmée. Vérifiez votre connexion puis réessayez.",
   "reviews.verified": "Transaction vérifiée",
+  "reviews.reply.heading": "Réponse du vendeur",
+  "reviews.reply.label": "Votre réponse publique",
+  "reviews.reply.hint":
+    "De 10 à 2 000 caractères. Votre réponse est visible par tous, sous l’avis.",
+  "reviews.reply.start": "Répondre",
+  "reviews.reply.edit": "Modifier ma réponse",
+  "reviews.reply.submit": "Publier la réponse",
+  "reviews.reply.lengthError":
+    "Votre réponse doit contenir entre 10 et 2 000 caractères.",
+  "reviews.reply.submitError":
+    "La réponse n’a pas été enregistrée. Vérifiez votre connexion puis réessayez.",
+  "reviews.helpful.action": "Utile",
   "reviews.summary_one": "Basé sur {count} avis",
   "reviews.summary_other": "Basé sur {count} avis",
   "reviews.verificationExplanation":
@@ -746,6 +772,8 @@ export const messagesFr = {
     "Aucune annonce ne correspond aux filtres actuellement sélectionnés.",
   "ui.noResultsFound.descriptionForQuery":
     "Nous n’avons trouvé aucune annonce correspondant exactement à votre recherche.",
+  "ui.noResultsFound.didYouMeanPrefix": "Essayez plutôt :",
+  "ui.noResultsFound.didYouMeanQuery": "« {query} »",
   "ui.noResultsFound.clearFilters": "Effacer les filtres",
   "ui.noResultsFound.createAlert": "Créer une alerte",
   "ui.noResultsFound.suggestionSpelling":
@@ -2226,6 +2254,23 @@ export const messagesFr = {
     "J'accepte de recevoir la newsletter Shongre. Désinscription possible à tout moment en 1 clic.",
 
   // --- notifications.notificationPreferencesPage ---
+  "notifications.webPush.title": "Notifications sur ce navigateur",
+  "notifications.webPush.off":
+    "Recevez vos messages et alertes même quand Shongre est fermé.",
+  "notifications.webPush.on":
+    "Ce navigateur reçoit vos notifications push. Les catégories ci-dessous décident lesquelles.",
+  "notifications.webPush.denied":
+    "Les notifications sont bloquées dans les réglages de votre navigateur pour ce site.",
+  "notifications.webPush.unsupported":
+    "Ce navigateur ne prend pas en charge les notifications push.",
+  "notifications.webPush.enable": "Activer sur ce navigateur",
+  "notifications.webPush.disable": "Désactiver sur ce navigateur",
+  "notifications.webPush.enabledToast":
+    "Les notifications push sont activées sur ce navigateur.",
+  "notifications.webPush.disabledToast":
+    "Ce navigateur ne recevra plus de notifications push.",
+  "notifications.webPush.error":
+    "Le réglage n’a pas pu être appliqué. Réessayez.",
   "notifications.notificationPreferencesPage.preferencesDeNotifications":
     "Préférences de notifications",
   "notifications.notificationPreferencesPage.choisissezPrecisementLesAlertesQue":
@@ -2280,6 +2325,9 @@ export const messagesFr = {
   "profile.sellerReportModal.envoyerLeSignalement": "Envoyer le signalement",
 
   // --- profile.sellerReviewsTab ---
+  "profile.away.title": "{name} est absent jusqu’au {date}",
+  "profile.away.description":
+    "Ses annonces sont en pause pendant ce temps ; il pourra vous répondre à son retour.",
   "profile.sellerReviewsTab.afficherTousLesAvis": "Afficher tous les avis",
 
   // --- profile.sellerTrustIndicators ---
@@ -3508,7 +3556,8 @@ export type CatalogueKey =
   | keyof typeof messagesFr
   | DigitalMessageKey
   | DeliveryMessageKey
-  | AdminMessageKey;
+  | AdminMessageKey
+  | SellerMessageKey;
 
 /**
  * The base key of a countable message.

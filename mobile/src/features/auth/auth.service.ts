@@ -12,9 +12,24 @@ import type { operations } from "@shongre/contracts/openapi";
 import { isMobileApiError, sessionStorage } from "@/api/http-client";
 import { requireMobileCustomer } from "./staff-access";
 
+/** A native individual sign-up; professionals register through the Web flow. */
+export interface MobileRegisterInput {
+  name: string;
+  email: string;
+  password: string;
+  city: string;
+  postalCode: string;
+  /** The active market: the account is created in it. */
+  country: string;
+}
+
 export interface AuthService {
   restore(): Promise<AuthUser | null>;
   login(input: LoginRequest): Promise<MobileLoginResult>;
+  /** Creates the account and opens its session on this device. */
+  register(input: MobileRegisterInput): Promise<AuthUser>;
+  /** Sends the recovery email; answers the same whether or not the address exists. */
+  requestPasswordReset(email: string): Promise<void>;
   completeMfa(tempMfaToken: string, code: string): Promise<AuthUser>;
   getSocialProviders(): Promise<Record<SocialProvider, boolean>>;
   startSocialLogin(provider: SocialProvider): Promise<string>;
@@ -121,6 +136,27 @@ export class HttpAuthService implements AuthService {
       };
     }
     return { kind: "authenticated", user: await storeSession(response) };
+  }
+
+  async register(input: MobileRegisterInput): Promise<AuthUser> {
+    const response = await apiOperation("postAuthRegister", {
+      body: {
+        email: input.email.trim().toLowerCase(),
+        name: input.name.trim(),
+        password: input.password,
+        role: "individual_buyer",
+        city: input.city.trim(),
+        postalCode: input.postalCode.trim(),
+        country: input.country,
+      },
+    });
+    return storeSession(response);
+  }
+
+  async requestPasswordReset(email: string): Promise<void> {
+    await apiOperation("postAuthPasswordForgot", {
+      body: { email: email.trim().toLowerCase() },
+    });
   }
 
   async completeMfa(tempMfaToken: string, code: string): Promise<AuthUser> {

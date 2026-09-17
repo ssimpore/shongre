@@ -65,13 +65,13 @@ export const mobileEnvironment = Object.freeze({
       supportUrl: marketWebUrl(country, "/support"),
       accountDeletionUrl: marketWebUrl(country, "/account/delete"),
       /**
-       * Registration and password recovery have no native screens yet, so the
-       * app hands them to the market's Web flow rather than leaving a person
-       * with an email/password sign-in form and no way to create an account or
-       * recover one. Both routes are market-scoped through the same builder.
+       * Professional registration collects legal identifiers (SIRET, legal
+       * form, VAT) the phone has no business asking for; that path stays on
+       * the market's Web flow. Individuals and password recovery are native.
        */
       registerUrl: marketWebUrl(country, "/inscription"),
-      passwordResetUrl: marketWebUrl(country, "/mot-de-passe-oublie"),
+      /** Same reason: the upgrade to a professional account stays on the Web. */
+      proUpgradeUrl: marketWebUrl(country, "/compte/type-de-compte"),
     };
   },
 });

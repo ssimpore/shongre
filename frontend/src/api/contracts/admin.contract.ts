@@ -24,6 +24,9 @@ export interface AdminStatsSummary {
 
 export interface AdminReportSummary {
   id: string;
+  /** What was reported; the queue offers the matching resolution. */
+  targetType: "listing" | "user" | "delivery_request" | "review";
+  targetId: string;
   listingId: string;
   reason: string;
   reporterName: string;
@@ -67,7 +70,7 @@ export interface AdminServiceContract {
   getPendingReports(): Promise<AdminReportSummary[]>;
   resolveReport(
     reportId: string,
-    action: "dismiss" | "remove_listing" | "ban_user",
+    action: "dismiss" | "remove_listing" | "ban_user" | "remove_review",
     reason: string,
   ): Promise<void>;
   getAuditLogs(): Promise<AdminAuditLogEntry[]>;

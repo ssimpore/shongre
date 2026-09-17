@@ -366,6 +366,7 @@ export const SellerPublicPage: React.FC = () => {
             ) : (
               <SellerReviewsTab
                 reviews={reviews}
+                viewerId={currentUser?.id}
                 onReport={(review) => {
                   if (!currentUser) {
                     navigate(
@@ -374,6 +375,48 @@ export const SellerPublicPage: React.FC = () => {
                     return;
                   }
                   setReportedReview(review);
+                }}
+                onReply={
+                  currentUser && currentUser.id === seller.id
+                    ? async (review, comment) => {
+                        const answered = await services.reviews.replyToReview(
+                          review.id,
+                          comment,
+                        );
+                        setReviews((current) =>
+                          current.map((item) =>
+                            item.id === review.id
+                              ? { ...item, reply: answered.reply }
+                              : item,
+                          ),
+                        );
+                      }
+                    : undefined
+                }
+                onMarkHelpful={async (review, helpful) => {
+                  if (!currentUser) {
+                    navigate(
+                      routes.auth.login(location.pathname + location.search),
+                    );
+                    return;
+                  }
+                  // Confirmed by the API rather than optimistic: the vote is
+                  // refused for the review's own participants.
+                  const result = await services.reviews.markHelpful(
+                    review.id,
+                    helpful,
+                  );
+                  setReviews((current) =>
+                    current.map((item) =>
+                      item.id === review.id
+                        ? {
+                            ...item,
+                            helpfulCount: result.helpfulCount,
+                            viewerMarkedHelpful: result.viewerMarkedHelpful,
+                          }
+                        : item,
+                    ),
+                  );
                 }}
               />
             ))}

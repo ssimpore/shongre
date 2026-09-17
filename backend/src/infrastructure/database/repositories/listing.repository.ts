@@ -12,6 +12,9 @@ import {
   getCurrencyMinorUnitDigits,
   minorToMajorAmount,
   normalizeSearchText,
+  SEARCH_VOCABULARY_STOPWORDS,
+  searchVocabularyTerms,
+  trigramSimilarity,
 } from "@shongre/shared";
 import { getCountryConfig } from "@shongre/contracts";
 import {
@@ -62,6 +65,34 @@ function isEffectiveMarketPromotion(
     endsAt > now
   );
 }
+
+export interface ListingPriceEstimate {
+  basis: "sold" | "asking";
+  sampleSize: number;
+  currency: string;
+  p25Minor: number;
+  medianMinor: number;
+  p75Minor: number;
+  /** Which of brand, model and condition the sample was narrowed by. */
+  narrowedBy: Array<"brand" | "model" | "condition">;
+}
+
+export interface SearchTermSuggestion {
+  /** Unaccented lower-case key the visitor's typing was matched against. */
+  term: string;
+  /** The catalogue's own spelling, shown back to the visitor. */
+  label: string;
+  listingCount: number;
+  matchKind: "prefix" | "fuzzy";
+}
+
+/*
+ * The fixture ranks the way `suggest_listing_search_terms` and
+ * `correct_listing_search_query` do, with the same thresholds, so the browser
+ * suite exercises the same behaviour production has.
+ */
+const SUGGESTION_SIMILARITY_THRESHOLD = 0.35;
+const CORRECTION_SIMILARITY_THRESHOLD = 0.4;
 
 export interface IListingRepository {
   findById(id: string): Promise<Listing | null>;
@@ -122,6 +153,62 @@ export interface IListingRepository {
   rollUpViewCounts(
     limit?: number,
   ): Promise<{ processedEvents: number; updatedListings: number }>;
+  /**
+   * Completions for the word being typed, from the market's catalogue
+   * vocabulary (migration 00142): prefix matches first, then trigram matches
+   * so a misspelt word still completes to something that exists.
+   */
+  suggestSearchTerms(input: {
+    marketCode: string;
+    query: string;
+    limit: number;
+  }): Promise<SearchTermSuggestion[]>;
+  /**
+   * The nearest known spelling of a query, or null when every word already
+   * exists in the market's vocabulary. Meant for a search that found nothing.
+   */
+  correctSearchQuery(input: {
+    marketCode: string;
+    query: string;
+  }): Promise<string | null>;
+  /** Rebuilds one market's vocabulary from its discoverable listings. */
+  refreshSearchVocabulary(marketCode: string): Promise<number>;
+  /**
+   * Extends the expiry of opted-in listings that just expired, up to
+   * `maxCycles` renewals each. Answers what was renewed, for the sellers'
+   * notifications.
+   */
+  renewExpiringListings(input: { maxCycles: number; limit: number }): Promise<
+    Array<{
+      id: string;
+      sellerId: string;
+      title: string;
+      marketCode: string;
+      expiresAt: string;
+    }>
+  >;
+  /**
+   * What comparable items sold for (or, in a thin market, were listed at):
+   * percentiles in minor units over the given categories, narrowed by brand,
+   * model and condition while the sample stays meaningful (00145).
+   */
+  estimatePrice(input: {
+    marketCode: string;
+    categoryIds: readonly string[];
+    brand?: string;
+    model?: string;
+    condition?: string;
+  }): Promise<ListingPriceEstimate | null>;
+  /** Publishes drafts whose scheduled time has come. */
+  publishScheduledListings(limit: number): Promise<
+    Array<{
+      id: string;
+      sellerId: string;
+      title: string;
+      marketCode: string;
+      status: string;
+    }>
+  >;
   createDraft(userId: string, marketCode: string): Promise<any>;
   saveDraft(draft: any, userId: string, marketCode: string): Promise<void>;
   getDraft(userId: string, marketCode: string): Promise<any | null>;
@@ -834,6 +921,328 @@ export class DemoListingRepository implements IListingRepository {
     return { processedEvents: 0, updatedListings: 0 };
   }
 
+  /** The vocabulary `refresh_listing_search_terms` would build for a market. */
+  private searchVocabulary(
+    marketCode: string,
+  ): Map<string, { label: string; listingCount: number }> {
+    const market = requireMarketCode(marketCode);
+    const vocabulary = new Map<
+      string,
+      { label: string; listingCount: number; labels: Map<string, number> }
+    >();
+    for (const listing of this.listings.values()) {
+      if (listing.status !== "published") continue;
+      const publication = listing.marketPublications?.find(
+        (entry) =>
+          entry.marketCode === market &&
+          entry.status === "active" &&
+          entry.complianceState === "approved",
+      );
+      if (listing.marketPublications?.length && !publication) continue;
+      if (!publication && listing.marketCode !== market) continue;
+      for (const { term, label } of searchVocabularyTerms(
+        [listing.title, listing.brand, listing.model].filter(Boolean).join(" "),
+      )) {
+        const entry = vocabulary.get(term) ?? {
+          label,
+          listingCount: 0,
+          labels: new Map(),
+        };
+        entry.listingCount += 1;
+        entry.labels.set(label, (entry.labels.get(label) ?? 0) + 1);
+        vocabulary.set(term, entry);
+      }
+    }
+    return new Map(
+      Array.from(vocabulary, ([term, entry]) => {
+        // `mode()`: the most common spelling wins, ties broken alphabetically.
+        const [label] = Array.from(entry.labels).sort(
+          ([leftLabel, leftCount], [rightLabel, rightCount]) =>
+            rightCount - leftCount || leftLabel.localeCompare(rightLabel),
+        )[0]!;
+        return [term, { label, listingCount: entry.listingCount }];
+      }),
+    );
+  }
+
+  async suggestSearchTerms(input: {
+    marketCode: string;
+    query: string;
+    limit: number;
+  }): Promise<SearchTermSuggestion[]> {
+    const query = normalizeSearchText(input.query);
+    if (!query) return [];
+    const ranked: Array<SearchTermSuggestion & { score: number }> = [];
+    for (const [term, entry] of this.searchVocabulary(input.marketCode)) {
+      if (term.startsWith(query)) {
+        ranked.push({ term, ...entry, matchKind: "prefix", score: 1 });
+        continue;
+      }
+      if (query.length < 3) continue;
+      const score = trigramSimilarity(term, query);
+      if (score >= SUGGESTION_SIMILARITY_THRESHOLD) {
+        ranked.push({ term, ...entry, matchKind: "fuzzy", score });
+      }
+    }
+    return ranked
+      .sort(
+        (left, right) =>
+          Number(right.matchKind === "prefix") -
+            Number(left.matchKind === "prefix") ||
+          right.score - left.score ||
+          right.listingCount - left.listingCount ||
+          left.term.localeCompare(right.term),
+      )
+      .slice(0, Math.min(Math.max(input.limit, 1), 20))
+      .map(({ score: _score, ...suggestion }) => suggestion);
+  }
+
+  async correctSearchQuery(input: {
+    marketCode: string;
+    query: string;
+  }): Promise<string | null> {
+    const vocabulary = this.searchVocabulary(input.marketCode);
+    let changed = false;
+    const words = normalizeSearchText(input.query)
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => {
+        if (
+          word.length < 3 ||
+          SEARCH_VOCABULARY_STOPWORDS.has(word) ||
+          vocabulary.has(word)
+        ) {
+          return word;
+        }
+        let best: {
+          label: string;
+          score: number;
+          listingCount: number;
+        } | null = null;
+        for (const [term, entry] of vocabulary) {
+          const score = trigramSimilarity(term, word);
+          if (score < CORRECTION_SIMILARITY_THRESHOLD) continue;
+          if (
+            !best ||
+            score > best.score ||
+            (score === best.score && entry.listingCount > best.listingCount)
+          ) {
+            best = {
+              label: entry.label,
+              score,
+              listingCount: entry.listingCount,
+            };
+          }
+        }
+        if (!best) return word;
+        changed = true;
+        return best.label;
+      });
+    return changed ? words.join(" ") : null;
+  }
+
+  async refreshSearchVocabulary(marketCode: string): Promise<number> {
+    // The fixture derives its vocabulary on read; nothing to persist.
+    return this.searchVocabulary(marketCode).size;
+  }
+
+  /**
+   * Mirrors `set_seller_away` / `clear_seller_away` for the fixture: only
+   * publications paused for the absence resume with it.
+   */
+  setSellerPublicationsPaused(sellerId: string, paused: boolean): number {
+    let changed = 0;
+    for (const listing of this.listings.values()) {
+      if (listing.sellerId !== sellerId || listing.status !== "published")
+        continue;
+      for (const publication of listing.marketPublications ?? []) {
+        if (paused && publication.status === "active") {
+          publication.status = "paused";
+          publication.pausedReason = "seller_away";
+          changed += 1;
+        } else if (
+          !paused &&
+          publication.status === "paused" &&
+          publication.pausedReason === "seller_away"
+        ) {
+          publication.status = "active";
+          publication.pausedReason = undefined;
+          changed += 1;
+        }
+      }
+    }
+    return changed;
+  }
+
+  async renewExpiringListings(input: { maxCycles: number; limit: number }) {
+    const now = Date.now();
+    const renewed: Array<{
+      id: string;
+      sellerId: string;
+      title: string;
+      marketCode: string;
+      expiresAt: string;
+    }> = [];
+    for (const listing of this.listings.values()) {
+      if (renewed.length >= input.limit) break;
+      if (
+        listing.status !== "published" ||
+        !listing.autoRenew ||
+        (listing.renewalCount ?? 0) >= input.maxCycles ||
+        Date.parse(listing.expiresAt) > now
+      )
+        continue;
+      // Mirrors `renew_expiring_listings`: the original window, 7 to 90 days.
+      const window = listing.publishedAt
+        ? Date.parse(listing.expiresAt) - Date.parse(listing.publishedAt)
+        : 60 * 86_400_000;
+      const bounded = Math.min(
+        Math.max(window, 7 * 86_400_000),
+        90 * 86_400_000,
+      );
+      const stamp = new Date(now).toISOString();
+      listing.expiresAt = new Date(now + bounded).toISOString();
+      listing.renewalCount = (listing.renewalCount ?? 0) + 1;
+      listing.lastRenewedAt = stamp;
+      listing.updatedAt = stamp;
+      renewed.push({
+        id: listing.id,
+        sellerId: listing.sellerId,
+        title: listing.title,
+        marketCode: listing.marketCode,
+        expiresAt: listing.expiresAt,
+      });
+    }
+    return renewed;
+  }
+
+  async estimatePrice(input: {
+    marketCode: string;
+    categoryIds: readonly string[];
+    brand?: string;
+    model?: string;
+    condition?: string;
+  }): Promise<ListingPriceEstimate | null> {
+    const market = requireMarketCode(input.marketCode);
+    const categories = new Set(input.categoryIds);
+    const brand = input.brand?.trim().toLocaleLowerCase("fr-FR") || undefined;
+    const model = input.model?.trim().toLocaleLowerCase("fr-FR") || undefined;
+    const condition = input.condition?.trim() || undefined;
+    const inMarket = (listing: Listing) =>
+      listing.marketCode === market && categories.has(listing.categoryId);
+    const percentiles = (
+      amounts: number[],
+      basis: ListingPriceEstimate["basis"],
+      narrowedBy: ListingPriceEstimate["narrowedBy"],
+      currency: string,
+    ): ListingPriceEstimate => {
+      const sorted = [...amounts].sort((left, right) => left - right);
+      // percentile_cont: linear interpolation between neighbours.
+      const at = (fraction: number) => {
+        const position = (sorted.length - 1) * fraction;
+        const lower = Math.floor(position);
+        const upper = Math.ceil(position);
+        return Math.round(
+          sorted[lower]! +
+            (sorted[upper]! - sorted[lower]!) * (position - lower),
+        );
+      };
+      return {
+        basis,
+        sampleSize: sorted.length,
+        currency,
+        p25Minor: at(0.25),
+        medianMinor: at(0.5),
+        p75Minor: at(0.75),
+        narrowedBy,
+      };
+    };
+    const minorOf = (listing: Listing) =>
+      listing.marketPublications?.find((p) => p.isPrimary)?.priceMinor ??
+      Math.round(listing.price * 100);
+    const sold = Array.from(this.listings.values()).filter(
+      (listing) =>
+        listing.status === "sold" && inMarket(listing) && minorOf(listing) > 0,
+    );
+    for (let step = 0; step <= 3; step += 1) {
+      const sample = sold.filter(
+        (listing) =>
+          (step >= 1 ||
+            !brand ||
+            listing.brand?.toLocaleLowerCase("fr-FR") === brand) &&
+          (step >= 2 ||
+            !model ||
+            listing.model?.toLocaleLowerCase("fr-FR") === model) &&
+          (step >= 3 || !condition || listing.condition === condition),
+      );
+      if (sample.length >= 5) {
+        return percentiles(
+          sample.map(minorOf),
+          "sold",
+          [
+            ...(step < 1 && brand ? ["brand" as const] : []),
+            ...(step < 2 && model ? ["model" as const] : []),
+            ...(step < 3 && condition ? ["condition" as const] : []),
+          ],
+          sample[0]!.currency,
+        );
+      }
+    }
+    const asking = Array.from(this.listings.values()).filter(
+      (listing) =>
+        listing.status === "published" &&
+        inMarket(listing) &&
+        minorOf(listing) > 0,
+    );
+    return asking.length >= 3
+      ? percentiles(asking.map(minorOf), "asking", [], asking[0]!.currency)
+      : null;
+  }
+
+  async publishScheduledListings(limit: number) {
+    const now = Date.now();
+    const published: Array<{
+      id: string;
+      sellerId: string;
+      title: string;
+      marketCode: string;
+      status: string;
+    }> = [];
+    for (const listing of this.listings.values()) {
+      if (published.length >= limit) break;
+      if (
+        listing.status !== "draft" ||
+        !listing.scheduledPublishAt ||
+        Date.parse(listing.scheduledPublishAt) > now
+      )
+        continue;
+      const stamp = new Date(now).toISOString();
+      listing.status =
+        (listing.safetyRiskScore ?? 0) >= 50 ? "flagged" : "published";
+      listing.publishedAt = stamp;
+      listing.organicFreshnessAt = stamp;
+      listing.scheduledPublishAt = undefined;
+      listing.updatedAt = stamp;
+      if (listing.status === "published") {
+        for (const publication of listing.marketPublications ?? []) {
+          if (publication.status === "draft") {
+            publication.status = "active";
+            publication.publishedAt = stamp;
+            publication.sortDate = stamp;
+          }
+        }
+      }
+      published.push({
+        id: listing.id,
+        sellerId: listing.sellerId,
+        title: listing.title,
+        marketCode: listing.marketCode,
+        status: listing.status,
+      });
+    }
+    return published;
+  }
+
   async createDraft(userId: string, marketCode: string): Promise<any> {
     const draft = {
       step: "category",
@@ -929,16 +1338,20 @@ export class PostgresListingRepository implements IListingRepository {
     "favorite_count",
     "safety_risk_score",
     "attributes",
+    "auto_renew",
+    "renewal_count",
+    "last_renewed_at",
+    "scheduled_publish_at",
     "created_at",
     "updated_at",
     "expires_at",
   ].join(", ");
 
   private static readonly SELLER_PROJECTION =
-    "id, slug, email, name, account_type, account_family, primary_role, status, avatar_url, city, postal_code, country, bio, is_verified, is_identity_verified, is_phone_verified, is_email_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at";
+    "id, slug, email, name, account_type, account_family, primary_role, status, avatar_url, city, postal_code, country, bio, is_verified, is_identity_verified, is_phone_verified, is_email_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, away_until, away_message, created_at";
 
   private static readonly MARKET_PUBLICATION_PROJECTION =
-    "market_code, status, is_primary, price_minor, currency, localized_content, available_services, compliance_state, published_at, sort_date, promotion_state, promotion_type, promotion_source, promotion_source_id, promotion_label, promotion_start_at, promotion_end_at, promoted_at";
+    "market_code, status, is_primary, price_minor, currency, localized_content, available_services, compliance_state, paused_reason, published_at, sort_date, promotion_state, promotion_type, promotion_source, promotion_source_id, promotion_label, promotion_start_at, promotion_end_at, promoted_at";
 
   /**
    * Ranking projection only. Full listing, media URL and seller hydration is
@@ -1052,6 +1465,7 @@ export class PostgresListingRepository implements IListingRepository {
           localizedContent: publication.localized_content || {},
           availableServices: publication.available_services || {},
           complianceState: publication.compliance_state,
+          pausedReason: publication.paused_reason || undefined,
           publishedAt: publication.published_at || undefined,
           sortDate: publication.sort_date,
           promotionState: publication.promotion_state || "inactive",
@@ -1146,6 +1560,8 @@ export class PostgresListingRepository implements IListingRepository {
             reviewCount: Number(profile.review_count || 0),
             responseRatePercent: Number(profile.response_rate_percent || 0),
             responseTimeText: profile.response_time_text || undefined,
+            awayUntil: profile.away_until || undefined,
+            awayMessage: profile.away_message || undefined,
             createdAt: profile.created_at,
           }
         : undefined,
@@ -1271,6 +1687,10 @@ export class PostgresListingRepository implements IListingRepository {
       safetyRiskScore:
         row.safety_risk_score !== null ? Number(row.safety_risk_score) : 0,
       attributes: row.attributes || {},
+      autoRenew: Boolean(row.auto_renew),
+      renewalCount: Number(row.renewal_count || 0),
+      lastRenewedAt: row.last_renewed_at || undefined,
+      scheduledPublishAt: row.scheduled_publish_at || undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       expiresAt: row.expires_at,
@@ -1490,10 +1910,18 @@ export class PostgresListingRepository implements IListingRepository {
         query = query.ilike("city", `%${filters.city}%`);
       }
       if (filters.query) {
-        query = query.textSearch("search_vector", filters.query, {
-          type: "websearch",
-          config: "simple",
-        });
+        // The vectors are unaccented `simple` lexemes (00076), so the query
+        // must be folded the same way or "vélo" never matches "velo".
+        const normalizedQuery = filters.query
+          .normalize("NFD")
+          .replace(/\p{Diacritic}/gu, "")
+          .trim();
+        if (normalizedQuery) {
+          query = query.textSearch("search_vector", normalizedQuery, {
+            type: "websearch",
+            config: "simple",
+          });
+        }
       }
 
       if (filters.sortBy === "price_asc") {
@@ -1919,6 +2347,8 @@ export class PostgresListingRepository implements IListingRepository {
       favorite_count: listing.favoriteCount,
       safety_risk_score: listing.safetyRiskScore || 0,
       attributes: listing.attributes || {},
+      auto_renew: Boolean(listing.autoRenew),
+      scheduled_publish_at: listing.scheduledPublishAt || null,
       created_at: listing.createdAt,
       updated_at: listing.updatedAt,
       expires_at: listing.expiresAt,
@@ -1982,6 +2412,7 @@ export class PostgresListingRepository implements IListingRepository {
       payload.favorite_count = updates.favoriteCount;
     if (updates.attributes !== undefined)
       payload.attributes = updates.attributes;
+    if (updates.autoRenew !== undefined) payload.auto_renew = updates.autoRenew;
     if (updates.promotionState !== undefined)
       payload.promotion_state = updates.promotionState;
     if (updates.promotionType !== undefined)
@@ -2071,6 +2502,121 @@ export class PostgresListingRepository implements IListingRepository {
       processedEvents: Number(row?.processed_events || 0),
       updatedListings: Number(row?.updated_listings || 0),
     };
+  }
+
+  async suggestSearchTerms(input: {
+    marketCode: string;
+    query: string;
+    limit: number;
+  }): Promise<SearchTermSuggestion[]> {
+    const query = input.query.trim();
+    if (!query) return [];
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "suggest_listing_search_terms",
+      {
+        p_market_code: requireMarketCode(input.marketCode),
+        p_query: query,
+        p_limit: Math.min(Math.max(input.limit, 1), 20),
+      },
+    );
+    if (error) databaseFailure("listings.suggestSearchTerms", error);
+    return ((data || []) as any[]).map((row) => ({
+      term: String(row.term),
+      label: String(row.display_term),
+      listingCount: Number(row.listing_count || 0),
+      matchKind: row.match_kind === "fuzzy" ? "fuzzy" : "prefix",
+    }));
+  }
+
+  async correctSearchQuery(input: {
+    marketCode: string;
+    query: string;
+  }): Promise<string | null> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "correct_listing_search_query",
+      {
+        p_market_code: requireMarketCode(input.marketCode),
+        p_query: input.query,
+      },
+    );
+    if (error) databaseFailure("listings.correctSearchQuery", error);
+    return typeof data === "string" && data.trim() ? data : null;
+  }
+
+  async refreshSearchVocabulary(marketCode: string): Promise<number> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "refresh_listing_search_terms",
+      { p_market_code: requireMarketCode(marketCode) },
+    );
+    if (error) databaseFailure("listings.refreshSearchVocabulary", error);
+    return Number(data || 0);
+  }
+
+  async renewExpiringListings(input: { maxCycles: number; limit: number }) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "renew_expiring_listings",
+      { p_max_cycles: input.maxCycles, p_limit: input.limit },
+    );
+    if (error) databaseFailure("listings.renewExpiringListings", error);
+    return ((data || []) as any[]).map((row) => ({
+      id: String(row.id),
+      sellerId: String(row.seller_id),
+      title: String(row.title ?? ""),
+      marketCode: String(row.market_code),
+      expiresAt: String(row.expires_at),
+    }));
+  }
+
+  async estimatePrice(input: {
+    marketCode: string;
+    categoryIds: readonly string[];
+    brand?: string;
+    model?: string;
+    condition?: string;
+  }): Promise<ListingPriceEstimate | null> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "estimate_listing_price",
+      {
+        p_market_code: requireMarketCode(input.marketCode),
+        p_category_ids: [...input.categoryIds],
+        p_brand: input.brand ?? null,
+        p_model: input.model ?? null,
+        p_condition: input.condition ?? null,
+      },
+    );
+    if (error) databaseFailure("listings.estimatePrice", error);
+    const row = Array.isArray(data) ? data[0] : null;
+    if (!row) return null;
+    return {
+      basis: row.basis === "sold" ? "sold" : "asking",
+      sampleSize: Number(row.sample_size || 0),
+      currency: String(row.currency),
+      p25Minor: Number(row.p25_minor),
+      medianMinor: Number(row.median_minor),
+      p75Minor: Number(row.p75_minor),
+      narrowedBy: Array.isArray(row.narrowed_by) ? row.narrowed_by : [],
+    };
+  }
+
+  async publishScheduledListings(limit: number) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "publish_scheduled_listings",
+      { p_limit: limit },
+    );
+    if (error) databaseFailure("listings.publishScheduledListings", error);
+    return ((data || []) as any[]).map((row) => ({
+      id: String(row.id),
+      sellerId: String(row.seller_id),
+      title: String(row.title ?? ""),
+      marketCode: String(row.market_code),
+      status: String(row.status),
+    }));
   }
 
   async getFavorites(userId: string, marketCode: string): Promise<string[]> {

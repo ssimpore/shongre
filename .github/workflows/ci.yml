@@ -128,7 +128,9 @@ jobs:
   migrations:
     name: Clean database migration
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The database-mode browser run builds an isolated production Web
+    # checkout on top of the migration, seed and RLS work.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -161,6 +163,22 @@ jobs:
           make db-seed
           make db-seed
           make taxonomy-db-test
+      - name: Install the Chromium runtime
+        run: npx playwright install --with-deps chromium
+      - name: Run the browser journeys against the PostgreSQL repositories
+        # The demo-mode matrix cannot see a defect that lives only in a
+        # Postgres repository; this is the one browser run that can.
+        run: make test-web-database-mode E2E_ARGS=--project=chromium
+      - name: Upload database-mode failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-database-mode
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Prove production demo seeding is refused
         env:
           APP_ENV: production

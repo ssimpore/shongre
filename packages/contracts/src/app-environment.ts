@@ -118,8 +118,11 @@ export const ENVIRONMENT_DATABASE_MODES: Readonly<
     backendDataModes: ["database", "demo"],
     databaseInfrastructureMode: "local",
   },
+  // Isolated test APIs serve either family: the deterministic fixtures for
+  // fast browser/unit runs, or the PostgreSQL repositories from the
+  // repository-owned local stack for the database-mode browser gate.
   test: {
-    backendDataModes: ["demo"],
+    backendDataModes: ["demo", "database"],
     databaseInfrastructureMode: "local",
   },
   preview: {
