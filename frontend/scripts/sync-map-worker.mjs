@@ -1,5 +1,12 @@
 #!/usr/bin/env node
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+} from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 
@@ -26,6 +33,14 @@ import { dirname, resolve } from "node:path";
  * Copying the worker under `public/` gives it a same-origin URL, which
  * `setWorkerUrl` in the map primitive points at. The copy is generated rather
  * than committed so it cannot drift from the installed package.
+ *
+ * The copy lives in a directory named after the installed version, and the
+ * primitive builds the URL from `getVersion()` of the very module it loaded.
+ * That makes the URL change exactly when the bytes change, so the files can be
+ * cached as immutable — the shared runtime is half a megabyte, and it was
+ * being revalidated on every listing view. Anything else under the vendor
+ * directory is removed: `public/` ships wholesale in the Web image, and a
+ * stale copy would ship with it.
  */
 
 const require = createRequire(import.meta.url);
@@ -44,8 +59,23 @@ const distDirectory = resolve(dirname(manifest), "dist");
  * to fix. Both files travel together.
  */
 const FILES = ["maplibre-gl-worker.mjs", "maplibre-gl-shared.mjs"];
+const { version } = JSON.parse(readFileSync(manifest, "utf8"));
 const vendorDirectory = resolve(frontendRoot, "public/vendor");
-mkdirSync(vendorDirectory, { recursive: true });
+const packageDirectory = resolve(vendorDirectory, "maplibre-gl");
+const versionDirectory = resolve(packageDirectory, version);
+mkdirSync(versionDirectory, { recursive: true });
+
+let removed = 0;
+for (const entry of readdirSync(vendorDirectory)) {
+  if (entry === "maplibre-gl") continue;
+  rmSync(resolve(vendorDirectory, entry), { recursive: true, force: true });
+  removed += 1;
+}
+for (const entry of readdirSync(packageDirectory)) {
+  if (entry === version) continue;
+  rmSync(resolve(packageDirectory, entry), { recursive: true, force: true });
+  removed += 1;
+}
 
 let copied = 0;
 for (const file of FILES) {
@@ -55,7 +85,7 @@ for (const file of FILES) {
       `MapLibre's ${file} is missing at ${from}. The package layout changed; update this script and the URL in MapContainer.`,
     );
   }
-  const to = resolve(vendorDirectory, file);
+  const to = resolve(versionDirectory, file);
   const wanted = readFileSync(from);
   const current = existsSync(to) ? readFileSync(to) : null;
   if (current?.equals(wanted)) continue;
@@ -64,7 +94,7 @@ for (const file of FILES) {
 }
 
 console.log(
-  copied
-    ? `Copied ${copied} MapLibre worker file(s) to public/vendor/.`
-    : "MapLibre worker files are current.",
+  copied || removed
+    ? `Synchronized MapLibre ${version} worker files under public/vendor/maplibre-gl/ (${copied} copied, ${removed} stale entries removed).`
+    : `MapLibre ${version} worker files are current.`,
 );

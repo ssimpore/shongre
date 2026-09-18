@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { testOrderId } from "./fixtures";
 import { useEstablishedConsent, usePersona } from "./personas";
 import { expectNoHorizontalOverflow } from "./overflow";
 
@@ -13,7 +14,7 @@ test("seller publishes one review, sees it after reload, and can report review U
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await usePersona(page, "pro_seller");
-  await page.goto("/compte/achats?transactionId=tx-903", {
+  await page.goto(`/compte/achats?transactionId=${testOrderId("tx-903")}`, {
     waitUntil: "domcontentloaded",
   });
   const form = page.getByRole("region", {
@@ -54,13 +55,36 @@ test("seller publishes one review, sees it after reload, and can report review U
   await page.goto("/profil/camille-martin?tab=reviews", {
     waitUntil: "domcontentloaded",
   });
+  const publishedReview = page
+    .locator("[data-review-item]", {
+      hasText: "Très bonne communication et rendez-vous respecté.",
+    })
+    .first();
+  await expect(publishedReview).toBeVisible();
+  await expect(
+    publishedReview.getByText("Transaction vérifiée", { exact: true }),
+  ).toBeVisible();
+  // One's own review is not reportable UGC: the author sees no report
+  // control, and the API refuses such a report anyway.
+  await expect(
+    publishedReview.getByRole("button", { name: "Signaler cet avis" }),
+  ).toHaveCount(0);
+
+  // Another member reads the same review and reports it.
+  await usePersona(page, "individual_buyer");
+  await page.goto("/profil/camille-martin?tab=reviews", {
+    waitUntil: "domcontentloaded",
+  });
   await expect(
     page.getByText("Très bonne communication et rendez-vous respecté."),
   ).toBeVisible();
-  await expect(
-    page.getByText("Transaction vérifiée", { exact: true }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Signaler cet avis" }).click();
+  await page
+    .locator("[data-review-item]", {
+      hasText: "Très bonne communication et rendez-vous respecté.",
+    })
+    .first()
+    .getByRole("button", { name: "Signaler cet avis" })
+    .click();
   const report = page.getByRole("dialog", { name: "Signaler cet avis" });
   await expect(report).toBeVisible();
   await report
@@ -79,7 +103,7 @@ test("buyer sees their existing review on a narrow screen without a second form"
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await usePersona(page, "individual_seller");
-  await page.goto("/compte/achats?transactionId=tx-903", {
+  await page.goto(`/compte/achats?transactionId=${testOrderId("tx-903")}`, {
     waitUntil: "domcontentloaded",
   });
   const review = page.getByRole("region", {
@@ -94,7 +118,7 @@ test("buyer sees their existing review on a narrow screen without a second form"
 
 test("incomplete orders offer no review form", async ({ page }) => {
   await usePersona(page, "individual_buyer");
-  await page.goto("/compte/achats?transactionId=tx-904", {
+  await page.goto(`/compte/achats?transactionId=${testOrderId("tx-904")}`, {
     waitUntil: "domcontentloaded",
   });
   await expect(

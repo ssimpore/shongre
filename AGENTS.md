@@ -1039,6 +1039,13 @@ France-only happy path is insufficient for market-sensitive work.
 - Avoid data/render waterfalls and repeated per-card calls. Parallelize
   independent work, batch related data, virtualize/bound large lists, and
   lazy-load genuinely heavy maps, charts, editors, provider UI, and analytics.
+  A lazy import that mounts on page load still downloads on page load: heavy
+  surfaces that sit below the fold or behind a breakpoint mount through the
+  shared `DeferUntilVisible` slot, so nothing is fetched until it is on screen.
+  Route and section chunks the server renders load through `next/dynamic`, not
+  `React.lazy`, so the document preloads them before hydration; provider
+  restorations that run while server HTML may still be hydrating must be
+  transitions, otherwise React discards that HTML for the route fallback.
 - Images need stable dimensions/aspect ratios, responsive sources, appropriate
   formats and lazy loading; use priority only for true LCP images. Artwork in
   App Router error and not-found boundaries must remain lazy because Next
@@ -1054,7 +1061,10 @@ France-only happy path is insufficient for market-sensitive work.
 - Preserve Next.js server rendering, semantic HTML, metadata, route
   optimization, and accessibility around the existing catch-all/React Router
   compatibility architecture. Use Server Components or server-safe projections
-  for public content without bypassing service/adapter boundaries.
+  for public content without bypassing service/adapter boundaries. Public
+  discovery pages, the homepage included, resolve their initial data in
+  `server-public-route-data.ts` and seed the client from `usePublicRouteData`;
+  a page must not ship a loading shell and fetch its own first paint.
 - `frontend/src/platform/seo/seo-policy.ts` is the canonical pure policy for
   indexability, robots, canonical URL, market/locale, lifecycle, sitemap and
   structured-data eligibility, alternates, timestamps, redirects, and exclusion
@@ -1338,6 +1348,23 @@ France-only happy path is insufficient for market-sensitive work.
   single-worker and process-recycled through bounded shards until a full
   sustained matrix proves their browser contexts no longer deadlock during
   navigation or teardown.
+  `frontend/e2e/known-failures.json` records the browser failures already
+  present on a clean tree, per engine; `make e2e-triage` is the pass/fail
+  gate and fails only on a failure that is not recorded for the engine it
+  ran. CI blocks on the Chromium triage; Firefox and WebKit report without
+  blocking until their baselines are recorded on a proven host. The
+  database-mode run keeps its own record, `known-failures.database.json`,
+  gated by `make e2e-triage-database` and re-recorded with
+  `make e2e-baseline-update-database`. The records must only shrink: after
+  fixing recorded debt run the matching baseline update, and never add an
+  entry to hide a regression. The runner executes every phase and engine it
+  was asked for even after one reports failures, writes one JSON part per
+  Playwright invocation and merges them into `E2E_JSON_REPORT`
+  (`scripts/lib/merge-playwright-reports.mjs`); the triage counts a recorded
+  failure as fixed only when the merged report shows it ran and passed, and
+  a baseline update keeps entries the report never executed. The isolated
+  API geocodes against the stub in `backend/tests/fixtures/geocoding-stub.ts`;
+  a browser journey must never reach the public OpenStreetMap instance.
 - Do not report an unexecuted command as passing. Fix failures introduced by the
   change. If a proven unrelated pre-existing failure blocks a check, report it
   explicitly and run every other applicable check.

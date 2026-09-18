@@ -46,6 +46,7 @@ import {
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { JobCard } from "./components/JobCard";
 import { formatEmploymentDate, formatSalary } from "./employment-format";
+import { rememberRecentEmploymentJob } from "./employment-recent-jobs";
 import { publicRouteUrl } from "../../domains/market/market-routing";
 import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
 import {
@@ -64,7 +65,7 @@ import { localizeListingCharacteristics } from "@shongre/features/listings/facts
 export const EmploymentJobDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { slug = "" } = useParams<{ slug: string }>();
-  const { currentUser } = useAuth();
+  const { currentUser, isRestoring } = useAuth();
   const { currentLocale, marketContext, activeMarket, convertMoney } =
     useMarketLocation();
   const navigate = useNavigate();
@@ -191,6 +192,15 @@ export const EmploymentJobDetailPage: React.FC = () => {
       active = false;
     };
   }, [railEmployerId, railJobId, railMarketCode]);
+
+  // A viewed job feeds the board's "recently viewed" rail on this device,
+  // once the session is known so the guest and account lists stay apart.
+  const viewedJobId = job?.id;
+  const viewedMarketCode = job?.marketCode;
+  useEffect(() => {
+    if (!viewedJobId || !viewedMarketCode || isRestoring) return;
+    rememberRecentEmploymentJob(accountId, viewedMarketCode, viewedJobId);
+  }, [accountId, isRestoring, viewedJobId, viewedMarketCode]);
 
   useEffect(() => {
     const marketCode = activeMarket.code;

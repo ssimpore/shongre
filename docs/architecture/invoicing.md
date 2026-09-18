@@ -90,9 +90,14 @@ which preserves their identity and organization and completes provisioning only
 after the same grant exists. `/api/v1/invoicing/activation` deliberately cannot
 mint an entitlement.
 
-In deterministic demo mode, the adapter provisions a clearly labelled trial so
-both acquisition paths are testable with the backend stopped. In API mode the
-backend rejects activation without a pre-existing grant. Because
+In deterministic demo mode, the backend's in-memory invoicing repository
+provisions a clearly labelled trial on activation (`provisionDemoTrial`), and
+projects one tenant per professional from the products they declare — named
+after their business, standalone when Facturation is all they hold, with its
+own issuer entity built from the organization's facts and only its own
+issuers and customers in view — so both acquisition paths are testable
+against the demo API. The PostgreSQL repository has no such method: activation
+there rejects without a pre-existing grant. Because
 `COMMERCIAL_PLAN_APPROVAL_OWNER=UNSET`, migration `00069` registers the product
 identity but no production price, quota, or plan version. The product catalog
 must remain unavailable for purchase until an approved commercial version is

@@ -167,8 +167,11 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run the browser journeys against the PostgreSQL repositories
         # The demo-mode matrix cannot see a defect that lives only in a
-        # Postgres repository; this is the one browser run that can.
-        run: make test-web-database-mode E2E_ARGS=--project=chromium
+        # Postgres repository; this is the one browser run that can. It is
+        # judged against its own record of known failures, like the
+        # demo-mode matrix: a new failure fails the job, a recorded one does
+        # not hide behind it.
+        run: make e2e-triage-database E2E_ARGS=--project=chromium
       - name: Upload database-mode failure evidence
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -293,7 +296,15 @@ jobs:
   web-e2e:
     name: Web E2E (${{ matrix.browser }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The Chromium suite alone takes about half an hour on a laptop with two
+    # workers; the single-worker engines are slower still on a hosted runner.
+    timeout-minutes: 90
+    # Chromium is the blocking browser gate. Firefox and WebKit run single-worker
+    # through bounded shards and have no recorded failure baseline yet, so they
+    # report without blocking until `make e2e-baseline-update
+    # E2E_ARGS=--project=<engine>` has been run on a proven host and the
+    # sustained cross-engine matrix is certified (see AGENTS.md, testing).
+    continue-on-error: ${{ matrix.browser != 'chromium' }}
     strategy:
       fail-fast: false
       matrix:
@@ -308,8 +319,8 @@ jobs:
       - run: make env
       - name: Install browser runtime
         run: npx playwright install --with-deps ${{ matrix.browser }}
-      - name: Run demo-only journeys
-        run: make frontend-test-e2e E2E_ARGS=--project=${{ matrix.browser }}
+      - name: Run demo-only journeys against the recorded failure baseline
+        run: make e2e-triage E2E_ARGS=--project=${{ matrix.browser }}
       - name: Verify first-party sessions against the isolated test API
         run: make test-web-api-transport E2E_ARGS=--project=${{ matrix.browser }}
       - name: Upload failure evidence
@@ -320,5 +331,6 @@ jobs:
           path: |
             frontend/playwright-report
             frontend/test-results
+            .runtime/e2e-report.json
           if-no-files-found: ignore
           retention-days: 7

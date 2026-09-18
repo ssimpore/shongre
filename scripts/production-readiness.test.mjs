@@ -1,4 +1,6 @@
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -86,10 +88,10 @@ const valid = {
   DEMO_ACCOUNT_PASSWORD: "",
 };
 
-function run(overrides, expectedStatus) {
+function run(overrides, expectedStatus, args = []) {
   const result = spawnSync(
     process.execPath,
-    [resolve(root, "scripts/production-readiness.mjs")],
+    [resolve(root, "scripts/production-readiness.mjs"), ...args],
     {
       cwd: root,
       encoding: "utf8",
@@ -103,10 +105,138 @@ function run(overrides, expectedStatus) {
   }
 }
 
+/** The complete evidence set a release needs, freshly written so it is not stale. */
+function releaseEvidence(directory, release) {
+  const file = (name, content) => {
+    const path = resolve(directory, name);
+    writeFileSync(
+      path,
+      typeof content === "string" ? content : JSON.stringify(content),
+    );
+    return path;
+  };
+  return {
+    RELEASE_SHA: release,
+    BACKUP_RESTORE_EVIDENCE_FILE: file(
+      "backup.txt",
+      "database_restore=PASS\nstorage_restore=PASS\n",
+    ),
+    PROVIDER_SMOKE_EVIDENCE_FILE: file(
+      "providers.txt",
+      [
+        "environment=staging",
+        `release_sha=${release}`,
+        ...[
+          "stripe_payment",
+          "stripe_refund",
+          "stripe_payout",
+          "stripe_identity",
+          "business_registry",
+          "gemini_moderation",
+          "transactional_email",
+          "sms_delivery",
+          "push_delivery",
+          "geocoding",
+          "malware_scan",
+          "search_index",
+        ].map((name) => `${name}=PASS`),
+      ].join("\n"),
+    ),
+    RELEASE_APPROVAL_EVIDENCE_FILE: file(
+      "approval.txt",
+      `release_sha=${release}\nsecurity=APPROVED\nlegal=APPROVED\noperations=APPROVED\nproduct=APPROVED\n`,
+    ),
+    EDGE_FUNCTION_INVENTORY_EVIDENCE_FILE: file(
+      "edge.txt",
+      "environment=production\nallowed=stripe-webhook\nunexpected=0\n",
+    ),
+    STAGING_CERTIFICATION_EVIDENCE_FILE: file("staging.json", {
+      schemaVersion: 1,
+      environment: "staging",
+      result: "passed",
+      commit: release,
+      checks: {
+        hostedSmoke: { unexpected: 0 },
+        performance: { result: "PASS" },
+      },
+    }),
+    OBSERVABILITY_EVIDENCE_FILE: file("observability.json", {
+      schemaVersion: 1,
+      result: "PASS",
+      release,
+      scope: "PLATFORM_GLOBAL",
+      checks: {
+        request_id_propagation: "PASS",
+        log_drain: "PASS",
+        trace_lookup: "PASS",
+        alert_delivery: "PASS",
+        on_call: "PASS",
+      },
+    }),
+    IMAGE_TRANSFORM_EVIDENCE_FILE: file("image-transform.json", {
+      schemaVersion: 1,
+      environment: "production",
+      transformMode: "supabase_render",
+      sampleUrl: `${valid.SUPABASE_URL}/storage/v1/object/public/listing-media/sample.jpg`,
+      result: "PASS",
+      original: { width: 1280, bytes: 240_000 },
+      transformed: { width: 320, bytes: 18_000 },
+    }),
+  };
+}
+
 run({}, 0);
 run({ ENABLE_SOCIAL_AUTH: "true" }, 1);
 run({ STRIPE_SECRET_KEY: "sk_test_wrong_mode" }, 1);
 run({ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_wrong_mode" }, 1);
 run({ DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64: "not-a-32-byte-key" }, 1);
 run({ SHONGRE_FACTURATION_ORIGIN: "https://solutions.shongre.invalid" }, 1);
+run({ PUBLIC_MEDIA_IMAGE_TRANSFORM: "supabase_render" }, 0);
+run({ PUBLIC_MEDIA_IMAGE_TRANSFORM: "imgproxy" }, 1);
+
+const evidenceDirectory = mkdtempSync(resolve(tmpdir(), "shongre-release-"));
+try {
+  const release = "c".repeat(40);
+  const evidence = releaseEvidence(evidenceDirectory, release);
+  const requireEvidence = ["--require-evidence"];
+  run(evidence, 0, requireEvidence);
+  // Originals are served unchanged: no transformer evidence is needed.
+  run({ ...evidence, IMAGE_TRANSFORM_EVIDENCE_FILE: "" }, 0, requireEvidence);
+  run(
+    { ...evidence, PUBLIC_MEDIA_IMAGE_TRANSFORM: "supabase_render" },
+    0,
+    requireEvidence,
+  );
+  // The transformer flag without proof, or with another project's proof, is
+  // refused: every marketplace photo would break on a rejected transform.
+  run(
+    {
+      ...evidence,
+      PUBLIC_MEDIA_IMAGE_TRANSFORM: "supabase_render",
+      IMAGE_TRANSFORM_EVIDENCE_FILE: "",
+    },
+    1,
+    requireEvidence,
+  );
+  writeFileSync(
+    evidence.IMAGE_TRANSFORM_EVIDENCE_FILE,
+    JSON.stringify({
+      schemaVersion: 1,
+      environment: "staging",
+      transformMode: "supabase_render",
+      sampleUrl: `${valid.SUPABASE_URL}/storage/v1/object/public/listing-media/sample.jpg`,
+      result: "PASS",
+      original: { width: 1280, bytes: 240_000 },
+      transformed: { width: 320, bytes: 18_000 },
+    }),
+  );
+  run(
+    { ...evidence, PUBLIC_MEDIA_IMAGE_TRANSFORM: "supabase_render" },
+    1,
+    requireEvidence,
+  );
+  run({ ...evidence, RELEASE_SHA: "d".repeat(40) }, 1, requireEvidence);
+} finally {
+  rmSync(evidenceDirectory, { recursive: true, force: true });
+}
 console.log("Production configuration and launch-scope invariants passed.");

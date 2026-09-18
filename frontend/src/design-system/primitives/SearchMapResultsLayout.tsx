@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { DeferUntilVisible } from "./DeferUntilVisible";
 
 export interface SearchMapResultsLayoutProps {
   results: ReactNode;
@@ -12,6 +13,11 @@ export interface SearchMapResultsLayoutProps {
  * Shared map-search workspace. Wide screens keep a bounded, independently
  * scrollable result list beside the map; smaller screens preserve the complete
  * map and rely on its marker preview instead of compressing both surfaces.
+ *
+ * The map slot mounts its content only once the panel is on screen. A panel
+ * the breakpoint hides is still rendered, and rendering the map into it meant
+ * every phone and laptop below `xl` downloaded the renderer and the first
+ * tiles for a surface it could not see.
  */
 export function SearchMapResultsLayout({
   results,
@@ -34,14 +40,14 @@ export function SearchMapResultsLayout({
       >
         {results}
       </section>
-      <div
+      <DeferUntilVisible
         data-search-map-panel="true"
         className={`${
           narrowView === "results" ? "hidden" : "block"
         } h-search-map min-h-112 min-w-0 sm:h-search-map-tall xl:sticky xl:top-24 xl:block xl:h-search-map-panel`}
       >
         {map}
-      </div>
+      </DeferUntilVisible>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { browserApi } from "./browser-api";
+import { waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
 
 test.describe("API-owned country recommendation", () => {
@@ -50,6 +51,10 @@ test.describe("API-owned country recommendation", () => {
       accuracy: 25,
     });
     await page.goto("/");
+    // The header mounts its location control while the search is active;
+    // activating it before hydration leaves the shell at rest once React
+    // takes over, and the control never appears.
+    await waitForStableLayout(page);
     await page
       .getByRole("combobox", { name: /rechercher une annonce/i })
       .first()

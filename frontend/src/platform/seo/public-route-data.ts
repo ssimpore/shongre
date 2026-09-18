@@ -5,8 +5,23 @@ import type {
   JobPostingDetail,
 } from "@shongre/contracts/employment";
 import type { Collection } from "../../domains/collection/collection.types";
+import type { HomepageExperience } from "../../domains/homepage/homepage.types";
 import type { Listing, PublicSellerProfile, ReviewItem } from "../../types";
 import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
+
+/**
+ * The market-wide homepage, resolved on the server so the document carries
+ * the hero and every section instead of a loading shell.
+ *
+ * `heroListings` is the rail's selection, not the fifty listings it selects
+ * from; both are card projections. A reader with a saved city refetches the
+ * experience for it after hydration, exactly as before.
+ */
+export interface HomepagePublicRouteData {
+  kind: "homepage";
+  experience: HomepageExperience;
+  heroListings: Listing[];
+}
 
 interface ListingPublicRouteData {
   kind: "listing";
@@ -69,6 +84,7 @@ interface ValidatedVerticalPublicRouteData {
 }
 
 export type PublicRouteData =
+  | HomepagePublicRouteData
   | ListingPublicRouteData
   | SellerPublicRouteData
   | JobPublicRouteData

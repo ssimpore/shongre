@@ -56,10 +56,17 @@ function claimRecoveryCode(file: string, id: string, codes: string[]): string {
   throw new Error("The isolated Staff MFA recovery fixture is exhausted.");
 }
 
-/** Authenticate through first-party HTTP cookies, including real Staff MFA. */
+/**
+ * Authenticate through first-party HTTP cookies, including real Staff MFA.
+ *
+ * Sessions are host-only cookies, so a product served from its own origin
+ * (Facturation in the isolated runner, as in production) must be signed into
+ * on that origin: pass it as `origin`.
+ */
 export async function usePersona(
   page: Page,
   persona: PersonaName,
+  options: { origin?: string } = {},
 ): Promise<void> {
   await page
     .context()
@@ -67,7 +74,7 @@ export async function usePersona(
   const id = PERSONAS[persona];
   if (!id) return;
   const file = process.env.E2E_ACCOUNTS_FILE;
-  const origin = process.env.E2E_BASE_URL;
+  const origin = options.origin || process.env.E2E_BASE_URL;
   if (
     process.env.APP_ENV !== "test" ||
     !file ||

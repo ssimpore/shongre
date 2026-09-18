@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useMemo,
   useState,
+  startTransition,
 } from "react";
 import {
   consentService,
@@ -57,8 +58,16 @@ export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isPreferencesOpen, setPreferencesOpen] = useState(false);
 
   useEffect(() => {
-    setDecision(consentService.getDecision());
-    setIsRestoring(false);
+    /*
+     * A transition, like every restoration that runs while server-rendered
+     * page content may still be hydrating. A plain update here reaches the
+     * dehydrated page boundary through context and, if the page's chunk has
+     * not arrived yet, makes React discard the server HTML for a fallback.
+     */
+    startTransition(() => {
+      setDecision(consentService.getDecision());
+      setIsRestoring(false);
+    });
   }, []);
 
   const categories = useMemo(

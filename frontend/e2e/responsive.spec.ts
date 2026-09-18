@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { VIEWPORTS } from "./viewports";
-import { ALL_ROUTES, PUBLIC_ROUTES } from "./routes";
+import { ALL_ROUTES, PUBLIC_ROUTES, routeUrl } from "./routes";
 import { useEstablishedConsent, usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
@@ -29,8 +29,8 @@ test.describe("horizontal overflow", () => {
             width: viewport.width,
             height: viewport.height,
           });
-          await usePersona(page, route.persona);
-          await page.goto(route.path, { waitUntil: "domcontentloaded" });
+          await usePersona(page, route.persona, { origin: route.origin });
+          await page.goto(routeUrl(route), { waitUntil: "domcontentloaded" });
           await waitForStableLayout(page);
           if (route.settleMs) await page.waitForTimeout(route.settleMs);
           await expectNoHorizontalOverflow(
@@ -62,7 +62,7 @@ test.describe("horizontal overflow", () => {
       await usePersona(page, "guest");
       for (const route of PUBLIC_ROUTES) {
         await test.step(`${route.name} (${route.path})`, async () => {
-          await page.goto(route.path, { waitUntil: "domcontentloaded" });
+          await page.goto(routeUrl(route), { waitUntil: "domcontentloaded" });
           await waitForStableLayout(page, 20_000);
           await expectNoHorizontalOverflow(
             page,
@@ -253,8 +253,18 @@ test.describe("toolbar controls align", () => {
           /affichage grille/i.test(b.getAttribute("aria-label") || ""),
         );
         if (!grid) return null;
-        const toolbar = grid.parentElement!.parentElement!;
-        return [...toolbar.children].map((child) => {
+        // The toggle sits in a wrapper of its own inside the toolbar row; the
+        // row is the nearest ancestor laying out more than one visible control.
+        const visible = (element: Element) => {
+          const r = element.getBoundingClientRect();
+          return r.width > 0 && r.height > 0;
+        };
+        let toolbar: HTMLElement | null = grid.parentElement;
+        while (toolbar && [...toolbar.children].filter(visible).length < 2) {
+          toolbar = toolbar.parentElement;
+        }
+        if (!toolbar) return null;
+        return [...toolbar.children].filter(visible).map((child) => {
           const r = child.getBoundingClientRect();
           return { height: Math.round(r.height), top: Math.round(r.top) };
         });
@@ -410,13 +420,17 @@ test.describe("listing rail", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const selectedTab = page.getByRole("tab", { selected: true });
-    const activeName = await selectedTab.innerText();
-    const panel = page.getByRole("tabpanel", { name: activeName });
+    // Every homepage rail shares one shell; the first whose track overflows
+    // at this width — and so shows its forward control — carries the contract.
+    const panel = page
+      .locator("main .scroll-rail-shell")
+      .filter({ has: page.getByRole("button", { name: /vers la droite/ }) })
+      .first();
+    await expect(panel).toBeVisible();
     await panel.scrollIntoViewIfNeeded();
     const track = panel.locator("div.overflow-x-auto").last();
 
-    await panel.getByRole("button", { name: /défiler|droite/i }).click();
+    await panel.getByRole("button", { name: /vers la droite/ }).click();
     await page.waitForTimeout(1200);
 
     const state = await track.evaluate((element) => {

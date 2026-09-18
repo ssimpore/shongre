@@ -7900,6 +7900,23 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/real-estate/agencies/workspace": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get the authenticated user's agency workspace */
+        readonly get: operations["getRealEstateCurrentAgencyWorkspace"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/real-estate/catalog": {
         readonly parameters: {
             readonly query?: never;
@@ -13018,6 +13035,10 @@ export interface components {
             /** @enum {string} */
             readonly sellerType: "individual" | "pro";
             readonly slug: string;
+            /** @description The business name a professional storefront publishes under, when the profile was reached through its storefront. The person behind the account keeps `name`. */
+            readonly storeName?: string;
+            /** @description The slug a professional storefront is published under (`/boutique/<storeSlug>`), its canonical address. Absent for individuals and for professionals without a storefront. */
+            readonly storeSlug?: string;
         };
         /** @description Stable cursor page used by the Web server to build canonical market sitemaps. */
         readonly PublicSitemapListingPage: {
@@ -32047,6 +32068,38 @@ export interface operations {
             readonly path: {
                 readonly organizationId: string;
             };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getRealEstateCurrentAgencyWorkspace: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
             readonly cookie?: never;
         };
         readonly requestBody?: never;

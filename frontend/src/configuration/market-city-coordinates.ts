@@ -1,5 +1,5 @@
 import { getDefaultCountryConfig } from "@shongre/contracts/market-country";
-import { FRENCH_MAJOR_CITIES } from "./geoCoordinates";
+import { FRENCH_MAJOR_CITIES } from "./french-major-cities";
 
 export interface ConfiguredCityCoordinates {
   latitude: number;

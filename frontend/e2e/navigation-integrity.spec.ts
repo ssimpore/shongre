@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { usePersona } from "./personas";
+import { readBrowserFixtures, testOrderId } from "./fixtures";
 import { DEMO_LISTING_ID } from "./routes";
 import { waitForStableLayout } from "./overflow";
 
@@ -57,7 +58,16 @@ test.describe("navigation integrity", () => {
       `/annonce/${DEMO_LISTING_ID}?contact=1`,
     );
 
-    await page.getByRole("button", { name: /Thomas \(Particulier\)/i }).click();
+    // The sign-in form itself, with the scenario's credentials: the demo
+    // persona shortcuts left with the demo adapter.
+    const account = readBrowserFixtures().accounts.user_thomas;
+    await page.locator("#login-email").fill(account.email);
+    await page
+      .locator("#login-password")
+      .fill(process.env.DEMO_ACCOUNT_PASSWORD!);
+    await page
+      .getByRole("button", { name: "Se connecter", exact: true })
+      .click();
     await expect(page).toHaveURL(new RegExp(`/annonce/${DEMO_LISTING_ID}`));
     const dialog = page.getByRole("dialog", { name: /contacter/i });
     await expect(dialog).toBeVisible();
@@ -121,7 +131,7 @@ test.describe("navigation integrity", () => {
     page,
   }) => {
     await usePersona(page, "individual_buyer");
-    await page.goto("/compte/achats?transactionId=tx-901");
+    await page.goto(`/compte/achats?transactionId=${testOrderId("tx-901")}`);
 
     const dialog = page.getByRole("dialog", { name: /SHG-849201/ });
     await expect(dialog).toBeVisible();

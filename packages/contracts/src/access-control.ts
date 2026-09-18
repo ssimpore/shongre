@@ -795,6 +795,11 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "staff.commercial.access",
       "user.read",
       ...CRM_COMMERCIAL_CAPABILITIES,
+      // The console's prospection workspace always operates in the internal
+      // first-party context; the commercial team is who it exists for. This
+      // stays an explicit staff grant — professional identities share the
+      // commercial CRM set above and never receive it.
+      "crm.prospecting.internal_first_party",
       "marketing.dashboard.read",
       "marketing.profiles.read",
       "marketing.lists.read",

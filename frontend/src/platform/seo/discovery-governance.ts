@@ -42,6 +42,13 @@ export const DISCOVERY_CRAWLERS = Object.freeze({
   },
 } satisfies Readonly<Record<string, DiscoveryCrawlerDefinition>>);
 
+/**
+ * The crawlers served the blocking, head-rendered metadata. Defined in
+ * `@shongre/contracts/seo-crawlers` because `next.config.ts` reads it; the
+ * governance test keeps every registered discovery crawler inside it.
+ */
+export { HEAD_METADATA_CRAWLER_PATTERN } from "@shongre/contracts/seo-crawlers";
+
 export type ModelTrainingCrawlerPolicy = "allow" | "deny";
 
 export interface DiscoveryRobotsRule {

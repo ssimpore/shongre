@@ -781,7 +781,7 @@ export class PostgresDeliveryRepository implements DeliveryRepository {
       const { data, error } = await this.client()
         .from("delivery_requests")
         .select(
-          "*, profiles!delivery_requests_requester_id_fkey(name,is_verified), delivery_request_stops(*), delivery_applications(*, delivery_courier_profiles(vehicle_types), profiles!delivery_applications_courier_user_id_fkey(name,is_verified))",
+          "*, profiles!delivery_requests_requester_id_fkey(name,is_verified), delivery_request_stops(*), delivery_applications!delivery_applications_request_id_fkey(*, delivery_courier_profiles(vehicle_types), profiles!delivery_applications_courier_user_id_fkey(name,is_verified))",
         )
         .eq("id", requestId)
         .maybeSingle();
@@ -1344,5 +1344,8 @@ function mapRequest(
     expiresAt: row.expires_at ?? row.expiresAt,
     publishedAt: row.published_at ?? row.publishedAt ?? undefined,
     version: Number(row.version),
+    // Private, like the stops: the public projection strips it. It lets a
+    // caller recognise the request it already created without a second key.
+    idempotencyKey: row.idempotency_key ?? row.idempotencyKey ?? undefined,
   };
 }

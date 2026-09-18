@@ -6,6 +6,7 @@ import { collectionService } from "../../domains/collection/collection.service";
 import type { Listing, PublicSellerProfile, SearchFilters } from "../../types";
 import { employmentSearchQuerySchema } from "@shongre/contracts/employment";
 import type {
+  HomepagePublicRouteData,
   PublicRouteData,
   PublicRouteDataResolution,
   SellerPublicRouteData,
@@ -17,6 +18,8 @@ import {
 import { COUNTRY_REGISTRY } from "@shongre/contracts";
 import { projectTaxonomyForRoute } from "../../domains/taxonomy/taxonomy.seo";
 import { projectListingForSearchCard } from "../../domains/listing/listing-search-card.projection";
+import { projectHomepageExperienceForDocument } from "../../domains/homepage/homepage-document.projection";
+import { selectHeroListings } from "../../features/home/hero-selection";
 import { fetchPublicSitemapListingPage } from "../../api/adapters/http/http-sitemap.service";
 
 const serverServices = createServiceRegistry();
@@ -347,6 +350,39 @@ async function resolveUncached(
     }
   }
 
+  if (pathname === "/" && !queryString) {
+    /*
+     * The composition is market-wide here: the document cannot know the
+     * reader's saved city, and the market-wide answer is the one the page
+     * paints first for everyone. The hero rail runs the same selection it
+     * runs in the browser, so only its eight cards travel.
+     */
+    const locale = COUNTRY_REGISTRY.find(
+      (country) => country.code === countryCode,
+    )!.defaultLocale;
+    const [experience, heroInventory] = await Promise.all([
+      serverServices.homepage.getHomepage({
+        marketCode: countryCode,
+        locale,
+        country: countryCode,
+      }),
+      listingsService.getListings({
+        marketCode: countryCode,
+        limit: PAGE_SIZES.homepagePromotedListings,
+      }),
+    ]);
+    const data: HomepagePublicRouteData = {
+      kind: "homepage",
+      experience: projectHomepageExperienceForDocument(experience),
+      heroListings: selectHeroListings(
+        heroInventory.listings,
+        locale,
+        countryCode,
+      ).map(projectListingForSearchCard),
+    };
+    return { status: "found", data };
+  }
+
   if (pathname === "/emploi" && !queryString) {
     const query = employmentSearchQuerySchema.parse({
       marketCode: countryCode,
@@ -488,6 +524,7 @@ async function resolveUncached(
 /** Route families, so an escaping failure still reports what was being resolved. */
 const RESOURCE_TYPE_BY_PATH: ReadonlyArray<[RegExp, PublicRouteData["kind"]]> =
   [
+    [/^\/$/, "homepage"],
     [/^\/annonce\//, "listing"],
     [/^\/(?:boutique|profil|vendeur|u)\//, "seller"],
     [/^\/emploi\/offre\//, "job"],

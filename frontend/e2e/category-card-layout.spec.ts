@@ -101,7 +101,10 @@ for (const width of [1408, 768, 390, 320]) {
     await expect(page).toHaveURL(/\/categorie\/vehicules$/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     if (width >= 1024) {
+      // Desktop filters live behind the shared disclosure, closed by default.
+      await page.getByRole("button", { name: "Afficher les filtres" }).click();
       await page
+        .locator("#search-filter-panel-desktop")
         .getByRole("button", {
           name: "Filtrer par sous-catégorie",
           exact: true,

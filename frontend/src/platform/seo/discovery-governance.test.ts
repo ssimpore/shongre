@@ -3,6 +3,7 @@ import { resolveMarketContext } from "@shongre/contracts";
 import {
   buildDiscoveryRobotsRules,
   DISCOVERY_CRAWLERS,
+  HEAD_METADATA_CRAWLER_PATTERN,
   parseModelTrainingCrawlerPolicy,
   PRIVATE_CRAWL_PATHS,
   renderDiscoveryManifest,
@@ -165,5 +166,43 @@ describe("SEO and GEO discovery governance", () => {
     expect(manifest).toContain("https://shongre.fr/sitemap.xml");
     expect(manifest).toContain("[À propos](https://shongre.fr/a-propos)");
     expect(manifest).toContain("private routes are not public sources");
+  });
+});
+
+describe("head metadata crawlers", () => {
+  it("routes every search, preview and answer-engine crawler to the blocking render", () => {
+    for (const userAgent of [
+      "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+      "Mediapartners-Google",
+      "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+      "facebookexternalhit/1.1",
+      "GPTBot/1.2",
+      "OAI-SearchBot/1.0",
+      "Mozilla/5.0 (compatible; PerplexityBot/1.0)",
+      "ClaudeBot/1.0",
+    ]) {
+      expect(HEAD_METADATA_CRAWLER_PATTERN.test(userAgent), userAgent).toBe(
+        true,
+      );
+    }
+  });
+
+  it("keeps every registered discovery crawler on the blocking render", () => {
+    for (const { userAgent } of Object.values(DISCOVERY_CRAWLERS)) {
+      expect(HEAD_METADATA_CRAWLER_PATTERN.test(userAgent), userAgent).toBe(
+        true,
+      );
+    }
+  });
+
+  it("leaves browsers on the streamed render", () => {
+    for (const userAgent of [
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0 Safari/537.36",
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+    ]) {
+      expect(HEAD_METADATA_CRAWLER_PATTERN.test(userAgent), userAgent).toBe(
+        false,
+      );
+    }
   });
 });

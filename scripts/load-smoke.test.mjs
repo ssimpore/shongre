@@ -41,22 +41,40 @@ const server = createServer((request, response) => {
     request.url ===
       "/api/v1/listings/search?marketCode=FR&limit=20&sortBy=date_desc"
   ) {
-    const etag = '"test-discovery-etag"';
-    response.setHeader(
-      "Cache-Control",
-      "public, max-age=0, s-maxage=15, stale-while-revalidate=30, stale-if-error=120",
+    // Discovery is excluded from every cache until purge delivery is proven.
+    response.setHeader("Cache-Control", "private, no-store, max-age=0");
+    response.end(
+      JSON.stringify({ items: [], total: 0, page: 1, totalPages: 1 }),
     );
-    response.setHeader("Cache-Tag", "shongre-v1-discovery");
+    return;
+  }
+  const conditional = {
+    "/api/v1/markets/effective/FR": {
+      etag: '"test-reference-etag"',
+      cacheControl:
+        "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400",
+      cacheTag: "shongre-v1-markets,shongre-v1-market-fr",
+      body: { code: "FR" },
+    },
+    "/api/v1/taxonomy/v1/header-navigation": {
+      etag: '"test-taxonomy-etag"',
+      cacheControl: "private, no-cache",
+      cacheTag: null,
+      body: { items: [] },
+    },
+  }[request.url];
+  if (request.method === "GET" && conditional) {
+    response.setHeader("Cache-Control", conditional.cacheControl);
+    if (conditional.cacheTag)
+      response.setHeader("Cache-Tag", conditional.cacheTag);
     response.setHeader("Vary", "X-Shongre-Market, Accept-Language");
-    response.setHeader("ETag", etag);
-    if (request.headers["if-none-match"] === etag) {
+    response.setHeader("ETag", conditional.etag);
+    if (request.headers["if-none-match"] === conditional.etag) {
       response.statusCode = 304;
       response.end();
       return;
     }
-    response.end(
-      JSON.stringify({ items: [], total: 0, page: 1, totalPages: 1 }),
-    );
+    response.end(JSON.stringify(conditional.body));
     return;
   }
   response.statusCode = 404;
@@ -81,7 +99,11 @@ try {
     evidencePath,
   });
   if (evidence.result !== "PASS") throw new Error("load evidence did not pass");
-  if (evidence.conditionalCache.result !== "PASS") {
+  if (
+    evidence.conditionalCache.result !== "PASS" ||
+    evidence.conditionalCache.shared.conditionalStatus !== 304 ||
+    evidence.conditionalCache.revalidate.conditionalStatus !== 304
+  ) {
     throw new Error("conditional cache evidence did not pass");
   }
   const persisted = JSON.parse(readFileSync(evidencePath, "utf8"));

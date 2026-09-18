@@ -487,8 +487,10 @@ test.describe("boosted listings hero rail", () => {
     await expect(
       targetListing.locator('[data-listing-badge="featured"]'),
     ).toContainText("À la une");
+    // The featured placement carries the shared badge icon (`flame`), not a
+    // star; the icon travels with the badge recipe in `@shongre/features`.
     await expect(
-      targetListing.locator('[data-listing-badge="featured"] .lucide-star'),
+      targetListing.locator('[data-listing-badge="featured"] .lucide-flame'),
     ).toBeAttached();
     await expectNoHorizontalOverflow(page, "boosted hero rail");
   });
@@ -574,7 +576,9 @@ test.describe("boosted listings hero rail", () => {
       .boundingBox();
     expect(trustBox).not.toBeNull();
     expect(heroSurfaceBox).not.toBeNull();
-    expect(trustBox!.height).toBeGreaterThanOrEqual(48);
+    // The link sits on the standard `md` control metric: 40px for a fine
+    // pointer, 44px on touch — never the page-level 48px step.
+    expect(trustBox!.height).toBeGreaterThanOrEqual(40);
     expect(trustBox!.height).toBeLessThanOrEqual(80);
     expect(heroSurfaceBox!.height).toBeGreaterThanOrEqual(320);
     expect(heroSurfaceBox!.height).toBeLessThan(440);

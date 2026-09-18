@@ -373,6 +373,32 @@ const demoAccounts: CrmAccount[] = [
     createdAt: "2026-08-15T11:00:00.000Z",
     updatedAt: "2026-08-24T13:00:00.000Z",
   },
+  // Already in the CRM under its registry domain: the demo registry's
+  // "Maison Seconde Vie" surfaces as a duplicate review, which is the path
+  // the discovery brief's "relier le doublon" flow exercises.
+  {
+    id: "20000000-0000-4000-8000-000000000004",
+    ...demoContext,
+    ownerId: DEMO_USER_ID,
+    name: "Maison Seconde Vie",
+    legalName: "Maison Seconde Vie SAS",
+    website: "https://maison-seconde-vie.example",
+    domain: "maison-seconde-vie.example",
+    industry: "Maison et mobilier",
+    country: "FR",
+    region: "Auvergne-Rhône-Alpes",
+    city: "Lyon",
+    postalCode: "69007",
+    marketCode: "FR",
+    lifecycle: "prospect",
+    fitScore: 79,
+    source: "manual",
+    tags: ["Mobilier", "Lyon"],
+    customValues: {},
+    version: 1,
+    createdAt: "2026-08-12T10:00:00.000Z",
+    updatedAt: "2026-08-20T09:30:00.000Z",
+  },
   {
     id: "20000000-0000-4000-8000-000000000003",
     ...demoContext,

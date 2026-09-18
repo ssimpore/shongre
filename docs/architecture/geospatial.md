@@ -232,8 +232,11 @@ Three integration details that are not obvious and are load-bearing:
 2. **The worker.** MapLibre resolves its own worker from `import.meta.url`,
    which webpack replaces at build time with a path on the build machine — a
    `file:` URL the browser cannot fetch. `frontend/scripts/sync-map-worker.mjs`
-   copies the worker _and its shared runtime_ into `public/vendor/` on every
-   build, and `MapContainer` points `setWorkerUrl` at that same-origin path.
+   copies the worker _and its shared runtime_ into
+   `public/vendor/maplibre-gl/<version>/` on every build, and `MapContainer`
+   points `setWorkerUrl` at that same-origin path using the version the loaded
+   module reports. The URL changes with the bytes, so `next.config.ts` serves
+   the pair as immutable instead of revalidating half a megabyte per view.
 3. **Readiness.** `load` waits for the first visually complete render, which
    never arrives if the container spends a frame at zero height — which is what
    a map inside a lazily mounted panel does. `isStyleLoaded()` is stricter
@@ -242,7 +245,27 @@ Three integration details that are not obvious and are load-bearing:
 
 Every map surface is reached through `React.lazy`, so MapLibre stays out of the
 initial bundle: 139 KiB gzip in its own chunk, initial client JavaScript
-unchanged at 244 KiB gzip.
+unchanged at 244 KiB gzip. Lazy is not enough on its own: a lazy component that
+mounts on page load still downloads the renderer, its worker and the first
+tiles before the reader has scrolled anywhere. The listing location section and
+the shared `SearchMapResultsLayout` therefore mount their map through
+`DeferUntilVisible`, which renders the fallback until the slot actually
+intersects the viewport — so a detail page whose map sits five screens down,
+or a results page whose map panel is hidden below the `xl` breakpoint, never
+fetches it.
+
+### A reader's own position
+
+"Utiliser ma position actuelle" never calls the geocoding provider. The
+browser coordinate is checked against the market's detection bounds through
+`POST /markets/detection/coordinates`, then labelled with the nearest town of
+the market's shortlist (`frontend/src/configuration/market-popular-cities.ts`,
+the same list the location picker offers first), using the coordinate table in
+`market-city-coordinates.ts` and, for towns it lacks, the shared gazetteer.
+The precise coordinate is discarded once the town is known; only the town is
+stored. The shortlist is presentation data the API market projection does not
+carry — when it was dropped with the demo adapter (September 2026) every
+market's position button answered "aucune ville prise en charge".
 
 ## Replacing a provider
 

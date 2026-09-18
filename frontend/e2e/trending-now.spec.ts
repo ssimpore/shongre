@@ -1,4 +1,6 @@
 import { test, expect } from "@playwright/test";
+import type { components } from "@shongre/contracts/openapi";
+import { browserApi } from "./browser-api";
 import { useEstablishedConsent, usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
@@ -17,13 +19,29 @@ test.describe("Admin-managed homepage discovery", () => {
     const collections = page.getByTestId("home-collection-explorer");
 
     await expect(discoverySections).toHaveCount(3);
+    // The order is the market's published composition — administered in
+    // `/admin/tendances`, and edited by that journey while this one runs —
+    // so it is read from the same experience the page was rendered from.
+    const { status, body } = await browserApi(
+      page,
+      "/home?market=FR&country=FR&locale=fr-FR",
+    );
+    expect(status).toBe(200);
+    const configuredOrder = (
+      body as components["schemas"]["HomepageExperience"]
+    ).sections
+      .filter((section) =>
+        ["recent_listings", "trending", "deals"].includes(section.type),
+      )
+      .map((section) => section.type);
+    expect(configuredOrder).toHaveLength(3);
     expect(
       await discoverySections.evaluateAll((elements) =>
         elements.map((element) =>
           element.getAttribute("data-home-discovery-type"),
         ),
       ),
-    ).toEqual(["recent_listings", "trending", "deals"]);
+    ).toEqual(configuredOrder);
     await expect(page.getByRole("tab")).toHaveCount(0);
 
     await expect(recent).toBeVisible();
@@ -146,7 +164,7 @@ test.describe("Admin-managed homepage discovery", () => {
     }
   });
 
-  test("places discovery navigation above the cards and advances the rail", async ({
+  test("places discovery navigation on the rail and advances it", async ({
     page,
   }) => {
     await useEstablishedConsent(page);
@@ -163,7 +181,12 @@ test.describe("Admin-managed homepage discovery", () => {
       next.boundingBox(),
       card.boundingBox(),
     ]);
-    expect(buttonBox!.y + buttonBox!.height).toBeLessThan(cardBox!.y);
+    // The shared rail overlays its control on the track, centred on the
+    // cards, rather than parking it in a header row above them.
+    expect(buttonBox!.y).toBeGreaterThanOrEqual(cardBox!.y);
+    expect(buttonBox!.y + buttonBox!.height).toBeLessThanOrEqual(
+      cardBox!.y + cardBox!.height,
+    );
     await next.click();
     await expect
       .poll(() => track.evaluate((el) => el.scrollLeft))
@@ -267,10 +290,36 @@ for (const { width, hasTouch } of [
           name: /vers la gauche/,
         });
         const next = section.getByRole("button", { name: /vers la droite/ });
+        // A rail that fits its viewport has nothing to scroll to and shows
+        // no control at all; the contract is only on rails that overflow.
+        const railOverflows = await track.evaluate(
+          (element) => element.scrollWidth > element.clientWidth + 2,
+        );
+        if (!railOverflows) {
+          await expect(next).toHaveCount(0);
+          await expect(previous).toHaveCount(0);
+          continue;
+        }
         await expect(next).toBeVisible();
         await expect(previous).toHaveCount(0);
-        const trackBox = (await track.boundingBox())!;
-        const buttonBox = (await next.boundingBox())!;
+        // Both boxes from one frame: the page may still be settling from the
+        // scroll, and two round trips would compare positions half a pixel
+        // apart.
+        const [trackBox, buttonBox] = await track.evaluate(
+          (element, button) => {
+            const box = (node: Element) => {
+              const rect = node.getBoundingClientRect();
+              return {
+                x: rect.x,
+                y: rect.y,
+                width: rect.width,
+                height: rect.height,
+              };
+            };
+            return [box(element), box(button as Element)];
+          },
+          await next.elementHandle(),
+        );
         expect(buttonBox.height).toBe(controlSize);
         expect(buttonBox.width).toBe(controlSize);
         expect(buttonBox.y + buttonBox.height / 2).toBeCloseTo(

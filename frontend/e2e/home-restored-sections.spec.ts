@@ -1,6 +1,6 @@
 import { expect as baseExpect, test } from "@playwright/test";
 import { useEstablishedConsent, usePersona } from "./personas";
-import { expectNoHorizontalOverflow } from "./overflow";
+import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
 // Session restoration and the first API projection can be cold on WebKit.
 const expect = baseExpect.configure({ timeout: 30_000 });
@@ -22,6 +22,7 @@ for (const width of [1408, 390]) {
     await page.goto("/");
     await expect(page).toHaveTitle(/Shongre/i);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await waitForStableLayout(page);
     await expect(page.getByTestId("home-recent-searches")).toHaveCount(0);
     const field = page
       .getByRole("combobox", { name: /rechercher une annonce/i })
@@ -35,6 +36,9 @@ for (const width of [1408, 390]) {
       .getByRole("link", { name: /SHONGRE.*accueil/i })
       .click();
     const searches = page.getByTestId("home-recent-searches");
+    // The section mounts once the restored preferences reach the shell;
+    // scrolling a locator that is still resolving detaches on hydration.
+    await expect(searches).toBeAttached();
     await searches.scrollIntoViewIfNeeded();
     await expect(
       searches.getByRole("link", { name: "Table", exact: true }),
@@ -62,10 +66,11 @@ for (const width of [1408, 390]) {
     await expect(searches).toHaveCount(0);
 
     const collections = page.getByTestId("home-collection-explorer");
-    await collections.scrollIntoViewIfNeeded();
     const cards = collections.getByRole("link", {
       name: /^Explorer la collection/,
     });
+    await expect(cards.first()).toBeAttached();
+    await collections.scrollIntoViewIfNeeded();
     await expect(cards.first()).toBeVisible();
     expect(await cards.count()).toBeGreaterThan(0);
     const image = cards.first().locator("img");

@@ -11,7 +11,17 @@ import type {
 import type { MarketResolvedListingPromotion } from "../schemas/discovery";
 import { EMPLOYMENT_DEFAULT_PIPELINE_STAGES } from "./employment-configuration";
 
-export const EMPLOYMENT_DEMO_NOW = "2026-08-22T10:00:00.000Z";
+/**
+ * The scenario's "today": the current UTC date at 10:00.
+ *
+ * Every date below is relative to it, so the scenario reads the same on any
+ * day — a job published "4 days ago" that expires "in 26 days", a promotion
+ * that started last week, an interview next Wednesday — and stays stable
+ * within a day. It was a fixed date once, and thirty days after it was
+ * written every job it describes had expired, taking the employment browser
+ * journeys and the sponsored-placement checks with it.
+ */
+export const EMPLOYMENT_DEMO_NOW = `${new Date().toISOString().slice(0, 10)}T10:00:00.000Z`;
 export const EMPLOYMENT_DEMO_RECRUITER_USER_ID = "user_employment_clara";
 
 const employers: Record<string, EmployerSummary> = {
@@ -105,6 +115,11 @@ type JobSeed = {
 
 const isoDays = (offset: number) =>
   new Date(Date.parse(EMPLOYMENT_DEMO_NOW) + offset * 86_400_000).toISOString();
+/** A calendar date, `offset` days from the scenario's today. */
+const isoDate = (offset: number) => isoDays(offset).slice(0, 10);
+/** A moment `offset` days from the scenario's today, at `time` (UTC). */
+const isoAt = (offset: number, time: string) =>
+  `${isoDate(offset)}T${time}.000Z`;
 
 const CITY_COORDINATES: Record<string, [number, number]> = {
   Lyon: [45.764, 4.8357],
@@ -208,7 +223,7 @@ const makeJob = (seed: JobSeed): JobPostingDetail => ({
     seed.contract[0] === "permanent"
       ? "Selon la convention et le contrat applicables."
       : undefined,
-  desiredStartDate: "2026-09-15",
+  desiredStartDate: isoDate(24),
   recruitmentProcess: [
     "Échange de 30 minutes",
     "Entretien avec l’équipe",
@@ -246,8 +261,8 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
       state: "active",
       type: "featured",
       marketCode: "FR",
-      startsAt: "2026-08-21T10:00:00.000Z",
-      endsAt: "2026-10-21T10:00:00.000Z",
+      startsAt: isoDays(-1),
+      endsAt: isoDays(60),
       source: "purchase",
       sourceId: "demo:employment:job-react-lyon:featured",
     },
@@ -365,8 +380,8 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
       state: "active",
       type: "urgent_badge",
       marketCode: "FR",
-      startsAt: "2026-08-22T10:00:00.000Z",
-      endsAt: "2026-09-22T10:00:00.000Z",
+      startsAt: isoDays(0),
+      endsAt: isoDays(31),
       source: "purchase",
       sourceId: "demo:employment:job-seasonal-nice:urgent",
     },
@@ -395,8 +410,8 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
       state: "active",
       type: "sponsored_search",
       marketCode: "FR",
-      startsAt: "2026-08-18T10:00:00.000Z",
-      endsAt: "2026-10-18T10:00:00.000Z",
+      startsAt: isoDays(-4),
+      endsAt: isoDays(57),
       source: "subscription_credit",
       sourceId: "demo:employment:job-freelance-remote:sponsored",
     },
@@ -446,8 +461,8 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
       state: "active",
       type: "urgent_badge",
       marketCode: "FR",
-      startsAt: "2026-08-21T10:00:00.000Z",
-      endsAt: "2026-09-21T10:00:00.000Z",
+      startsAt: isoDays(-1),
+      endsAt: isoDays(30),
       source: "purchase",
       sourceId: "demo:employment:job-temp-warehouse-lyon:urgent",
     },
@@ -498,7 +513,7 @@ export const EMPLOYMENT_DEMO_CANDIDATE_PROFILE: CandidateProfile = {
     presentationId: "gross",
     isPublic: false,
   },
-  availabilityDate: "2026-10-01",
+  availabilityDate: isoDate(40),
   professionalLinks: ["https://portfolio.example.test/thomas"],
   visibility: "applications_only",
   updatedAt: EMPLOYMENT_DEMO_NOW,
@@ -534,23 +549,13 @@ const application = (
 };
 
 export const EMPLOYMENT_DEMO_APPLICATIONS: EmploymentApplication[] = [
-  application(
-    "application-react",
-    "job-react-lyon",
-    3,
-    "2026-08-20T09:30:00.000Z",
-  ),
-  application(
-    "application-data",
-    "job-data-paris",
-    1,
-    "2026-08-18T14:15:00.000Z",
-  ),
+  application("application-react", "job-react-lyon", 3, isoAt(-2, "09:30:00")),
+  application("application-data", "job-data-paris", 1, isoAt(-4, "14:15:00")),
   application(
     "application-design",
     "job-product-intern-bordeaux",
     0,
-    "2026-08-21T16:45:00.000Z",
+    isoAt(-1, "16:45:00"),
   ),
 ];
 
@@ -560,13 +565,13 @@ export const EMPLOYMENT_DEMO_INTERVIEWS: EmploymentInterview[] = [
     applicationId: "application-react",
     modeId: "video",
     timezone: "Europe/Paris",
-    startsAt: "2026-08-26T12:00:00.000Z",
-    endsAt: "2026-08-26T12:45:00.000Z",
+    startsAt: isoAt(4, "12:00:00"),
+    endsAt: isoAt(4, "12:45:00"),
     status: "confirmed",
     privateMeetingLink: "https://meet.example.test/private/interview-react",
     participantUserIds: ["user_thomas", EMPLOYMENT_DEMO_RECRUITER_USER_ID],
     candidateMessage: "Échange avec Clara, responsable recrutement.",
-    createdAt: "2026-08-21T10:00:00.000Z",
+    createdAt: isoDays(-1),
     updatedAt: EMPLOYMENT_DEMO_NOW,
   },
 ];
@@ -578,7 +583,7 @@ export const EMPLOYMENT_DEMO_RECRUITER_NOTES: RecruiterNote[] = [
     authorUserId: EMPLOYMENT_DEMO_RECRUITER_USER_ID,
     body: "Parcours cohérent avec le besoin. Préparer les questions accessibilité et design system.",
     visibility: "recruiters_only",
-    createdAt: "2026-08-21T11:00:00.000Z",
+    createdAt: isoAt(-1, "11:00:00"),
   },
 ];
 
@@ -593,7 +598,7 @@ export const EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE: CandidateWorkspace = {
       mimeType: "application/pdf",
       malwareScanStatus: "clean",
       isDefault: true,
-      createdAt: "2026-07-03T08:00:00.000Z",
+      createdAt: isoAt(-50, "08:00:00"),
     },
   ],
   savedJobs: EMPLOYMENT_DEMO_JOBS.filter((job) => job.saved),
@@ -608,7 +613,7 @@ export const EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE: CandidateWorkspace = {
       purposeId: "employment.application.processing",
       policyVersion: "fr-employment-2026-08",
       status: "granted",
-      grantedAt: "2026-08-20T09:29:00.000Z",
+      grantedAt: isoAt(-2, "09:29:00"),
       expiresAt: "2028-08-20T09:29:00.000Z",
     },
   ],
@@ -639,7 +644,7 @@ export const EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE: CandidateWorkspace = {
       },
       frequency: "daily",
       enabled: true,
-      createdAt: "2026-08-01T08:00:00.000Z",
+      createdAt: isoAt(-21, "08:00:00"),
     },
   ],
 };
@@ -666,8 +671,8 @@ export const EMPLOYMENT_DEMO_RECRUITER_WORKSPACE: RecruiterWorkspace = {
       expiredCount: 1,
       duplicateCount: 0,
       errorCount: 0,
-      createdAt: "2026-08-22T06:00:00.000Z",
-      completedAt: "2026-08-22T06:00:11.000Z",
+      createdAt: isoAt(0, "06:00:00"),
+      completedAt: isoAt(0, "06:00:11"),
     },
   ],
   members: [

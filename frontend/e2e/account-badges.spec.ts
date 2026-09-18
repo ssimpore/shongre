@@ -22,7 +22,22 @@ test.describe("account identity badges", () => {
       "Compte professionnel",
     );
     await expect(storefrontBadge).toContainClass("text-overline");
-    const storefrontRecipe = await storefrontBadge.getAttribute("class");
+    // The shared recipe is the badge's geometry and type scale; the tone is
+    // the one thing a surface chooses (inverse on the storefront banner,
+    // primary over card artwork), so colour tokens are set aside.
+    const layoutRecipe = (value: string | null) =>
+      (value ?? "")
+        .split(/\s+/)
+        .filter(
+          (token) =>
+            token && !/^(bg-|text-text-|text-on-|border-|border$)/.test(token),
+        )
+        .sort()
+        .join(" ");
+    const storefrontRecipe = layoutRecipe(
+      await storefrontBadge.getAttribute("class"),
+    );
+    expect(storefrontRecipe).toContain("text-overline");
 
     await page.goto("/auto", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
@@ -35,9 +50,8 @@ test.describe("account identity badges", () => {
       "aria-label",
       "Vendeur professionnel",
     );
-    await expect(listingCardBadge).toHaveAttribute(
-      "class",
-      storefrontRecipe ?? "",
+    expect(layoutRecipe(await listingCardBadge.getAttribute("class"))).toBe(
+      storefrontRecipe,
     );
   });
 

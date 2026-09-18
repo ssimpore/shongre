@@ -7,6 +7,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
+import type { Listing } from "../../../types";
 import { Container, Heading } from "../../../design-system";
 import { Button } from "../../../design-system/primitives/Button";
 import { PublishCtaButton } from "../../../design-system/primitives/PublishCtaButton";
@@ -15,9 +16,11 @@ import { HeroBoostedScroll } from "./HeroBoostedScroll";
 import { GlobalSearchBar } from "../../../design-system/primitives/GlobalSearchBar";
 import { homepageVisibilityClass } from "../../../domains/homepage/homepage.presentation";
 
-export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
-  section,
-}) => {
+export const HomeHeroSection: React.FC<{
+  section: HomepageSectionView;
+  /** The rail's selection when the document already carries it. */
+  heroListings?: Listing[];
+}> = ({ section, heroListings }) => {
   const { t } = useTranslation();
   const titleSeparator = section.title.indexOf(",");
   const titleLead =
@@ -55,15 +58,28 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
           data-home-hero-surface="true"
           className="relative isolate overflow-hidden rounded-listing-card border border-border-base bg-bg-surface shadow-sm"
         >
-          <img
-            src="/images/home-marketplace-hero.webp"
-            alt=""
-            width={2056}
-            height={765}
-            fetchPriority="high"
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full object-cover object-center"
-          />
+          {/* Below `sm` the gradient covers the whole surface, so the artwork
+              is invisible there — yet as the largest painted element it was
+              the phone's LCP, 163 KB at high priority behind a 95% overlay
+              (7.7 s on a throttled 4G phone). The source only matches from
+              `sm`; the fallback is an empty pixel, so a phone downloads
+              nothing and its LCP is the headline. */}
+          <picture>
+            <source
+              media="(min-width: 640px)"
+              srcSet="/images/home-marketplace-hero.webp"
+              type="image/webp"
+            />
+            <img
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+              alt=""
+              width={2056}
+              height={765}
+              fetchPriority="high"
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+          </picture>
           <div
             aria-hidden="true"
             className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-bg-surface via-bg-surface/95 to-bg-surface/30 sm:w-4/5 lg:w-3/5 lg:to-transparent"
@@ -126,7 +142,7 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
               </div>
             </div>
             <div className="relative flex min-w-0 w-full flex-col justify-center empty:hidden">
-              <HeroBoostedScroll />
+              <HeroBoostedScroll initialListings={heroListings} />
             </div>
           </div>
         </div>

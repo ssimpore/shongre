@@ -37,6 +37,15 @@ const MIGRATED = [
 /** Directories with no user-facing copy of their own. */
 const SKIP_DIRS = new Set(["i18n"]);
 
+/**
+ * Files whose strings are proper nouns, not copy: a market's town shortlist is
+ * written the way its residents write it ("Liège", "Zürich") in every
+ * interface language, exactly like the native language names below.
+ */
+const PROPER_NOUN_FILES = new Set([
+  "src/configuration/market-popular-cities.ts",
+]);
+
 const ACCENTED = /[àâäçéèêëîïôöùûüÿœÆ]/i;
 const FRENCH_WORDS =
   /\b(le|la|les|un|une|des|du|de|au|aux|et|ou|est|sont|vous|votre|vos|nos|notre|pour|avec|sans|sur|dans|par|plus|tout|tous|toute|cette|ce|ces|qui|que|dont|être|avoir|annonce|annonces|vendeur|acheteur|recherche|compte|message|messages|paiement|livraison)\b/i;
@@ -103,6 +112,7 @@ const findings = [];
 const perFile = new Map();
 
 for (const file of walk(ROOT)) {
+  if (PROPER_NOUN_FILES.has(file)) continue;
   const source = readFileSync(file, "utf8");
   const hits = [];
 

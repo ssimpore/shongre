@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Map as MapLibreMap,
   NavigationControl,
+  getVersion,
   setWorkerUrl,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -18,10 +19,12 @@ import { getMapConfig, hasMapStyle } from "../../../platform/map/map-source";
  * is ever drawn.
  *
  * `frontend/scripts/sync-map-worker.mjs` copies the worker out of the installed
- * package into `public/vendor/` on every build, so this path is same-origin and
- * always matches the installed version.
+ * package into `public/vendor/maplibre-gl/<version>/` on every build, so this
+ * path is same-origin and always matches the installed version. The version
+ * in the path is the one this very module reports, which is what lets the
+ * files be served as immutable: a new MapLibre is a new URL.
  */
-const WORKER_URL = "/vendor/maplibre-gl-worker.mjs";
+const WORKER_URL = `/vendor/maplibre-gl/${getVersion()}/maplibre-gl-worker.mjs`;
 
 export interface MapContainerCenter {
   latitude: number;

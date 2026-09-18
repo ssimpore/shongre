@@ -136,7 +136,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           title={t("messaging.messageComposer.envoyer")}
           disabled={!canSubmit}
           isLoading={isSending}
-          className="w-control-md shrink-0 !px-0 xl:!w-auto xl:!px-4"
+          className="min-h-control-touch w-control-touch shrink-0 !px-0 xl:!w-auto xl:!px-4"
         >
           {!isSending && (
             <Send className="h-icon-sm w-icon-sm shrink-0" aria-hidden="true" />

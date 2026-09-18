@@ -282,9 +282,21 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
     const demoRepo = new DemoSolutionsRepository();
     const postgresRepo = new PostgresSolutionsRepository();
 
-    it("starts with a deterministic empty production-shaped demo catalog", async () => {
+    it("opens on the deterministic product catalogue, and on nothing without one", async () => {
+      // The demo family describes the platform's own three products, the
+      // same records the local database seed creates; a repository built
+      // without definitions stays empty, which is how the Postgres family
+      // starts before an administrator authors the catalogue.
       await expect(
-        demoRepo.list({ publicOnly: true, marketCode: "FR" }),
+        demoRepo
+          .list({ publicOnly: true, marketCode: "FR" })
+          .then((values) => values.map((value) => value.slug)),
+      ).resolves.toEqual(["marketplace", "prospects", "facturation"]);
+      await expect(
+        new DemoSolutionsRepository([]).list({
+          publicOnly: true,
+          marketCode: "FR",
+        }),
       ).resolves.toEqual([]);
     });
 

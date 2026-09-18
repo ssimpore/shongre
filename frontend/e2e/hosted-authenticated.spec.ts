@@ -58,9 +58,14 @@ function totp(secret: string) {
 }
 
 test.describe("authenticated staging certification", () => {
+  // The isolated local runner also sets `PLAYWRIGHT_BASE_URL`, so the base URL
+  // alone cannot tell a hosted certification from a local sweep; the staging
+  // marker is what the release workflow provides and the local runner never
+  // does. Without it the suite is not a failure, it is not applicable.
   test.skip(
-    !process.env.PLAYWRIGHT_BASE_URL,
-    "Hosted deployment variables are required.",
+    !process.env.PLAYWRIGHT_BASE_URL ||
+      process.env.PLAYWRIGHT_EXPECTED_ENVIRONMENT !== "staging",
+    "Hosted staging certification variables are required.",
   );
   test.describe.configure({ mode: "serial", retries: 0, timeout: 120_000 });
   // No credential-bearing DOM, session tokens or private responses in artifacts.

@@ -61,7 +61,7 @@ export async function generateMetadata({
   const pathname = normalizePathname(segments);
   const applicationContext = await resolveServerApplicationContext(pathname);
   if (applicationContext) {
-    const { applicationId, applicationPath, canonicalOrigin } =
+    const { applicationId, applicationPath, canonicalOrigin, marketContext } =
       applicationContext;
     const rootCanonical = `${canonicalOrigin}/`;
     let title = "SHONGRE.";
@@ -72,8 +72,18 @@ export async function generateMetadata({
 
     if (applicationId === "solutions") {
       const slug = applicationPath.split("/").filter(Boolean)[0];
+      // The catalogue is market-scoped, and the API refuses a read without a
+      // market: this call used to omit it, so every solution page's metadata
+      // threw, the document shipped without a title and React abandoned the
+      // server render. A catalogue that is unavailable is not a missing
+      // solution either — it keeps the generic title rather than a 404 one.
       const candidate = slug
-        ? await serverServices.solutions.getSolutionBySlug(slug)
+        ? await serverServices.solutions
+            .getSolutionBySlug(slug, {
+              marketCode: marketContext.countryCode ?? undefined,
+              language: marketContext.locale ?? undefined,
+            })
+            .catch(() => null)
         : null;
       const solution =
         candidate && PUBLIC_SOLUTION_LIFECYCLES.includes(candidate.lifecycle)

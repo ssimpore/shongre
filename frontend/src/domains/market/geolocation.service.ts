@@ -31,7 +31,8 @@ export interface ResolvedCurrentLocation {
 
 type CityPoint = { latitude: number; longitude: number };
 
-const normalizeCity = (value: string) =>
+/** The lookup key of a town name in the configured coordinate table. */
+export const normalizeCityName = (value: string) =>
   value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -53,15 +54,33 @@ const distanceBetweenKm = (from: GeoCoordinates, to: CityPoint): number => {
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-const cityPoint = (marketCode: string, cityName: string): CityPoint | null => {
-  const normalized = normalizeCity(cityName);
-  return MARKET_CITY_COORDINATES[marketCode]?.[normalized] || null;
+/** A second source of town coordinates, for towns the configured table lacks. */
+export type CityPointResolver = (
+  marketCode: string,
+  cityName: string,
+) => CityPoint | null;
+
+// The presentation table answers first; a caller may supply the shared
+// gazetteer (loaded on demand — it is far too large for the initial bundle)
+// so a market whose shortlist only exists there can still label a position.
+const cityPoint = (
+  marketCode: string,
+  cityName: string,
+  resolvePoint?: CityPointResolver,
+): CityPoint | null => {
+  const normalized = normalizeCityName(cityName);
+  return (
+    MARKET_CITY_COORDINATES[marketCode]?.[normalized] ??
+    resolvePoint?.(marketCode, cityName) ??
+    null
+  );
 };
 
 export const resolveNearestMarketCity = (
   coordinates: GeoCoordinates,
   marketCode: string,
   cities: MarketCity[],
+  resolvePoint?: CityPointResolver,
 ): ResolvedCurrentLocation => {
   const country = resolveCountryFromCoordinates(coordinates).country;
   if (!country || country.code !== marketCode) {
@@ -69,7 +88,7 @@ export const resolveNearestMarketCity = (
   }
 
   const candidates = cities.flatMap((city) => {
-    const point = cityPoint(marketCode, city.name);
+    const point = cityPoint(marketCode, city.name, resolvePoint);
     return point
       ? [{ city, distanceKm: distanceBetweenKm(coordinates, point) }]
       : [];

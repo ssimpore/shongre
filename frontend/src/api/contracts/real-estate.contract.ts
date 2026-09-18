@@ -141,6 +141,8 @@ export interface RealEstateServiceContract {
     leadId: string,
     startsAt: string,
   ): Promise<PropertyAppointment>;
+  /** The caller's own agency, resolved from membership rather than a client-known id. */
+  getCurrentAgencyWorkspace(): Promise<AgencyWorkspace>;
   getAgencyWorkspace(organizationId: string): Promise<AgencyWorkspace>;
   updateLead(
     organizationId: string,

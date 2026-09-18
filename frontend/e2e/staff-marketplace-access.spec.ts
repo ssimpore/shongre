@@ -75,11 +75,21 @@ test.describe("Staff marketplace navigation", () => {
       waitUntil: "domcontentloaded",
     });
 
-    const favorite = page.getByRole("button", { name: /favoris/i });
-    const send = page.getByRole("button", { name: "Envoyer la demande" });
+    // The listing's own controls, not the similar-listing cards' favourites
+    // nor the desktop sticky header's compact duplicate of the submit, which
+    // is portaled into the header stack outside `main`.
+    const main = page.getByRole("main");
+    const favorite = main.getByRole("button", {
+      name: /favoris : Maison familiale avec jardin/,
+    });
+    const send = main.getByRole("button", { name: "Envoyer la demande" });
     await expect(favorite).toBeVisible();
     await expect(send).toBeVisible();
-    await expect(page.getByText("Contacter l’annonceur")).toBeVisible();
+    await expect(
+      page
+        .locator("#immo-property-lead-form")
+        .getByText("Contacter l’annonceur"),
+    ).toBeVisible();
 
     const message = page.getByRole("textbox", { name: "Message" });
     await message.fill("État de formulaire Staff à préserver");
@@ -185,14 +195,19 @@ test.describe("Staff marketplace navigation", () => {
     await expect(page.locator("[data-header-publish-cta]")).toBeVisible();
     await expect(page.getByRole("link", { name: "Favoris" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Messagerie" })).toBeVisible();
-    await expect(page.getByRole("button", { name: /favoris/i })).toBeVisible();
+    const main = page.getByRole("main");
+    await expect(
+      main.getByRole("button", {
+        name: /favoris : Maison familiale avec jardin/,
+      }),
+    ).toBeVisible();
 
     await page.getByRole("textbox", { name: "Nom" }).fill("Thomas Laurent");
     await page
       .getByRole("textbox", { name: "E-mail" })
       .fill("thomas.laurent@example.test");
     await page.getByRole("checkbox").check();
-    await page.getByRole("button", { name: "Envoyer la demande" }).click();
+    await main.getByRole("button", { name: "Envoyer la demande" }).click();
     await expect(page.getByText("Demande envoyée")).toBeVisible();
     const appointment = page.getByLabel("Créneau souhaité");
     await expect(appointment).toHaveValue("");

@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useRef } from "react";
+import dynamic from "next/dynamic";
 import {
   createBrowserRouter,
   createMemoryRouter,
@@ -23,6 +24,15 @@ import type { Permission } from "../../types";
 import type { ShongreApplicationId } from "../../platform/applications/application-registry";
 
 // Lazy Loaded Features
+//
+// Two loaders, on purpose. Public routes the server renders with content use
+// `next/dynamic`, so the document preloads their chunk and hydration finds it
+// in hand — a chunk discovered by `React.lazy` during hydration leaves the
+// boundary dehydrated, and the first provider restoration that reaches it
+// then drops the server HTML for the route fallback. Routes behind a session
+// or a permission render a guard first and never carry server content, so
+// they stay on `React.lazy`: `next/dynamic` records a module id per call in
+// the shell bundle, and a hundred of those cost more than they return.
 const AccountLayout = lazy(() =>
   import("../layouts/AccountLayout").then((module) => ({
     default: module.AccountLayout,
@@ -33,40 +43,40 @@ const AdminLayout = lazy(() =>
     default: module.AdminLayout,
   })),
 );
-const SolutionsLayout = lazy(() =>
+const SolutionsLayout = dynamic(() =>
   import("../../features/solutions/SolutionsLayout").then((module) => ({
     default: module.SolutionsLayout,
   })),
 );
-const HomePage = lazy(() =>
+const HomePage = dynamic(() =>
   import("../../features/home/HomePage").then((m) => ({ default: m.HomePage })),
 );
-const CategoriesPage = lazy(() =>
+const CategoriesPage = dynamic(() =>
   import("../../features/categories/CategoriesPage").then((m) => ({
     default: m.CategoriesPage,
   })),
 );
-const CollectionsPage = lazy(() =>
+const CollectionsPage = dynamic(() =>
   import("../../features/collections/CollectionsPage").then((m) => ({
     default: m.CollectionsPage,
   })),
 );
-const SearchPage = lazy(() =>
+const SearchPage = dynamic(() =>
   import("../../features/search/SearchPage").then((m) => ({
     default: m.SearchPage,
   })),
 );
-const ListingDetailPage = lazy(() =>
+const ListingDetailPage = dynamic(() =>
   import("../../features/listings/ListingDetailPage").then((m) => ({
     default: m.ListingDetailPage,
   })),
 );
-const DeliveryMarketplacePage = lazy(() =>
+const DeliveryMarketplacePage = dynamic(() =>
   import("../../features/delivery/DeliveryPages").then((module) => ({
     default: module.DeliveryMarketplacePage,
   })),
 );
-const DeliveryRequestDetailPage = lazy(() =>
+const DeliveryRequestDetailPage = dynamic(() =>
   import("../../features/delivery/DeliveryPages").then((module) => ({
     default: module.DeliveryRequestDetailPage,
   })),
@@ -91,12 +101,12 @@ const PublishWizard = lazy(() =>
     default: m.PublishWizard,
   })),
 );
-const CoursesSearchPage = lazy(() =>
+const CoursesSearchPage = dynamic(() =>
   import("../../features/courses/CoursesSearchPage").then((m) => ({
     default: m.CoursesSearchPage,
   })),
 );
-const CourseTutorProfilePage = lazy(() =>
+const CourseTutorProfilePage = dynamic(() =>
   import("../../features/courses/CourseTutorProfilePage").then((m) => ({
     default: m.CourseTutorProfilePage,
   })),
@@ -123,17 +133,17 @@ const CourseOrganizationWorkspacePage = lazy(() =>
     }),
   ),
 );
-const AutoSearchPage = lazy(() =>
+const AutoSearchPage = dynamic(() =>
   import("../../features/auto/AutoSearchPage").then((m) => ({
     default: m.AutoSearchPage,
   })),
 );
-const AutoVehicleDetailPage = lazy(() =>
+const AutoVehicleDetailPage = dynamic(() =>
   import("../../features/auto/AutoVehicleDetailPage").then((m) => ({
     default: m.AutoVehicleDetailPage,
   })),
 );
-const AutoComparePage = lazy(() =>
+const AutoComparePage = dynamic(() =>
   import("../../features/auto/AutoComparePage").then((m) => ({
     default: m.AutoComparePage,
   })),
@@ -148,12 +158,12 @@ const AutoDealerWorkspacePage = lazy(() =>
     default: m.AutoDealerWorkspacePage,
   })),
 );
-const ImmoSearchPage = lazy(() =>
+const ImmoSearchPage = dynamic(() =>
   import("../../features/real-estate/ImmoSearchPage").then((m) => ({
     default: m.ImmoSearchPage,
   })),
 );
-const ImmoPropertyDetailPage = lazy(() =>
+const ImmoPropertyDetailPage = dynamic(() =>
   import("../../features/real-estate/ImmoPropertyDetailPage").then((m) => ({
     default: m.ImmoPropertyDetailPage,
   })),
@@ -168,12 +178,12 @@ const ImmoAgencyWorkspacePage = lazy(() =>
     default: m.ImmoAgencyWorkspacePage,
   })),
 );
-const EmploymentSearchPage = lazy(() =>
+const EmploymentSearchPage = dynamic(() =>
   import("../../features/employment/EmploymentSearchPage").then((m) => ({
     default: m.EmploymentSearchPage,
   })),
 );
-const EmploymentJobDetailPage = lazy(() =>
+const EmploymentJobDetailPage = dynamic(() =>
   import("../../features/employment/EmploymentJobDetailPage").then((m) => ({
     default: m.EmploymentJobDetailPage,
   })),
@@ -217,7 +227,7 @@ const SavedSearchesPage = lazy(() =>
     default: m.SavedSearchesPage,
   })),
 );
-const WatchSubscriptionsPage = lazy(() =>
+const WatchSubscriptionsPage = dynamic<{ canonicalPath?: string }>(() =>
   import("../../features/watch-subscriptions/WatchSubscriptionsPage").then(
     (m) => ({ default: m.WatchSubscriptionsPage }),
   ),
@@ -282,27 +292,27 @@ const ProStorefrontEditorPage = lazy(() =>
     (m) => ({ default: m.ProStorefrontEditorPage }),
   ),
 );
-const ProPlansPage = lazy(() =>
+const ProPlansPage = dynamic(() =>
   import("../../features/seller-workspace/ProPlansPage").then((m) => ({
     default: m.ProPlansPage,
   })),
 );
-const ProspectsProductPage = lazy(() =>
+const ProspectsProductPage = dynamic(() =>
   import("../../features/prospecting/ProspectsProductPage").then((m) => ({
     default: m.ProspectsProductPage,
   })),
 );
-const FacturationProductPage = lazy(() =>
+const FacturationProductPage = dynamic(() =>
   import("../../features/invoicing/FacturationProductPage").then((m) => ({
     default: m.FacturationProductPage,
   })),
 );
-const SolutionsPage = lazy(() =>
+const SolutionsPage = dynamic(() =>
   import("../../features/solutions/SolutionsPage").then((m) => ({
     default: m.SolutionsPage,
   })),
 );
-const SolutionDetailPage = lazy(() =>
+const SolutionDetailPage = dynamic(() =>
   import("../../features/solutions/SolutionDetailPage").then((m) => ({
     default: m.SolutionDetailPage,
   })),
@@ -352,52 +362,52 @@ const ProspectsProWorkspacePage = lazy(() =>
     default: m.ProspectingWorkspacePage,
   })),
 );
-const ProDirectoryPage = lazy(() =>
+const ProDirectoryPage = dynamic(() =>
   import("../../features/pro/ProDirectoryPage").then((m) => ({
     default: m.ProDirectoryPage,
   })),
 );
-const SellerPublicPage = lazy(() =>
+const SellerPublicPage = dynamic(() =>
   import("../../features/profile/SellerPublicPage").then((m) => ({
     default: m.SellerPublicPage,
   })),
 );
-const LoginPage = lazy(() =>
+const LoginPage = dynamic(() =>
   import("../../features/auth/LoginPage").then((m) => ({
     default: m.LoginPage,
   })),
 );
-const RegisterChoicePage = lazy(() =>
+const RegisterChoicePage = dynamic(() =>
   import("../../features/auth/RegisterPages").then((m) => ({
     default: m.RegisterChoicePage,
   })),
 );
-const RegisterIndividualPage = lazy(() =>
+const RegisterIndividualPage = dynamic(() =>
   import("../../features/auth/RegisterPages").then((m) => ({
     default: m.RegisterIndividualPage,
   })),
 );
-const RegisterProPage = lazy(() =>
+const RegisterProPage = dynamic(() =>
   import("../../features/auth/RegisterPages").then((m) => ({
     default: m.RegisterProPage,
   })),
 );
-const ForgotPasswordPage = lazy(() =>
+const ForgotPasswordPage = dynamic(() =>
   import("../../features/auth/ForgotPasswordPage").then((m) => ({
     default: m.ForgotPasswordPage,
   })),
 );
-const VerifyEmailPage = lazy(() =>
+const VerifyEmailPage = dynamic(() =>
   import("../../features/auth/VerifyEmailPage").then((m) => ({
     default: m.VerifyEmailPage,
   })),
 );
-const OAuthCallbackPage = lazy(() =>
+const OAuthCallbackPage = dynamic(() =>
   import("../../features/auth/OAuthCallbackPage").then((m) => ({
     default: m.OAuthCallbackPage,
   })),
 );
-const DomainHandoffPage = lazy(() =>
+const DomainHandoffPage = dynamic(() =>
   import("../../features/auth/DomainHandoffPage").then((m) => ({
     default: m.DomainHandoffPage,
   })),
@@ -414,50 +424,50 @@ const AccountTypeOnboardingPage = lazy(() =>
 );
 
 // Legal Pages
-const AboutPage = lazy(() =>
+const AboutPage = dynamic(() =>
   import("../../features/legal/LegalPages").then((m) => ({
     default: m.AboutPage,
   })),
 );
-const TermsPage = lazy(() =>
+const TermsPage = dynamic(() =>
   import("../../features/legal/LegalPages").then((m) => ({
     default: m.TermsPage,
   })),
 );
-const PrivacyPage = lazy(() =>
+const PrivacyPage = dynamic(() =>
   import("../../features/legal/LegalPages").then((m) => ({
     default: m.PrivacyPage,
   })),
 );
-const LegalNoticesPage = lazy(() =>
+const LegalNoticesPage = dynamic(() =>
   import("../../features/legal/LegalPages").then((m) => ({
     default: m.LegalNoticesPage,
   })),
 );
-const AccessibilityPage = lazy(() =>
+const AccessibilityPage = dynamic(() =>
   import("../../features/legal/LegalPages").then((m) => ({
     default: m.AccessibilityPage,
   })),
 );
-const HelpSafetyPage = lazy(() =>
+const HelpSafetyPage = dynamic(() =>
   import("../../features/legal/LegalPages").then((m) => ({
     default: m.HelpSafetyPage,
   })),
 );
-const DealsPage = lazy(() =>
+const DealsPage = dynamic(() =>
   import("../../features/legal/LegalPages").then((m) => ({
     default: m.DealsPage,
   })),
 );
-const AccountDeletionPage = lazy(
+const AccountDeletionPage = dynamic(
   () => import("../../features/legal/AccountDeletionPage"),
 );
-const HelpCenterPage = lazy(() =>
+const HelpCenterPage = dynamic(() =>
   import("../../features/support/HelpCenterPage").then((m) => ({
     default: m.HelpCenterPage,
   })),
 );
-const ContactPage = lazy(() =>
+const ContactPage = dynamic(() =>
   import("../../features/support/ContactPage").then((m) => ({
     default: m.ContactPage,
   })),
@@ -492,7 +502,7 @@ const StaffMfaPage = lazy(() =>
     default: m.StaffMfaPage,
   })),
 );
-const NewsletterLandingPage = lazy(() =>
+const NewsletterLandingPage = dynamic(() =>
   import("../../features/newsletter/NewsletterLandingPage").then((m) => ({
     default: m.NewsletterLandingPage,
   })),
@@ -502,19 +512,19 @@ const NewsletterPreferencesPage = lazy(() =>
     default: m.NewsletterPreferencesPage,
   })),
 );
-const NewsletterPublicPreferencesPage = lazy(() =>
+const NewsletterPublicPreferencesPage = dynamic(() =>
   import("../../features/newsletter/NewsletterPublicPreferencesPage").then(
     (m) => ({
       default: m.NewsletterPublicPreferencesPage,
     }),
   ),
 );
-const NewsletterConfirmPage = lazy(() =>
+const NewsletterConfirmPage = dynamic(() =>
   import("../../features/newsletter/NewsletterConfirmPage").then((m) => ({
     default: m.NewsletterConfirmPage,
   })),
 );
-const NewsletterUnsubscribePage = lazy(() =>
+const NewsletterUnsubscribePage = dynamic(() =>
   import("../../features/newsletter/NewsletterUnsubscribePage").then((m) => ({
     default: m.NewsletterUnsubscribePage,
   })),
@@ -539,7 +549,7 @@ const AdminImmoPage = lazy(() =>
     default: m.AdminImmoPage,
   })),
 );
-const NotFoundPage = lazy(() =>
+const NotFoundPage = dynamic(() =>
   import("../../features/errors/NotFoundPage").then((m) => ({
     default: m.NotFoundPage,
   })),

@@ -33,6 +33,8 @@ test.describe("Shongre Immo", () => {
       }),
     ).toBeVisible();
     await expect(page.getByRole("article").first()).toBeVisible();
+    // Desktop filters live behind the shared disclosure, closed by default.
+    await page.getByRole("button", { name: "Afficher les filtres" }).click();
     const locationSelector = page.locator("#immo-location-selector-desktop");
     await expect(locationSelector).toHaveAttribute(
       "data-location-selector",
@@ -49,11 +51,32 @@ test.describe("Shongre Immo", () => {
     await expect(page).toHaveURL(/city=%C3%89cully/);
     await expect(page.getByRole("article")).toHaveCount(1);
     await page.getByRole("button", { name: "Créer une alerte" }).click();
+    await expect(
+      page.getByText(
+        "Alerte Immo créée. Vous pouvez la gérer depuis votre compte.",
+      ),
+    ).toBeVisible();
+    // Alerts are account subscriptions, not device state: the account's
+    // watch list must carry the real-estate saved search on this city.
     await expect
-      .poll(() =>
-        page.evaluate(() => localStorage.getItem("shongre_saved_searches_v2")),
-      )
-      .toContain("real_estate");
+      .poll(async () => {
+        const { body } = await browserApi(page, "/watch-subscriptions");
+        const items = (
+          body as {
+            items?: {
+              targetType: string;
+              searchFilter?: { categoryId?: string; city?: string };
+            }[];
+          }
+        ).items;
+        return (items ?? []).some(
+          (item) =>
+            item.targetType === "saved_search" &&
+            item.searchFilter?.categoryId?.includes("real_estate") &&
+            item.searchFilter?.city === "Écully",
+        );
+      })
+      .toBe(true);
     expect(await page.locator("body").innerText()).not.toContain(
       "Adresse privée",
     );
@@ -95,16 +118,20 @@ test.describe("Shongre Immo", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Appartement lumineux",
     );
-    await expect(page.getByText("Contacter l’annonceur")).toBeVisible();
+    await expect(
+      page
+        .locator("#immo-property-lead-form")
+        .getByText("Contacter l’annonceur"),
+    ).toBeVisible();
     await expect(page.getByTestId("immo-property-promotion")).toHaveCount(0);
     const body = page.locator("body");
     await expect(body).not.toContainText(
       /Adresse privée|documents-private|riskSignals|Montchat, Lyon 3e/,
     );
-    await expect(page.locator('head meta[name="description"]')).toHaveCount(1);
-    await expect(page.locator('head link[rel="canonical"]')).toHaveCount(1);
+    await expect(page.locator('meta[name="description"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
     await expect(
-      page.locator('head script[type="application/ld+json"]'),
+      page.locator('script[type="application/ld+json"]'),
     ).toHaveCount(1);
   });
 
@@ -386,8 +413,18 @@ test.describe("Shongre Immo", () => {
       page.getByRole("heading", { level: 1, name: "Agence Canopée" }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Imports", exact: true }).click();
-    await page.getByRole("button", { name: "Importer un CSV" }).click();
-    await expect(page.getByText("portefeuille-lyon.csv")).toBeVisible();
+    // The commercial catalogue suspends portfolio imports on every agency plan
+    // until the production journey ships; the workspace must say so instead
+    // of offering a request the API refuses.
+    const csvImport = page.getByRole("button", { name: "Importer un CSV" });
+    await expect(csvImport).toBeDisabled();
+    await expect(csvImport).toHaveAccessibleDescription(
+      /ne sont pas inclus dans votre formule/,
+    );
+    await expect(
+      page.getByRole("button", { name: "Déclarer un flux XML" }),
+    ).toBeDisabled();
+    await expect(page.getByText("portefeuille-lyon.csv")).toHaveCount(0);
 
     const adminPage = await page.context().newPage();
     await usePersona(adminPage, "admin");

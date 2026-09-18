@@ -1,18 +1,22 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { webBrandAssets } from "@shongre/brand/web";
 import type { CourseOffer, TutorProfile } from "@shongre/contracts/courses";
 import type { VehiclePrivate } from "@shongre/contracts/auto";
+import type { DeliveryRequestDraftInput } from "@shongre/contracts/delivery";
 import type { PropertyPrivate } from "@shongre/contracts/real-estate";
 import { taxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.runtime.js";
 import type { TaxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.v1.service.js";
 import { createDefaultHomepageConfiguration } from "@shongre/contracts/homepage";
+import { DEMO_SOLUTION_CATALOG } from "@shongre/contracts/solutions-demo";
 import {
   EMPLOYMENT_DEMO_JOBS,
   type JobPostingDetail,
 } from "@shongre/contracts/employment-demo";
 import type {
+  Conversation,
   Listing,
   Message,
   NotificationItem,
@@ -30,6 +34,7 @@ import {
   DEMO_TUTOR_PROFILES,
   PostgresCoursesRepository,
 } from "../../src/infrastructure/database/repositories/courses.repository.js";
+import { PostgresDeliveryRepository } from "../../src/infrastructure/database/repositories/delivery.repository.js";
 import { PostgresEmploymentRepository } from "../../src/infrastructure/database/repositories/employment.repository.js";
 import { PostgresNotificationRepository } from "../../src/infrastructure/database/repositories/notification.repository.js";
 import {
@@ -37,6 +42,7 @@ import {
   PostgresOrderRepository,
 } from "../../src/infrastructure/database/repositories/order.repository.js";
 import { PostgresReviewRepository } from "../../src/infrastructure/database/repositories/review.repository.js";
+import { PostgresSolutionsRepository } from "../../src/infrastructure/database/repositories/solutions.repository.js";
 import {
   DEFAULT_REAL_ESTATE_PROPERTIES,
   PostgresRealEstateRepository,
@@ -1009,13 +1015,24 @@ async function seedOrganizations(): Promise<{
   const agencyMemberResult = await client
     .from("real_estate_agency_members")
     .upsert(
-      {
-        organization_id: realEstateOrganizationId,
-        user_id: profileId("member_clara"),
-        role: "owner",
-        branch_ids: Object.values(branches),
-        status: "active",
-      },
+      [
+        {
+          organization_id: realEstateOrganizationId,
+          user_id: profileId("member_clara"),
+          role: "owner",
+          branch_ids: Object.values(branches),
+          status: "active",
+        },
+        // The marketplace fixture's real-estate persona manages the same
+        // agency, so the browser scenario opens one workspace in both modes.
+        {
+          organization_id: realEstateOrganizationId,
+          user_id: profileId("user_immo_clara"),
+          role: "manager",
+          branch_ids: Object.values(branches),
+          status: "active",
+        },
+      ],
       { onConflict: "organization_id,user_id" },
     );
   if (agencyMemberResult.error) throw agencyMemberResult.error;
@@ -1352,6 +1369,99 @@ export function createSeedListing(
   return listing;
 }
 
+/** The scenario's requester and the key both modes create the request under. */
+export const SEED_DELIVERY_REQUEST = {
+  fixtureId: "delivery-petit-meuble",
+  requesterSourceId: "user_thomas",
+  requesterName: "Thomas Laurent",
+} as const;
+
+/**
+ * The one open delivery request of the scenario, as the requester submitted
+ * it. Both repository families create it through their own `createDraft` and
+ * `publish`, so the public projection under test — localities shown, streets,
+ * phone and access code kept private — is the backend's, never a fixture's.
+ * Windows and expiry follow the clock so the request stays open.
+ */
+export function createSeedDeliveryRequest(
+  marketCode = "FR",
+): DeliveryRequestDraftInput {
+  const at = (days: number, hour: number) => {
+    const date = new Date(Date.now() + days * 86_400_000);
+    date.setUTCHours(hour, 0, 0, 0);
+    return date.toISOString();
+  };
+  return {
+    marketCode,
+    origin: "standalone",
+    title: "Livrer un petit meuble",
+    description:
+      "Une commode deux tiroirs (60 × 40 × 80 cm) à transporter depuis un appartement au 2e étage sans ascenseur vers un rez-de-chaussée. Elle est déjà protégée par une couverture.",
+    pickup: {
+      street: "12 rue Oberkampf",
+      city: "Paris",
+      postalCode: "75011",
+      contactName: "Thomas Laurent",
+      contactPhone: "+33600000000",
+      accessInstructions: "Code 1234A, 2e étage sans ascenseur.",
+    },
+    dropoff: {
+      street: "8 avenue Victor-Hugo",
+      city: "Boulogne-Billancourt",
+      postalCode: "92100",
+      contactName: "Camille Martin",
+      contactPhone: "+33600000000",
+    },
+    pickupWindow: { startsAt: at(2, 8), endsAt: at(2, 11) },
+    deliveryWindow: { startsAt: at(2, 13), endsAt: at(2, 17) },
+    package: {
+      type: "Commode",
+      count: 1,
+      approximateWeightGrams: 25_000,
+      dimensionsCm: { length: 60, width: 40, height: 80 },
+      handlingRequirements: ["fragile"],
+      requiredVehicleType: "van",
+      loadingAssistanceRequired: true,
+    },
+    budget: { amountMinor: 4_500, currency: "EUR" },
+    publicInstructions: "Prévoir une sangle et une couverture supplémentaire.",
+    expiresAt: at(14, 12),
+    idempotencyKey: "local-seed:delivery:petit-meuble",
+  };
+}
+
+/** One local admin grant for a listing's market placement. */
+export function createSeedPromotionGrant(input: {
+  listingId: string;
+  marketCode: string;
+  placementType: NonNullable<Listing["promotionType"]>;
+  label?: string;
+  startsAt: string;
+  endsAt: string;
+}): Database["public"]["Tables"]["listing_promotions"]["Insert"] {
+  const reference = `local-seed:${input.listingId}:${input.marketCode}:${input.placementType}`;
+  return {
+    id: localSeedUuid("listing-market-promotion", reference),
+    listing_id: input.listingId,
+    market_code: input.marketCode,
+    placement_type: input.placementType,
+    source_type: "admin_grant",
+    admin_grant_reference: reference,
+    status: "active",
+    label:
+      input.label ||
+      (input.placementType === "urgent_badge"
+        ? "Urgent"
+        : input.placementType === "sponsored_search"
+          ? "Sponsorisé"
+          : input.placementType === "search_bump"
+            ? "Boosté"
+            : "À la une"),
+    starts_at: input.startsAt,
+    ends_at: input.endsAt,
+  };
+}
+
 /** Persist local grant evidence; database triggers own the effective projection. */
 export function createSeedListingPromotion(
   listing: Listing,
@@ -1372,38 +1482,29 @@ export function createSeedListingPromotion(
   )
     return undefined;
 
-  const reference = `local-seed:${listing.id}:${listing.marketCode}:${listing.promotionType}`;
-  return {
-    id: localSeedUuid("listing-market-promotion", reference),
-    listing_id: listing.id,
-    market_code: listing.marketCode,
-    placement_type: listing.promotionType,
-    source_type: "admin_grant",
-    admin_grant_reference: reference,
-    status: "active",
-    label:
-      listing.promotionLabel ||
-      (listing.promotionType === "urgent_badge"
-        ? "Urgent"
-        : listing.promotionType === "sponsored_search"
-          ? "Sponsorisé"
-          : listing.promotionType === "search_bump"
-            ? "Boosté"
-            : "À la une"),
-    starts_at: listing.promotionStartAt,
-    ends_at: listing.promotionEndAt,
-  };
+  return createSeedPromotionGrant({
+    listingId: listing.id,
+    marketCode: listing.marketCode,
+    placementType: listing.promotionType,
+    label: listing.promotionLabel,
+    startsAt: listing.promotionStartAt,
+    endsAt: listing.promotionEndAt,
+  });
 }
 
-async function reconcileSeedListingPromotion(listing: Listing): Promise<void> {
+/** Installs the grant and cancels any earlier local grant for the same listing. */
+async function reconcileSeedPromotionGrant(
+  listingId: string,
+  promotion:
+    Database["public"]["Tables"]["listing_promotions"]["Insert"] | undefined,
+): Promise<void> {
   const client = getSupabaseAdminClient();
-  const promotion = createSeedListingPromotion(listing);
   let stalePromotions = client
     .from("listing_promotions")
     .update({ status: "cancelled" })
-    .eq("listing_id", listing.id)
+    .eq("listing_id", listingId)
     .eq("source_type", "admin_grant")
-    .like("admin_grant_reference", `local-seed:${listing.id}:%`);
+    .like("admin_grant_reference", `local-seed:${listingId}:%`);
   if (promotion) stalePromotions = stalePromotions.neq("id", promotion.id!);
   const { error: stalePromotionError } = await stalePromotions;
   if (stalePromotionError) throw stalePromotionError;
@@ -1413,6 +1514,13 @@ async function reconcileSeedListingPromotion(listing: Listing): Promise<void> {
     .from("listing_promotions")
     .upsert(promotion, { onConflict: "id" });
   if (error) throw error;
+}
+
+async function reconcileSeedListingPromotion(listing: Listing): Promise<void> {
+  await reconcileSeedPromotionGrant(
+    listing.id,
+    createSeedListingPromotion(listing),
+  );
 }
 
 async function seedGenericListings(
@@ -1564,6 +1672,86 @@ function transactionListing(source: Record<string, any>): Record<string, any> {
   return listing;
 }
 
+/** The fixture listing a transaction was placed on, honouring the id aliases. */
+export function seedTransactionListing(
+  source: Record<string, any>,
+): Record<string, any> {
+  return transactionListing(source);
+}
+
+/**
+ * One fixture transaction as the order record both repository families store.
+ * A terminal status is reached through `update`, as the lifecycle would, so
+ * the caller creates the order in its initial state and then moves it.
+ */
+export function createSeedOrder(
+  source: Record<string, any>,
+  identity: {
+    orderId: string;
+    listingId: string;
+    profileId: (sourceId: string) => string;
+  },
+): {
+  order: OrderRecord;
+  targetStatus: Transaction["status"];
+  terminalStatus: boolean;
+} {
+  const sourceListing = transactionListing(source);
+  const targetStatus = orderStatus(source);
+  const terminalStatus = ["completed", "cancelled", "refunded"].includes(
+    targetStatus,
+  );
+  const itemAmount = Number(source.amount ?? source.listingPrice ?? 0);
+  const protectionFee = Number(source.protectionFee || 0);
+  const shippingFee = Number(source.shippingFee || 0);
+  const totalCharged = Number(
+    source.totalAmount ?? itemAmount + protectionFee + shippingFee,
+  );
+  const currency = String(source.currency || "EUR").toUpperCase();
+  const order: OrderRecord = {
+    id: identity.orderId,
+    orderNumber: source.code || `LOCAL-${source.id}`,
+    transactionType: "DIRECT_PURCHASE",
+    listingId: identity.listingId,
+    buyerId: identity.profileId(source.buyerId),
+    sellerId: identity.profileId(sourceListing.sellerId),
+    status: terminalStatus ? "initiated" : targetStatus,
+    itemAmount,
+    itemAmountMinor: Math.round(itemAmount * 100),
+    protectionFee,
+    protectionFeeMinor: Math.round(protectionFee * 100),
+    shippingFee,
+    shippingFeeMinor: Math.round(shippingFee * 100),
+    totalCharged,
+    totalChargedMinor: Math.round(totalCharged * 100),
+    escrowSecuredAmount: itemAmount + shippingFee,
+    escrowSecuredAmountMinor: Math.round((itemAmount + shippingFee) * 100),
+    currency,
+    deliveryMethod:
+      source.deliveryMethod === "custom_carrier"
+        ? "home_delivery"
+        : source.deliveryMethod,
+    shippingAddress: source.deliveryAddress
+      ? {
+          street: source.deliveryAddress.street,
+          city: source.deliveryAddress.city,
+          postalCode: source.deliveryAddress.postalCode,
+          country: source.marketCode || "FR",
+        }
+      : undefined,
+    isPinVerified: source.verificationCodeStatus === "verified",
+    paymentMethod: source.payment?.paymentMethod || "card",
+    paymentIntentId: source.payment?.intentId,
+    carrierName: source.carrierName,
+    trackingNumber: source.trackingNumber,
+    shippedAt: source.shippedAt,
+    handoverPinAttempts: 0,
+    createdAt: source.createdAt,
+    updatedAt: source.updatedAt,
+  };
+  return { order, targetStatus, terminalStatus };
+}
+
 function transactionListingSnapshotId(transactionId: string): string {
   return localSeedUuid("transaction-listing-snapshot", transactionId);
 }
@@ -1637,47 +1825,48 @@ async function createTransactionListingSnapshot(
   return snapshotId;
 }
 
-async function seedMarketplaceAccountScenario(
-  demoMediaUrls: ReadonlyMap<string, string>,
-): Promise<void> {
-  const client = getSupabaseAdminClient() as any;
-  const conversationIds = marketplaceFixture.conversations.map((source) =>
-    localSeedUuid("conversation", source.id),
-  );
-  if (conversationIds.length) {
-    const deleteResult = await client
-      .from("conversations")
-      .delete()
-      .in("id", conversationIds);
-    if (deleteResult.error) throw deleteResult.error;
-    const conversationResult = await client.from("conversations").insert(
-      marketplaceFixture.conversations.map((source) => ({
-        id: localSeedUuid("conversation", source.id),
-        listing_id: listingId(source.listingId),
-        buyer_id: profileId(source.buyerId),
-        seller_id: profileId(source.sellerId),
-        last_message_text: source.lastMessage,
-        last_message_at: source.lastMessageAt,
-        created_at: source.createdAt || source.lastMessageAt,
-        updated_at: source.lastMessageAt,
-      })),
-    );
-    if (conversationResult.error) throw conversationResult.error;
-  }
-
+/**
+ * The fixture's conversations and messages as domain records.
+ *
+ * Shared by the database seed and the browser scenario, so demo mode carries
+ * the same threads the seeded database does — the browser journeys open
+ * `conv-02` by name, and a demo repository that only knew its own canonical
+ * thread rendered an empty messaging page for them. Identities and media are
+ * mapped by the caller: UUIDs and Storage URLs for the database, the fixture's
+ * own ids and source URLs for the in-memory scenario.
+ */
+export function createSeedConversations(options: {
+  conversationId: (sourceId: string) => string;
+  messageId: (sourceId: string) => string;
+  listingId: (sourceId: string) => string;
+  profileId: (sourceId: string) => string;
+  attachmentUrl?: (sourceUrl: string) => string | undefined;
+}): { conversations: Conversation[]; messages: Message[] } {
+  const conversations = marketplaceFixture.conversations.map((source) => ({
+    id: options.conversationId(source.id),
+    listingId: options.listingId(source.listingId),
+    buyerId: options.profileId(source.buyerId),
+    sellerId: options.profileId(source.sellerId),
+    lastMessageText: source.lastMessage,
+    lastMessageAt: source.lastMessageAt,
+    unreadCount: source.unreadCount,
+    createdAt: source.createdAt || source.lastMessageAt,
+  }));
   const messages: Message[] = [];
   for (const [legacyConversationId, sourceMessages] of Object.entries(
     marketplaceFixture.messages,
   )) {
     for (const source of sourceMessages) {
+      const attachment = source.attachmentUrl
+        ? (options.attachmentUrl?.(source.attachmentUrl) ??
+          source.attachmentUrl)
+        : undefined;
       messages.push({
-        id: localSeedUuid("message", source.id),
-        conversationId: localSeedUuid("conversation", legacyConversationId),
-        senderId: profileId(source.senderId),
+        id: options.messageId(source.id),
+        conversationId: options.conversationId(legacyConversationId),
+        senderId: options.profileId(source.senderId),
         text: source.content,
-        attachments: source.attachmentUrl
-          ? [rewriteDemoMediaUrl(source.attachmentUrl, demoMediaUrls)!]
-          : [],
+        attachments: attachment ? [attachment] : [],
         isOffer: source.type === "offer",
         offerPrice: source.offerAmount,
         offerAmountMinor:
@@ -1693,6 +1882,64 @@ async function seedMarketplaceAccountScenario(
       });
     }
   }
+  return { conversations, messages };
+}
+
+async function seedDeliveryScenario(): Promise<void> {
+  const repository = new PostgresDeliveryRepository();
+  const requesterId = profileId(SEED_DELIVERY_REQUEST.requesterSourceId);
+  const input = createSeedDeliveryRequest();
+  // The draft upsert keys on the idempotency key but issues a fresh id, so a
+  // re-run finds the request it already published rather than re-inserting.
+  const existing = (
+    await repository.listOwnRequests(requesterId, input.marketCode)
+  ).find((request) => request.idempotencyKey === input.idempotencyKey);
+  const request =
+    existing ??
+    (await repository.createDraft(
+      requesterId,
+      SEED_DELIVERY_REQUEST.requesterName,
+      true,
+      input,
+    ));
+  if (request.status === "draft" || request.status === "pending_review") {
+    await repository.publish(request.id, requesterId);
+  }
+}
+
+async function seedMarketplaceAccountScenario(
+  demoMediaUrls: ReadonlyMap<string, string>,
+): Promise<void> {
+  const client = getSupabaseAdminClient() as any;
+  const { conversations, messages } = createSeedConversations({
+    conversationId: (id) => localSeedUuid("conversation", id),
+    messageId: (id) => localSeedUuid("message", id),
+    listingId,
+    profileId,
+    attachmentUrl: (url) => rewriteDemoMediaUrl(url, demoMediaUrls),
+  });
+  const conversationIds = conversations.map((conversation) => conversation.id);
+  if (conversationIds.length) {
+    const deleteResult = await client
+      .from("conversations")
+      .delete()
+      .in("id", conversationIds);
+    if (deleteResult.error) throw deleteResult.error;
+    const conversationResult = await client.from("conversations").insert(
+      conversations.map((conversation) => ({
+        id: conversation.id,
+        listing_id: conversation.listingId,
+        buyer_id: conversation.buyerId,
+        seller_id: conversation.sellerId,
+        last_message_text: conversation.lastMessageText,
+        last_message_at: conversation.lastMessageAt,
+        created_at: conversation.createdAt,
+        updated_at: conversation.lastMessageAt,
+      })),
+    );
+    if (conversationResult.error) throw conversationResult.error;
+  }
+
   if (messages.length) {
     const messageResult = await client.from("messages").insert(
       messages.map((message) => ({
@@ -1736,10 +1983,6 @@ async function seedMarketplaceAccountScenario(
   const orderRepository = new PostgresOrderRepository();
   for (const source of marketplaceFixture.transactions) {
     const sourceListing = transactionListing(source);
-    const targetStatus = orderStatus(source);
-    const terminalStatus = ["completed", "cancelled", "refunded"].includes(
-      targetStatus,
-    );
     // Demo fixtures intentionally keep some catalog cards active while also
     // showing historical transactions for the same product. A real order
     // correctly reserves or sells its listing through database triggers, so a
@@ -1754,54 +1997,11 @@ async function seedMarketplaceAccountScenario(
       .update({ status: "published", updated_at: FIXED_CREATED_AT })
       .eq("id", targetListingId);
     if (listingStateResult.error) throw listingStateResult.error;
-    const itemAmount = Number(source.amount ?? source.listingPrice ?? 0);
-    const protectionFee = Number(source.protectionFee || 0);
-    const shippingFee = Number(source.shippingFee || 0);
-    const totalCharged = Number(
-      source.totalAmount ?? itemAmount + protectionFee + shippingFee,
-    );
-    const currency = String(source.currency || "EUR").toUpperCase();
-    const order: OrderRecord = {
-      id: localSeedUuid("order", source.id),
-      orderNumber: source.code || `LOCAL-${source.id}`,
-      transactionType: "DIRECT_PURCHASE",
+    const { order, targetStatus, terminalStatus } = createSeedOrder(source, {
+      orderId: localSeedUuid("order", source.id),
       listingId: targetListingId,
-      buyerId: profileId(source.buyerId),
-      sellerId: profileId(sourceListing.sellerId),
-      status: terminalStatus ? "initiated" : targetStatus,
-      itemAmount,
-      itemAmountMinor: Math.round(itemAmount * 100),
-      protectionFee,
-      protectionFeeMinor: Math.round(protectionFee * 100),
-      shippingFee,
-      shippingFeeMinor: Math.round(shippingFee * 100),
-      totalCharged,
-      totalChargedMinor: Math.round(totalCharged * 100),
-      escrowSecuredAmount: itemAmount + shippingFee,
-      escrowSecuredAmountMinor: Math.round((itemAmount + shippingFee) * 100),
-      currency,
-      deliveryMethod:
-        source.deliveryMethod === "custom_carrier"
-          ? "home_delivery"
-          : source.deliveryMethod,
-      shippingAddress: source.deliveryAddress
-        ? {
-            street: source.deliveryAddress.street,
-            city: source.deliveryAddress.city,
-            postalCode: source.deliveryAddress.postalCode,
-            country: source.marketCode || "FR",
-          }
-        : undefined,
-      isPinVerified: source.verificationCodeStatus === "verified",
-      paymentMethod: source.payment?.paymentMethod || "card",
-      paymentIntentId: source.payment?.intentId,
-      carrierName: source.carrierName,
-      trackingNumber: source.trackingNumber,
-      shippedAt: source.shippedAt,
-      handoverPinAttempts: 0,
-      createdAt: source.createdAt,
-      updatedAt: source.updatedAt,
-    };
+      profileId,
+    });
     const createdOrder = await orderRepository.create(order);
     if (terminalStatus) {
       await orderRepository.update(createdOrder.id, { status: targetStatus });
@@ -1874,20 +2074,37 @@ async function seedMarketplaceAccountScenario(
   }
   const reviewRepository = new PostgresReviewRepository();
   for (const source of marketplaceFixture.reviews) {
-    const review: ReviewItem & { orderId: string } = {
-      id: localSeedUuid("review", source.id),
-      orderId: localSeedUuid("order", source.orderId),
-      targetUserId: profileId(source.targetUserId),
-      authorId: profileId(source.authorId),
-      authorName: source.authorName,
-      rating: Number(source.rating),
-      comment: source.comment,
-      listingTitle: source.listingTitle,
-      createdAt: source.createdAt,
-      verifiedTransaction: true,
-    };
-    await reviewRepository.save(review);
+    await reviewRepository.save(
+      createSeedReview(source, {
+        reviewId: localSeedUuid("review", source.id),
+        orderId: localSeedUuid("order", source.orderId),
+        profileId,
+      }),
+    );
   }
+}
+
+/** One fixture review as both repository families store it. */
+export function createSeedReview(
+  source: Record<string, any>,
+  identity: {
+    reviewId: string;
+    orderId: string;
+    profileId: (sourceId: string) => string;
+  },
+): ReviewItem & { orderId: string } {
+  return {
+    id: identity.reviewId,
+    orderId: identity.orderId,
+    targetUserId: identity.profileId(source.targetUserId),
+    authorId: identity.profileId(source.authorId),
+    authorName: source.authorName,
+    rating: Number(source.rating),
+    comment: source.comment,
+    listingTitle: source.listingTitle,
+    createdAt: source.createdAt,
+    verifiedTransaction: true,
+  };
 }
 
 async function seedAutomotive(
@@ -1895,6 +2112,7 @@ async function seedAutomotive(
   vehicleUrls: ReadonlyMap<string, string>,
 ): Promise<void> {
   const repository = new PostgresAutoRepository();
+  const client = getSupabaseAdminClient() as any;
   for (const source of DEMO_AUTO_VEHICLES) {
     const vehicle: VehiclePrivate = {
       ...structuredClone(source),
@@ -1906,6 +2124,28 @@ async function seedAutomotive(
       vinHash: `local-seed:${localSeedUuid("vehicle-vin", source.id)}`,
     };
     await repository.saveVehicle(vehicle);
+    // The fixture's resolved placement is what the demo repository answers;
+    // here the publication trigger derives it, so the same placement is
+    // granted against the discovery listing the vehicle projects into.
+    const placement = source.resolvedPromotion;
+    if (placement?.state !== "active" || !placement.type) continue;
+    const { data: projected, error } = await client
+      .from("auto_vehicles")
+      .select("listing_id")
+      .eq("id", vehicle.id)
+      .single();
+    if (error) throw error;
+    await reconcileSeedPromotionGrant(
+      projected.listing_id,
+      createSeedPromotionGrant({
+        listingId: projected.listing_id,
+        marketCode: placement.marketCode,
+        placementType: placement.type,
+        label: placement.label,
+        startsAt: placement.startsAt,
+        endsAt: placement.endsAt,
+      }),
+    );
   }
 }
 
@@ -2083,6 +2323,39 @@ async function seedEmployment(employerLogoUrl: string): Promise<void> {
   }
 }
 
+/**
+ * The product catalogue behind `/solutions`: the same three entries the
+ * in-memory repository opens with, created through the catalogue's own
+ * mutation path so the audit trail and idempotency evidence match an
+ * administrator's entry. Existing slugs are left untouched — the local
+ * catalogue is authored in `/admin/solutions` once it exists.
+ */
+async function seedSolutions(): Promise<number> {
+  const repository = new PostgresSolutionsRepository();
+  const actor = {
+    id: profileId("user_super_admin_alex"),
+    name: "Alexandre Meyer (Super Admin)",
+    role: "owner",
+  };
+  let created = 0;
+  for (const input of DEMO_SOLUTION_CATALOG) {
+    const existing = await repository.list({
+      publicOnly: false,
+      slug: input.slug,
+    });
+    if (existing.length > 0) continue;
+    const value = { ...input, releaseNotes: input.releaseNotes ?? [] };
+    await repository.create(value, actor, {
+      idempotencyKey: `local-seed:solution:${input.slug}`,
+      requestHash: createHash("sha256")
+        .update(JSON.stringify({ operation: "create", payload: value }))
+        .digest("hex"),
+    });
+    created += 1;
+  }
+  return created;
+}
+
 async function seedTrendingCache(): Promise<number> {
   const response = await trendingService.getSection(
     { marketCode: "FR", locale: "fr-FR", limit: 4 },
@@ -2135,6 +2408,8 @@ export async function seedLocalDevelopmentData(): Promise<LocalDevelopmentSeedSu
   await seedCourses(organizations.course.organizationId, media.avatarUrls);
   await seedEmployment(media.employerLogoUrl);
   await seedMarketplaceAccountScenario(media.demoMediaUrls);
+  await seedDeliveryScenario();
+  await seedSolutions();
   const trendingTopics = await seedTrendingCache();
   await ensureLocalHomepageConfiguration();
 

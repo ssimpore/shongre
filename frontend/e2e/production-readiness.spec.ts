@@ -34,8 +34,11 @@ test("keeps the homepage compact and all carousel slides but neighbors out of th
     ).toBeVisible();
   }
 
+  // The homepage now server-renders every section, so the ceiling covers the
+  // hero, the recent rail, the deals and the three universe rails as cards —
+  // not only the shell the earlier 1,800 was measured on.
   const elementCount = await page.locator("*").count();
-  expect(elementCount).toBeLessThan(1_800);
+  expect(elementCount).toBeLessThan(3_200);
   await expectNoHorizontalOverflow(page, "production homepage at 1008px");
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -62,16 +65,18 @@ test("restores a known session and consent before profile-dependent UI", async (
       characterData: true,
     });
   });
+  await useEstablishedConsent(page);
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await waitForStableLayout(page);
-  await expect(
-    page.getByRole("button", { name: /Acheteur Particulier/ }),
-  ).toBeVisible();
+  // The session is the API's, so the header names the restored account rather
+  // than a persona label from the retired local-storage switcher.
+  const accountMenu = page.getByRole("button", {
+    name: "Menu du compte de Thomas Laurent",
+  });
+  await expect(accountMenu).toBeVisible();
 
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(
-    page.getByRole("button", { name: /Acheteur Particulier/ }),
-  ).toBeVisible();
+  await expect(accountMenu).toBeVisible();
   expect(
     await page.evaluate(() =>
       sessionStorage.getItem("shongre_test_saw_guest_flash"),
@@ -104,10 +109,7 @@ test("does not cover listing media and reveals honest sticky purchase controls o
   await expect(disclosure).not.toContainText("Selon le mode de remise");
   await expect(disclosure).not.toContainText("Selon l’option choisie");
   await expect(disclosure).not.toContainText("Confirmé avant paiement");
-  const total = await disclosure
-    .locator("dd")
-    .last()
-    .innerText();
+  const total = await disclosure.locator("dd").last().innerText();
   expect(total, "the total row must carry a figure").toMatch(/\d/);
 
   await page.waitForTimeout(100);

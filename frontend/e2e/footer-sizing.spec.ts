@@ -17,7 +17,10 @@ for (const width of [320, 390, 768, 1024, 1408, 1776, 2048]) {
       });
       await page.goto("/education/professeur/ines-martin-mathematiques");
       await expect(page).toHaveTitle(/SHONGRE/);
-      await expect(page.locator("main")).toBeVisible();
+      // While the document streams, the route's loading boundary and the
+      // arriving page each carry a `<main>`; the application's landmark is
+      // the one that stays.
+      await expect(page.locator("#main-content")).toBeVisible();
       await expect(page.locator("nextjs-portal")).toHaveCount(0);
       const footer = page.locator("footer");
       await footer.scrollIntoViewIfNeeded();
@@ -138,7 +141,7 @@ for (const width of [320, 390, 768, 1024, 1408, 1776, 2048]) {
         .getByRole("link", { name: "Toutes les annonces", exact: true })
         .click();
       await expect(page).toHaveURL(/\/recherche/);
-      await expect(page.locator("main")).toBeVisible();
+      await expect(page.locator("#main-content")).toBeVisible();
       expect(errors).toEqual([]);
     });
   });

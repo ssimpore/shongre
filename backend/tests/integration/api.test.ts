@@ -354,6 +354,51 @@ describe("API v1 Endpoints Integration", () => {
     expect(compressed.headers.get("cache-control")).toContain("max-age=0");
   });
 
+  it("lets a reader revalidate public taxonomy from their own cache without sharing it", async () => {
+    const initial = await fetch(
+      `${baseUrl}/api/v1/taxonomy/v1/header-navigation`,
+      { headers: { "X-Shongre-Market": "FR" } },
+    );
+    expect(initial.status).toBe(200);
+    expect(initial.headers.get("cache-control")).toBe("private, no-cache");
+    expect(initial.headers.get("cdn-cache-control")).toBe("no-store");
+    expect(initial.headers.get("cache-tag")).toBeNull();
+    expect(initial.headers.get("vary")).toContain("X-Shongre-Market");
+    const etag = initial.headers.get("etag");
+    expect(etag).toMatch(/^"[A-Za-z0-9_-]+"$/);
+
+    const unchanged = await fetch(
+      `${baseUrl}/api/v1/taxonomy/v1/header-navigation`,
+      { headers: { "X-Shongre-Market": "FR", "If-None-Match": String(etag) } },
+    );
+    expect(unchanged.status).toBe(304);
+    expect(unchanged.headers.get("cache-control")).toBe("private, no-cache");
+    expect(await unchanged.text()).toBe("");
+
+    const otherMarket = await fetch(
+      `${baseUrl}/api/v1/taxonomy/v1/header-navigation`,
+      { headers: { "X-Shongre-Market": "BE", "If-None-Match": String(etag) } },
+    );
+    expect(otherMarket.status).toBe(200);
+    expect(otherMarket.headers.get("etag")).not.toBe(etag);
+
+    const credentialed = await fetch(
+      `${baseUrl}/api/v1/taxonomy/v1/header-navigation`,
+      {
+        headers: {
+          "X-Shongre-Market": "FR",
+          Authorization: `Bearer ${buyerToken}`,
+          "If-None-Match": String(etag),
+        },
+      },
+    );
+    expect(credentialed.status).toBe(200);
+    expect(credentialed.headers.get("cache-control")).toBe(
+      "private, no-store, max-age=0",
+    );
+    expect(credentialed.headers.get("etag")).toBeNull();
+  });
+
   it("keeps probable-country detection non-authoritative and privacy-safe", async () => {
     const response = await fetch(`${baseUrl}/api/v1/markets/detection`, {
       headers: {

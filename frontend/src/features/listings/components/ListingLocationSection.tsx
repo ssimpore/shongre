@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import { DeferUntilVisible } from "../../../design-system/primitives/DeferUntilVisible";
 import { DetailSection } from "../../../design-system/primitives/DetailFacts";
 import { resolveApproximatePlace } from "@shongre/contracts/place-gazetteer";
 import { useTranslation } from "../../../i18n/I18nProvider";
@@ -117,6 +118,15 @@ export const ListingLocationSection: React.FC<ListingLocationSectionProps> = ({
     .join(" ");
   if (!place) return null;
 
+  // Same footprint as the map, so neither the deferral nor the chunk load
+  // moves anything below it.
+  const mapPlaceholder = (
+    <div
+      aria-hidden="true"
+      className="skeleton-shimmer h-96 w-full rounded-listing-card border border-border-soft bg-bg-surface"
+    />
+  );
+
   return (
     <DetailSection
       title={t("listings.characteristics.location")}
@@ -131,25 +141,31 @@ export const ListingLocationSection: React.FC<ListingLocationSectionProps> = ({
       }
     >
       {hasCoordinates(drawnLatitude, drawnLongitude) ? (
-        <Suspense
-          fallback={
-            <div
-              aria-hidden="true"
-              className="skeleton-shimmer h-96 w-full rounded-listing-card border border-border-soft bg-bg-surface"
-            />
-          }
+        /*
+         * The renderer is far larger than the rest of the page and this section
+         * sits below the description, the characteristics and the seller. A
+         * lazy import alone still fetched it — and its worker, and the first
+         * tiles — on every detail view; the slot has to be on screen first.
+         */
+        <DeferUntilVisible
+          data-testid="listing-location-map-slot"
+          fallback={mapPlaceholder}
         >
-          <ListingLocationMap
-            latitude={drawnLatitude}
-            longitude={drawnLongitude!}
-            approximateRadiusMetres={
-              (drawnPrecision
-                ? RADIUS_BY_PRECISION[drawnPrecision]
-                : undefined) ?? DEFAULT_RADIUS_METRES
-            }
-            accessibleLabel={t("listings.characteristics.mapLabel", { place })}
-          />
-        </Suspense>
+          <Suspense fallback={mapPlaceholder}>
+            <ListingLocationMap
+              latitude={drawnLatitude}
+              longitude={drawnLongitude!}
+              approximateRadiusMetres={
+                (drawnPrecision
+                  ? RADIUS_BY_PRECISION[drawnPrecision]
+                  : undefined) ?? DEFAULT_RADIUS_METRES
+              }
+              accessibleLabel={t("listings.characteristics.mapLabel", {
+                place,
+              })}
+            />
+          </Suspense>
+        </DeferUntilVisible>
       ) : null}
     </DetailSection>
   );

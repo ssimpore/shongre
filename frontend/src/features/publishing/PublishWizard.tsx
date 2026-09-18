@@ -72,6 +72,7 @@ import {
   validateTaxonomyValues,
 } from "@shongre/features";
 import { analyticsService } from "../../services/analytics.service";
+import { browserPreferencesService } from "../../services/browser-preferences.service";
 import { PublishPreparationScreen } from "./PublishPreparationScreen";
 import { TaxonomyV1Field } from "./TaxonomyV1Field";
 import { isProSeller } from "../../domains/user/user.domain";
@@ -126,6 +127,7 @@ const PHASES = [
   },
 ];
 
+const SKIP_PREPARATION_STORAGE_KEY = "shongre_publish_skip_preparation_v1";
 const ADVANCED_PANEL = 9;
 const REVIEW_PANEL = 10;
 
@@ -243,7 +245,13 @@ export const PublishWizard: React.FC = () => {
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
   const [isDraftHydrated, setIsDraftHydrated] = useState(false);
   const [hasSavedDraft, setHasSavedDraft] = useState(false);
-  const [skipPreparation, setSkipPreparation] = useState(false);
+  // "Ne plus afficher cette préparation sur cet appareil" is a device
+  // preference, so it lives beside the other browser preferences rather than
+  // in the account: it is read once, before the first paint decides which
+  // screen a seller lands on.
+  const [skipPreparation, setSkipPreparation] = useState(() =>
+    browserPreferencesService.getByKey(SKIP_PREPARATION_STORAGE_KEY, false),
+  );
   const [isPreparationVisible, setIsPreparationVisible] =
     useState(!skipPreparation);
   const [hasEnteredWizard, setHasEnteredWizard] = useState(skipPreparation);
@@ -1185,6 +1193,10 @@ export const PublishWizard: React.FC = () => {
         skipNextTime={skipPreparation}
         onSkipNextTimeChange={(checked) => {
           setSkipPreparation(checked);
+          browserPreferencesService.setByKey(
+            SKIP_PREPARATION_STORAGE_KEY,
+            checked,
+          );
         }}
       />
     );

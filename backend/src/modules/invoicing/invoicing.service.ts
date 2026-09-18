@@ -21,6 +21,7 @@ import {
   type InvoicingRepository,
   PostgresInvoicingRepository,
 } from "../../infrastructure/database/repositories/invoicing.repository.js";
+import { repositories } from "../../infrastructure/database/repositories/index.js";
 import type { Principal } from "../../shared/auth/principal.js";
 import { requirePermission } from "../../shared/auth/principal.js";
 import { AppError } from "../../shared/errors/app-error.js";
@@ -71,7 +72,9 @@ export class InvoicingService {
     private readonly repository: InvoicingRepository = config.dataMode ===
     "database"
       ? new PostgresInvoicingRepository()
-      : new DemoInvoicingRepository(),
+      : new DemoInvoicingRepository({
+          findUser: (userId) => repositories.users.findById(userId),
+        }),
     private readonly now: () => Date = () =>
       config.dataMode === "demo" ? new Date(DEMO_TIME) : new Date(),
   ) {}
@@ -85,6 +88,34 @@ export class InvoicingService {
 
   async hasProductAccessForUser(userId: string): Promise<boolean> {
     return (await this.productAccessForUser(userId)).length > 0;
+  }
+
+  /**
+   * Completes activation for an existing customer. The grant itself is not
+   * minted here: production needs the entitlement the monetization flow
+   * published, and only the demo adapter provisions its labelled trial so the
+   * path can be walked without a purchase.
+   */
+  async activateForCurrentOrganization(
+    principal: Principal,
+    marketCode: string,
+  ) {
+    requirePermission(principal, "subscription.manage.own");
+    marketOrThrow(marketCode);
+    let tenants = await this.repository.listTenants(principal.userId);
+    if (!tenants.length && this.repository.provisionDemoTrial) {
+      await this.repository.provisionDemoTrial(principal.userId);
+      tenants = await this.repository.listTenants(principal.userId);
+    }
+    const access = tenants[0]?.productAccess;
+    if (!access) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Un droit actif Shongre Facturation est requis.",
+        details: { gate: "INVOICING_ENTITLEMENT_REQUIRED" },
+      });
+    }
+    return access;
   }
 
   private async entitledTenants(principal: Principal) {

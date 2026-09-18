@@ -18,7 +18,7 @@ for (const width of [390, 1024, 1408]) {
       await page.goto("/newsletter");
       await waitForStableLayout(page);
       await expect(page).toHaveTitle(/Newsletter Shongre/);
-      await expect(page.locator("main")).toBeVisible();
+      await expect(page.locator("#main-content")).toBeVisible();
       await expect(page.locator("nextjs-portal")).toHaveCount(0);
 
       const form = page.locator(
@@ -94,7 +94,7 @@ for (const width of [390, 1408]) {
       await page.goto("/");
       await waitForStableLayout(page);
       await expect(page).toHaveTitle(/SHONGRE/);
-      await expect(page.locator("main")).toBeVisible();
+      await expect(page.locator("#main-content")).toBeVisible();
       await expect(page.locator("nextjs-portal")).toHaveCount(0);
 
       const proCallout = page

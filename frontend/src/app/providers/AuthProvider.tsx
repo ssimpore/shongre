@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useMemo,
   useCallback,
+  startTransition,
 } from "react";
 import {
   UserProfile,
@@ -124,16 +125,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     let active = true;
+    // Restoration is a transition so it cannot force a still-hydrating page
+    // boundary to drop its server HTML; see ConsentProvider.
     services.auth
       .getCurrentUser()
       .then((user) => {
-        if (active) setCurrentUser(user);
+        if (active) startTransition(() => setCurrentUser(user));
       })
       .catch(() => {
-        if (active) setCurrentUser(null);
+        if (active) startTransition(() => setCurrentUser(null));
       })
       .finally(() => {
-        if (active) setIsRestoring(false);
+        if (active) startTransition(() => setIsRestoring(false));
       });
 
     if (typeof BroadcastChannel === "undefined") {

@@ -42,7 +42,8 @@ for (const width of [1408, 390, 320]) {
     const actions = (await page
       .locator("[data-auth-prompt-actions]")
       .boundingBox())!;
-    expect(panel.width).toBeCloseTo(Math.min(width - 32, 512), 0);
+    // The prompt uses `AuthLayout`'s compact width (`max-w-md`, 448px).
+    expect(panel.width).toBeCloseTo(Math.min(width - 32, 448), 0);
     expect(actions.width).toBeLessThan(panel.width - 64);
     expect(Math.abs(actions.x + actions.width / 2 - width / 2)).toBeLessThan(1);
     expect(Math.abs(first.width - second.width)).toBeLessThan(1);

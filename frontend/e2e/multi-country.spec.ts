@@ -1,17 +1,37 @@
+import { createRequire } from "node:module";
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { BASE_URL } from "../playwright.config";
 import { waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
 import {
+  buildPublicUrl,
   COUNTRY_REGISTRY,
   getDefaultCountryConfig,
   listGatewayCountries,
   publicMarketExperience,
+  type CountryConfig,
+  type MarketInfrastructureConfig,
 } from "@shongre/contracts";
 
+/*
+ * The runner serves France and the international markets from two hosts
+ * (`PUBLIC_FR_URL` and `PUBLIC_INTL_URL`), exactly as production does with
+ * shongre.fr and shongre.com. Every expected URL is therefore built through the
+ * canonical builder from that configuration, never by appending a country
+ * prefix to the France host — that alias is precisely what the market resolver
+ * redirects away from.
+ */
 const local = new URL(BASE_URL);
-const globalGatewayUrl = `${local.protocol}//global.localhost:${local.port}/`;
+const international = new URL(process.env.PUBLIC_INTL_URL!);
+const infrastructure: MarketInfrastructureConfig = {
+  franceDomain: local.host,
+  globalDomain: international.host,
+  canonicalProtocol: local.protocol === "https:" ? "https" : "http",
+};
+const globalGatewayUrl = `${international.protocol}//${international.host}/`;
+const marketUrl = (country: CountryConfig, route = "/") =>
+  buildPublicUrl({ country: country.code, route, infrastructure });
 const localCanonical = (path: string) => new URL(path, `${local.origin}/`).href;
 
 test.describe("multi-country public routing", () => {
@@ -24,21 +44,63 @@ test.describe("multi-country public routing", () => {
     for (const country of COUNTRY_REGISTRY.filter(
       (entry) => publicMarketExperience(entry) === "active",
     )) {
-      const path = country.isDefault ? "/" : country.basePath;
-      await page.goto(path, { waitUntil: "domcontentloaded" });
-      await expect(
-        page.getByRole("link", {
-          name: new RegExp(`SHONGRE\\. ${country.name}`),
-        }),
-      ).toBeVisible();
+      await page.goto(marketUrl(country), { waitUntil: "domcontentloaded" });
+      const brandLink = page.getByRole("link", {
+        name: new RegExp(`SHONGRE\\. ${country.name}`),
+      });
+      await expect(brandLink).toBeVisible();
+      // The brand marks are host-level files: on the international origin
+      // they used to answer 404 and every market page painted a broken logo.
+      await expect
+        .poll(() =>
+          brandLink.locator("img").evaluateAll((images) =>
+            images.map((image) => {
+              const element = image as HTMLImageElement;
+              return element.complete && element.naturalWidth > 0;
+            }),
+          ),
+        )
+        .not.toContain(false);
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
         "href",
-        localCanonical(path),
+        marketUrl(country),
       );
       await expect(page.locator("html")).toHaveAttribute(
         "lang",
         country.defaultLocale,
       );
+    }
+  });
+
+  test("serves host-level assets on every marketplace origin", async ({
+    request,
+  }) => {
+    const mapVersion: string = createRequire(import.meta.url)(
+      "maplibre-gl/package.json",
+    ).version;
+    const assets: [string, RegExp][] = [
+      ["/brand/shongre/logo/header-primary-480.png?brand=1.0.0", /^image\/png/],
+      ["/apple-touch-icon.png", /^image\/png/],
+      ["/favicon-32x32.png", /^image\/png/],
+      ["/manifest.webmanifest", /manifest\+json/],
+      ["/sw.js", /javascript/],
+      [
+        `/vendor/maplibre-gl/${mapVersion}/maplibre-gl-worker.mjs`,
+        /javascript/,
+      ],
+      ["/robots.txt", /^text\/plain/],
+    ];
+    for (const origin of [local.origin, international.origin]) {
+      for (const [path, contentType] of assets) {
+        const response = await request.get(`${origin}${path}`, {
+          maxRedirects: 0,
+        });
+        expect(response.status(), `${origin}${path}`).toBe(200);
+        expect(
+          response.headers()["content-type"] || "",
+          `${origin}${path}`,
+        ).toMatch(contentType);
+      }
     }
   });
 
@@ -54,10 +116,9 @@ test.describe("multi-country public routing", () => {
       }),
     ).toBeVisible();
     for (const country of listGatewayCountries()) {
-      const path = country.isDefault ? "/" : country.basePath;
       await expect(
         page.getByRole("link", { name: new RegExp(country.name) }).last(),
-      ).toHaveAttribute("href", localCanonical(path));
+      ).toHaveAttribute("href", marketUrl(country));
     }
     await expect(page.getByRole("search")).toHaveCount(0);
 
@@ -78,7 +139,7 @@ test.describe("multi-country public routing", () => {
     for (const country of COUNTRY_REGISTRY.filter(
       (entry) => publicMarketExperience(entry) !== "active",
     )) {
-      await page.goto(country.basePath, { waitUntil: "domcontentloaded" });
+      await page.goto(marketUrl(country), { waitUntil: "domcontentloaded" });
       await expect(
         page.getByRole("heading", { name: country.launchContent.title }),
       ).toBeVisible();
@@ -151,14 +212,19 @@ test.describe("multi-country public routing", () => {
     await useEstablishedConsent(page);
     await usePersona(page, "guest");
 
-    await page.goto("/be/recherche?query=v%C3%A9lo", {
-      waitUntil: "domcontentloaded",
-    });
+    await page.goto(
+      `${marketUrl(
+        COUNTRY_REGISTRY.find((entry) => entry.code === "BE")!,
+        "/recherche",
+      )}?query=v%C3%A9lo`,
+      { waitUntil: "domcontentloaded" },
+    );
     await expect(
       page.getByText("Vélo urbain électrique Cowboy Classic"),
     ).toBeVisible();
+    // Cards use the compact money format: a whole amount carries no ",00".
     await expect(
-      page.getByText(/1[\s.\u202f]?450,00[\s\u00a0\u202f]*€/),
+      page.getByText(/1[\s.\u202f]?450(?:,00)?[\s\u00a0\u202f]*€/).first(),
     ).toBeVisible();
 
     await page.goto("/recherche?query=Cowboy", {

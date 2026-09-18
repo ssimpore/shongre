@@ -125,7 +125,8 @@ describe("SolutionsService", () => {
   });
 
   it("replays identical idempotent writes and rejects key reuse with another payload", async () => {
-    const repository = new DemoSolutionsRepository();
+    // An empty catalogue, so the count below is the write's own effect.
+    const repository = new DemoSolutionsRepository([]);
     const service = new SolutionsService(repository);
     const first = await service.createSolution(
       admin,

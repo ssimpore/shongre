@@ -31,7 +31,11 @@ test.describe("Shongre Auto", () => {
     ).toBeVisible();
     const cards = page.locator('[data-listing-card-consumer="auto"]');
     await expect(cards).toHaveCount(4);
-    await page.getByRole("button", { name: "Marque", exact: true }).click();
+    // Desktop filters live behind the shared disclosure, closed by default.
+    await page.getByRole("button", { name: "Afficher les filtres" }).click();
+    const filters = page.locator("#auto-filter-panel-desktop");
+    await expect(filters).toBeVisible();
+    await filters.getByRole("button", { name: "Marque", exact: true }).click();
     await page.getByRole("option", { name: "Peugeot", exact: true }).click();
     await expect(page).toHaveURL(/make=peugeot/);
     await expect(cards).toHaveCount(3);
@@ -110,11 +114,37 @@ test.describe("Shongre Auto", () => {
     await expect(page.locator("body")).not.toContainText(
       /VF3[A-Z0-9]{8}|AA-123-AA|sha256:/,
     );
-    await expect(page.locator('head meta[name="description"]')).toHaveCount(1);
-    await expect(page.locator('head link[rel="canonical"]')).toHaveCount(1);
+    // A browser receives the streamed metadata wherever React leaves it; the
+    // crawler render below is what has to carry it inside `<head>`.
+    await expect(page.locator('meta[name="description"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
     await expect(
-      page.locator('head script[type="application/ld+json"]'),
+      page.locator('script[type="application/ld+json"]'),
     ).toHaveCount(1);
+  });
+
+  test("vehicle detail serves its metadata inside <head> to crawlers", async ({
+    request,
+  }) => {
+    /* Next streams `generateMetadata` output into the body for browsers and
+       blocks the render for the crawlers `htmlLimitedBots` names. Google
+       ignores a canonical outside `<head>`, so the crawler render is the one
+       that must be right — asserted on the raw HTML, before any script. */
+    const response = await request.get(
+      "/auto/vehicule/peugeot-3008-puretech-130-gt-line-2020",
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+        },
+      },
+    );
+    expect(response.status()).toBe(200);
+    const html = await response.text();
+    const head = html.slice(0, html.indexOf("</head>"));
+    expect(head).toMatch(/<meta name="description"/);
+    expect(head).toMatch(/<link rel="canonical"/);
+    expect(head).toMatch(/<title>/);
   });
 
   test("vehicle seller identity opens the professional storefront", async ({
@@ -201,12 +231,15 @@ test.describe("Shongre Auto", () => {
     });
     await waitForStableLayout(page);
 
+    // The shared discovery rail: one heading and one track for every vertical.
     const heading = page.getByRole("heading", {
       level: 2,
-      name: "Véhicules similaires",
+      name: "Annonces similaires",
     });
     const section = page.locator("section", { has: heading });
-    const cards = section.locator('[data-listing-card="true"]');
+    const cards = section
+      .locator('[data-listing-discovery-rail="similar"]')
+      .locator('[data-listing-card="true"]');
     await expect(cards).toHaveCount(2);
 
     const desktopRects = await cards.evaluateAll((items) =>
@@ -227,7 +260,12 @@ test.describe("Shongre Auto", () => {
     await waitForStableLayout(page);
     await section.scrollIntoViewIfNeeded();
 
-    const track = section.locator(".scroll-rail-shell > div").first();
+    // The shell wraps an optional heading row and a relative box that holds
+    // the overflowing track and its nudge buttons; the track is the scroller.
+    const track = section
+      .locator('[data-listing-discovery-rail="similar"]')
+      .locator(".scroll-rail-shell .overflow-x-auto")
+      .first();
     const mobileOverflow = await track.evaluate((element) => ({
       clientWidth: element.clientWidth,
       scrollLeft: element.scrollLeft,

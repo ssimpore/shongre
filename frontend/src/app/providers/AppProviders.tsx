@@ -1,6 +1,7 @@
-import React, { Suspense, lazy } from "react";
+import React, { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./AuthProvider";
+import { AuthenticatedAccountProviders } from "./AuthenticatedAccountProviders";
 import { MarketLocationProvider } from "./MarketLocationProvider";
 import { ToastProvider } from "./ToastProvider";
 import { FavoritesProvider } from "./FavoritesProvider";
@@ -12,23 +13,6 @@ import type { MarketContext } from "@shongre/contracts/market-country";
 import type { PublicRouteData } from "../../platform/seo/public-route-data";
 import { PublicRouteDataProvider } from "./PublicRouteDataProvider";
 import { StaffMarketplaceActionGuard } from "../../security/components/StaffMarketplaceActionGuard";
-import { useAuth } from "./AuthProvider";
-
-const AuthenticatedAccountProviders = lazy(() =>
-  import("./AuthenticatedAccountProviders").then((module) => ({
-    default: module.AuthenticatedAccountProviders,
-  })),
-);
-
-function AccountDataBoundary({ children }: { children: React.ReactNode }) {
-  const { currentUser, isRestoring } = useAuth();
-  if (!currentUser || isRestoring) return children;
-  return (
-    <Suspense fallback={children}>
-      <AuthenticatedAccountProviders>{children}</AuthenticatedAccountProviders>
-    </Suspense>
-  );
-}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +24,22 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+/**
+ * Marks the document once the application has hydrated. The server document
+ * is complete and readable before that, but a controlled input or a button
+ * handled before React attaches loses what the reader did; the browser
+ * suites wait for this mark before interacting, and nothing else reads it.
+ */
+const HydrationMark: React.FC = () => {
+  useEffect(() => {
+    document.documentElement.setAttribute("data-app-hydrated", "true");
+    return () => {
+      document.documentElement.removeAttribute("data-app-hydrated");
+    };
+  }, []);
+  return null;
+};
 
 export const AppProviders: React.FC<{
   children: React.ReactNode;
@@ -56,9 +56,18 @@ export const AppProviders: React.FC<{
                 <I18nProvider>
                   <ToastProvider>
                     <StaffMarketplaceActionGuard>
-                      <AccountDataBoundary>
-                        <FavoritesProvider>{children}</FavoritesProvider>
-                      </AccountDataBoundary>
+                      {/* Always mounted, and idle for a guest. These used to
+                          be inserted lazily once a session was restored, which
+                          changed the tree above the whole application and
+                          remounted it — every page re-rendered from scratch
+                          a few hundred milliseconds in, and anything a
+                          signed-in reader had already typed was gone. */}
+                      <AuthenticatedAccountProviders>
+                        <FavoritesProvider>
+                          <HydrationMark />
+                          {children}
+                        </FavoritesProvider>
+                      </AuthenticatedAccountProviders>
                     </StaffMarketplaceActionGuard>
                   </ToastProvider>
                 </I18nProvider>

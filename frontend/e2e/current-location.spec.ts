@@ -21,6 +21,9 @@ test.describe("current location picker", () => {
     await page.goto("/");
     await waitForStableLayout(page);
 
+    // The header mounts its location control only while the search is
+    // active (audit-regressions.spec.ts certifies the resting header).
+    await page.locator("#header-desktop-header-query-input").focus();
     await page.locator("#header-desktop-header-location-button").click();
     const dialog = page.getByRole("dialog", { name: "Zone géographique" });
     await expect(dialog).toBeVisible();
@@ -51,6 +54,10 @@ test.describe("current location picker", () => {
     await expect(dialog.locator("#location-city-input")).toHaveValue("Paris");
 
     await dialog.getByRole("button", { name: "Appliquer la zone" }).click();
+    await expect(dialog).toBeHidden();
+    // Closing the picker rests the header again; the applied zone shows the
+    // next time the search is active.
+    await page.locator("#header-desktop-header-query-input").focus();
     await expect(
       page.locator("#header-desktop-header-location-button"),
     ).toHaveAttribute("aria-label", "Localisation : Paris");
@@ -123,6 +130,8 @@ test.describe("current location picker", () => {
     await page.goto("/recherche?city=Paris&radius=30");
     await waitForStableLayout(page);
 
+    // Desktop filters live behind the shared disclosure, closed by default.
+    await page.getByRole("button", { name: "Afficher les filtres" }).click();
     const selector = page.locator("#search-filter-location-desktop");
     await expect(selector).toHaveAttribute(
       "aria-label",

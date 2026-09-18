@@ -116,3 +116,61 @@ describe("country-aware route metadata", () => {
     });
   });
 });
+
+describe("storefront canonicals", () => {
+  const seller = {
+    id: "user_dealer_owner",
+    slug: "michel-girard-auto-select-lyon",
+    storeSlug: "auto-select-lyon",
+    storeName: "Auto Select Lyon",
+    name: "Michel Girard",
+    accountType: "professional" as const,
+    sellerType: "pro" as const,
+    country: "FR",
+    isVerified: true,
+    isBusinessVerified: true,
+    rating: 4.8,
+    reviewCount: 64,
+    responseRatePercent: 94,
+  };
+
+  it("addresses a professional storefront by its store slug and names the business", () => {
+    const metadata = metadataForRoute({
+      pathname: "/boutique/auto-select-lyon",
+      marketContext: contextFor("shongre.fr", "/boutique/auto-select-lyon"),
+      routeData: {
+        status: "found",
+        data: { kind: "seller", seller, listings: [], reviews: [] },
+      },
+    });
+    expect(String(metadata.alternates?.canonical)).toBe(
+      "https://shongre.fr/boutique/auto-select-lyon",
+    );
+    expect(String(metadata.title)).toContain("Auto Select Lyon");
+    expect(String(metadata.title)).not.toContain("Michel Girard");
+  });
+
+  it("keeps a person's profile on their own slug", () => {
+    const person = {
+      ...seller,
+      storeSlug: undefined,
+      storeName: undefined,
+      accountType: "individual" as const,
+      sellerType: "individual" as const,
+      slug: "thomas-laurent",
+      name: "Thomas Laurent",
+    };
+    const metadata = metadataForRoute({
+      pathname: "/profil/thomas-laurent",
+      marketContext: contextFor("shongre.fr", "/profil/thomas-laurent"),
+      routeData: {
+        status: "found",
+        data: { kind: "seller", seller: person, listings: [], reviews: [] },
+      },
+    });
+    expect(String(metadata.alternates?.canonical)).toBe(
+      "https://shongre.fr/profil/thomas-laurent",
+    );
+    expect(String(metadata.title)).toContain("Thomas Laurent");
+  });
+});

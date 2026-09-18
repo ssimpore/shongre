@@ -59,7 +59,9 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isPro = isProSeller(seller);
-  const displayName = seller.name;
+  // A storefront is published under its business name; a person's profile
+  // under theirs. The API sets `storeName` only for the former.
+  const displayName = seller.storeName ?? seller.name;
 
   // Format member seniority
   const memberYear = seller.createdAt
@@ -226,7 +228,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => onTabChange("reviews")}
-                  className="flex shrink-0 items-center gap-1.5 font-semibold text-text-main hover:text-primary transition-colors cursor-pointer group"
+                  className="flex min-h-control-target shrink-0 items-center gap-1.5 font-semibold text-text-main hover:text-primary transition-colors cursor-pointer group"
                   aria-label={`Note moyenne : ${seller.rating.toFixed(1)} sur 5 basée sur ${seller.reviewCount} avis`}
                 >
                   <Star className="w-icon-md h-icon-md fill-rating-fill text-rating-fill group-hover:scale-110 transition-transform duration-normal" />

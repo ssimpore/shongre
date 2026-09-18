@@ -18,10 +18,12 @@ import {
 import type {
   AgencyWorkspace,
   PropertyLead,
+  RealEstateCatalog,
 } from "@shongre/contracts/real-estate";
 import { VerificationBadge } from "@shongre/ui/web";
 import { REAL_ESTATE_CONSTRAINTS } from "@shongre/contracts/real-estate";
 import { services } from "../../api/client/service-registry";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
   Badge,
@@ -61,12 +63,16 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
   const { formatDate, formatDateTime, formatMoney, formatNumber } =
     useRegionalFormatters();
   const toast = useToast();
+  const { activeMarket } = useMarketLocation();
   const [workspace, setWorkspace] = useState<AgencyWorkspace | null>(null);
+  const [catalog, setCatalog] = useState<RealEstateCatalog | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
   const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
-  const organizationId = "agency_canopee";
+  // The agency is the member's own, resolved by the API from their
+  // membership; every later call addresses the organization it answered with.
+  const organizationId = workspace?.organization.id ?? "";
 
   usePageMeta({
     title: "Espace agence immobilière",
@@ -79,7 +85,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
   const load = () => {
     setLoading(true);
     services.realEstate
-      .getAgencyWorkspace(organizationId)
+      .getCurrentAgencyWorkspace()
       .then(setWorkspace)
       .catch((cause) =>
         setError(
@@ -91,6 +97,41 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+  // The agency's own integration settings say what it configured; whether an
+  // import mode is actually sold and delivered is the market catalogue's
+  // decision, the same one the API applies when a job is requested.
+  useEffect(() => {
+    let cancelled = false;
+    services.realEstate
+      .getCatalog(activeMarket.code)
+      .then((value) => {
+        if (!cancelled) setCatalog(value);
+      })
+      .catch(() => {
+        if (!cancelled) setCatalog(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMarket.code]);
+  const offer =
+    catalog?.offers.find(
+      (candidate) => candidate.id === workspace?.subscription.offerId,
+    ) ?? null;
+  const importAccess = {
+    csv:
+      Boolean(workspace?.integrationSettings.csvImportEnabled) &&
+      offer?.entitlements.csvImport === true,
+    xml:
+      Boolean(workspace?.integrationSettings.xmlImportEnabled) &&
+      offer?.entitlements.xmlImport === true,
+    automaticSync:
+      Boolean(workspace?.integrationSettings.automaticSyncEnabled) &&
+      offer?.entitlements.automaticSync === true,
+    api:
+      Boolean(workspace?.integrationSettings.apiAccessEnabled) &&
+      offer?.entitlements.apiAccess === true,
+  };
 
   const updateLead = async (
     lead: PropertyLead,
@@ -674,6 +715,10 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
               <Button
                 className="w-full"
                 variant="outline"
+                disabled={!importAccess.csv}
+                aria-describedby={
+                  importAccess.csv ? undefined : "immo-import-unavailable"
+                }
                 onClick={() => requestImport("csv")}
                 leftIcon={<FileSpreadsheet className="h-icon-md w-icon-md" />}
               >
@@ -682,21 +727,32 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
               <Button
                 className="w-full"
                 variant="outline"
+                disabled={!importAccess.xml}
+                aria-describedby={
+                  importAccess.xml ? undefined : "immo-import-unavailable"
+                }
                 onClick={() => requestImport("xml")}
                 leftIcon={<Download className="h-icon-md w-icon-md" />}
               >
                 Déclarer un flux XML
               </Button>
+              {importAccess.csv && importAccess.xml ? null : (
+                <p
+                  id="immo-import-unavailable"
+                  className="text-micro text-text-muted"
+                >
+                  {catalog
+                    ? "Les imports de portefeuille ne sont pas inclus dans votre formule actuelle."
+                    : "Vérification des droits de votre formule…"}
+                </p>
+              )}
             </div>
             <dl className="mt-5 space-y-2 border-t border-border-subtle pt-4 text-micro">
               {[
-                ["CSV", workspace.integrationSettings.csvImportEnabled],
-                ["XML", workspace.integrationSettings.xmlImportEnabled],
-                [
-                  "Synchronisation",
-                  workspace.integrationSettings.automaticSyncEnabled,
-                ],
-                ["API", workspace.integrationSettings.apiAccessEnabled],
+                ["CSV", importAccess.csv],
+                ["XML", importAccess.xml],
+                ["Synchronisation", importAccess.automaticSync],
+                ["API", importAccess.api],
               ].map(([label, enabled]) => (
                 <div key={String(label)} className="flex justify-between gap-3">
                   <dt className="text-text-muted">{String(label)}</dt>

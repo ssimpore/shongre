@@ -191,6 +191,8 @@ export const BOOTSTRAP_MARKETS: Market[] = listPublicCountries().map(
     geography: {
       allCountryEnabled: true,
       regions: [],
+      // The town shortlist is loaded by the market provider after hydration
+      // (`market-popular-cities.ts`); shipping it here cost the budget.
       popularCities: [],
     },
     configuration: bootstrapConfiguration(country),

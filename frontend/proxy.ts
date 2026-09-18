@@ -163,6 +163,33 @@ function applyRuntimeHeaders(
   return response;
 }
 
+/**
+ * Paths that belong to the host, not to a market, so they resolve against the
+ * host's root and are then served as they are. Country-prefixed public routes
+ * are the only thing the global host refuses; its metadata documents and the
+ * shared static files — the brand marks, PWA files, generated social images
+ * and the MapLibre worker — are the same on every origin. Without this, every
+ * international market page painted a broken logo and could not start a map.
+ */
+function isHostLevelPath(pathname: string): boolean {
+  return (
+    [
+      "/robots.txt",
+      "/sitemap.xml",
+      "/gateway-sitemap.xml",
+      "/llms.txt",
+      "/indexnow-key.txt",
+      "/manifest.webmanifest",
+      "/sw.js",
+      "/apple-touch-icon.png",
+    ].includes(pathname) ||
+    /^\/favicon-\d+x\d+\.png$/.test(pathname) ||
+    pathname.startsWith("/brand/") ||
+    pathname.startsWith("/vendor/") ||
+    pathname.startsWith("/og/")
+  );
+}
+
 function isDirectHtmlNavigation(request: NextRequest): boolean {
   if (request.method !== "GET" && request.method !== "HEAD") return false;
   if (request.headers.has("rsc") || request.nextUrl.searchParams.has("_rsc")) {
@@ -292,17 +319,12 @@ export async function proxy(request: NextRequest) {
     return applyRuntimeHeaders(response, environment);
   }
   const allowLocalE2EHost = process.env.SHONGRE_E2E_ALLOW_LOCAL_HOSTS === "1";
-  const hostLevelMetadataPath = [
-    "/robots.txt",
-    "/sitemap.xml",
-    "/gateway-sitemap.xml",
-    "/llms.txt",
-  ].includes(request.nextUrl.pathname);
+  const hostLevelPath = isHostLevelPath(request.nextUrl.pathname);
   let context: ReturnType<typeof resolveMarketContext>;
   try {
     context = resolveMarketContext({
       hostname,
-      pathname: hostLevelMetadataPath ? "/" : request.nextUrl.pathname,
+      pathname: hostLevelPath ? "/" : request.nextUrl.pathname,
       infrastructure: marketInfrastructureFromEnvironment(),
       allowDevelopmentHosts:
         isLocal(environment.environment) ||

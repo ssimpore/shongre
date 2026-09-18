@@ -1,6 +1,19 @@
 import { expect, test } from "@playwright/test";
 import { usePersona } from "./personas";
 import { waitForStableLayout } from "./overflow";
+import { DEMO_LISTING_ID } from "./routes";
+
+/** Requests that only a mounted map makes: its worker pair and its tiles. */
+function recordMapRequests(page: import("@playwright/test").Page): string[] {
+  const requests: string[] = [];
+  page.on("request", (request) => {
+    const url = request.url();
+    if (/\/vendor\/maplibre-gl\/|tiles\.openfreemap\.org/.test(url)) {
+      requests.push(url);
+    }
+  });
+  return requests;
+}
 
 /**
  * The geospatial guarantees that are easy to lose and hard to notice.
@@ -54,6 +67,56 @@ test.describe("map rendering", () => {
     await expect(first).toHaveJSProperty("tagName", "BUTTON");
     const label = await first.getAttribute("aria-label");
     expect(label?.trim().length ?? 0).toBeGreaterThan(0);
+  });
+});
+
+test.describe("map loading", () => {
+  /*
+   * A lazy import keeps the renderer out of the initial bundle and nothing
+   * else: a lazily imported map that mounts on page load still costs the
+   * renderer, its worker and the first tiles on every view. Measured on a
+   * throttled phone, that was two thirds of a listing page's JavaScript and a
+   * second and a half of main-thread time for a section most readers never
+   * scroll to. The gate is the slot being on screen.
+   */
+  test("a listing page fetches its map only once the map is scrolled to", async ({
+    page,
+  }) => {
+    const mapRequests = recordMapRequests(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await usePersona(page, "guest");
+    await page.goto(`/annonce/${DEMO_LISTING_ID}`, { waitUntil: "load" });
+    await waitForStableLayout(page);
+    await page.waitForTimeout(1_500);
+
+    const slot = page.getByTestId("listing-location-map-slot");
+    await expect(slot).toBeAttached();
+    expect(mapRequests).toEqual([]);
+
+    await slot.scrollIntoViewIfNeeded();
+    await expect(slot.locator("[data-map-container]")).toHaveAttribute(
+      "data-map-status",
+      "ready",
+      { timeout: 20_000 },
+    );
+    expect(mapRequests.length).toBeGreaterThan(0);
+  });
+
+  test("a results page whose map panel is hidden never fetches the map", async ({
+    page,
+  }) => {
+    const mapRequests = recordMapRequests(page);
+    // Below `xl` the property results keep the list and hide the map panel.
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await usePersona(page, "guest");
+    await page.goto("/immo", { waitUntil: "load" });
+    await waitForStableLayout(page);
+    await page.waitForTimeout(2_000);
+
+    const panel = page.locator('[data-search-map-panel="true"]').first();
+    await expect(panel).toBeAttached();
+    await expect(panel).toBeHidden();
+    expect(mapRequests).toEqual([]);
   });
 });
 
@@ -168,7 +231,10 @@ test.describe("public location privacy", () => {
 
        Asserted on what the browser received, not on a direct request: the
        first-party relay validates the calling origin, so a bare API call is not
-       the path a visitor's payload travels. */
+       the path a visitor's payload travels. The document itself is a surface
+       too: the homepage and the search page serialise their first listings
+       into the HTML, so a leak there would ship without any API call. Flight
+       data escapes its quotes, which the normalisation below undoes. */
     const PRIVATE_FIELDS = [
       "normalizedAddress",
       "locationSource",
@@ -180,10 +246,14 @@ test.describe("public location privacy", () => {
     let inspected = 0;
 
     page.on("response", async (response) => {
-      if (!response.url().includes("/api/v1/")) return;
+      const isApi = response.url().includes("/api/v1/");
+      const isDocument =
+        response.request().resourceType() === "document" &&
+        (response.headers()["content-type"] ?? "").includes("text/html");
+      if (!isApi && !isDocument) return;
       let body = "";
       try {
-        body = await response.text();
+        body = (await response.text()).replace(/\\"/g, '"');
       } catch {
         return;
       }

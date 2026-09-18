@@ -354,3 +354,39 @@ describe("published vertical card fields", () => {
     ).not.toContain("fuel_type");
   });
 });
+
+describe("date characteristics", () => {
+  it("reads an ISO instant as a date in the market's own time, not as the raw string", () => {
+    const ticket = {
+      categoryId: "events_tickets",
+      sellerType: "individual" as const,
+      marketCode: "FR",
+      locale: "fr-FR",
+      attributes: {
+        event_type: "concert",
+        event_date: "2026-10-03T18:30:00+02:00",
+      },
+    };
+    const category = TAXONOMY_V1_PRIVATE_BUNDLE.categories.find((row) =>
+      TAXONOMY_V1_PRIVATE_BUNDLE.bindings.some(
+        (binding) =>
+          binding.attributeId === "event_date" &&
+          binding.listingTypeId.startsWith(row.id),
+      ),
+    );
+    expect(category, "a category binding event_date exists").toBeDefined();
+    const rows = items({ ...ticket, categoryId: category!.id });
+    const eventDate = rows.find((item) => item.code === "event_date");
+    expect(eventDate?.value).toBe("3 oct. 2026, 18:30");
+    expect(eventDate?.value).not.toContain("T18:30");
+
+    const english = projectListingCharacteristics({
+      ...ticket,
+      categoryId: category!.id,
+      locale: "en-US",
+    })
+      .groups.flatMap((group) => group.items)
+      .find((item) => item.code === "event_date");
+    expect(english?.value).toBe("Oct 3, 2026, 6:30 PM");
+  });
+});

@@ -320,13 +320,30 @@ export class DemoUserRepository implements IUserRepository {
   }
 
   async findPublicById(idOrSlug: string): Promise<PublicSellerProfile | null> {
+    const users = [...this.users.values()];
+    // A storefront slug resolves to its professional owner, as the database
+    // does through `stores` — only an active one, so a suspended dealer's
+    // storefront does not outlive the account. Either way the projection
+    // carries the storefront the professional publishes under, so its
+    // canonical address and heading are the business, not the person.
     const user =
       (await this.findById(idOrSlug)) ??
-      [...this.users.values()].find(
-        (candidate) => candidate.slug === idOrSlug,
+      users.find((candidate) => candidate.slug === idOrSlug) ??
+      users.find(
+        (candidate) =>
+          candidate.storeSlug === idOrSlug &&
+          candidate.accountType === "professional" &&
+          candidate.status === "active",
       ) ??
       null;
-    return user ? toPublicSellerProfile(user) : null;
+    const projection = user ? toPublicSellerProfile(user) : null;
+    if (!projection || user?.accountType !== "professional" || !user.storeSlug)
+      return projection;
+    return {
+      ...projection,
+      storeSlug: user.storeSlug,
+      ...(user.companyName ? { storeName: user.companyName } : {}),
+    };
   }
 
   async listPublicProfessionals(
@@ -704,12 +721,12 @@ export class PostgresUserRepository implements IUserRepository {
         .eq(identifierColumn(idOrSlug), idOrSlug)
         .maybeSingle() as any);
       if (error) databaseFailure("users.findPublicById", error);
-      if (data) return this.mapPublicProfile(data);
+      if (data) return this.withStorefront(this.mapPublicProfile(data));
       if (identifierColumn(idOrSlug) === "id") return null;
 
       const { data: store, error: storeError } = await getSupabaseAdminClient()
         .from("stores")
-        .select("organizations!inner(owner_id)")
+        .select("display_name, organizations!inner(owner_id)")
         .eq("slug", idOrSlug)
         .eq("is_active", true)
         .eq("organizations.status", "active")
@@ -718,17 +735,51 @@ export class PostgresUserRepository implements IUserRepository {
       if (!store) return null;
 
       // Resolve through the public view so a storefront cannot expose a
-      // suspended account or an owner with a retained Staff membership.
+      // suspended account or an owner with a retained Staff membership. The
+      // storefront is published under the store's own name, not the owner's.
       const { data: owner, error: ownerError } =
         await this.publicProfileSelect()
           .eq("id", store.organizations.owner_id)
           .eq("account_family", "professional")
           .maybeSingle();
       if (ownerError) databaseFailure("users.findPublicById", ownerError);
-      return owner ? this.mapPublicProfile(owner) : null;
+      if (!owner) return null;
+      return {
+        ...this.mapPublicProfile(owner),
+        storeSlug: idOrSlug,
+        ...(store.display_name
+          ? { storeName: String(store.display_name) }
+          : {}),
+      };
     } catch (error) {
       databaseFailure("users.findPublicById", error);
     }
+  }
+
+  /**
+   * A professional's storefront, when their active organization publishes
+   * one: the canonical address of the profile is the store, not the person.
+   */
+  private async withStorefront(
+    profile: PublicSellerProfile,
+  ): Promise<PublicSellerProfile> {
+    if (profile.accountType !== "professional") return profile;
+    const { data, error } = await getSupabaseAdminClient()
+      .from("stores")
+      .select("slug, display_name, organizations!inner(owner_id, status)")
+      .eq("organizations.owner_id", profile.id)
+      .eq("organizations.status", "active")
+      .eq("is_active", true)
+      .order("slug")
+      .limit(1)
+      .maybeSingle();
+    if (error) databaseFailure("users.findPublicById", error);
+    if (!data?.slug) return profile;
+    return {
+      ...profile,
+      storeSlug: String(data.slug),
+      ...(data.display_name ? { storeName: String(data.display_name) } : {}),
+    };
   }
 
   async listPublicProfessionals(

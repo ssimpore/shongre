@@ -134,8 +134,22 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // Sync state with props when initial values change
+  // Sync state with props when initial values change. The field is
+  // server-rendered and usable before this component hydrates: hydration
+  // leaves text typed meanwhile in the DOM but not in state, and this first
+  // sync would have replaced it with the (empty) controlled value — a search
+  // typed on a slow phone silently vanished. The mount adopts what the reader
+  // already typed; later edits flow through onChange.
+  const adoptedTypedText = useRef(false);
   useEffect(() => {
+    if (!adoptedTypedText.current) {
+      adoptedTypedText.current = true;
+      const typedBeforeHydration = searchInputRef.current?.value ?? "";
+      if (typedBeforeHydration && typedBeforeHydration !== initialQuery) {
+        setQuery(typedBeforeHydration);
+        return;
+      }
+    }
     setQuery(initialQuery);
   }, [initialQuery]);
 
@@ -507,8 +521,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   if (variant === "header") {
     return (
       <div className="relative w-full min-w-0" ref={searchContainerRef}>
+        {/* `action` and the field's `name` make every search form a plain
+            GET to the results route until React takes over: a reader who
+            presses Enter before hydration still lands on their results. */}
         <form
           role="search"
+          action={routes.search()}
           aria-label={t("ui.globalSearchBar.rechercheGlobale")}
           onSubmit={handleSubmit}
           className={`flex items-stretch h-control-md w-full min-w-0 bg-bg-base border border-border-base rounded-control overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-focus focus-within:bg-bg-surface focus-within:shadow-xs ${CONTROL_MOTION_CLASS} ${className}`}
@@ -639,6 +657,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             <input
               ref={searchInputRef}
               id={`${idPrefix}-header-query-input`}
+              name="query"
               type="search"
               aria-label={t("ui.globalSearchBar.rechercherUneAnnonce")}
               role="combobox"
@@ -739,6 +758,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       <div className="relative" ref={searchContainerRef}>
         <form
           role="search"
+          action={routes.search()}
           aria-label={t("ui.globalSearchBar.rechercheMobile")}
           onSubmit={handleSubmit}
           className={`space-y-2.5 ${className}`}
@@ -749,6 +769,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             <input
               ref={searchInputRef}
               id={`${idPrefix}-minimal-query-input`}
+              name="query"
               type="search"
               enterKeyHint="search"
               role="combobox"
@@ -889,6 +910,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       <div className="relative" ref={searchContainerRef}>
         <form
           role="search"
+          action={routes.search()}
           aria-label={t("ui.globalSearchBar.rechercheEtFiltres")}
           onSubmit={handleSubmit}
           className={`flex flex-row flex-wrap sm:flex-nowrap gap-2 ${className}`}
@@ -1011,6 +1033,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             <input
               ref={searchInputRef}
               id={`${idPrefix}-page-query-input`}
+              name="query"
               type="search"
               aria-label={t("ui.globalSearchBar.rechercherUneAnnonce")}
               role="combobox"
@@ -1111,6 +1134,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     >
       <form
         role="search"
+        action={routes.search()}
         aria-label={t(
           "ui.globalSearchBar.recherchePrincipaleDePetitesAnnonces",
         )}
@@ -1234,6 +1258,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           <input
             ref={searchInputRef}
             id={`${idPrefix}-hero-query-input`}
+            name="query"
             type="search"
             aria-label={t("ui.globalSearchBar.rechercherUneAnnonce")}
             role="combobox"

@@ -22,7 +22,7 @@ endif
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
 	production-config-check production-release-check backup-restore-test secret-scan hostname-check deploy deploy-dev deploy-staging deploy-prod rollback remote-health \
-	operations-tooling-check capability-inventory-check capability-inventory-update e2e-triage e2e-baseline-update web-push-keys performance-smoke performance-db-plan performance-check storage-restore-test observability-evidence edge-functions-evidence \
+	operations-tooling-check capability-inventory-check capability-inventory-update e2e-triage e2e-baseline-update e2e-triage-database e2e-baseline-update-database web-push-keys performance-smoke performance-db-plan performance-check storage-restore-test image-transform-check observability-evidence edge-functions-evidence \
 	docker-config docker-build docker-build-frontend docker-build-backend docker-start docker-stop docker-status docker-health docker-logs docker-scan docker-audit \
 	tunnel-status tunnel-health tunnel-logs api-schema api-types contracts release-manifest-check deployment-config-check env-matrix-check
 
@@ -235,6 +235,12 @@ e2e-triage: ## Run the browser suite and fail only on failures that are not alre
 e2e-baseline-update: ## Re-record the browser failures that exist on this tree
 	@E2E_JSON_REPORT=$(CURDIR)/.runtime/e2e-report.json $(MAKE) frontend-test-e2e E2E_ARGS="$(E2E_ARGS)" || true
 	@node scripts/e2e-triage.mjs --report $(CURDIR)/.runtime/e2e-report.json --update
+e2e-triage-database: ## Run the database-mode browser suite and fail only on failures not recorded for that mode
+	@E2E_JSON_REPORT=$(CURDIR)/.runtime/e2e-report.database.json $(MAKE) test-web-database-mode E2E_ARGS="$(E2E_ARGS)" || true
+	@node scripts/e2e-triage.mjs --report $(CURDIR)/.runtime/e2e-report.database.json --baseline frontend/e2e/known-failures.database.json
+e2e-baseline-update-database: ## Re-record the database-mode browser failures that exist on this tree
+	@E2E_JSON_REPORT=$(CURDIR)/.runtime/e2e-report.database.json $(MAKE) test-web-database-mode E2E_ARGS="$(E2E_ARGS)" || true
+	@node scripts/e2e-triage.mjs --report $(CURDIR)/.runtime/e2e-report.database.json --baseline frontend/e2e/known-failures.database.json --update
 test-web-api-transport: ## Verify first-party Web sessions against an isolated test API and production Web build
 	@SHONGRE_ENV=test SHONGRE_E2E_API_TRANSPORT=1 scripts/e2e.sh web-api-transport.spec.ts $(E2E_ARGS)
 seo-check: ## Validate centralized SEO and GEO discovery governance
@@ -290,6 +296,7 @@ operations-tooling-check: ## Test release evidence, hosted load, storage restore
 	@node --import tsx scripts/load-smoke.test.mjs
 	@APP_ENV=test node --import tsx scripts/database-performance-plan.test.mjs
 	@node --import tsx scripts/verify-storage-restore.test.mjs
+	@node --import tsx scripts/verify-image-transform.test.mjs
 	@node --import tsx scripts/verify-observability.test.mjs
 	@node scripts/check-runtime-hostnames.test.mjs
 	@node --import tsx scripts/check-performance-contract.mjs
@@ -408,7 +415,7 @@ mobile-check: mobile-lint mobile-typecheck mobile-test mobile-api-only-check mob
 ##@ Infrastructure & database
 infra-check: ## Validate Dockerfiles, manifests, runbooks, and generated config
 	@scripts/infra.sh check
-	@node --test scripts/local-development-contract.test.mjs scripts/e2e-filter.test.mjs
+	@node --test scripts/local-development-contract.test.mjs scripts/e2e-filter.test.mjs scripts/e2e-triage.test.mjs scripts/lib/merge-playwright-reports.test.mjs
 supabase-up: ## Start the repository-owned local Supabase stack
 	@scripts/supabase.sh up
 supabase-down: ## Stop the repository-owned local Supabase stack
@@ -467,6 +474,8 @@ backup-restore-test:
 	@scripts/verify-backup-restore.sh
 storage-restore-test: ## Verify a representative object from backup through an isolated restore target
 	@node --import tsx scripts/verify-storage-restore.mjs
+image-transform-check: ## Prove the hosted storage image transformer resizes a public object before enabling supabase_render
+	@node --import tsx scripts/verify-image-transform.mjs
 performance-smoke: ## Measure hosted API success-rate and p95 budgets and write release evidence
 	@node --import tsx scripts/load-smoke.mjs
 performance-db-plan: ## EXPLAIN a production-sized discovery shape in an isolated local PostgreSQL session

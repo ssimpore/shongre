@@ -160,6 +160,19 @@ export class DemoMessagingRepository implements IMessagingRepository {
     ]);
   }
 
+  /** Adds scenario threads beside the canonical one, keeping their own ids. */
+  seedConversations(conversations: Conversation[], messages: Message[]): void {
+    for (const conversation of conversations) {
+      this.conversations.set(conversation.id, { ...conversation });
+      if (!this.messages.has(conversation.id)) {
+        this.messages.set(conversation.id, []);
+      }
+    }
+    for (const message of messages) {
+      this.messages.get(message.conversationId)?.push({ ...message });
+    }
+  }
+
   async getUserConversations(
     userId: string,
     options: ConversationPageOptions = {},

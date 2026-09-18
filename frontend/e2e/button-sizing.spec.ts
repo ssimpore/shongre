@@ -79,7 +79,7 @@ for (const width of [320, 375, 390, 430, 768, 1024, 1104, 1280, 1440, 2048]) {
 
       await hero.getByRole("link", { name: "Explorer le catalogue" }).click();
       await expect(page).toHaveURL(/\/recherche/);
-      await expect(page.locator("main")).toBeVisible();
+      await expect(page.locator("#main-content")).toBeVisible();
       await waitForStableLayout(page);
       await expectContainedButtons(page, height);
       await expectNoHorizontalOverflow(page, `search buttons ${width}`);

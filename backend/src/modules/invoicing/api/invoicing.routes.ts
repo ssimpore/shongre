@@ -11,20 +11,11 @@ export function registerInvoicingRoutes(routes: RouteRegistrar): void {
     "POST",
     "/invoicing/activation",
     permission("subscription.manage.own"),
-    async ({ principal, marketCode }) => {
-      const workspace = await invoicingService.getWorkspace(
+    async ({ principal, marketCode }) =>
+      invoicingService.activateForCurrentOrganization(
         principal,
         requireApiRequestMarket(marketCode),
-      );
-      const access = workspace.tenants[0]?.productAccess;
-      if (!access) {
-        throw new AppError({
-          code: "FORBIDDEN",
-          message: "Un droit actif Shongre Facturation est requis.",
-        });
-      }
-      return access;
-    },
+      ),
   );
   routes.addRoute(
     "GET",

@@ -49,17 +49,24 @@ export const SHONGRE_PERFORMANCE_BUDGETS = {
    * Calibrated against measured dev-server output, which is the upper bound —
    * a production build serves less. Gzip is the number that matters on the
    * wire; raw is kept because it drives parse and memory cost.
+   *
+   * The homepage is server-rendered from the market-wide composition plus the
+   * hero rail's eight cards, measured at 49.6 KiB gzip / 457 KiB raw on the
+   * local seed and 55.5 KiB gzip on the browser-suite scenario (Sep 2026).
+   * That replaced a 16 KiB shell whose content arrived through two client
+   * fetches worth 38.5 KiB gzip, so the wire cost fell while the hero,
+   * headline and every section moved into the document.
    */
   serverDocument: {
     routeGzipBytes: {
-      home: 24_000,
+      home: 64_000,
       search: 60_000,
       category: 36_000,
       employment: 40_000,
       login: 14_000,
     },
     routeRawBytes: {
-      home: 130_000,
+      home: 560_000,
       search: 560_000,
       category: 240_000,
       employment: 280_000,

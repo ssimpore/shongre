@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useCallback,
   useRef,
+  startTransition,
 } from "react";
 import { LocationSelection } from "../../types";
 import {
@@ -350,20 +351,28 @@ export const MarketLocationProvider: React.FC<{
       label: `Toute la ${restoredMarket.name}`,
     };
 
-    setActiveMarketCode(restoredMarket.code);
-    setLocationState(
-      restoredLocation?.city ? restoredLocation : defaultLocation,
-    );
     const shippedLocale = resolveShippedLocale(
       storedLocale || restoredConfig.localization.defaultLocale,
     );
     const marketLocale = restoredConfig.localization.defaultLocale;
-    setCurrentLocaleState(
-      shippedLocale.split("-")[0] === marketLocale.split("-")[0]
-        ? marketLocale
-        : shippedLocale,
-    );
-    setCurrentCurrencyState(restoredCurrency);
+    // A transition, so restoring preferences cannot force a still-hydrating
+    // page boundary to drop its server HTML; see ConsentProvider.
+    startTransition(() => {
+      setActiveMarketCode(restoredMarket.code);
+      setLocationState(
+        restoredLocation?.city ? restoredLocation : defaultLocation,
+      );
+      setCurrentLocaleState(
+        shippedLocale.split("-")[0] === marketLocale.split("-")[0]
+          ? marketLocale
+          : shippedLocale,
+      );
+      setCurrentCurrencyState(restoredCurrency);
+      setManualMarketSelection(storedManualMarket);
+      setMarketRecommendation(null);
+      setMarketDetectionIssue(null);
+      setRestoredPreferenceSubject(preferenceSubject);
+    });
     if (!isSameStoredMarket) {
       browserPreferencesService.saveLocationPreference(defaultLocation);
       browserPreferencesService.saveUserLocale(
@@ -378,10 +387,6 @@ export const MarketLocationProvider: React.FC<{
       );
     }
     browserPreferencesService.saveActiveMarketCode(restoredMarket.code);
-    setManualMarketSelection(storedManualMarket);
-    setMarketRecommendation(null);
-    setMarketDetectionIssue(null);
-    setRestoredPreferenceSubject(preferenceSubject);
   }, [
     initialMarketContext,
     isRestoring,
@@ -892,8 +897,31 @@ export const MarketLocationProvider: React.FC<{
     setLocation(defaultLoc);
   }, [activeMarket, setLocation]);
 
-  const popularCities = useMemo<MarketCity[]>(() => {
-    return activeMarket.geography?.popularCities || [];
+  // The market's town shortlist (picker chips, nearest-town labels) is
+  // presentation data the API projection does not carry. It is loaded after
+  // hydration rather than shipped with it: the picker opens on a tap, never
+  // in the first paint, and the hydration budget has no room for the table.
+  const [popularCities, setPopularCities] = useState<MarketCity[]>(
+    () => activeMarket.geography?.popularCities || [],
+  );
+  useEffect(() => {
+    let active = true;
+    const shipped = activeMarket.geography?.popularCities || [];
+    if (shipped.length) {
+      setPopularCities(shipped);
+      return () => {
+        active = false;
+      };
+    }
+    void import("../../configuration/market-popular-cities").then(
+      ({ MARKET_POPULAR_CITIES }) => {
+        if (!active) return;
+        setPopularCities([...(MARKET_POPULAR_CITIES[activeMarket.code] ?? [])]);
+      },
+    );
+    return () => {
+      active = false;
+    };
   }, [activeMarket]);
 
   const requestPreciseLocation = useCallback(async () => {
@@ -914,10 +942,20 @@ export const MarketLocationProvider: React.FC<{
       setMarketDetectionIssue(outcome.reason);
       throw new CurrentLocationError("unresolved");
     }
+    // The shared gazetteer only loads when a position actually needs
+    // labelling: it is far too large for the hydration bundle.
+    const { resolveApproximatePlace } =
+      await import("@shongre/contracts/place-gazetteer");
     return resolveNearestMarketCity(
       coordinates,
       activeMarket.code,
       popularCities,
+      (marketCode, cityName) => {
+        const place = resolveApproximatePlace({ city: cityName, marketCode });
+        return place
+          ? { latitude: place.latitude, longitude: place.longitude }
+          : null;
+      },
     );
   }, [activeMarket.code, popularCities]);
 

@@ -19,6 +19,7 @@ import {
   invoicingPartySchema,
   invoicingTaxBreakdownSchema,
 } from "@shongre/contracts/invoicing";
+import { getCountryConfig } from "@shongre/contracts/market-country";
 import type { Database } from "../../../generated/database.types.js";
 import { config } from "../../../app/config/index.js";
 import { AppError } from "../../../shared/errors/app-error.js";
@@ -69,6 +70,13 @@ export interface UpdateInvoiceDraftRecord {
 
 export interface InvoicingRepository {
   listTenants(userId: string): Promise<InvoicingTenantAccess[]>;
+  /**
+   * Demo mode only: provisions the clearly labelled trial the demo adapter
+   * offers so both acquisition paths can be walked with the backend stopped.
+   * The production repository has no such method — an entitlement there is
+   * only ever published by the monetization flow.
+   */
+  provisionDemoTrial?(userId: string): Promise<void>;
   listLegalEntities(
     userId: string,
     marketCode?: string,
@@ -344,9 +352,27 @@ export class DemoInvoicingRepository implements InvoicingRepository {
   private readonly finalizationKeys = new Map<string, string>();
   private readonly finalizedSequences = new Map<string, number>();
 
+  /** Accounts that walked the demo activation in this process. */
+  private readonly trialUserIds = new Set<string>();
+
   constructor(
     private readonly options: {
       denyProductAccessForUserIds?: readonly string[];
+      /**
+       * Resolves the signed-in account so a professional who declares the
+       * products they hold gets a tenant of their own — named after their
+       * business, standalone when Facturation is all they hold, absent until
+       * they activate it otherwise. Without it every account shares the
+       * demonstration tenant, which is what the unit tests exercise.
+       */
+      findUser?: (userId: string) => Promise<{
+        id: string;
+        companyName?: string;
+        city?: string;
+        postalCode?: string;
+        country?: string;
+        enabledProducts?: readonly string[];
+      } | null>;
     } = {},
   ) {
     this.legalEntities.set(DEMO_ENTITY_ID, {
@@ -406,8 +432,57 @@ export class DemoInvoicingRepository implements InvoicingRepository {
     });
   }
 
+  private tenantIdFor(userId: string): string {
+    return deterministicUuid("invoicing-tenant", userId);
+  }
+
+  async provisionDemoTrial(userId: string): Promise<void> {
+    this.trialUserIds.add(userId);
+  }
+
   async listTenants(userId: string): Promise<InvoicingTenantAccess[]> {
     if (this.options.denyProductAccessForUserIds?.includes(userId)) return [];
+    const capabilities = [
+      "invoice.read",
+      "invoice.create",
+      "invoice.finalize",
+      "invoice.party.manage",
+      "invoicing.tenant.manage",
+    ] as const;
+    const user = this.options.findUser
+      ? await this.options.findUser(userId)
+      : null;
+    const declared = user?.enabledProducts;
+    if (user && declared) {
+      const entitled =
+        declared.includes("facturation") || this.trialUserIds.has(userId);
+      if (!entitled) return [];
+      const tenantId = this.tenantIdFor(userId);
+      const legalName = user.companyName || "Organisation Facturation";
+      // An established customer's organization already issues invoices: its
+      // legal entity exists on the tenant the way the database seed carries
+      // one, so the workspace opens complete rather than on a bootstrap step.
+      await this.ensureTenantLegalEntity(userId, tenantId, user.country);
+      return [
+        {
+          id: tenantId,
+          userId,
+          legalName,
+          countryCode: user.country || "FR",
+          membershipRole: "owner",
+          capabilities: [...capabilities],
+          productAccess: {
+            ...structuredClone(DEMO_PRODUCT_ACCESS),
+            organizationId: tenantId,
+            accessMode: declared.includes("marketplace")
+              ? "ADD_ON"
+              : "STANDALONE",
+            source: "trial",
+            status: "trialing",
+          },
+        },
+      ];
+    }
     return [
       {
         id: DEMO_TENANT_ID,
@@ -415,25 +490,42 @@ export class DemoInvoicingRepository implements InvoicingRepository {
         legalName: "Atelier Horizon SARL",
         countryCode: "FR",
         membershipRole: "owner",
-        capabilities: [
-          "invoice.read",
-          "invoice.create",
-          "invoice.finalize",
-          "invoice.party.manage",
-          "invoicing.tenant.manage",
-        ],
+        capabilities: [...capabilities],
         productAccess: structuredClone(DEMO_PRODUCT_ACCESS),
       },
     ];
   }
 
+  private async ensureTenantLegalEntity(
+    userId: string,
+    tenantId: string,
+    countryCode: string | undefined,
+  ): Promise<void> {
+    const marketCode = countryCode || "FR";
+    const market = getCountryConfig(marketCode) ?? getCountryConfig("FR")!;
+    await this.bootstrapLegalEntityFromOrganization(userId, {
+      tenantId,
+      marketCode,
+      currency: market.currency,
+      locale: market.defaultLocale,
+      timezone: market.timezone,
+    });
+  }
+
   async listLegalEntities(
-    _userId: string,
+    userId: string,
     marketCode?: string,
   ): Promise<InvoicingLegalEntity[]> {
+    // The same scope the database repository applies: an organization only
+    // ever sees its own issuers.
+    const tenantIds = new Set(
+      (await this.listTenants(userId)).map((tenant) => tenant.id),
+    );
     return structuredClone(
       [...this.legalEntities.values()].filter(
-        (entity) => !marketCode || entity.defaultMarketCode === marketCode,
+        (entity) =>
+          tenantIds.has(entity.tenantId) &&
+          (!marketCode || entity.defaultMarketCode === marketCode),
       ),
     );
   }
@@ -476,9 +568,14 @@ export class DemoInvoicingRepository implements InvoicingRepository {
         candidate.defaultMarketCode === input.marketCode,
     );
     if (existing) return structuredClone(existing);
+    // The organization's own facts, as the database bootstrap reuses them:
+    // the customer is never asked for their business name a second time.
+    const user = this.options.findUser
+      ? await this.options.findUser(userId)
+      : null;
     return this.createLegalEntity(userId, {
       tenantId: input.tenantId,
-      legalName: "Organisation Facturation",
+      legalName: user?.companyName || "Organisation Facturation",
       countryCode: input.marketCode,
       defaultMarketCode: input.marketCode,
       defaultCurrency: input.currency,
@@ -486,8 +583,8 @@ export class DemoInvoicingRepository implements InvoicingRepository {
       timezone: input.timezone,
       registeredAddress: {
         line1: "Adresse de l’organisation",
-        postalCode: "00000",
-        city: "Ville",
+        postalCode: user?.postalCode || "00000",
+        city: user?.city || "Ville",
         countryCode: input.marketCode,
       },
       identifiers: [],

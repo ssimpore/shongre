@@ -32,7 +32,11 @@ test.describe("Shongre Education", () => {
       cards.first().locator('[data-listing-card="true"]'),
     ).toBeVisible();
 
-    await page.getByRole("button", { name: "Matière", exact: true }).click();
+    // Desktop filters live behind the shared disclosure, closed by default.
+    await page.getByRole("button", { name: "Afficher les filtres" }).click();
+    const filters = page.locator("#education-filter-panel-desktop");
+    await expect(filters).toBeVisible();
+    await filters.getByRole("button", { name: "Matière", exact: true }).click();
     await page
       .getByRole("option", { name: "Mathématiques", exact: true })
       .click();
@@ -161,6 +165,7 @@ test.describe("Shongre Education", () => {
 
   test("public tutor profile has one canonical head and no private contact details", async ({
     page,
+    request,
   }) => {
     await usePersona(page, "guest");
     await page.goto("/education/professeur/sophie-martin-lyon", {
@@ -174,11 +179,26 @@ test.describe("Shongre Education", () => {
     await expect(page.locator("body")).not.toContainText(
       /sophie@|06\s?\d{2}|adresse exacte/i,
     );
-    await expect(page.locator('head meta[name="description"]')).toHaveCount(1);
-    await expect(page.locator('head link[rel="canonical"]')).toHaveCount(1);
-    await expect(
-      page.locator('body meta[name="description"], body link[rel="canonical"]'),
-    ).toHaveCount(0);
+    // A browser receives the streamed metadata wherever React leaves it, once;
+    // the crawler render below is what has to carry it inside `<head>`.
+    await expect(page.locator('meta[name="description"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(1);
+
+    const response = await request.get(
+      "/education/professeur/sophie-martin-lyon",
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+        },
+      },
+    );
+    expect(response.status()).toBe(200);
+    const html = await response.text();
+    const head = html.slice(0, html.indexOf("</head>"));
+    expect(head).toMatch(/<meta name="description"/);
+    expect(head).toMatch(/<link rel="canonical"/);
+    expect(head.match(/<link rel="canonical"/g)).toHaveLength(1);
   });
 
   test("minor requests require a guardian and never persist guardian identity locally", async ({

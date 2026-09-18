@@ -16,6 +16,16 @@ fi
 
 export FRONTEND_PORT="$E2E_FRONTEND_PORT"
 export PORT="$E2E_FRONTEND_PORT"
+# The isolated API geocodes against a stub the fixture starts on this port,
+# never against the public OpenStreetMap instance the test profile defaults
+# to: the location journeys must not depend on egress or a shared rate limit.
+export E2E_GEOCODING_PORT="${E2E_GEOCODING_PORT:-$((E2E_FRONTEND_PORT + 3))}"
+geocoding_listener_pids="$(lsof -nP -iTCP:"$E2E_GEOCODING_PORT" -sTCP:LISTEN -t 2>/dev/null | sort -u || true)"
+if [[ -n "$geocoding_listener_pids" ]]; then
+  shongre_fail "geocoding stub port $E2E_GEOCODING_PORT is already occupied by PID(s) $(printf '%s' "$geocoding_listener_pids" | paste -sd, -)"
+  shongre_info "set E2E_GEOCODING_PORT to a free port"
+  exit 1
+fi
 export E2E_BASE_URL="http://${FRONTEND_HOST}:${E2E_FRONTEND_PORT}"
 # The first-party API relay must recognize the isolated browser origin, never
 # inherit the interactive marketplace listener from the local profile.
@@ -124,6 +134,9 @@ fi
     # suite; the limiter itself is proven by its unit test.
     NODE_ENV=test BACKEND_DATA_MODE="$SHONGRE_E2E_DATA_MODE" \
       API_PUBLIC_RATE_LIMIT=6000 API_AUTHENTICATED_RATE_LIMIT=6000 \
+      GEOCODING_PROVIDER=nominatim \
+      GEOCODING_BASE_URL="http://127.0.0.1:${E2E_GEOCODING_PORT}" \
+      GEOCODING_RATE_LIMIT=6000 \
       TSX_TSCONFIG_PATH="$SHONGRE_ROOT/backend/tsconfig.json" \
       exec node --import tsx backend/tests/fixtures/browser-api-server.ts
   ) >"$e2e_root/api.log" 2>&1 &
@@ -316,6 +329,24 @@ for shard_count in "$non_blink_shards" "$non_blink_serial_shards"; do
   fi
 done
 
+# Every Playwright invocation is one part of the run: a failing regular
+# phase must not stop the serial phase (the record could never be judged on
+# tests that never ran), and each invocation writes its own JSON part so the
+# merged report the triage reads covers the whole run rather than whichever
+# phase wrote last.
+e2e_exit_status=0
+e2e_report_parts=""
+if [[ -n "${E2E_JSON_REPORT:-}" ]]; then
+  e2e_report_parts="${E2E_JSON_REPORT%.json}.parts"
+  rm -rf "$e2e_report_parts"
+  mkdir -p "$e2e_report_parts"
+fi
+# One artifact tree per run, one directory per invocation inside it:
+# Playwright empties its output directory on start, and the serial phase used
+# to erase the screenshots and traces of the regular phase's failures before
+# anyone could read them.
+rm -rf "$SHONGRE_ROOT/frontend/test-results"
+
 run_playwright_project() {
   local project="$1"
   local workers="$2"
@@ -328,14 +359,27 @@ run_playwright_project() {
     import { e2eFilter } from "./scripts/lib/e2e-filter.mjs";
     process.stdout.write(e2eFilter(...process.argv.slice(1)));
   ' "$phase" "$requested_grep" "$requested_grep_invert")"
+  local invocation="$project-$phase-$(date +%s)-$RANDOM"
+  local report_part=""
+  if [[ -n "$e2e_report_parts" ]]; then
+    report_part="$e2e_report_parts/$invocation.json"
+  fi
+  local output_dir="test-results/$invocation"
+  local status=0
   if [[ "${#forwarded_args[@]}" -gt 0 ]]; then
-    npm run test:e2e --workspace=frontend -- \
+    E2E_JSON_REPORT="$report_part" npm run test:e2e --workspace=frontend -- \
       --grep "$phase_filter" --project="$project" --workers="$workers" \
-      --pass-with-no-tests "$@" "${forwarded_args[@]}"
+      --output "$output_dir" \
+      --pass-with-no-tests "$@" "${forwarded_args[@]}" || status=$?
   else
-    npm run test:e2e --workspace=frontend -- \
+    E2E_JSON_REPORT="$report_part" npm run test:e2e --workspace=frontend -- \
       --grep "$phase_filter" --project="$project" --workers="$workers" \
-      --pass-with-no-tests "$@"
+      --output "$output_dir" \
+      --pass-with-no-tests "$@" || status=$?
+  fi
+  if [[ "$status" != "0" ]]; then
+    shongre_fail "$project $phase phase reported failures (exit $status); continuing with the remaining phases"
+    e2e_exit_status=1
   fi
 }
 
@@ -375,3 +419,8 @@ fi
 if project_is_requested webkit; then
   run_sharded_project webkit "$non_blink_serial_shards" --grep serial
 fi
+
+if [[ -n "$e2e_report_parts" ]]; then
+  node scripts/lib/merge-playwright-reports.mjs "$E2E_JSON_REPORT" "$e2e_report_parts"/*.json
+fi
+exit "$e2e_exit_status"

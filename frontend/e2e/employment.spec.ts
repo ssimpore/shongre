@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { readBrowserFixtures } from "./fixtures";
 import { usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
@@ -22,9 +23,12 @@ test.describe("Shongre Emploi journeys", () => {
   }) => {
     await usePersona(page, "individual_buyer");
     await seedConsent(page);
-    await page.addInitScript(() => {
+    // The list is keyed by the account's backend identity, which differs
+    // between the demo and database scenarios.
+    const accountId = readBrowserFixtures().accounts.user_thomas.id;
+    await page.addInitScript((key: string) => {
       window.localStorage.setItem(
-        "shongre_employment_recent_jobs:user_thomas:FR",
+        key,
         JSON.stringify([
           "job-product-intern-bordeaux",
           "job-react-lyon",
@@ -32,7 +36,7 @@ test.describe("Shongre Emploi journeys", () => {
           "job-seasonal-nice",
         ]),
       );
-    });
+    }, `shongre_employment_recent_jobs:${accountId}:FR`);
     await page.setViewportSize({ width: 1408, height: 749 });
 
     await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -78,8 +82,11 @@ test.describe("Shongre Emploi journeys", () => {
       };
     });
     expect(desktopContract.gap).toBe(homepageGap);
-    expect(desktopContract.tokenWidth).toBe("13rem");
-    expect(desktopContract.widths).toEqual([208, 208, 208, 208]);
+    // The canonical marketplace card (`--spacing-listing-card`, 220 CSS px)
+    // certified by design-tokens.spec.ts; the employment rail must not carry
+    // its own width.
+    expect(desktopContract.tokenWidth).toBe("13.75rem");
+    expect(desktopContract.widths).toEqual([220, 220, 220, 220]);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await waitForStableLayout(page);
@@ -103,7 +110,14 @@ test.describe("Shongre Emploi journeys", () => {
     await expect(
       page.getByText("Développeur·se front-end React"),
     ).toBeVisible();
-    const locationSelector = page.locator("#employment-location-selector");
+    // On a phone the location control lives in the shared filter drawer.
+    await page
+      .locator('button[aria-controls="employment-filter-panel-mobile"]')
+      .click();
+    const filters = page.getByRole("dialog", { name: "Filtres emploi" });
+    const locationSelector = filters.locator(
+      "#employment-location-selector-mobile",
+    );
     await expect(locationSelector).toHaveAttribute(
       "data-location-selector",
       "true",
@@ -117,10 +131,18 @@ test.describe("Shongre Emploi journeys", () => {
       .getByRole("button", { name: "Appliquer la zone" })
       .click();
     await expect(page).toHaveURL(/location=Lyon/);
+    await filters.getByRole("button", { name: /^Voir \d+ offre/ }).click();
+    await expect(filters).toBeHidden();
     await expectNoHorizontalOverflow(page, "employment search @ 390px");
 
     await page.getByText("Développeur·se front-end React").click();
-    await expect(page.getByRole("button", { name: /postuler/i })).toBeVisible();
+    // On a phone the apply action is the sticky primary action; the desktop
+    // aside carries the same button off-screen.
+    await expect(
+      page
+        .getByTestId("detail-mobile-primary-action")
+        .getByRole("button", { name: /postuler/i }),
+    ).toBeVisible();
     await expect(
       page.getByText(/aucun paiement ne peut être demandé/i),
     ).toBeVisible();
@@ -192,24 +214,31 @@ test.describe("Shongre Emploi journeys", () => {
         name: "Note 4,7 sur 5, 18 avis",
       }),
     ).toBeVisible();
-    await expect(
-      employerIdentity.locator('[data-ui-verified-icon="true"]'),
-    ).toBeVisible();
+    // A professional employer carries the compact Pro badge; the identity
+    // policy keeps the standalone verification mark for individuals only
+    // (see account-badges.spec.ts).
     await expect(
       employerIdentity.locator('[data-ui-pro-badge="true"]'),
-    ).toBeVisible();
+    ).toHaveAttribute("aria-label", "Compte professionnel");
+    await expect(
+      employerIdentity.locator('[data-ui-verified-icon="true"]'),
+    ).toHaveCount(0);
 
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    // Jobs are no longer projected as generic listings (`/annonce/…`); the
+    // same card must survive a client-side route change to another offer.
+    await page.goto("/emploi", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
     await page.evaluate(() => {
       window.history.pushState(
         {},
         "",
-        "/annonce/listing_employment_job-react-lyon",
+        "/emploi/offre/developpeur-se-front-end-react-job-react-lyon",
       );
       window.dispatchEvent(new PopStateEvent("popstate"));
     });
-    await expect(page).toHaveURL("/annonce/listing_employment_job-react-lyon");
+    await expect(page).toHaveURL(
+      "/emploi/offre/developpeur-se-front-end-react-job-react-lyon",
+    );
     await waitForStableLayout(page);
 
     const projectedEmployerIdentity = page.locator(
@@ -230,11 +259,11 @@ test.describe("Shongre Emploi journeys", () => {
       }),
     ).toBeVisible();
     await expect(
-      projectedEmployerIdentity.locator('[data-ui-verified-icon="true"]'),
-    ).toBeVisible();
-    await expect(
       projectedEmployerIdentity.locator('[data-ui-pro-badge="true"]'),
-    ).toBeVisible();
+    ).toHaveAttribute("aria-label", "Compte professionnel");
+    await expect(
+      projectedEmployerIdentity.locator('[data-ui-verified-icon="true"]'),
+    ).toHaveCount(0);
   });
 
   test("the recruiter workspace follows the selected demo persona", async ({

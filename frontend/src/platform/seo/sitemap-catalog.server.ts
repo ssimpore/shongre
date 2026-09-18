@@ -217,9 +217,13 @@ export async function buildMarketSitemapGroups(
     const listings = activeListings.filter(
       (listing) => listing.sellerId === seller.id,
     );
+    const professional =
+      seller.sellerType === "pro" || seller.accountType === "professional";
     return resolveEntry(
       context,
-      `/${seller.sellerType === "pro" || seller.accountType === "professional" ? "boutique" : "profil"}/${encodeURIComponent(seller.slug || seller.id)}`,
+      `/${professional ? "boutique" : "profil"}/${encodeURIComponent(
+        (professional && seller.storeSlug) || seller.slug || seller.id,
+      )}`,
       {
         status: "found",
         data: {

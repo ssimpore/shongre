@@ -40,10 +40,33 @@ process production data or money.
    malformed key must stop promotion before the backend is restarted.
 
 Useful evidence commands are `make performance-smoke`,
-`make observability-evidence`, and
+`make observability-evidence`, `make image-transform-check` and
 `ALLOW_BACKUP_RESTORE_TEST=true make backup-restore-test`. Signed storage URLs,
 dashboard links, alert receivers and evidence paths are release-scoped secrets
 or restricted operations configuration; they never belong in Git.
+
+## Enabling the storage image transformer
+
+Marketplace photos are served as uploaded originals until
+`PUBLIC_MEDIA_IMAGE_TRANSFORM=supabase_render` is set for an environment; the
+Web and mobile clients then request a width ladder through the storage
+provider's render endpoint. That endpoint is a billed provider capability, and
+a transform it rejects is a broken photo on every card, so the flag is only
+ever turned on after the capability is proven in that exact project:
+
+1. Enable image transformations on the storage project (a paid-plan feature of
+   the hosted provider; locally, `[storage.image_transformation] enabled = true`
+   in the rendered Supabase config and a stack restart).
+2. Run `IMAGE_TRANSFORM_ENVIRONMENT=<environment>
+IMAGE_TRANSFORM_SAMPLE_URL=<public object URL from that project>
+IMAGE_TRANSFORM_EVIDENCE_FILE=<restricted path> make image-transform-check`.
+   It fetches the original and the same object rendered at 320px, and passes
+   only when the render is a decodable image of exactly that width and smaller
+   than the original — a passthrough or an error fails it.
+3. Set `PUBLIC_MEDIA_IMAGE_TRANSFORM=supabase_render` in that environment's
+   Web configuration and, for production, `IMAGE_TRANSFORM_EVIDENCE_FILE`:
+   `make production-release-check` refuses the flag without evidence from the
+   production storage origin proving a real resize.
 
 ## Authenticated staging certification
 

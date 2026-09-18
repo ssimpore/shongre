@@ -1,4 +1,5 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
+import dynamic from "next/dynamic";
 import React, {
   useState,
   useEffect,
@@ -101,27 +102,36 @@ const ReservationCheckoutModal = React.lazy(() =>
     (module) => ({ default: module.ReservationCheckoutModal }),
   ),
 );
-const ListingMediaGallery = React.lazy(() =>
+/*
+ * Sections the server renders are split through `next/dynamic` rather than
+ * `React.lazy`: Next then emits a preload for each chunk in the document, so
+ * they are in hand when hydration reaches them. A lazily discovered chunk is
+ * not — and while it is in flight, the first provider update after hydration
+ * makes React abandon the server HTML for that boundary and paint its fallback
+ * (measured as a 0.26 layout shift on a throttled phone). The two checkout
+ * modals stay lazy: they mount on interaction, after hydration.
+ */
+const ListingMediaGallery = dynamic(() =>
   import("./components/ListingMediaGallery").then((module) => ({
     default: module.ListingMediaGallery,
   })),
 );
-const ListingCharacteristics = React.lazy(() =>
+const ListingCharacteristics = dynamic(() =>
   import("./components/ListingCharacteristics").then((module) => ({
     default: module.ListingCharacteristics,
   })),
 );
-const ListingFulfillmentSummary = React.lazy(() =>
+const ListingFulfillmentSummary = dynamic(() =>
   import("./components/ListingFulfillmentSummary").then((module) => ({
     default: module.ListingFulfillmentSummary,
   })),
 );
-const ListingSellerTrustSection = React.lazy(() =>
+const ListingSellerTrustSection = dynamic(() =>
   import("./components/ListingSellerTrustSection").then((module) => ({
     default: module.ListingSellerTrustSection,
   })),
 );
-const ListingSafetyNotice = React.lazy(() =>
+const ListingSafetyNotice = dynamic(() =>
   import("./components/ListingSafetyNotice").then((module) => ({
     default: module.ListingSafetyNotice,
   })),
@@ -1338,9 +1348,17 @@ export const ListingDetailPage: React.FC = () => {
                 <PurchasePriceDisclosure listing={listing} />
               ) : null}
               {inlineMobilePrimaryAction}
+              {/* Every remaining buyer action sits beside the primary one.
+                  Messaging in particular: on a purchasable listing the first
+                  phone-width action block used to offer only the purchase and
+                  the offer, and the seller's Message button first appeared in
+                  the sidebar, seven screens down — a wall between a reader and
+                  the one action most classifieds start with. */}
               {(actions.canMakeOffer ||
                 (actions.canReserve &&
-                  actions.primaryAction !== "reservation")) && (
+                  actions.primaryAction !== "reservation") ||
+                (actions.canContact &&
+                  actions.primaryAction !== "contact")) && (
                 <div className="flex flex-wrap gap-2">
                   {actions.canMakeOffer && (
                     <Button
@@ -1365,6 +1383,21 @@ export const ListingDetailPage: React.FC = () => {
                         leftIcon={<Clock className="h-icon-sm w-icon-sm" />}
                       >
                         {t("listings.listingDetailPage.reserver")}
+                      </Button>
+                    )}
+                  {actions.canContact &&
+                    actions.primaryAction !== "contact" && (
+                      <Button
+                        data-marketplace-action="message.send"
+                        variant="secondary"
+                        size="md"
+                        className="grow"
+                        onClick={() => openBuyerAction("contact")}
+                        leftIcon={
+                          <MessageSquare className="h-icon-sm w-icon-sm" />
+                        }
+                      >
+                        {contactActionLabel}
                       </Button>
                     )}
                 </div>

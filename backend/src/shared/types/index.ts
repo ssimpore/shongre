@@ -20,6 +20,14 @@ export type UserRole =
 export interface UserProfile {
   id: string;
   slug: string;
+  /**
+   * The storefront slug a professional's organization publishes under. The
+   * database keeps it in `stores`; the in-memory scenario carries it on the
+   * profile so `/boutique/<slug>` resolves to the same owner in both modes.
+   */
+  storeSlug?: string;
+  /** The registered business name of a professional account. */
+  companyName?: string;
   email: string;
   name: string;
   accountType: AccountType;
@@ -67,6 +75,10 @@ export interface PublicSellerProfile {
   id: string;
   slug: string;
   name: string;
+  /** The business a professional storefront publishes under. */
+  storeName?: string;
+  /** The storefront's slug — `/boutique/<storeSlug>` is its canonical address. */
+  storeSlug?: string;
   accountType: "individual" | "professional";
   sellerType: "individual" | "pro";
   avatarUrl?: string;

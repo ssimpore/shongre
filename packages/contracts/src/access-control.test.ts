@@ -194,6 +194,22 @@ describe("canonical access-control policy", () => {
     expect(finance.has("admin.configuration.manage")).toBe(false);
   });
 
+  it("lets the commercial team prospect in the console's first-party context", () => {
+    const commercial = capabilities({
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "commercial",
+    });
+    const moderator = capabilities({
+      accountType: "individual",
+      staffStatus: "active",
+      staffRole: "moderator",
+    });
+    expect(commercial.has("crm.prospecting.discover")).toBe(true);
+    expect(commercial.has("crm.prospecting.internal_first_party")).toBe(true);
+    expect(moderator.has("crm.prospecting.internal_first_party")).toBe(false);
+  });
+
   it("reserves complimentary commercial grants for the platform owner", () => {
     const commercial = capabilities({
       accountType: "individual",

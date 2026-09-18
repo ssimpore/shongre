@@ -800,6 +800,17 @@ export class RealEstateService {
     return workspace;
   }
 
+  /** The caller's own agency, found through membership: no organization id crosses the wire. */
+  async getCurrentAgencyWorkspace(userId: string) {
+    const workspace = await this.repo.getAgencyWorkspaceForUser(userId);
+    if (!workspace)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Aucun espace agence n’est associé à ce compte.",
+      });
+    return this.getOwnAgencyWorkspace(userId, workspace.organization.id);
+  }
+
   async getOwnAgencyWorkspace(userId: string, organizationId: string) {
     const workspace = await this.loadOwnAgencyWorkspace(userId, organizationId);
     const workspaceMarketCode = workspace.properties[0]?.marketCodes[0];

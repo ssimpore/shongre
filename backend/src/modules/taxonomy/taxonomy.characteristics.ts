@@ -1,3 +1,4 @@
+import { getCountryConfig } from "@shongre/contracts/market-country";
 import { localizeTaxonomyLabels as localized } from "@shongre/contracts/taxonomy-labels";
 import type { components } from "@shongre/contracts/openapi";
 import type { TaxonomyV1Attribute } from "@shongre/contracts/taxonomy";
@@ -16,10 +17,11 @@ function formatValue(
   definition: TaxonomyV1Attribute,
   options: readonly Option[],
   locale: string,
+  timeZone: string,
 ): string {
   if (Array.isArray(value)) {
     return value
-      .map((item) => formatValue(item, definition, options, locale))
+      .map((item) => formatValue(item, definition, options, locale, timeZone))
       .filter(Boolean)
       .join(", ");
   }
@@ -54,6 +56,17 @@ function formatValue(
       useGrouping: definition.dataType !== "year",
     }).format(value);
     return definition.unit ? `${number} ${definition.unit}` : number;
+  }
+  // A date is stored as an ISO instant and read as a date: an event ticket
+  // showed "2026-10-03T18:30:00+02:00" on its card until this formatted it.
+  if (definition.dataType === "date" || definition.dataType === "date_time") {
+    const instant = Date.parse(text);
+    if (Number.isNaN(instant)) return text;
+    return new Intl.DateTimeFormat(locale, {
+      dateStyle: "medium",
+      ...(definition.dataType === "date_time" ? { timeStyle: "short" } : {}),
+      timeZone,
+    }).format(new Date(instant));
   }
   return text;
 }
@@ -243,6 +256,8 @@ export function projectListingCharacteristics(
           ? (optionsBySet.get(definition.optionSetId) ?? [])
           : [],
         input.locale,
+        // An event is read in its market's time, not the server's.
+        getCountryConfig(input.marketCode)?.timezone ?? "UTC",
       );
     const cardProjection =
       input.surface === "card"

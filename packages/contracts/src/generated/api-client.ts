@@ -5328,6 +5328,18 @@ export function getRealEstateAgenciesByOrganizationIdLeadsExport(
     "application/json",
   );
 }
+export function getRealEstateCurrentAgencyWorkspace(
+  transport: ApiTransport,
+  input: ApiInput<"getRealEstateCurrentAgencyWorkspace">,
+): Promise<ApiResponse<"getRealEstateCurrentAgencyWorkspace">> {
+  return executeApiOperation<"getRealEstateCurrentAgencyWorkspace">(
+    transport,
+    "GET",
+    "/real-estate/agencies/workspace",
+    input,
+    "application/json",
+  );
+}
 export function getRealEstateAgenciesByOrganizationIdWorkspace(
   transport: ApiTransport,
   input: ApiInput<"getRealEstateAgenciesByOrganizationIdWorkspace">,
@@ -6913,6 +6925,7 @@ export const generatedApiOperations = {
   patchRealEstateAgenciesByOrganizationIdLeadsByLeadId,
   postRealEstateAgenciesByOrganizationIdLeadsByLeadIdNotes,
   getRealEstateAgenciesByOrganizationIdLeadsExport,
+  getRealEstateCurrentAgencyWorkspace,
   getRealEstateAgenciesByOrganizationIdWorkspace,
   getRealEstateCatalog,
   postRealEstateCheckouts,

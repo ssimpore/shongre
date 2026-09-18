@@ -71,6 +71,28 @@ invalidation SLO. Until that adapter is evidenced, the short discovery TTL is
 the consistency bound; do not add an API token to application source or a
 public environment variable.
 
+Public taxonomy projections (`/taxonomy/v1/*`: root, nodes, search filters,
+header navigation, tree, options, resolve) form a second, revalidate-only
+class. They are the largest anonymous reads and change only on an editorial
+publish, but no shared cache may hold them until the purge adapter exists, so
+anonymous responses carry `Cache-Control: private, no-cache`,
+`CDN-Cache-Control: no-store`, an `ETag` and the market/locale `Vary`. Every
+request still reaches the origin; a reader whose browser holds the current
+revision receives 304 and downloads nothing, and the first request after a
+publish is answered with the new revision because the validator no longer
+matches (`make taxonomy-db-test` proves this against the local database).
+Discovery, listings and the home composition stay `private, no-store`.
+
+The Web relay (`frontend/src/platform/api/web-api-proxy.ts`) is one reader's
+hop, never a shared cache: it narrows whatever the backend declared to that
+reader's own cache. A validator-only policy passes through unchanged, a shared
+profile keeps only its browser lifetime (`private, max-age=N`, or
+`private, no-cache` when the browser lifetime is zero), `Vary` is forwarded
+with it, and everything else stays `private, no-store`. `scripts/load-smoke.mjs`
+verifies both classes on the deployed edge — a registered reference projection
+must answer with the shared profile and 304, and header navigation with
+`private, no-cache` and 304.
+
 The commercial catalogue cache is a separate market-only resilience cache. It
 coalesces concurrent misses, applies deterministic ±10% TTL jitter, invalidates
 after publication/activation, and serves a same-market last valid value only
@@ -198,6 +220,39 @@ verify the configured responsive image transformer, content negotiation,
 immutable media caching, CDN hit ratio, origin bytes, and visual quality before
 release. Lab total blocking time is not field INP; the INP objective requires
 staging or production RUM.
+
+The 2026-09-17 pass measured the same production build on an emulated iPhone
+13 with 4× CPU slowdown and a 4G network profile, which is where the earlier
+desktop-only numbers had hidden three structural costs:
+
+- listing detail mounted its MapLibre location map on page load: 4.4 MB of
+  JavaScript, 1.4 s of main-thread blocking and a 0.26 layout shift per view.
+  Map slots now mount through `DeferUntilVisible`, so the renderer, its worker
+  and the first tiles load only when the slot is on screen (1.8 MB, 131 ms,
+  0.00); the property results page below `xl` no longer fetches its hidden
+  map either;
+- the homepage document was a loading shell with no H1 and ten client fetches.
+  It now server-renders the market-wide composition and the hero rail's eight
+  cards (49.6 KiB gzip against a former 16 KiB shell plus 38.5 KiB of client
+  fetches), so the headline paints at first contentful paint;
+- server-rendered pages lost their HTML after hydration: page chunks were
+  discovered by `React.lazy` only during hydration, and the first provider
+  restoration that reached the still-dehydrated boundary made React paint the
+  route fallback until the chunk arrived (0.96 CLS on the seller profile,
+  0.26–0.52 on listing detail). Route and section chunks now load through
+  `next/dynamic`, which preloads them from the document, and restoration
+  updates run as transitions; both pages measure 0.00 across repeated runs.
+
+The MapLibre worker pair is served immutable under a version-named path, and
+the hero artwork is served only from the `sm` breakpoint, where it is visible.
+The remaining phone-side cost is image weight: `/recherche` still downloads
+about 1.3 MB of card originals and the homepage about 3.7 MB, because the
+storage image transformer is not provisioned locally; that is the
+`PUBLIC_MEDIA_IMAGE_TRANSFORM=supabase_render` prerequisite above, not a code
+change. `make image-transform-check` proves a project's transformer before the
+flag is set (see the release runbook), and the production gate refuses the flag
+without that evidence. Lab LCP on the throttled phone is otherwise bounded by
+hydration of the 955 KiB raw shell, after which the consent region paints.
 
 ## Observability and scaling triggers
 

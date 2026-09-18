@@ -1,10 +1,13 @@
-import { testListingId } from "./fixtures";
+import { testDeliveryRequestId, testListingId } from "./fixtures";
 import { PersonaName } from "./personas";
 
 export interface RouteUnderTest {
+  /** The router's own path — what `scripts/check-route-coverage.mjs` reads. */
   path: string;
   name: string;
   persona: PersonaName;
+  /** The origin to sign the persona into when the route lives on another product origin. */
+  origin?: string;
   /** Set when the route needs a beat longer than `domcontentloaded` to settle. */
   settleMs?: number;
 }
@@ -14,7 +17,32 @@ export interface RouteUnderTest {
  * navigation aligned with the same identifiers used by public card batches.
  */
 export const DEMO_LISTING_ID = testListingId("list-117");
-export const DEMO_DELIVERY_REQUEST_ID = "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8";
+
+/**
+ * Facturation is served from its own origin whenever one is configured — the
+ * isolated runner sets one, as production does — and the marketplace host then
+ * answers 404 for `/facturation/*`. Every address into the product is built
+ * here so a sweep never certifies the marketplace's 404 page in its place.
+ */
+export const FACTURATION_ORIGIN = process.env.SHONGRE_FACTURATION_ORIGIN || "";
+export function facturationUrl(path = "/"): string {
+  if (FACTURATION_ORIGIN) return new URL(path, FACTURATION_ORIGIN).href;
+  return `/facturation${path === "/" ? "" : path}`;
+}
+
+/**
+ * The address a browser opens for a matrix entry. The matrix keeps the
+ * router's own paths so route coverage can read them; a product that has its
+ * own origin drops its marketplace mount (`/facturation/app` → `/app`) there.
+ */
+export function routeUrl(route: RouteUnderTest): string {
+  if (!route.origin) return route.path;
+  const productPath = route.path.replace(/^\/facturation(?=\/|$)/, "") || "/";
+  return new URL(productPath, route.origin).href;
+}
+export const DEMO_DELIVERY_REQUEST_ID = testDeliveryRequestId(
+  "delivery-petit-meuble",
+);
 
 export const PUBLIC_ROUTES: RouteUnderTest[] = [
   { path: "/", name: "homepage", persona: "guest" },
@@ -49,7 +77,12 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   { path: "/professionnels", name: "pro-directory", persona: "guest" },
   { path: "/solutions-pro", name: "pro-plans", persona: "guest" },
   { path: "/solutions", name: "solutions-catalog", persona: "guest" },
-  { path: "/facturation", name: "facturation-product", persona: "guest" },
+  {
+    path: "/facturation",
+    name: "facturation-product",
+    persona: "guest",
+    origin: FACTURATION_ORIGIN || undefined,
+  },
   {
     path: "/solutions/facturation",
     name: "solutions-facturation-detail",
@@ -387,16 +420,19 @@ const PRO_ROUTES: RouteUnderTest[] = [
     path: "/facturation/activation",
     name: "facturation-activation",
     persona: "pro_immo",
+    origin: FACTURATION_ORIGIN || undefined,
   },
   {
     path: "/facturation/onboarding",
     name: "facturation-onboarding",
     persona: "standalone_facturation",
+    origin: FACTURATION_ORIGIN || undefined,
   },
   {
     path: "/facturation/app",
     name: "facturation-workspace",
     persona: "standalone_facturation",
+    origin: FACTURATION_ORIGIN || undefined,
   },
   {
     path: "/compte/pro/finances",

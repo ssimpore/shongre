@@ -130,6 +130,16 @@ describe("IMAGE_SIZES", () => {
     expect(IMAGE_SIZES.card).toMatch(/208px$/);
     expect(IMAGE_SIZES.compact).toBe("208px");
   });
+
+  it("declares the boosted hero preview as its fixed 9rem well", () => {
+    // `listing-card-hero-horizontal` keeps `listing-card-list-image-sm`
+    // (9rem) at every breakpoint; the viewport-wide thumbnail hint fetched a
+    // 480w source for that 144px slot on phones.
+    expect(IMAGE_SIZES.heroPreview).toBe("144px");
+    expect(
+      buildResponsiveFallbackUrl(UNSPLASH, IMAGE_SIZES.heroPreview),
+    ).toContain("w=320");
+  });
 });
 
 const SUPABASE_OBJECT =

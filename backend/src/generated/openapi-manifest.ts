@@ -4281,6 +4281,15 @@ export const OPENAPI_OPERATIONS = {
     successStatus: 200,
     queryParameters: {},
   },
+  "GET /real-estate/agencies/workspace": {
+    operationId: "getRealEstateCurrentAgencyWorkspace",
+    access: "permission",
+    permission: "immo.agency.manage.own",
+    denyStaffMarketplace: false,
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {},
+  },
   "GET /real-estate/agencies/:organizationId/workspace": {
     operationId: "getRealEstateAgenciesByOrganizationIdWorkspace",
     access: "permission",

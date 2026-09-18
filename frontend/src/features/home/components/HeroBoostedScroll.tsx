@@ -1,5 +1,4 @@
 import { PAGE_SIZES } from "../../../configuration/pagination.config";
-import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import type { Listing } from "../../../types";
@@ -15,14 +14,19 @@ import {
   getGenericListingCardHref,
   projectGenericListingCardView,
 } from "../../../domains/listing/listing-card.generic-presentation";
+import { selectHeroListings } from "../hero-selection";
 
-const MAX_FEATURED_LISTINGS = 8;
 const STEP_MS = 4500;
 /** Upper bound on a smooth rail scroll, after which snapping is restored. */
 const SCROLL_SETTLE_MS = 700;
 
 interface HeroBoostedScrollProps {
   onListingClick?: (listing: Listing) => void;
+  /**
+   * The rail's selection for the active market when the document already
+   * carries it; the rail then paints without a round trip.
+   */
+  initialListings?: Listing[];
 }
 
 /**
@@ -62,6 +66,7 @@ function scrollRailTo(rail: HTMLElement, left: number, smooth: boolean): void {
 
 export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   onListingClick,
+  initialListings,
 }) => {
   const { t } = useTranslation();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
@@ -74,19 +79,25 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   } = useFavorites();
   const [isInteractionPaused, setIsInteractionPaused] = useState(false);
   const [isUserPaused, setIsUserPaused] = useState(false);
-  const [allListings, setAllListings] = useState<Listing[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [allListings, setAllListings] = useState<Listing[]>(
+    initialListings ?? [],
+  );
+  const [isLoading, setIsLoading] = useState(!initialListings);
   const [activeIndex, setActiveIndex] = useState(0);
   const railRef = useRef<HTMLDivElement>(null);
   // Read by the resize observer, which must not re-subscribe on every slide.
   const activeIndexRef = useRef(0);
   activeIndexRef.current = activeIndex;
+  // The market whose selection arrived with the document, until it changes.
+  const seededMarketRef = useRef(initialListings ? activeMarket.code : null);
 
   /* Scoped to the active market, and re-run when it changes. The rail is the
      most prominent inventory on the page, so a market-blind query here put
      another country's listings directly under the headline — the same promise
      the search page would then refuse to honour. */
   useEffect(() => {
+    if (seededMarketRef.current === activeMarket.code) return;
+    seededMarketRef.current = null;
     let active = true;
     setIsLoading(true);
     setAllListings([]);
@@ -109,57 +120,22 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     };
   }, [activeMarket.code]);
 
-  const scrollSequence = useMemo(() => {
-    const projected = allListings
-      .filter((listing) => listing?.status === "active")
-      .map((listing) => ({
-        listing,
-        card: projectGenericListingCardView(
+  const scrollSequence = useMemo(
+    () =>
+      selectHeroListings(allListings, currentLocale, activeMarket.code).map(
+        (listing) => ({
           listing,
-          currentLocale,
-          activeMarket.code,
-          undefined,
-          convertMoney,
-        ),
-      }));
-    /* The hero is an editorial, image-led surface. Listings without media keep
-       their shared-card fallback everywhere else, but they should not displace
-       a real listing photo here when image-rich inventory is available. */
-    const candidatesWithMedia = projected.filter(({ card }) =>
-      Boolean(card.imageUrl),
-    );
-    const candidates = candidatesWithMedia.length
-      ? candidatesWithMedia
-      : projected;
-    const sponsored: typeof candidates = [];
-    const promoted: typeof candidates = [];
-    const organic: typeof candidates = [];
-    for (const candidate of candidates) {
-      const promotion = candidate.card.promotion;
-      if (
-        !isActiveMarketResolvedListingPromotion(
-          promotion,
-          candidate.card.marketCode,
-        )
-      ) {
-        organic.push(candidate);
-        continue;
-      }
-      const target =
-        promotion.type === "sponsored_search" ? sponsored : promoted;
-      target.push(candidate);
-    }
-
-    // The service order remains authoritative inside each group. Sponsored
-    // search is the backend's highest paid-placement rank, so preserve that
-    // priority after the Hero's media filter and eight-item cap. Legacy
-    // `isBoosted` flags, seller type, discounts and record ids are not ranking
-    // evidence.
-    return [...sponsored, ...promoted, ...organic].slice(
-      0,
-      MAX_FEATURED_LISTINGS,
-    );
-  }, [activeMarket.code, allListings, convertMoney, currentLocale]);
+          card: projectGenericListingCardView(
+            listing,
+            currentLocale,
+            activeMarket.code,
+            undefined,
+            convertMoney,
+          ),
+        }),
+      ),
+    [activeMarket.code, allListings, convertMoney, currentLocale],
+  );
   const favoriteSet = useMemo(() => new Set(favorites), [favorites]);
 
   const prefersReducedMotion = useMediaQuery(

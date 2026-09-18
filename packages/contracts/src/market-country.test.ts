@@ -182,6 +182,36 @@ describe("canonical Shongre country routing", () => {
     ).toBe("https://shongre.com/ch/vehicules");
   });
 
+  it("canonicalizes the France path alias on the France host itself", () => {
+    const context = resolveMarketContext({
+      hostname: "shongre.fr",
+      pathname: "/fr/recherche",
+      infrastructure,
+      allowDevelopmentHosts: false,
+    });
+    expect(context.kind).toBe("redirect");
+    expect(context.redirectStatus).toBe(308);
+    expect(context.redirectUrl).toBe("https://shongre.fr/recherche");
+    expect(context.internalPath).toBe("/recherche");
+    expect(
+      resolveMarketContext({
+        hostname: "shongre.fr",
+        pathname: "/fr",
+        infrastructure,
+        allowDevelopmentHosts: false,
+      }).redirectUrl,
+    ).toBe("https://shongre.fr/");
+    // A route that merely starts with the slug's letters is not the alias.
+    expect(
+      resolveMarketContext({
+        hostname: "shongre.fr",
+        pathname: "/friperie",
+        infrastructure,
+        allowDevelopmentHosts: false,
+      }),
+    ).toMatchObject({ kind: "market", internalPath: "/friperie" });
+  });
+
   it("redirects the France path alias on a shared local origin", () => {
     const context = resolveMarketContext({
       hostname: "127.0.0.1:3000",

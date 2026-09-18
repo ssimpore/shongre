@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   cacheInvalidationTags,
   publicCacheTags,
+  resolvePublicResponseCachePolicy,
   resolvePublicResponseProfile,
 } from "../../src/infrastructure/http/public-response-policy.js";
 
@@ -37,6 +38,55 @@ describe("public response policy", () => {
         operationId: "getFeatureFlagsByKey",
         accessKind: "public",
         hasCredentials: false,
+      }),
+    ).toBeNull();
+  });
+
+  it("keeps taxonomy out of shared caches while a reader's own cache may revalidate it", () => {
+    const anonymous = (operationId: string) => ({
+      method: "GET" as const,
+      operationId,
+      accessKind: "public" as const,
+      hasCredentials: false,
+    });
+    for (const operationId of [
+      "getTaxonomyRoot",
+      "getTaxonomyNodesById",
+      "getTaxonomySearchFilters",
+      "getTaxonomyHeaderNavigation",
+      "getTaxonomyV1Tree",
+      "getTaxonomyV1Options",
+      "resolveTaxonomyV1PublicationSchema",
+    ]) {
+      expect(resolvePublicResponseProfile(anonymous(operationId))).toBeNull();
+      expect(resolvePublicResponseCachePolicy(anonymous(operationId))).toEqual({
+        kind: "revalidate",
+      });
+      expect(
+        resolvePublicResponseCachePolicy({
+          ...anonymous(operationId),
+          hasCredentials: true,
+        }),
+      ).toBeNull();
+    }
+    expect(resolvePublicResponseCachePolicy(anonymous("getMarkets"))).toEqual({
+      kind: "shared",
+      profile: "reference",
+    });
+    for (const operationId of [
+      "getListings",
+      "getHomepage",
+      "getAdminTaxonomyDraft",
+      "getFeatureFlagsByKey",
+    ]) {
+      expect(
+        resolvePublicResponseCachePolicy(anonymous(operationId)),
+      ).toBeNull();
+    }
+    expect(
+      resolvePublicResponseCachePolicy({
+        ...anonymous("getTaxonomyV1Tree"),
+        method: "POST",
       }),
     ).toBeNull();
   });

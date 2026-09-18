@@ -1,3 +1,4 @@
+import { DEMO_SOLUTION_DEFINITIONS } from "@shongre/contracts/solutions-demo";
 import { createHash } from "node:crypto";
 import {
   solutionDefinitionSchema,
@@ -83,7 +84,10 @@ export class DemoSolutionsRepository implements ISolutionsRepository {
   private readonly receipts = new Map<string, DemoReceipt>();
   private mutationSequence = 0;
 
-  constructor(initialValues: readonly SolutionDefinition[] = []) {
+  /** Opens on the platform's own catalogue, as a seeded database does. */
+  constructor(
+    initialValues: readonly SolutionDefinition[] = DEMO_SOLUTION_DEFINITIONS,
+  ) {
     this.values = clone([...initialValues]);
   }
 
@@ -343,8 +347,49 @@ export class DemoSolutionsRepository implements ISolutionsRepository {
   }
 }
 
+/**
+ * Postgres serialises `timestamptz` into JSON with an explicit offset and
+ * microseconds (`2026-09-17T23:36:14.985257+00:00`); the contract carries
+ * the canonical `Z` instant every other repository family emits, so the
+ * database projection is re-serialised before it is validated.
+ */
+export function canonicalInstant(value: unknown): unknown {
+  if (typeof value !== "string" || value.length === 0) return value;
+  const time = Date.parse(value);
+  return Number.isNaN(time) ? value : new Date(time).toISOString();
+}
+
+export function normalizeSolutionDocument(value: unknown): unknown {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const document = value as Record<string, unknown>;
+  const releaseNotes = Array.isArray(document.releaseNotes)
+    ? document.releaseNotes.map((note) =>
+        note && typeof note === "object" && !Array.isArray(note)
+          ? {
+              ...(note as Record<string, unknown>),
+              publishedAt: canonicalInstant(
+                (note as Record<string, unknown>).publishedAt,
+              ),
+            }
+          : note,
+      )
+    : document.releaseNotes;
+  return {
+    ...document,
+    ...(document.availableFrom !== undefined
+      ? { availableFrom: canonicalInstant(document.availableFrom) }
+      : {}),
+    ...(document.availableUntil !== undefined
+      ? { availableUntil: canonicalInstant(document.availableUntil) }
+      : {}),
+    releaseNotes,
+    createdAt: canonicalInstant(document.createdAt),
+    updatedAt: canonicalInstant(document.updatedAt),
+  };
+}
+
 function parseSolution(value: unknown): SolutionDefinition {
-  return solutionDefinitionSchema.parse(value);
+  return solutionDefinitionSchema.parse(normalizeSolutionDocument(value));
 }
 
 export class PostgresSolutionsRepository implements ISolutionsRepository {
@@ -449,7 +494,7 @@ export class PostgresSolutionsRepository implements ISolutionsRepository {
           explanation: row.explanation,
           actorId: row.actor_id,
           actorName: row.actor_name,
-          occurredAt: row.occurred_at,
+          occurredAt: canonicalInstant(row.occurred_at),
         }),
       );
     } catch (error) {

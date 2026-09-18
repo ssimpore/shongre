@@ -37,6 +37,9 @@ import {
 } from "./market-promotion.projection.js";
 
 const NOW = "2026-08-22T10:00:00.000Z";
+/** A schedule anchored on the clock, so the placement is live whenever the scenario runs. */
+const isoDaysFromNow = (days: number) =>
+  new Date(Date.now() + days * 86_400_000).toISOString();
 const clone = <T>(value: T): T => structuredClone(value);
 const fingerprint = (value: string) =>
   createHash("sha256").update(value.trim().toLowerCase()).digest("hex");
@@ -360,9 +363,25 @@ export const DEMO_AUTO_VEHICLES: VehiclePrivate[] = [
     makeLabel: "Peugeot",
     modelLabel: "3008",
     price: { amountMinor: 1699000, currency: "EUR" },
+    // Three photos: the one multi-photo vehicle of the scenario, which is what
+    // exercises the gallery's paging beside the single-photo listings.
     mediaUrls: [
       "https://images.unsplash.com/photo-1542362567-b07e54358753?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1200&q=80",
     ],
+    // The scenario's one paid placement: a search bump, which the detail page
+    // labels "Boosté" — never "Sponsorisé", the badge reserved for sponsored
+    // search. The local database seed grants the same placement.
+    resolvedPromotion: {
+      state: "active",
+      type: "search_bump",
+      marketCode: "FR",
+      startsAt: isoDaysFromNow(-1),
+      endsAt: isoDaysFromNow(60),
+      source: "subscription_credit",
+      sourceId: "demo:auto:vehicle_3008_diesel:search_bump",
+    },
     technical: {
       bodyType: "SUV",
       modelYear: 2019,

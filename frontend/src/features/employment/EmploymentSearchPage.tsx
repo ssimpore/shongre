@@ -21,6 +21,7 @@ import {
   Input,
   ListingCardSkeleton,
   ListingGrid,
+  ListingRail,
   LocationSelector,
   SearchActiveFiltersBar,
   SearchMapResultsLayout,
@@ -40,6 +41,10 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { routes } from "../../configuration/routes";
 import { JobCard } from "./components/JobCard";
+import {
+  readRecentEmploymentJobIds,
+  selectRecentEmploymentJobs,
+} from "./employment-recent-jobs";
 import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
 import {
   pageMetaForPolicy,
@@ -256,7 +261,7 @@ const EmploymentFilters: React.FC<{
 
 export const EmploymentSearchPage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
+  const { currentUser, isRestoring } = useAuth();
   const { activeMarket, marketContext } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
@@ -529,6 +534,23 @@ export const EmploymentSearchPage: React.FC = () => {
     (params.get("q") ? 1 : 0) +
     (activeLocation || activeRadius ? 1 : 0) +
     activeFacetCount;
+  // "Recently viewed" is a device preference read once the session is known,
+  // so a signed-in reader never sees the guest list of the same browser. It
+  // is picked from the board already on the page — no extra request — and
+  // only shown on the unfiltered board, where it is a shortcut rather than a
+  // competing result set.
+  const [recentJobIds, setRecentJobIds] = useState<string[]>([]);
+  useEffect(() => {
+    if (isRestoring) return;
+    setRecentJobIds(
+      readRecentEmploymentJobIds(accountId, activeMarket.code).slice(0, 4),
+    );
+  }, [accountId, activeMarket.code, isRestoring]);
+  const recentJobs = useMemo(
+    () => selectRecentEmploymentJobs(recentJobIds, items),
+    [items, recentJobIds],
+  );
+  const recentlyViewedLabel = t("employment.search.recentlyViewed");
   const mapItems = useMemo<SearchMapItem[]>(
     () =>
       items.flatMap((job) => {
@@ -684,6 +706,29 @@ export const EmploymentSearchPage: React.FC = () => {
       </section>
 
       <Container width="results" className="py-5 sm:py-6">
+        {recentJobs.length > 0 && !params.toString() && catalog ? (
+          <section className="mb-7" aria-labelledby="employment-recent-title">
+            <h2
+              id="employment-recent-title"
+              className="text-lg font-bold text-text-main"
+            >
+              {recentlyViewedLabel}
+            </h2>
+            <ListingRail label={recentlyViewedLabel} className="mt-3">
+              {recentJobs.map((job) => (
+                <JobCard
+                  key={job.id}
+                  job={{ ...job, saved: savedJobIds.has(job.id) }}
+                  catalog={catalog}
+                  onSave={save}
+                  favoriteLoadState={savedJobsLoadState}
+                  onFavoriteRetry={loadSavedJobs}
+                  compact
+                />
+              ))}
+            </ListingRail>
+          </section>
+        ) : null}
         <SearchResultsToolbar
           resultLabel={loading ? "Recherche…" : `${total} offres`}
           resultDescription={

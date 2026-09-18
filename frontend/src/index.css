@@ -1163,7 +1163,21 @@
 
 /* The library's own attribution and controls, kept legible on the product's
    surface colours. Attribution is never hidden: it is a licence condition of
-   the OpenStreetMap-derived data underneath. */
+   the OpenStreetMap-derived data underneath. Its stylesheet also sets its
+   own typeface on the map root (`.maplibregl-map`, which is this very
+   container once the map mounts), and every control, marker and popup
+   inherits "Helvetica Neue" from there; the map is part of the page, so its
+   chrome reads in the page's face. */
+.maplibre-container.maplibregl-map,
+.maplibre-container .maplibregl-ctrl,
+.maplibre-container .maplibregl-ctrl *,
+.maplibre-container .maplibregl-marker,
+.maplibre-container .maplibregl-marker *,
+.maplibre-container .maplibregl-popup,
+.maplibre-container .maplibregl-popup * {
+  font-family: inherit;
+}
+
 .maplibre-container .maplibregl-ctrl-attrib {
   background: var(--color-bg-surface);
   color: var(--color-text-secondary);

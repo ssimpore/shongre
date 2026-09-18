@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { ALL_ROUTES, DEMO_LISTING_ID } from "./routes";
+import { ALL_ROUTES, DEMO_LISTING_ID, routeUrl } from "./routes";
 import { useEstablishedConsent, usePersona } from "./personas";
 import { waitForStableLayout } from "./overflow";
 
@@ -48,8 +48,8 @@ test.describe("mobile tab bar clearance", () => {
       page,
     }) => {
       await page.setViewportSize(MOBILE);
-      await usePersona(page, route.persona);
-      await page.goto(route.path, { waitUntil: "domcontentloaded" });
+      await usePersona(page, route.persona, { origin: route.origin });
+      await page.goto(routeUrl(route), { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
       await page.evaluate(() => {
@@ -136,7 +136,8 @@ test.describe("mobile tab bar clearance", () => {
     const actions = page.getByTestId("listing-mobile-actions");
     await expect(actions).toBeVisible();
     const barBottom = await actions.evaluate(
-      (element) => element.parentElement?.getBoundingClientRect().bottom ?? null,
+      (element) =>
+        element.parentElement?.getBoundingClientRect().bottom ?? null,
     );
 
     expect(

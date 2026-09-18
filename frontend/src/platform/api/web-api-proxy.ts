@@ -41,6 +41,27 @@ function failure(status: number, code: string, requestId: string): Response {
   );
 }
 
+/**
+ * The relay is one reader's hop, never a shared cache, so the backend's
+ * cacheability is narrowed to what that reader's own cache may do with it: a
+ * validator-only policy passes through, a shared profile keeps only its
+ * browser lifetime, and everything else — writes, errors, credentialed reads,
+ * anything the backend did not classify — is never stored.
+ */
+function browserCacheControl(upstream: string | null): string {
+  const directives = new Map<string, string>();
+  for (const directive of (upstream || "").split(",")) {
+    const [name, value = ""] = directive.trim().toLowerCase().split("=", 2);
+    if (name) directives.set(name, value);
+  }
+  if (directives.has("no-store")) return "private, no-store";
+  if (directives.has("no-cache")) return "private, no-cache";
+  const maxAge = Number(directives.get("max-age"));
+  if (!directives.has("public") || !Number.isInteger(maxAge) || maxAge < 0)
+    return "private, no-store";
+  return maxAge === 0 ? "private, no-cache" : `private, max-age=${maxAge}`;
+}
+
 /** A fixed-upstream transport only. The backend owns every API decision. */
 export async function forwardWebApiRequest(
   request: Request,
@@ -151,7 +172,15 @@ export async function forwardWebApiRequest(
       const value = upstream.headers.get(name);
       if (value) responseHeaders.set(name, value);
     }
-    responseHeaders.set("Cache-Control", "private, no-store");
+    const cacheControl = browserCacheControl(
+      upstream.headers.get("cache-control"),
+    );
+    responseHeaders.set("Cache-Control", cacheControl);
+    // A stored response is keyed on the market and language it answered, so
+    // the browser never replays one market's data to another.
+    const vary = upstream.headers.get("vary");
+    if (vary && cacheControl !== "private, no-store")
+      responseHeaders.set("Vary", vary);
     responseHeaders.set("X-Content-Type-Options", "nosniff");
     responseHeaders.set("X-Robots-Tag", "noindex, nofollow, noarchive");
     for (const cookie of upstream.headers.getSetCookie()) {

@@ -187,12 +187,10 @@ test.describe("shared search filter panels", () => {
       const characteristics = listCard.locator(
         '[data-listing-card-characteristics="true"]',
       );
-      // The generic fixture has no projected characteristics; vertical fixtures do.
-      if (surface.name === "marketplace") {
-        await expect(characteristics).toHaveCount(0);
-      } else {
-        await expect(characteristics).toBeVisible();
-      }
+      // Every surface projects card characteristics now, the generic
+      // marketplace included: its cards read the published taxonomy's
+      // `cardCharacteristics`, the same way the vertical projections do.
+      await expect(characteristics).toBeVisible();
       await expect(
         listCard.locator('[data-listing-card-seller-identity="true"]'),
       ).toBeVisible();

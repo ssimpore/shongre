@@ -734,8 +734,14 @@ export function resolveSeoPolicy({
     }
     const professional = isProSeller(data.seller);
     const segment = professional ? "boutique" : "profil";
-    const canonicalPath = `/${segment}/${encodeURIComponent(data.seller.slug || data.seller.id)}`;
-    const name = data.seller.name;
+    // A storefront's canonical address is its store slug and its name the
+    // business; the person behind the account is the address of `/profil`.
+    const canonicalPath = `/${segment}/${encodeURIComponent(
+      (professional && data.seller.storeSlug) ||
+        data.seller.slug ||
+        data.seller.id,
+    )}`;
+    const name = (professional && data.seller.storeName) || data.seller.name;
     const enoughInventory =
       data.listings.length >= PROGRAMMATIC_SEO_THRESHOLDS.sellerInventory;
     const codes = Array.from(
@@ -1164,7 +1170,7 @@ export function structuredDataForPolicy(
         url: policy.canonicalUrl,
         mainEntity: {
           "@type": professional ? "Organization" : "Person",
-          name: seller.name,
+          name: (professional && seller.storeName) || seller.name,
           url: policy.canonicalUrl,
           ...(image ? { image } : {}),
           ...(seller.city

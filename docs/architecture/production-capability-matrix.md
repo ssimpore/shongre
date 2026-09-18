@@ -63,9 +63,9 @@ evidence.
 
 <!-- capability-inventory:start -->
 
-Current generated repository inventory: 550 OpenAPI operations across 486
-paths, including 541 runtime routes, and 146 ordered migrations through
-`00146_web_push_devices.sql`. There are 446 non-E2E test source files.
+Current generated repository inventory: 551 OpenAPI operations across 487
+paths, including 542 runtime routes, and 146 ordered migrations through
+`00146_web_push_devices.sql`. There are 452 non-E2E test source files.
 <!-- capability-inventory:end -->
 
 Statuses in this ledger are intentionally stricter than feature-development
@@ -462,6 +462,141 @@ The historical counts below are not the result of the current checkout's gate.
   mobile artifacts, hosted providers and deployed recovery evidence remain
   separate protected release gates. Earlier container certification is
   historical evidence, not a new container rollout in this follow-up.
+
+## Verification follow-up — 2026-09-17
+
+Status: **repository gates green on the current tree; hosted release remains
+NO-GO on the external evidence listed below.** Measured on the production Web
+build served against the database-mode local stack, plus an emulated iPhone 13
+at 4× CPU slowdown on a 4G profile.
+
+- `next` 16.3.1 carried a critical advisory (unauthenticated remote code
+  execution in the image optimizer, GHSA-2xp9-vwfh-vxw4); the Web app now runs
+  16.3.5 and `npm audit --audit-level=high` is clean. `@redocly/openapi-core`
+  moved off the vulnerable `js-yaml`. The remaining moderate advisory is the
+  test-only `@vitest/mocker` (a major Vitest upgrade).
+- CI had failed on every job since 3 September. The Linux Web build lacked the
+  glibc `lightningcss`/`@tailwindcss/oxide` binaries (only the musl pair was
+  pinned), and the browser job ran the raw suite against a record of ninety-odd
+  pre-existing failures. `frontend/package.json` pins both pairs; the browser
+  job runs `make e2e-triage` per engine, blocking on Chromium and reporting
+  Firefox/WebKit until their baselines are recorded; actionlint passes.
+- Expo Doctor reports 21/21 after aligning thirteen SDK 57 patch versions and
+  hoisting the updated packages to the workspace root, where the mobile
+  runtime-resolution check and the root `next` binary path expect them.
+- Mobile Web Vitals had three structural causes that desktop-only evidence had
+  hidden: listing detail mounted MapLibre on load (4.4 MB of JavaScript, 1.4 s
+  blocking, 0.26 layout shift); the homepage served a loading shell with no H1
+  and ten client fetches; and every server-rendered page could lose its HTML
+  after hydration because route chunks were discovered by `React.lazy` while
+  provider restorations reached the still-dehydrated boundary (0.96 shift on
+  the seller profile). Map slots now mount through `DeferUntilVisible`
+  (listing detail 1.8 MB, 131 ms, 0.00), the homepage resolves its market-wide
+  composition and hero selection on the server (document budget recalibrated
+  to 64 KiB gzip against 49.6–55.5 KiB measured), public routes load through
+  `next/dynamic` so the document preloads their chunks, provider restorations
+  run as transitions, and the account providers stay mounted for guests so a
+  restored session no longer remounts the application (which had also
+  discarded a signed-in reader's form input). Profile and listing detail
+  measure 0.00 CLS across repeated throttled runs; the employment search page
+  went from 3.4 s to 1.0 s LCP on the throttled phone.
+- The MapLibre worker pair is served immutable under a version-named path, the
+  hero artwork is served only from the `sm` breakpoint where it is visible,
+  the seller Message action joined the first phone-width action block on
+  purchasable listings, and two standalone text controls gained the 24px
+  target floor.
+- The employment demo scenario's fixed clock had expired every demo job on
+  15–17 September, taking the employment journeys and the sponsored-placement
+  check with it; the scenario's dates are now relative to the current day.
+- Gates on the final tree: `make check` passed (9 workspace suites, 1,701
+  backend + 781 Web + 108 mobile + 290 contract/shared tests, bundle 268.0 of
+  268.6 KiB gzip — the headroom is now under 1 KiB); `make mobile-check`
+  passed; the full Chromium browser suite reported no new failures and the
+  recorded baseline shrank from 96 to 90 entries; the touched specs
+  (`geospatial`, `listing-actions-layout`, `server-document-budget`,
+  `home-universe-explorer`, `listing-promotion-badges`) pass in isolation.
+- Still open, unchanged from the ledger above: the storage image transformer
+  (`PUBLIC_MEDIA_IMAGE_TRANSFORM=supabase_render`) is the dominant remaining
+  phone-side cost (about 1.3 MB of card originals on `/recherche`, 3.7 MB on
+  the homepage) and is provisioning, not code; taxonomy and market JSON stay
+  `private, no-store` until purge delivery is acknowledged; the 90 recorded
+  browser failures are owned debt; the 39 unset production values, Stripe and
+  provider certification, observability, restore evidence and legal approval
+  remain external blockers.
+
+## Verification follow-up — 2026-09-18
+
+Status: **repository gates green on the current tree; the browser record is
+reduced to the entries listed below; hosted release remains NO-GO on the same
+external evidence.** This pass closed what the 17 September ledger called
+"still open" wherever code could close it.
+
+- **Public taxonomy and market JSON.** Public taxonomy reads
+  (`PUBLIC_REVALIDATE_ONLY_OPERATIONS` in `public-response-policy.ts`) are a
+  revalidate-only cache class: `Cache-Control: private, no-cache`,
+  `CDN-Cache-Control: no-store`, an `ETag`, `Vary: X-Shongre-Market,
+Accept-Language` and 304 on `If-None-Match`, so a browser revalidates in
+  one conditional round trip while no shared cache ever holds a taxonomy
+  document that purge delivery would have to evict. The Web relay narrows
+  every upstream policy to the reader's own cache (`browserCacheControl`),
+  and `scripts/load-smoke.mjs` proves both classes against a hosted origin
+  (`verifyConditionalPublicCache`).
+- **Storage image transformer.** `PUBLIC_MEDIA_IMAGE_TRANSFORM=supabase_render`
+  is now operable rather than aspirational: `make image-transform-check`
+  (`scripts/verify-image-transform.mjs`) fetches a sample object at 320 px
+  through the transformer and records evidence; `make
+production-release-check --require-evidence` refuses `supabase_render`
+  without that evidence for the production origin. Provisioning the
+  capability on the hosted project stays an operations step.
+- **Browser record.** Of the 90 recorded Chromium failures, 89 were product
+  drift or scenario gaps rather than flakiness, and are fixed; the record
+  now holds one entry (the staging-only authenticated certification, which
+  never executes locally). The last full run on this tree: 1,352 regular
+  tests passed with 101 hosted-only skips, 68 serial tests passed and one
+  serial name (a guest action clicked before hydration) failed, was fixed in
+  the spec and proven in isolation afterwards; the database-mode suite passes
+  18/18 and its record is empty. The demo
+  scenario now carries what the removed frontend demo adapter used to fake
+  (orders, reviews, delivery requests, promotion grants, a solutions
+  catalogue, per-organization invoicing tenants with their own issuers,
+  agency and recruiter membership, CRM duplicates, prose-tolerant registry
+  search), split origins are handled by the proxy and the browser client
+  (host-level assets on the global host; Facturation's own origin declares
+  the default market, without which its workspace could not load), and the
+  device features dropped with the adapter are back (publish preparation
+  preference, employment "recently viewed", the market town shortlist behind
+  "Utiliser ma position actuelle"). Product decisions the specs had drifted
+  from are now certified as the product behaves: agency portfolio imports
+  suspended by the commercial catalogue are shown as not included instead of
+  failing on click; one's own review is not reportable UGC; the commercial
+  staff role prospects in the console's first-party context.
+- **Two database-only defects** surfaced the first time the seed exercised
+  those repositories: every database-mode delivery read answered 503
+  (ambiguous `delivery_applications` embed) and every catalogue read
+  answered 503 (`timestamptz` offsets rejected by the contract). Both are
+  fixed with unit coverage; the database-mode browser record is now recorded
+  and gated in CI (`make e2e-triage-database`).
+- **The triage gate itself** had two holes: a failing regular phase aborted
+  the runner before the serial phase, and each phase overwrote the JSON
+  report the triage reads, so serial journeys were never judged and an
+  absent test counted as "fixed". Every phase now runs, each invocation
+  writes its own report part, the parts are merged, and a recorded failure
+  counts as fixed only when it ran and passed.
+- **Hydration bundle.** The shared place gazetteer had been riding in every
+  page's hydration JavaScript through `geoCoordinates.ts`, which the market
+  provider imported only for the French city table; the table now lives in
+  `french-major-cities.ts` and the gazetteer loads with the map surfaces
+  that use it. Executable hydration measures 264.3 KiB gzip against the
+  268.6 KiB budget (268.0 on 17 September), and the market town shortlist
+  loads after hydration rather than with it.
+- **Pre-hydration input.** Text typed into the server-rendered search box
+  before hydration was discarded by the first controlled render; the search
+  bar adopts it on mount.
+- Still external, unchanged: the 39 unset production values, Stripe and
+  provider certification, observability, restore evidence and legal
+  approval; hosted transformer provisioning; the database seed carries no
+  invoicing entitlements, so the Facturation journeys certify the demo
+  repositories only.
 
 ## Earlier validation record (historical, not current-release evidence)
 

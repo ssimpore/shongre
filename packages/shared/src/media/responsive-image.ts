@@ -172,6 +172,11 @@ export const IMAGE_SIZES = {
   // 220px slot.
   card: "(max-width: 252px) calc(100vw - 2rem), (max-width: 639px) 13.75rem, (max-width: 767px) calc((100vw - 3rem) / 2), (max-width: 1023px) calc((100vw - 4rem) / 3), 208px",
   thumbnail: "(max-width: 640px) 100vw, 220px",
+  // The boosted hero presents its featured listing as a landscape preview at
+  // every breakpoint (`listing-card-hero-horizontal`), a fixed
+  // `listing-card-list-image-sm` well of 9rem; claiming the viewport there
+  // fetched a 480w source for a 144px slot on phones.
+  heroPreview: "144px",
   compact: "208px",
   gallery: "(max-width: 1024px) 100vw, 900px",
   thumb: "80px",
@@ -188,6 +193,7 @@ export const AVATAR_SIZES = {
 const IMAGE_FALLBACK_WIDTHS = new Map<string, number>([
   [IMAGE_SIZES.card, 640],
   [IMAGE_SIZES.thumbnail, 480],
+  [IMAGE_SIZES.heroPreview, 320],
   [IMAGE_SIZES.compact, 480],
   [IMAGE_SIZES.gallery, 640],
   [IMAGE_SIZES.thumb, 160],

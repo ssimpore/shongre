@@ -19,6 +19,7 @@ describe("SellerAvatarWithPresence", () => {
     );
 
     expect(html).toContain('data-seller-avatar="true"');
+    expect(html).toContain('role="img" aria-label="Avatar de Camille Martin"');
     expect(html).toContain('data-presence-status="online"');
     expect(html).toContain('aria-label="En ligne"');
     expect(html).toContain("h-icon-md w-icon-md");

@@ -1,7 +1,7 @@
 import { testListingPath } from "./fixtures";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { ALL_ROUTES, PUBLIC_ROUTES } from "./routes";
+import { ALL_ROUTES, PUBLIC_ROUTES, routeUrl } from "./routes";
 import { useEstablishedConsent, usePersona } from "./personas";
 import { waitForStableLayout } from "./overflow";
 
@@ -24,18 +24,24 @@ test.describe("accessibility", () => {
     test(`${route.name} has no critical or serious violations`, async ({
       page,
     }) => {
-      await usePersona(page, route.persona);
-      await page.goto(route.path, { waitUntil: "domcontentloaded" });
+      await usePersona(page, route.persona, { origin: route.origin });
+      await page.goto(routeUrl(route), { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
-      // Demo OAuth availability resolves asynchronously after the auth page
-      // mounts. Scanning the deliberately disabled placeholder state measures
-      // its opacity blend instead of the interactive control's real contrast.
+      // OAuth availability resolves asynchronously after the auth page
+      // mounts, and the scan must wait for the answer rather than measure the
+      // transient placeholder. The answer itself is the backend's: a provider
+      // the test API does not configure stays disabled on purpose, which axe
+      // exempts from contrast and which is not a defect to wait out.
       const socialButtons = page.getByRole("button", {
         name: /^Continuer avec /i,
       });
       if ((await socialButtons.count()) > 0) {
-        await expect(socialButtons.first()).toBeEnabled();
+        await expect(
+          page
+            .getByRole("status")
+            .filter({ hasText: /Vérification des modes/ }),
+        ).toHaveCount(0);
       }
 
       const results = await new AxeBuilder({ page })
@@ -90,9 +96,9 @@ test.describe("accessible names at phone width", () => {
     test(`${route.path} names every control at ${PHONE.width}px`, async ({
       page,
     }) => {
-      await usePersona(page, route.persona);
+      await usePersona(page, route.persona, { origin: route.origin });
       await page.setViewportSize(PHONE);
-      await page.goto(route.path, { waitUntil: "domcontentloaded" });
+      await page.goto(routeUrl(route), { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
       const unnamed = await page.evaluate(() => {
@@ -235,7 +241,12 @@ test.describe("keyboard and focus", () => {
           const hasRing = style.boxShadow
             .split(/,(?![^(]*\))/)
             .some((shadow) => {
-              const alpha = shadow.match(/rgba?\([^)]*?,\s*([\d.]+)\s*\)/);
+              /* Only a fourth channel is an alpha. The looser pattern this
+                 replaced read the blue channel of an opaque `rgb(201, 80, 0)`
+                 ring as alpha 0 and declared the whole header focus-less. */
+              const alpha = shadow.match(
+                /rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)/,
+              );
               if (alpha && parseFloat(alpha[1]) < 0.25) return false;
               // Spread or blur has to be big enough to register as a ring.
               const lengths = shadow.match(/-?[\d.]+px/g) ?? [];
@@ -352,7 +363,10 @@ test.describe("keyboard and focus", () => {
           const style = getComputedStyle(node);
           const ground = groundOf(node.parentElement ?? node);
 
-          if (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0) {
+          if (
+            style.outlineStyle !== "none" &&
+            parseFloat(style.outlineWidth) > 0
+          ) {
             const [r, g, b, a] = parse(style.outlineColor);
             best = Math.max(best, ratio(over([r, g, b], a, ground), ground));
           }
@@ -442,8 +456,8 @@ test.describe("truncation actually truncates", () => {
     test(`${route.name} applies truncate only to non-inline boxes`, async ({
       page,
     }) => {
-      await usePersona(page, route.persona);
-      await page.goto(route.path, { waitUntil: "domcontentloaded" });
+      await usePersona(page, route.persona, { origin: route.origin });
+      await page.goto(routeUrl(route), { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
       const ineffective = await page.evaluate(() => {

@@ -147,6 +147,40 @@ const records = [
   },
 ] as const;
 
+/**
+ * A discovery brief is written in prose — "ateliers automobiles en
+ * Île-de-France" — not as a registry key. Every word of it must appear in the
+ * record, accents folded and a trailing plural dropped, so "ateliers" finds
+ * an "atelier automobile" the way an operator would expect.
+ */
+const searchTerm = (value: string): string =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("fr")
+    .replace(/(?<=[a-z]{3})(?:s|x)$/, "");
+
+export const queryTerms = (query: string | undefined): string[] =>
+  (query ?? "")
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((token) => token.length > 1)
+    .map(searchTerm);
+
+export const matchesQuery = (
+  query: string | undefined,
+  haystack: string,
+): boolean => {
+  const terms = queryTerms(query);
+  if (terms.length === 0) return true;
+  const searchable = haystack
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter(Boolean)
+    .map(searchTerm);
+  return terms.every((term) =>
+    searchable.some((word) => word === term || word.startsWith(term)),
+  );
+};
+
 export class DemoAuthorizedLeadSourceAdapter implements LeadSourceAdapter {
   readonly definition = demoAuthorizedSourceDefinition;
 
@@ -154,7 +188,6 @@ export class DemoAuthorizedLeadSourceAdapter implements LeadSourceAdapter {
     _context: LeadSourceSearchContext,
     filters: ProspectDiscoveryFilters,
   ): Promise<ProspectCandidate[]> {
-    const query = filters.query?.toLocaleLowerCase("fr") ?? "";
     const candidates = records
       .filter((record) => record.marketCode === filters.marketCode)
       .filter(
@@ -166,12 +199,11 @@ export class DemoAuthorizedLeadSourceAdapter implements LeadSourceAdapter {
               .includes(industry.toLocaleLowerCase("fr")),
           ),
       )
-      .filter(
-        (record) =>
-          !query ||
-          `${record.canonicalName} ${record.description} ${record.industry}`
-            .toLocaleLowerCase("fr")
-            .includes(query),
+      .filter((record) =>
+        matchesQuery(
+          filters.query,
+          `${record.canonicalName} ${record.legalName} ${record.description} ${record.industry} ${record.city} ${record.region}`,
+        ),
       )
       .map((record) => {
         const evidence = [

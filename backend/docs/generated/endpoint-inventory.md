@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **550**
-- Specification SHA-256: `6f9693987669c4be`
+- Operations: **551**
+- Specification SHA-256: `00087f9ff3a4d989`
 
 ## account
 
@@ -758,6 +758,7 @@
 | `PATCH` | `/real-estate/agencies/{organizationId}/leads/{leadId}` | `patchRealEstateAgenciesByOrganizationIdLeadsByLeadId` | `permission` | `immo.lead.manage.own` | `200` |
 | `GET` | `/real-estate/agencies/{organizationId}/leads/export` | `getRealEstateAgenciesByOrganizationIdLeadsExport` | `permission` | `immo.lead.manage.own` | `200` |
 | `GET` | `/real-estate/agencies/{organizationId}/workspace` | `getRealEstateAgenciesByOrganizationIdWorkspace` | `permission` | `immo.agency.manage.own` | `200` |
+| `GET` | `/real-estate/agencies/workspace` | `getRealEstateCurrentAgencyWorkspace` | `permission` | `immo.agency.manage.own` | `200` |
 | `GET` | `/real-estate/catalog` | `getRealEstateCatalog` | `public` | — | `200` |
 | `POST` | `/real-estate/checkouts/{checkoutId}/refunds` | `postRealEstateCheckoutsByCheckoutIdRefunds` | `permission` | `payment.refund` | `200` |
 | `POST` | `/real-estate/checkouts` | `postRealEstateCheckouts` | `permission` | `payment.initiate` | `200` |

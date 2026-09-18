@@ -287,9 +287,15 @@ test.describe("SEO response and hydration contract", () => {
     const robots = await request.get("/robots.txt");
     expect(robots.status()).toBe(200);
     expect(await robots.text()).toContain("Disallow: /");
+    // Belgium lives on the international host; asked for on the France host
+    // its path is an alias the resolver redirects, not a sitemap to refuse.
+    const belgianSitemap = new URL(
+      "/be/sitemap.xml",
+      process.env.PUBLIC_INTL_URL!,
+    ).href;
     for (const sitemap of [
       "/sitemap.xml",
-      "/be/sitemap.xml",
+      belgianSitemap,
       "/gateway-sitemap.xml",
       "/llms.txt",
       "/indexnow-key.txt",

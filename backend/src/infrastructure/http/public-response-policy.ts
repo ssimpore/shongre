@@ -16,6 +16,25 @@ const PUBLIC_RESPONSE_PROFILES = {
   getMarketsEffectiveByCode: "reference",
 } as const satisfies Readonly<Record<string, PublicCacheProfileName>>;
 
+/**
+ * Public taxonomy projections. They are the largest anonymous reads and move
+ * only when an editor publishes, yet the purge adapter that would evict a
+ * superseded revision from a shared cache is not evidenced, so no shared cache
+ * may hold them. A reader's own cache may: every request still reaches the
+ * origin, which compares the validator and answers 304 while the published
+ * revision has not moved, so a returning browser downloads nothing twice and
+ * never sees a revision older than the current one.
+ */
+const PUBLIC_REVALIDATE_ONLY_OPERATIONS: ReadonlySet<string> = new Set([
+  "getTaxonomyRoot",
+  "getTaxonomyNodesById",
+  "getTaxonomySearchFilters",
+  "getTaxonomyHeaderNavigation",
+  "getTaxonomyV1Tree",
+  "getTaxonomyV1Options",
+  "resolveTaxonomyV1PublicationSchema",
+]);
+
 const gzipAsync = promisify(gzip);
 
 export interface PublicResponsePolicyInput {
@@ -25,18 +44,28 @@ export interface PublicResponsePolicyInput {
   hasCredentials: boolean;
 }
 
+export type PublicResponseCachePolicy =
+  { kind: "shared"; profile: PublicCacheProfileName } | { kind: "revalidate" };
+
+function isAnonymousPublicRead(input: PublicResponsePolicyInput): boolean {
+  return (
+    input.method === "GET" &&
+    input.accessKind === "public" &&
+    !input.hasCredentials
+  );
+}
+
+/** The shared-cache registry: which anonymous reads a CDN may hold, and how long. */
 export function resolvePublicResponseProfile(
   input: PublicResponsePolicyInput,
 ): PublicCacheProfileName | null {
   if (
-    input.method !== "GET" ||
+    !isAnonymousPublicRead(input) ||
     // The existing invalidation adapter only emits tags. Until purge delivery is
     // acknowledged, taxonomy-derived responses must not serve stale revisions.
     /Taxonomy|Listing|Home|Trending|Auto|Employment|RealEstate|Education|Course|Tutor/.test(
       input.operationId,
-    ) ||
-    input.accessKind !== "public" ||
-    input.hasCredentials
+    )
   ) {
     return null;
   }
@@ -45,6 +74,21 @@ export function resolvePublicResponseProfile(
       input.operationId as keyof typeof PUBLIC_RESPONSE_PROFILES
     ] || null
   );
+}
+
+/**
+ * Everything a response may tell caches about itself: a shared profile, a
+ * private validator-only policy, or nothing — in which case it is not stored
+ * anywhere.
+ */
+export function resolvePublicResponseCachePolicy(
+  input: PublicResponsePolicyInput,
+): PublicResponseCachePolicy | null {
+  if (!isAnonymousPublicRead(input)) return null;
+  if (PUBLIC_REVALIDATE_ONLY_OPERATIONS.has(input.operationId))
+    return { kind: "revalidate" };
+  const profile = resolvePublicResponseProfile(input);
+  return profile ? { kind: "shared", profile } : null;
 }
 
 function normalizedTagPart(value: string): string {
@@ -201,7 +245,7 @@ export async function writeJsonResponse(input: {
     Buffer.byteLength(payload) >= config.performance.compressionMinimumBytes
       ? await gzipAsync(payload)
       : payload;
-  const profile = resolvePublicResponseProfile({
+  const policy = resolvePublicResponseCachePolicy({
     method: input.method,
     operationId: input.operationId,
     accessKind: input.accessKind,
@@ -213,7 +257,7 @@ export async function writeJsonResponse(input: {
   if (Buffer.isBuffer(encodedPayload))
     input.res.setHeader("Content-Encoding", "gzip");
   mergeVary(input.res, ["Accept-Encoding"]);
-  if (!profile || input.statusCode < 200 || input.statusCode >= 300) {
+  if (!policy || input.statusCode < 200 || input.statusCode >= 300) {
     input.res.setHeader("Cache-Control", "private, no-store, max-age=0");
     input.res.writeHead(input.statusCode);
     input.res.end(encodedPayload);
@@ -224,16 +268,21 @@ export async function writeJsonResponse(input: {
     .update(Buffer.isBuffer(encodedPayload) ? "gzip:" : "identity:")
     .update(entityTagPayload(input.operationId, input.result))
     .digest("base64url")}"`;
-  const policy = cacheControl(profile);
-  input.res.setHeader("Cache-Control", policy);
-  input.res.setHeader("CDN-Cache-Control", policy);
   input.res.setHeader("ETag", etag);
-  input.res.setHeader("Cache-Tag", publicCacheTags(input).join(","));
-  input.res.setHeader(
-    "X-Shongre-Cache-Key-Version",
-    config.performance.publicCache.cacheKeyVersion,
-  );
   mergeVary(input.res, ["Origin", "X-Shongre-Market", "Accept-Language"]);
+  if (policy.kind === "shared") {
+    const sharedPolicy = cacheControl(policy.profile);
+    input.res.setHeader("Cache-Control", sharedPolicy);
+    input.res.setHeader("CDN-Cache-Control", sharedPolicy);
+    input.res.setHeader("Cache-Tag", publicCacheTags(input).join(","));
+    input.res.setHeader(
+      "X-Shongre-Cache-Key-Version",
+      config.performance.publicCache.cacheKeyVersion,
+    );
+  } else {
+    input.res.setHeader("Cache-Control", "private, no-cache");
+    input.res.setHeader("CDN-Cache-Control", "no-store");
+  }
 
   if (requestMatchesEtag(input.req, etag)) {
     input.res.writeHead(304);

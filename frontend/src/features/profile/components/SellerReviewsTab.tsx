@@ -245,6 +245,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
           {displayedReviews.map((rev) => (
             <div
               key={rev.id}
+              data-review-item={rev.id}
               className="bg-bg-surface rounded-2xl border border-border-base p-5 shadow-xs transition-colors hover:border-border-prominent"
             >
               <div className="flex items-start justify-between gap-4 mb-3">
@@ -416,13 +417,18 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                         : t("reviews.reply.start")}
                     </button>
                   )}
-                <button
-                  type="button"
-                  className={`text-xs text-text-supporting underline rounded-control ${CONTROL_FOCUS_CLASS}`}
-                  onClick={() => onReport(rev)}
-                >
-                  {t("reviews.report")}
-                </button>
+                {/* Reporting one's own review is meaningless and the API
+                    refuses it; the author edits or lets moderation act on
+                    someone else's report instead. */}
+                {viewerId !== rev.authorId && (
+                  <button
+                    type="button"
+                    className={`text-xs text-text-supporting underline rounded-control ${CONTROL_FOCUS_CLASS}`}
+                    onClick={() => onReport(rev)}
+                  >
+                    {t("reviews.report")}
+                  </button>
+                )}
               </div>
 
               {rev.listingTitle && (

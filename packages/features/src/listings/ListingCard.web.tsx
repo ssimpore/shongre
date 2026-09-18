@@ -49,6 +49,12 @@ export interface ListingCardProps {
   locale?: string;
   variant?: "grid" | "list" | "compact" | "showcase" | "hero";
   image?: ReactNode;
+  /**
+   * The seller's avatar, when the host can serve it with responsive sources.
+   * The shared `Avatar` renders one fixed source; a Web host that knows its
+   * media provider hands back the same avatar with a width ladder instead.
+   */
+  renderSellerAvatar?: (seller: { src?: string; name: string }) => ReactNode;
   favoriteAction?: ReactNode;
   labels: ListingCardLabels;
   identityLabels: {
@@ -212,12 +218,15 @@ function ListingSellerIdentity({
   seller,
   isHero,
   supportingLabel,
+  renderAvatar,
 }: {
   supportingLabel?: string;
   seller: NonNullable<ListingCardView["seller"]>;
   isHero: boolean;
+  renderAvatar?: ListingCardProps["renderSellerAvatar"];
 }) {
   const sellerName = seller.organizationName ?? seller.name;
+  const avatarSrc = seller.organizationLogoUrl ?? seller.avatarUrl;
 
   return (
     <div
@@ -228,12 +237,14 @@ function ListingSellerIdentity({
           : "flex min-w-0 shrink items-center gap-2"
       }
     >
-      <Avatar
-        src={seller.organizationLogoUrl ?? seller.avatarUrl}
-        name={sellerName}
-        size="sm"
+      <span
+        className="inline-flex shrink-0"
         data-listing-card-seller-avatar="true"
-      />
+      >
+        {renderAvatar?.({ src: avatarSrc, name: sellerName }) ?? (
+          <Avatar src={avatarSrc} name={sellerName} size="sm" />
+        )}
+      </span>
       <span className="flex max-w-listing-card min-w-0 flex-1 flex-col leading-tight">
         <span className="flex min-w-0 items-center gap-1">
           <span
@@ -262,6 +273,7 @@ export function ListingCard({
   locale = "fr-FR",
   variant = "grid",
   image,
+  renderSellerAvatar,
   favoriteAction,
   labels,
   identityLabels,
@@ -520,6 +532,7 @@ export function ListingCard({
             {listing.seller ? (
               <ListingSellerIdentity
                 seller={listing.seller}
+                renderAvatar={renderSellerAvatar}
                 isHero
                 supportingLabel={
                   listing.seller.responseTimeLabel ?? listing.seller.branchName
@@ -533,6 +546,7 @@ export function ListingCard({
             {listing.seller ? (
               <ListingSellerIdentity
                 seller={listing.seller}
+                renderAvatar={renderSellerAvatar}
                 isHero={false}
                 supportingLabel={
                   listing.seller.responseTimeLabel ?? listing.seller.branchName

@@ -33742,6 +33742,70 @@
         "x-shongre-permission": "immo.lead.manage.own"
       }
     },
+    "/real-estate/agencies/workspace": {
+      "get": {
+        "operationId": "getRealEstateCurrentAgencyWorkspace",
+        "tags": ["real-estate"],
+        "summary": "Get the authenticated user's agency workspace",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/modules/real-estate/api/real-estate.routes.ts",
+        "x-shongre-permission": "immo.agency.manage.own"
+      }
+    },
     "/real-estate/agencies/{organizationId}/workspace": {
       "get": {
         "operationId": "getRealEstateAgenciesByOrganizationIdWorkspace",
@@ -47252,6 +47316,16 @@
           "name": {
             "type": "string",
             "minLength": 1
+          },
+          "storeName": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The business name a professional storefront publishes under, when the profile was reached through its storefront. The person behind the account keeps `name`."
+          },
+          "storeSlug": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The slug a professional storefront is published under (`/boutique/<storeSlug>`), its canonical address. Absent for individuals and for professionals without a storefront."
           },
           "accountType": {
             "type": "string",

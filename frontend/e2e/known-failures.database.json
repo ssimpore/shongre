@@ -1,0 +1,7 @@
+{
+  "note": "Failures already present on a clean tree. Every entry is debt somebody owns; the list must only ever shrink. Regenerate with: make e2e-baseline-update-database",
+  "recordedAt": "2026-09-18",
+  "projects": ["chromium"],
+  "failing": [],
+  "flaky": []
+}

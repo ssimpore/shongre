@@ -222,7 +222,7 @@ export const AdminTrendingPage: React.FC = () => {
 
       <div className="grid gap-6 xl:grid-cols-trending-columns">
         <section
-          className="rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs"
+          className="min-w-0 rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs"
           aria-labelledby="trending-settings-title"
         >
           <div className="mb-5 flex items-center gap-2">
@@ -242,7 +242,7 @@ export const AdminTrendingPage: React.FC = () => {
                 onChange={(event) => update("enabled", event.target.checked)}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <FormField label={t("admin.adminTrendingPage.modeDeSelection")}>
                 <select
                   value={config.selectionMode}
@@ -345,7 +345,7 @@ export const AdminTrendingPage: React.FC = () => {
                 onChange={(event) => update("subtitle", event.target.value)}
               />
             </FormField>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex items-center gap-2 text-xs font-semibold text-text-emphasis">
                 <input
                   type="checkbox"
@@ -391,7 +391,7 @@ export const AdminTrendingPage: React.FC = () => {
         </section>
 
         <section
-          className="rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs"
+          className="min-w-0 rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs"
           aria-labelledby="trending-preview-title"
         >
           <div className="mb-5 flex items-center justify-between gap-3">

@@ -52,9 +52,11 @@ export const SellerPublicPage: React.FC = () => {
   const publicRouteData = usePublicRouteData();
   const initialData =
     publicRouteData?.kind === "seller" &&
-    [publicRouteData.seller.slug, publicRouteData.seller.id].includes(
-      activeSlug,
-    )
+    [
+      publicRouteData.seller.storeSlug,
+      publicRouteData.seller.slug,
+      publicRouteData.seller.id,
+    ].includes(activeSlug)
       ? publicRouteData
       : null;
 
@@ -269,7 +271,9 @@ export const SellerPublicPage: React.FC = () => {
   const activeListingsCount = listings.filter(
     (l) => l.status === "active",
   ).length;
-  const displayName = seller.name;
+  // A storefront is published under its business name; a person's profile
+  // under theirs. The API sets `storeName` only for the former.
+  const displayName = seller.storeName ?? seller.name;
 
   return (
     <div className="min-h-screen bg-bg-base pb-16">

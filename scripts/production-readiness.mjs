@@ -179,7 +179,7 @@ const applicationOrigins = [
   "SHONGRE_PROSPECTS_ORIGIN",
   "SHONGRE_FACTURATION_ORIGIN",
 ].map((name) => httpsUrl(name));
-httpsUrl("SUPABASE_URL");
+const supabaseUrl = httpsUrl("SUPABASE_URL");
 httpsUrl("AUTH_EMAIL_DELIVERY_URL");
 httpsUrl("BUSINESS_REGISTRY_API_URL");
 httpsUrl("KYC_PROVIDER_BASE_URL");
@@ -296,6 +296,14 @@ for (const name of ["STRIPE_WEBHOOK_SECRET", "STRIPE_CONNECT_WEBHOOK_SECRET"]) {
 }
 
 check(!value("DEMO_ACCOUNT_PASSWORD"), "DEMO_ACCOUNT_PASSWORD must be empty");
+// The storage transformer is a billed provider capability. Serving originals is
+// slow; a rejected transform is a broken photo on every card, so the switch is
+// explicit and, for a release, must be backed by `make image-transform-check`.
+const imageTransform = value("PUBLIC_MEDIA_IMAGE_TRANSFORM") || "disabled";
+check(
+  ["disabled", "supabase_render"].includes(imageTransform),
+  "PUBLIC_MEDIA_IMAGE_TRANSFORM must be disabled or supabase_render",
+);
 for (const [name, candidate] of Object.entries(process.env)) {
   if (
     /^(NEXT_PUBLIC|VITE|EXPO_PUBLIC)_/.test(name) &&
@@ -358,6 +366,23 @@ if (requireEvidence) {
       );
     }
   });
+  if (imageTransform === "supabase_render") {
+    jsonEvidenceFile("IMAGE_TRANSFORM_EVIDENCE_FILE", 30, (evidence) => {
+      if (
+        evidence.schemaVersion !== 1 ||
+        evidence.result !== "PASS" ||
+        evidence.environment !== "production" ||
+        evidence.transformMode !== "supabase_render" ||
+        !supabaseUrl ||
+        new URL(evidence.sampleUrl).origin !== supabaseUrl.origin ||
+        !(evidence.transformed?.width < evidence.original?.width)
+      ) {
+        throw new Error(
+          "image transform evidence must prove the production storage transformer resizes a public object (make image-transform-check)",
+        );
+      }
+    });
+  }
   jsonEvidenceFile("OBSERVABILITY_EVIDENCE_FILE", 14, (evidence) => {
     if (
       evidence.schemaVersion !== 1 ||

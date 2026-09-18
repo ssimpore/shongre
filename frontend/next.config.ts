@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
+import { HEAD_METADATA_CRAWLER_PATTERN } from "@shongre/contracts/seo-crawlers";
 const isProduction = process.env.NODE_ENV === "production";
 const allowedDevOrigins = Array.from(
   new Set([
@@ -25,10 +26,19 @@ const generatedAssetHeaders = [
     value: `public, max-age=${publicReferenceCache.browserMaxAgeSeconds}, s-maxage=${publicReferenceCache.sharedMaxAgeSeconds}, stale-while-revalidate=${publicReferenceCache.staleWhileRevalidateSeconds}, stale-if-error=${publicReferenceCache.staleIfErrorSeconds}`,
   },
 ];
+// The MapLibre worker pair is published under its package version by
+// `scripts/sync-map-worker.mjs`, so the URL changes whenever the bytes do —
+// the same contract Next applies to its own hashed chunks.
+const versionedVendorHeaders = [
+  { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+];
 const nextConfig: NextConfig = {
   agentRules: false,
   allowedDevOrigins,
   devIndicators: { position: "top-right" },
+  // Crawlers get `generateMetadata` output in `<head>`; everyone else gets it
+  // streamed. See `HEAD_METADATA_CRAWLER_PATTERN` for why Googlebot is here.
+  htmlLimitedBots: HEAD_METADATA_CRAWLER_PATTERN,
   output: "standalone",
   poweredByHeader: false,
   productionBrowserSourceMaps: true,
@@ -82,6 +92,10 @@ const nextConfig: NextConfig = {
               source:
                 "/:icon(favicon\\.ico|favicon-[0-9]+x[0-9]+\\.png|apple-touch-icon\\.png)",
               headers: generatedAssetHeaders,
+            },
+            {
+              source: "/vendor/maplibre-gl/:version/:file",
+              headers: versionedVendorHeaders,
             },
           ]
         : []),

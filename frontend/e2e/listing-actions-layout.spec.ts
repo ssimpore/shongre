@@ -41,6 +41,9 @@ test.describe("listing negotiation and reservation eligibility @serial", () => {
       ] as const) {
         await usePersona(page, "guest");
         await page.goto(belgianListingUrl(), { waitUntil: "domcontentloaded" });
+        // The action is server-rendered before React handles it; a click
+        // that lands before hydration goes nowhere.
+        await waitForStableLayout(page);
         const button = actionArea.locator(
           `[data-marketplace-action="${action}"]`,
         );
@@ -123,6 +126,40 @@ test.describe("listing negotiation and reservation eligibility @serial", () => {
 });
 
 test.describe("listing mobile action hierarchy", () => {
+  /*
+   * On a purchasable listing the first phone-width action block offered only
+   * the purchase and the price offer; the seller's Message button first
+   * appeared in the sidebar rendered under the whole description, measured at
+   * 4,760px of a 6,680px page. Every buyer action the resolver grants belongs
+   * in that first block.
+   */
+  test("offers the seller message beside the purchase in the first phone-width action block", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(testListingPath("list-109"), {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    const inlineAction = page.getByTestId("listing-inline-mobile-action");
+    await expect(
+      inlineAction.locator('[data-marketplace-action="purchase.start"]'),
+    ).toBeVisible();
+    const message = inlineAction.locator(
+      '[data-marketplace-action="message.send"]',
+    );
+    await expect(message).toBeVisible();
+    const geometry = await message.evaluate((element) => ({
+      top: element.getBoundingClientRect().top + window.scrollY,
+      pageHeight: document.documentElement.scrollHeight,
+    }));
+    // Reachable within the first two screens of a page far longer than that.
+    expect(geometry.top).toBeLessThan(844 * 2);
+    expect(geometry.pageHeight).toBeGreaterThan(844 * 2);
+  });
+
   test("keeps secondary actions balanced and gives a three-action primary CTA a full row", async ({
     page,
   }) => {

@@ -151,6 +151,12 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       body: { startsAt },
     });
   }
+  getCurrentAgencyWorkspace() {
+    return apiOperation<AgencyWorkspace, "getRealEstateCurrentAgencyWorkspace">(
+      "getRealEstateCurrentAgencyWorkspace",
+      {},
+    );
+  }
   getAgencyWorkspace(organizationId: string) {
     return apiOperation<
       AgencyWorkspace,

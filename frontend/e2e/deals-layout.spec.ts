@@ -19,7 +19,19 @@ for (const viewport of [
     const dealsRegion = page.getByRole("region", {
       name: "Annonces en promotion",
     });
-    await expect(dealsRegion.locator("article")).toHaveCount(8);
+    // A page is eight organic cards; unified discovery may add its controlled
+    // sponsored insertion on top, which is labelled as such and never
+    // displaces an organic result.
+    const organicCards = dealsRegion.locator("article").filter({
+      hasNot: page.locator('[data-listing-badge="sponsored"]'),
+    });
+    await expect(organicCards).toHaveCount(8);
+    expect(
+      await dealsRegion
+        .locator("article")
+        .filter({ has: page.locator('[data-listing-badge="sponsored"]') })
+        .count(),
+    ).toBeLessThanOrEqual(1);
 
     const metrics = await page.evaluate(() => {
       const region = document.querySelector(
@@ -49,7 +61,8 @@ for (const viewport of [
       };
     });
 
-    expect(metrics.cardCount).toBe(8);
+    expect(metrics.cardCount).toBeGreaterThanOrEqual(8);
+    expect(metrics.cardCount).toBeLessThanOrEqual(9);
     expect(
       new Set(metrics.cardWidths).size,
       `card widths differ: ${metrics.cardWidths.join(", ")}`,
@@ -67,8 +80,16 @@ for (const viewport of [
 
     await expect(page).toHaveURL(/\?page=2$/);
     await expect(pagination).toContainText("Page 2 sur 2");
-    await expect(page.locator("main article")).toHaveCount(2);
     await expect(page.locator("main article").first()).toBeInViewport();
+    // The last page holds the remainder: fewer than a full page, never empty.
+    await expect
+      .poll(() =>
+        page
+          .locator("main article")
+          .filter({ hasNot: page.locator('[data-listing-badge="sponsored"]') })
+          .count(),
+      )
+      .toBeLessThan(8);
     await expect(
       pagination.getByRole("button", { name: "Suivant" }),
     ).toBeDisabled();

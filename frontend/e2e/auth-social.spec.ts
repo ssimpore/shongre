@@ -280,10 +280,10 @@ test.describe("social authentication and account security", () => {
     await expect(
       page.getByRole("group", { name: "Connexion ou inscription" }),
     ).toHaveCount(0);
+    // Each profile card carries its own continue control.
     await page
-      .getByRole("radio", { name: "Professionnel", exact: true })
-      .check();
-    await page.getByRole("button", { name: "Continuer", exact: true }).click();
+      .getByRole("button", { name: "Choisir ce profil : Professionnel" })
+      .click();
     await expect(page).toHaveURL(`/inscription/professionnel${query}`);
     await expectProviderButtons(page, true);
     await page.getByRole("button", { name: "Continuer avec Facebook" }).click();
@@ -296,10 +296,9 @@ test.describe("social authentication and account security", () => {
     await page.goto(`/inscription${query}`, {
       waitUntil: "domcontentloaded",
     });
-    await expect(
-      page.getByRole("radio", { name: "Particulier", exact: true }),
-    ).toBeChecked();
-    await page.getByRole("button", { name: "Continuer", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Choisir ce profil : Particulier" })
+      .click();
     await expect(page).toHaveURL(`/inscription/particulier${query}`);
     await page.getByRole("button", { name: "Continuer avec Facebook" }).click();
     await expect(

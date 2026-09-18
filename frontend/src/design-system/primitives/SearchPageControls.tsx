@@ -33,7 +33,7 @@ export function SearchActiveFiltersBar({
       <button
         type="button"
         onClick={onClear}
-        className="ml-2 cursor-pointer text-xs font-semibold text-text-tertiary underline hover:text-danger"
+        className="ml-2 inline-flex min-h-control-target cursor-pointer items-center text-xs font-semibold text-text-tertiary underline hover:text-danger"
       >
         {t("search.searchPage.effacerTout")}
       </button>

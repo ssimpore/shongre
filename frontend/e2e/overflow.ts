@@ -139,6 +139,17 @@ export async function waitForStableLayout(
   await page
     .getByRole("status", { name: /Chargement (?:de Shongre|de la page)/i })
     .waitFor({ state: "detached", timeout: timeoutMs });
+  // The application marks the document once React has hydrated; a control
+  // handled before that loses the interaction to the first controlled
+  // render. Documents without the application (a server-rendered 404) never
+  // carry the mark, so the wait is bounded rather than required.
+  await page
+    .waitForFunction(
+      () => document.documentElement.hasAttribute("data-app-hydrated"),
+      undefined,
+      { timeout: Math.min(timeoutMs, 10_000) },
+    )
+    .catch(() => undefined);
 
   // Drive the sampling interval from Playwright rather than the document.
   // Browsers throttle both animation frames and window timers in a background

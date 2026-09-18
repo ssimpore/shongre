@@ -5,6 +5,7 @@ import type { ListingCardView } from "@shongre/contracts/listings";
 import type { Money } from "@shongre/contracts/primitives";
 import { deliveryRequestIdFromDiscoveryListingId } from "@shongre/contracts/delivery";
 import { IMAGE_SIZES } from "@shongre/shared/responsive-image";
+import { Avatar } from "./Badge";
 import { formatMoney as formatSharedMoney } from "@shongre/shared/money";
 import type { Listing } from "../../types";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
@@ -99,6 +100,9 @@ export function ListingCardViewCard({
       variant={variant}
       className={`w-full ${className ?? ""}`}
       interactive={interactive}
+      renderSellerAvatar={({ src, name }) => (
+        <Avatar src={src} name={name} size="sm" />
+      )}
       image={
         image ?? (
           <Image
@@ -109,11 +113,13 @@ export function ListingCardViewCard({
             fallbackLabel={t("ui.listingCard.imageUnavailable")}
             priority={imagePriority}
             sizes={
-              variant === "list" || variant === "hero"
-                ? IMAGE_SIZES.thumbnail
-                : variant === "compact"
-                  ? IMAGE_SIZES.compact
-                  : IMAGE_SIZES.card
+              variant === "hero"
+                ? IMAGE_SIZES.heroPreview
+                : variant === "list"
+                  ? IMAGE_SIZES.thumbnail
+                  : variant === "compact"
+                    ? IMAGE_SIZES.compact
+                    : IMAGE_SIZES.card
             }
             className={`h-full w-full motion-surface group-hover:scale-105 ${
               imageFit === "contain"

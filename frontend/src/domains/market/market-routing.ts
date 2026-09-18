@@ -2,24 +2,58 @@ import {
   buildMarketSwitchUrl,
   buildPublicUrl,
   getCountryConfig,
+  getDefaultCountryConfig,
   resolveMarketContext,
   sanitizeMarketSwitchQuery,
   type MarketContext,
   type MarketInfrastructureConfig,
 } from "@shongre/contracts/market-country";
+import {
+  applicationIdForHostname,
+  type ShongreApplicationRegistry,
+} from "../../platform/applications/application-registry";
 import { marketInfrastructureFromPublicEnvironment } from "../../platform/market/market-infrastructure";
+import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
+
+/**
+ * The market a browser request must declare. A market host answers for its
+ * own country; a product origin (Prospects, Facturation) is not a market host
+ * at all and operates the default market, exactly as the server resolves it
+ * for those applications — without this the product's own workspace calls
+ * carried no market and the API refused them.
+ */
+export function browserMarketCodeFor(input: {
+  hostname: string;
+  pathname: string;
+  infrastructure: MarketInfrastructureConfig;
+  applications: ShongreApplicationRegistry;
+}): string | null {
+  const context = resolveMarketContext({
+    hostname: input.hostname,
+    pathname: input.pathname,
+    infrastructure: input.infrastructure,
+    allowDevelopmentHosts: true,
+  });
+  if (["market", "coming_soon", "unavailable"].includes(context.kind)) {
+    return context.countryCode;
+  }
+  const applicationId = applicationIdForHostname(
+    input.hostname,
+    input.applications,
+  );
+  return applicationId && applicationId !== "marketplace"
+    ? getDefaultCountryConfig().code
+    : null;
+}
 
 export function currentBrowserMarketCode(): string | null {
   if (typeof window === "undefined") return null;
-  const context = resolveMarketContext({
+  return browserMarketCodeFor({
     hostname: window.location.host,
     pathname: window.location.pathname,
     infrastructure: marketInfrastructureFromPublicEnvironment(),
-    allowDevelopmentHosts: true,
+    applications: getPublicRuntimeConfig().applications,
   });
-  return ["market", "coming_soon", "unavailable"].includes(context.kind)
-    ? context.countryCode
-    : null;
 }
 
 export { sanitizeMarketSwitchQuery } from "@shongre/contracts/market-country";

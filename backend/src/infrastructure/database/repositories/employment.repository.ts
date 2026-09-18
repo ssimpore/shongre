@@ -785,7 +785,19 @@ export class DemoEmploymentRepository implements EmploymentRepository {
     const privateEmployer = EMPLOYMENT_DEMO_JOBS.find(
       (job) => job.employer.id === "employer-private-martin",
     )!.employer;
-    if (userId === "user_pro_atelier" || userId === "user_employment_recruiter")
+    // Membership is the fixture's own: whoever the workspace lists as an
+    // active member recruits for its employer — the scenario's recruiter
+    // persona included — alongside the marketplace professional who also
+    // publishes there and the API-only recruiter account
+    // (`recrutement@technova.fr`) the integration suite signs in with.
+    const isWorkspaceMember = this.recruiterWorkspace.members.some(
+      (member) => member.userId === userId && member.status === "active",
+    );
+    if (
+      isWorkspaceMember ||
+      userId === "user_pro_atelier" ||
+      userId === "user_employment_recruiter"
+    )
       return clone([this.recruiterWorkspace.employer]);
     if (userId === "user_camille") return clone([privateEmployer]);
     return [];

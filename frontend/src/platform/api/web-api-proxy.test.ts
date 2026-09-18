@@ -201,6 +201,59 @@ describe("first-party Web API transport", () => {
     }
   });
 
+  it("narrows upstream cacheability to the reader's own cache", async () => {
+    const vary = "Accept-Encoding, Origin, X-Shongre-Market, Accept-Language";
+    const cases: [string | null, string, string | null][] = [
+      ["private, no-cache", "private, no-cache", vary],
+      [
+        "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400, stale-if-error=86400",
+        "private, max-age=300",
+        vary,
+      ],
+      [
+        "public, max-age=0, s-maxage=15, stale-while-revalidate=30, stale-if-error=120",
+        "private, no-cache",
+        vary,
+      ],
+      ["private, no-store, max-age=0", "private, no-store", null],
+      ["public, s-maxage=60", "private, no-store", null],
+      [null, "private, no-store", null],
+    ];
+    for (const [upstreamPolicy, expectedPolicy, expectedVary] of cases) {
+      upstream.mockResolvedValueOnce(
+        Response.json([], {
+          headers: {
+            ...(upstreamPolicy ? { "Cache-Control": upstreamPolicy } : {}),
+            ETag: '"revision-7"',
+            "CDN-Cache-Control": "no-store",
+            "Cache-Tag": "shongre-v1-taxonomy",
+            Vary: vary,
+          },
+        }),
+      );
+      const response = await forwardWebApiRequest(
+        new Request(`${origins[0]}/api/v1/taxonomy/v1/header-navigation`, {
+          headers: {
+            "x-shongre-market": "FR",
+            "if-none-match": '"revision-6"',
+          },
+        }),
+      );
+      expect(
+        response.headers.get("cache-control"),
+        String(upstreamPolicy),
+      ).toBe(expectedPolicy);
+      expect(response.headers.get("vary"), String(upstreamPolicy)).toBe(
+        expectedVary,
+      );
+      expect(response.headers.get("etag")).toBe('"revision-7"');
+      expect(response.headers.has("cache-tag")).toBe(false);
+      expect(response.headers.has("cdn-cache-control")).toBe(false);
+      const [, options] = upstream.mock.calls.at(-1)!;
+      expect(options.headers.get("if-none-match")).toBe('"revision-6"');
+    }
+  });
+
   it("never follows upstream redirects or exposes upstream errors", async () => {
     upstream.mockResolvedValueOnce(
       new Response(null, {

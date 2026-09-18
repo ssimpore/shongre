@@ -709,6 +709,8 @@ export interface IRealEstateRepository {
     appointment: PropertyAppointment,
   ): Promise<PropertyAppointment>;
   getAgencyWorkspace(organizationId: string): Promise<AgencyWorkspace | null>;
+  /** The agency this member belongs to, resolved from membership rather than a caller-supplied id. */
+  getAgencyWorkspaceForUser(userId: string): Promise<AgencyWorkspace | null>;
   saveImport(job: PropertyImport): Promise<PropertyImport>;
   getImportByIdempotency(
     organizationId: string,
@@ -937,6 +939,15 @@ export class DemoRealEstateRepository implements IRealEstateRepository {
     this.appointments.set(parsed.id, clone(parsed));
     return clone(parsed);
   }
+  async getAgencyWorkspaceForUser(
+    userId: string,
+  ): Promise<AgencyWorkspace | null> {
+    const workspace = await this.getAgencyWorkspace("agency_canopee");
+    return workspace?.members.some((member) => member.id === userId)
+      ? workspace
+      : null;
+  }
+
   async getAgencyWorkspace(
     organizationId: string,
   ): Promise<AgencyWorkspace | null> {
@@ -1022,6 +1033,15 @@ export class DemoRealEstateRepository implements IRealEstateRepository {
           name: "Clara Dupont",
           role: "manager",
           branchIds: ["branch_lyon"],
+        },
+        {
+          // The scenario's `pro_immo` persona: the account the browser suite
+          // signs in with must be a member, or the workspace it opens is
+          // somebody else's and answers "introuvable".
+          id: "user_immo_clara",
+          name: "Clara Dupont",
+          role: "manager",
+          branchIds: ["branch_lyon", "branch_ecully"],
         },
         {
           id: "member_thomas",
@@ -2065,6 +2085,22 @@ export class PostgresRealEstateRepository implements IRealEstateRepository {
       .maybeSingle();
     if (error) throw error;
     return data ? this.mapImport(data) : null;
+  }
+
+  async getAgencyWorkspaceForUser(
+    userId: string,
+  ): Promise<AgencyWorkspace | null> {
+    const { data, error } = await this.db()
+      .from("real_estate_agency_members")
+      .select("organization_id")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .order("organization_id")
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data?.organization_id) return null;
+    return this.getAgencyWorkspace(String(data.organization_id));
   }
 
   async getAgencyWorkspace(

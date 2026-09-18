@@ -1,6 +1,7 @@
 import { TaxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.v1.service.js";
 import { describe, expect, it } from "vitest";
 import {
+  createSeedConversations,
   createSeedListing,
   createSeedListingPromotion,
   marketplaceFixture,
@@ -236,5 +237,38 @@ describe("shared backend marketplace scenario projection", () => {
       project({ ...eligible, attributes: { price_type: "on_request" } })
         .attributes?.price_type,
     ).toBe("on_request");
+  });
+
+  it("projects every fixture conversation and message under caller-owned identities", () => {
+    const { conversations, messages } = createSeedConversations({
+      conversationId: (id) => `c:${id}`,
+      messageId: (id) => `m:${id}`,
+      listingId: (id) => `l:${id}`,
+      profileId: (id) => `p:${id}`,
+      attachmentUrl: (url) => `media:${url}`,
+    });
+    expect(conversations).toHaveLength(marketplaceFixture.conversations.length);
+    const thread = conversations.find(({ id }) => id === "c:conv-02")!;
+    expect(thread).toMatchObject({
+      listingId: "l:list-103",
+      buyerId: "p:user_thomas",
+      sellerId: "p:user_camille",
+    });
+    expect(Date.parse(thread.createdAt)).not.toBeNaN();
+    const threadMessages = messages.filter(
+      ({ conversationId }) => conversationId === "c:conv-02",
+    );
+    expect(threadMessages.length).toBe(
+      marketplaceFixture.messages["conv-02"].length,
+    );
+    expect(threadMessages.every(({ id }) => id.startsWith("m:"))).toBe(true);
+    for (const message of messages) {
+      expect(
+        conversations.some(({ id }) => id === message.conversationId),
+      ).toBe(true);
+      for (const attachment of message.attachments ?? []) {
+        expect(attachment.startsWith("media:")).toBe(true);
+      }
+    }
   });
 });

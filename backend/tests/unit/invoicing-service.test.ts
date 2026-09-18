@@ -343,4 +343,67 @@ describe("invoicing service", () => {
       ),
     ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
   });
+
+  it("opens a declared organization's own complete workspace and lets it invoice", async () => {
+    // Studio Rivage exists only through its account declaration: its tenant,
+    // issuer and customers are its own, and never the shared demo tenant's.
+    const repository = new DemoInvoicingRepository({
+      findUser: async (id) =>
+        id === "user_standalone"
+          ? {
+              companyName: "Studio Rivage",
+              city: "Nantes",
+              postalCode: "44000",
+              country: "FR",
+              enabledProducts: ["facturation"],
+            }
+          : null,
+    });
+    const service = new InvoicingService(repository);
+    const standalone: Principal = { ...principal, userId: "user_standalone" };
+
+    const workspace = await service.getWorkspace(standalone, "FR");
+    expect(workspace.tenants).toHaveLength(1);
+    const [tenant] = workspace.tenants;
+    expect(tenant.legalName).toBe("Studio Rivage");
+    expect(tenant.productAccess.accessMode).toBe("STANDALONE");
+    expect(workspace.legalEntities).toHaveLength(1);
+    const [issuer] = workspace.legalEntities;
+    expect(issuer.tenantId).toBe(tenant.id);
+    expect(issuer.legalName).toBe("Studio Rivage");
+    expect(issuer.registeredAddress.city).toBe("Nantes");
+    expect(
+      workspace.readiness.find((entry) => entry.key === "legal_entity")?.status,
+    ).toBe("configured");
+
+    const customer = await service.createParty(standalone, {
+      tenantId: tenant.id,
+      kind: "company",
+      roles: ["customer"],
+      legalName: "Atelier Test Facturation",
+      billingAddress: issuer.registeredAddress,
+      locale: issuer.defaultLocale,
+      preferredCurrency: issuer.defaultCurrency,
+      paymentTermsDays: 30,
+      identifiers: [],
+    });
+    const draft = await service.createInvoice(
+      standalone,
+      invoiceInput({
+        tenantId: tenant.id,
+        legalEntityId: issuer.id,
+        customerPartyId: customer.id,
+      }),
+      "standalone-draft-0001",
+      "request-standalone",
+    );
+    expect(draft.tenantId).toBe(tenant.id);
+    expect(["DRAFT", "READY_TO_FINALIZE"]).toContain(draft.commercialState);
+
+    // The shared demo tenant's issuer is invisible to this organization.
+    const shared = await service.getWorkspace(principal, "FR");
+    expect(shared.legalEntities.map((entity) => entity.id)).toEqual([
+      frEntityId,
+    ]);
+  });
 });

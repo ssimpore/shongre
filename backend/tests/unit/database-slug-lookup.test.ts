@@ -17,6 +17,8 @@ function emptyLookupClient() {
   const lookup: Record<string, ReturnType<typeof vi.fn>> = {};
   lookup.select = vi.fn(() => lookup);
   lookup.eq = vi.fn(() => lookup);
+  lookup.order = vi.fn(() => lookup);
+  lookup.limit = vi.fn(() => lookup);
   lookup.maybeSingle = vi.fn(() =>
     Promise.resolve({ data: null, error: null }),
   );
@@ -91,14 +93,25 @@ describe("public storefront owner resolution", () => {
       .mockResolvedValueOnce({ data: null, error: null })
       .mockResolvedValueOnce({ data: owner, error: null });
     store.maybeSingle.mockResolvedValue({
-      data: { organizations: { owner_id: owner.id } },
+      data: {
+        display_name: "Agence Canopée",
+        organizations: { owner_id: owner.id },
+      },
       error: null,
     });
 
     const seller = await repository.findPublicById("agence-canopee");
-    expect(seller).toMatchObject({ id: owner.id, slug: owner.slug });
+    // The storefront is published under the store's name; the owner keeps theirs.
+    expect(seller).toMatchObject({
+      id: owner.id,
+      slug: owner.slug,
+      name: "Clara Dupont",
+      storeName: "Agence Canopée",
+    });
     expect(seller).not.toHaveProperty("email");
-    expect(store.select).toHaveBeenCalledWith("organizations!inner(owner_id)");
+    expect(store.select).toHaveBeenCalledWith(
+      "display_name, organizations!inner(owner_id)",
+    );
     expect(store.eq).toHaveBeenCalledWith("slug", "agence-canopee");
     expect(store.eq).toHaveBeenCalledWith("is_active", true);
     expect(store.eq).toHaveBeenCalledWith("organizations.status", "active");
@@ -106,13 +119,36 @@ describe("public storefront owner resolution", () => {
     expect(profile.eq).toHaveBeenCalledWith("account_family", "professional");
   });
 
-  it("preserves existing profile slug precedence", async () => {
-    const { profile, client, repository } = setup();
+  it("preserves existing profile slug precedence and attaches the owner's storefront", async () => {
+    const { profile, store, repository } = setup();
     profile.maybeSingle.mockResolvedValue({ data: owner, error: null });
+    store.maybeSingle.mockResolvedValue({
+      data: {
+        slug: "agence-canopee",
+        display_name: "Agence Canopée",
+        organizations: { owner_id: owner.id, status: "active" },
+      },
+      error: null,
+    });
     expect(await repository.findPublicById(owner.slug)).toMatchObject({
       id: owner.id,
+      slug: owner.slug,
+      storeSlug: "agence-canopee",
+      storeName: "Agence Canopée",
     });
-    expect(client.from).not.toHaveBeenCalledWith("stores");
+    // The profile answered first; the store was looked up by its owner,
+    // never by reinterpreting the profile slug as a store slug.
+    expect(store.eq).toHaveBeenCalledWith("organizations.owner_id", owner.id);
+    expect(store.eq).not.toHaveBeenCalledWith("slug", owner.slug);
+  });
+
+  it("leaves a professional without a storefront on their own slug", async () => {
+    const { profile, store, repository } = setup();
+    profile.maybeSingle.mockResolvedValue({ data: owner, error: null });
+    store.maybeSingle.mockResolvedValue({ data: null, error: null });
+    const seller = await repository.findPublicById(owner.slug);
+    expect(seller).toMatchObject({ id: owner.id, slug: owner.slug });
+    expect(seller).not.toHaveProperty("storeSlug");
   });
 
   it("does not reinterpret an unknown account UUID as a store slug", async () => {

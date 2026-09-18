@@ -260,6 +260,12 @@ describe.skipIf(!enabled)(
 
     it("round-trips edits, isolates drafts, publishes one revision, detects conflicts and rolls back", async () => {
       const before = await taxonomyV1Service.snapshot();
+      // A reader's cache holds the current revision's validator; the publish
+      // below must invalidate it on the very next request, not after a TTL.
+      const previousValidator = (
+        await call("/taxonomy/v1/tree?locale=fr-FR", "GET", undefined, "")
+      ).headers.get("etag");
+      expect(previousValidator).toMatch(/^"[A-Za-z0-9_-]+"$/);
       const row = original.bundle.categories.find(
         (item) => item.id === "electronics",
       )!;
@@ -320,13 +326,19 @@ describe.skipIf(!enabled)(
         changeReason: "Publish integration-test revision",
       });
       expect(published.status, await published.clone().text()).toBe(200);
-      const response = await call(
-        "/taxonomy/v1/tree?locale=fr-FR",
-        "GET",
-        undefined,
-        "",
+      const response = await fetch(
+        `${base}/api/v1/taxonomy/v1/tree?locale=fr-FR`,
+        {
+          headers: {
+            ...headers(""),
+            "If-None-Match": String(previousValidator),
+          },
+        },
       );
-      expect(response.headers.get("cache-control")).toContain("no-store");
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toBe("private, no-cache");
+      expect(response.headers.get("cdn-cache-control")).toBe("no-store");
+      expect(response.headers.get("etag")).not.toBe(previousValidator);
       const tree = taxonomyV1TreeResponseSchema.parse(await response.json());
       expect(
         tree.items.find((item) => item.id === "electronics")?.shortLabels[

@@ -72,16 +72,116 @@ function periodMatches(date: string, start: string, end: string) {
   return value >= new Date(start).getTime() && value <= new Date(end).getTime();
 }
 
+/**
+ * The demo dashboard is authored for the whole platform. A market scope reads
+ * the market's own row for the headline figures and scales the rest to that
+ * market's share of platform revenue, rounding into one line per group so the
+ * reporting invariants still hold exactly — the same answer shape the
+ * database repository computes from scoped rows.
+ */
+function scopeDemoPlatformDashboard(
+  dashboard: PlatformFinanceDashboard,
+  scope: FinanceScope,
+): PlatformFinanceDashboard {
+  const market = dashboard.markets.find(
+    (row) => row.marketCode === scope.marketCode,
+  );
+  if (scope.marketCode === "ALL" || !market) return dashboard;
+  const platformRevenue = market.platformRevenue.amountMinor;
+  const ratio =
+    platformRevenue / dashboard.metrics.platformRevenue.amount.amountMinor;
+  const scaled = (minor: number) => Math.round(minor * ratio);
+  const money = (amountMinor: number) => ({
+    amountMinor,
+    currency: scope.currency,
+  });
+  const scaleMetric = (
+    metric: PlatformFinanceDashboard["metrics"]["gmv"],
+    amountMinor = scaled(metric.amount.amountMinor),
+  ) => ({ ...metric, amount: money(amountMinor) });
+  const refunds = scaled(dashboard.metrics.refunds.amount.amountMinor);
+  const mrr = scaled(dashboard.metrics.mrr.amount.amountMinor);
+  const revenueSources = dashboard.revenueSources.map((source) => ({
+    ...source,
+    amount: money(scaled(source.amount.amountMinor)),
+  }));
+  const sourcesTotal = revenueSources.reduce(
+    (sum, source) => sum + source.amount.amountMinor,
+    0,
+  );
+  const last = revenueSources.at(-1);
+  if (last)
+    last.amount = money(
+      last.amount.amountMinor + platformRevenue - sourcesTotal,
+    );
+  for (const source of revenueSources) {
+    source.shareBps = Math.round(
+      (source.amount.amountMinor / platformRevenue) * 10_000,
+    );
+  }
+  return {
+    ...dashboard,
+    scope,
+    metrics: {
+      ...dashboard.metrics,
+      platformRevenue: scaleMetric(
+        dashboard.metrics.platformRevenue,
+        platformRevenue,
+      ),
+      netRevenue: scaleMetric(
+        dashboard.metrics.netRevenue,
+        market.netRevenue.amountMinor,
+      ),
+      gmv: scaleMetric(dashboard.metrics.gmv, market.gmv.amountMinor),
+      grossCollected: scaleMetric(dashboard.metrics.grossCollected),
+      taxCollected: scaleMetric(dashboard.metrics.taxCollected),
+      sellerPayable: scaleMetric(dashboard.metrics.sellerPayable),
+      outstanding: scaleMetric(dashboard.metrics.outstanding),
+      deferredRevenue: scaleMetric(dashboard.metrics.deferredRevenue),
+      // Net revenue is the market's own figure, so provider fees absorb the
+      // rounding: net = platform − fees − refunds must stay exact.
+      providerFees: scaleMetric(
+        dashboard.metrics.providerFees,
+        platformRevenue - market.netRevenue.amountMinor - refunds,
+      ),
+      refunds: scaleMetric(dashboard.metrics.refunds, refunds),
+      mrr: scaleMetric(dashboard.metrics.mrr, mrr),
+      arr: scaleMetric(dashboard.metrics.arr, mrr * 12),
+    },
+    revenueSources,
+    timeSeries: dashboard.timeSeries.map((point) => ({
+      ...point,
+      platformRevenue: money(scaled(point.platformRevenue.amountMinor)),
+      netRevenue: money(scaled(point.netRevenue.amountMinor)),
+    })),
+    exceptions: dashboard.exceptions.map((exception) => ({
+      ...exception,
+      amountImpact: exception.amountImpact
+        ? money(scaled(exception.amountImpact.amountMinor))
+        : exception.amountImpact,
+    })),
+    markets: [market],
+    verticals: dashboard.verticals.map((vertical) => ({
+      ...vertical,
+      revenue: money(scaled(vertical.revenue.amountMinor)),
+      mrr: money(scaled(vertical.mrr.amountMinor)),
+    })),
+  };
+}
+
 export class DemoFinanceRepository implements FinanceRepository {
   async getPlatformDashboard(
     scope: FinanceScope,
     _periodStart: string,
     _periodEnd: string,
   ) {
-    const dashboard = structuredClone(DEMO_PLATFORM_FINANCE_DASHBOARD);
+    const dashboard = scopeDemoPlatformDashboard(
+      structuredClone(DEMO_PLATFORM_FINANCE_DASHBOARD),
+      scope,
+    );
     dashboard.scope = scope;
     assertPlatformFinanceInvariants(dashboard);
-    return dashboard;
+    return platformFinanceDashboardSchema.parse(dashboard);
   }
 
   async getAccountDashboard(accountId: string, _marketCode: string) {

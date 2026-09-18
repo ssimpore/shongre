@@ -3,16 +3,21 @@ import { expect, test, type Page } from "@playwright/test";
 import type { components } from "@shongre/contracts/openapi";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
+import { browserApi } from "./browser-api";
 
+/*
+ * The document carries the market-wide experience, so a visitor's browser
+ * never requests `/api/v1/home` for the first paint; the composition the page
+ * was rendered from is read through the same first-party transport instead.
+ */
 async function openHomepage(page: Page) {
-  const response = page.waitForResponse(
-    (response) =>
-      new URL(response.url()).pathname === "/api/v1/home" && response.ok(),
-  );
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  const experience = (await (
-    await response
-  ).json()) as components["schemas"]["HomepageExperience"];
+  const { status, body } = await browserApi(
+    page,
+    "/home?market=FR&country=FR&locale=fr-FR",
+  );
+  expect(status).toBe(200);
+  const experience = body as components["schemas"]["HomepageExperience"];
   await waitForStableLayout(page);
   const groups =
     experience.sections.find((section) => section.type === "universe_explorer")
@@ -124,9 +129,9 @@ test.describe("Homepage universe explorer", () => {
 
     await expect(
       home.getByRole("link", {
-        name: /Don : Lot de 15 Pots de Fleurs en Terre Cuite/i,
+        name: /Fauteuil Lounge Vintage Scandinave en Chêne Massif/i,
       }),
-    ).toHaveAttribute("href", testListingPath("list-110"));
+    ).toHaveAttribute("href", testListingPath("list-101"));
     await expect(
       fashion.getByRole("link", { name: /Manteau Long en Laine Sézane/i }),
     ).toHaveAttribute("href", testListingPath("list-105"));

@@ -170,6 +170,13 @@ export function registerRealEstateRoutes(routes: RouteRegistrar): void {
   );
   routes.addRoute(
     "GET",
+    "/real-estate/agencies/workspace",
+    permission("immo.agency.manage.own"),
+    async ({ principal }) =>
+      realEstateService.getCurrentAgencyWorkspace(principal.userId),
+  );
+  routes.addRoute(
+    "GET",
     "/real-estate/agencies/:organizationId/workspace",
     permission("immo.agency.manage.own"),
     async ({ principal, params }) =>

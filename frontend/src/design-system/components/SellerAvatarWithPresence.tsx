@@ -42,7 +42,15 @@ export function SellerAvatarWithPresence({
       className={cn("relative inline-flex shrink-0", className)}
       data-seller-avatar="true"
     >
-      <Avatar src={src} name={name} size={size} className={avatarClassName} />
+      {/* One image to assistive technology whether a photo or initials
+          render: "Avatar de …", never the bare name the row already reads. */}
+      <span
+        role="img"
+        aria-label={t("ui.sellerIdentity.avatar", { name })}
+        className="inline-flex shrink-0"
+      >
+        <Avatar src={src} name={name} size={size} className={avatarClassName} />
+      </span>
       <span className="absolute -bottom-0.5 -right-0.5 inline-flex">
         <PresenceIndicator
           status={status}

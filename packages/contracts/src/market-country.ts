@@ -1319,16 +1319,39 @@ export function resolveMarketContext(
     );
   }
 
-  if (
-    pathCountry &&
-    !pathCountry.isDefault &&
-    (hostname === franceHost || (isLocal && hostname === "fr.localhost"))
-  ) {
+  const isFranceHost =
+    hostname === franceHost || (isLocal && hostname === "fr.localhost");
+  if (pathCountry && !pathCountry.isDefault && isFranceHost) {
     return { ...invalid(), reason: "HOST_MARKET_MISMATCH" };
   }
 
-  if (hostname === franceHost || (isLocal && hostname === "fr.localhost")) {
+  if (isFranceHost) {
     const france = getDefaultCountryConfig(registry);
+    // The default market's own slug is an alias on its own host — a gateway
+    // link or an old URL — never a route: it canonicalizes exactly as it does
+    // from the global host instead of falling through to a 404.
+    if (pathCountry?.isDefault) {
+      const suffix = pathname.slice(`/${firstSegment}`.length) || "/";
+      const target = `${originFor(france, infrastructure)}${normalizePathname(suffix)}`;
+      return {
+        kind: "redirect",
+        hostname,
+        country: france,
+        countryCode: france.code,
+        market: france.code,
+        locale: france.defaultLocale,
+        currency: france.currency,
+        timezone: france.timezone,
+        publicPath: pathname,
+        internalPath: normalizePathname(suffix),
+        routingBasePath: france.basePath,
+        canonicalUrl: target,
+        infrastructure,
+        redirectUrl: target,
+        redirectStatus: 308,
+        reason: "DEFAULT_MARKET_CANONICAL_DOMAIN",
+      };
+    }
     return resultForCountry(
       france,
       hostname,

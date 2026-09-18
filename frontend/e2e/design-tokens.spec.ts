@@ -3,7 +3,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { colors as semanticColors } from "@shongre/design-tokens";
 import { usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
-import { ALL_ROUTES } from "./routes";
+import { ALL_ROUTES, routeUrl } from "./routes";
 import { VIEWPORTS } from "./viewports";
 
 const seedConsentDecision = async (page: Page) => {
@@ -543,7 +543,11 @@ test.describe("design-token runtime contracts @serial", () => {
     await expect(
       page.locator('[data-listing-card-location="true"]').first(),
     ).toBeVisible();
-    await expect(page.locator(".lucide-calendar")).toHaveCount(0);
+    // The published date is text in the metadata row, never an icon; a
+    // dated characteristic (an event's date) lives among the footer facts.
+    await expect(
+      page.locator('[data-listing-card-meta="true"] .lucide-calendar'),
+    ).toHaveCount(0);
   });
 
   test("fits the active view toggle corner to its segmented container", async ({
@@ -633,9 +637,20 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(styles.boxShadow).not.toBe("none");
   });
 
-  test("keeps solid orange controls identical to the logo through interaction states", async ({
+  test("keeps solid orange controls on the readable brand ramp through interaction states", async ({
     page,
   }) => {
+    // The canonical logo orange measures 2.95:1 against white, so solid
+    // controls paint the AA-readable derivation the tokens publish
+    // (`deriveShongreOrangeTokens`): `primary`, then its hover and pressed
+    // steps. Only the canonical token itself stays the logo swatch.
+    const toRgb = (hex: string) => {
+      const value = hex.replace("#", "");
+      const channels = [0, 2, 4].map((offset) =>
+        Number.parseInt(value.slice(offset, offset + 2), 16),
+      );
+      return `rgb(${channels.join(", ")})`;
+    };
     const readColors = async () =>
       page.evaluate(() => {
         const button = document.querySelector<HTMLButtonElement>(
@@ -686,10 +701,12 @@ test.describe("design-token runtime contracts @serial", () => {
 
       let state = await readColors();
       expect(state?.canonical).toBe(semanticColors.brand.primary);
+      expect(state?.brand).toBe(toRgb(semanticColors.brand.primary));
       expect(state?.background).toBe(state?.primary);
-      expect(state?.primary).toBe(state?.brand);
-      expect(state?.hover).toBe(state?.brand);
-      expect(state?.active).toBe(state?.brand);
+      expect(state?.primary).toBe(toRgb(semanticColors.action.primary));
+      expect(state?.hover).toBe(toRgb(semanticColors.action.primaryHover));
+      expect(state?.active).toBe(toRgb(semanticColors.action.primaryPressed));
+      expect(state?.primary).not.toBe(state?.brand);
       expect(state?.text).toBe(state?.foreground);
       expect(state?.foreground).toBe(state?.logoForeground);
       expect(state?.icons.length).toBeGreaterThan(0);
@@ -816,8 +833,8 @@ test.describe("design-token runtime contracts @serial", () => {
       test.setTimeout(120_000);
       for (const route of routes) {
         await test.step(`${route.name} (${route.path})`, async () => {
-          await usePersona(page, route.persona);
-          await page.goto(route.path, { waitUntil: "domcontentloaded" });
+          await usePersona(page, route.persona, { origin: route.origin });
+          await page.goto(routeUrl(route), { waitUntil: "domcontentloaded" });
           await waitForStableLayout(page, 20_000);
 
           const audit = await page.evaluate(() => {
@@ -1019,7 +1036,9 @@ test.describe("design-token runtime contracts @serial", () => {
     page,
   }) => {
     await usePersona(page, "individual_buyer");
-    await page.reload({ waitUntil: "domcontentloaded" });
+    // Signing in leaves the page on the API probe; the header lives on the
+    // marketplace shell.
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
     const actions = await page.evaluate(() => {
@@ -1073,12 +1092,14 @@ test.describe("design-token runtime contracts @serial", () => {
         };
       });
 
-    expect(await readMetric()).toEqual({ height: 40, radius: "10px" });
+    // Category entries are primary navigation on every device and keep the
+    // touch metric (44px) rather than the compact one, at every viewport.
+    expect(await readMetric()).toEqual({ height: 44, radius: "10px" });
 
     await page.setViewportSize({ width: 390, height: 844 });
     await waitForStableLayout(page);
     await expect(categoryLink).toBeVisible();
-    expect(await readMetric()).toEqual({ height: 40, radius: "10px" });
+    expect(await readMetric()).toEqual({ height: 44, radius: "10px" });
     await expectNoHorizontalOverflow(page, "mobile category navigation");
   });
 
@@ -1113,31 +1134,20 @@ test.describe("design-token runtime contracts @serial", () => {
     await expect(heroExplore).toBeVisible();
     await expect(proDiscovery).toBeVisible();
 
-    expect(await readMetric(proDiscovery)).toEqual({
-      height: 44,
-      radius: "10px",
-    });
-    expect(await readMetric(heroPublish)).toEqual({
-      height: 44,
-      radius: "10px",
-    });
-    expect(await readMetric(heroExplore)).toEqual({
-      height: 44,
-      radius: "10px",
-    });
+    // All three are the standard button (`size="md"`): the compact 40px
+    // metric on a fine pointer, which is what this desktop engine has; the
+    // coarse-pointer floor in the stylesheet raises it on touch devices.
+    const standardControl = { height: 40, radius: "10px" };
+    expect(await readMetric(proDiscovery)).toEqual(standardControl);
+    expect(await readMetric(heroPublish)).toEqual(standardControl);
+    expect(await readMetric(heroExplore)).toEqual(standardControl);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(heroPublish).toBeVisible();
     await expect(heroExplore).toBeVisible();
     await expectNoHorizontalOverflow(page, "mobile homepage hero actions");
-    expect(await readMetric(heroPublish)).toEqual({
-      height: 44,
-      radius: "10px",
-    });
-    expect(await readMetric(heroExplore)).toEqual({
-      height: 44,
-      radius: "10px",
-    });
+    expect(await readMetric(heroPublish)).toEqual(standardControl);
+    expect(await readMetric(heroExplore)).toEqual(standardControl);
   });
 
   test("keeps pointer hover separate from keyboard focus on the header publish action", async ({

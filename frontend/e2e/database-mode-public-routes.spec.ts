@@ -92,9 +92,11 @@ test.describe("database-mode public routes", () => {
       waitUntil: "load",
     });
     expect(response?.status()).toBe(200);
-    await expect(page).toHaveURL(/\/boutique\/clara-dupont-agence-canopee$/);
+    // The store slug is the storefront's canonical address and the business
+    // name is its heading; the owner's personal slug is not a redirect target.
+    await expect(page).toHaveURL(/\/boutique\/agence-canopee$/);
     await expect(
-      page.getByRole("heading", { name: "Clara Dupont", exact: true }),
+      page.getByRole("heading", { name: "Agence Canopée", exact: true }),
     ).toBeVisible();
     await expect(
       page.getByText("Profil introuvable", { exact: true }),

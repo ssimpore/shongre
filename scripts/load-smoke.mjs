@@ -87,55 +87,78 @@ async function measureEndpoint({
   };
 }
 
-async function verifyConditionalPublicCache({
-  api,
-  headers,
-  timeoutMs,
-  marketCode,
-}) {
-  const target = new URL(
-    `/api/v1/listings/search?marketCode=${marketCode}&limit=20&sortBy=date_desc`,
-    api,
-  );
+async function probeConditionalRead({ target, headers, timeoutMs, accept }) {
   const initial = await fetch(target, {
     headers,
     signal: AbortSignal.timeout(timeoutMs),
   });
   const etag = initial.headers.get("etag");
-  const cacheControl = initial.headers.get("cache-control") || "";
-  const cacheTag = initial.headers.get("cache-tag") || "";
-  const vary = initial.headers.get("vary") || "";
-  if (
-    !initial.ok ||
-    !etag ||
-    !cacheControl.includes("s-maxage=") ||
-    !cacheControl.includes("stale-while-revalidate=") ||
-    !cacheControl.includes("stale-if-error=") ||
-    !cacheTag.includes("discovery") ||
-    !vary.toLowerCase().includes("x-shongre-market")
-  ) {
-    return {
-      result: "FAIL",
-      initialStatus: initial.status,
-      conditionalStatus: null,
-      etag: Boolean(etag),
-      cacheControl,
-      cacheTag,
-      vary,
-    };
-  }
+  const observed = {
+    initialStatus: initial.status,
+    conditionalStatus: null,
+    etag: Boolean(etag),
+    cacheControl: initial.headers.get("cache-control") || "",
+    cacheTag: initial.headers.get("cache-tag") || "",
+    vary: initial.headers.get("vary") || "",
+  };
+  if (!initial.ok || !etag || !accept(observed))
+    return { result: "FAIL", ...observed };
   const unchanged = await fetch(target, {
     headers: { ...headers, "If-None-Match": etag },
     signal: AbortSignal.timeout(timeoutMs),
   });
   return {
     result: unchanged.status === 304 ? "PASS" : "FAIL",
-    initialStatus: initial.status,
+    ...observed,
     conditionalStatus: unchanged.status,
-    etag: true,
-    cacheControl,
-    cacheTag,
-    vary,
+  };
+}
+
+/**
+ * The two cache classes the backend registry promises, observed through the
+ * deployed edge: a registered reference projection a shared cache may hold,
+ * and a public taxonomy projection only a reader's own cache may hold. Both
+ * must carry a validator the origin honours with 304. Discovery is
+ * deliberately absent — it stays private and unstored until purge delivery
+ * is acknowledged.
+ */
+async function verifyConditionalPublicCache({
+  api,
+  headers,
+  timeoutMs,
+  marketCode,
+}) {
+  const shared = await probeConditionalRead({
+    target: new URL(
+      `/api/v1/markets/effective/${encodeURIComponent(marketCode)}`,
+      api,
+    ),
+    headers,
+    timeoutMs,
+    accept: ({ cacheControl, cacheTag, vary }) =>
+      cacheControl.includes("public") &&
+      cacheControl.includes("s-maxage=") &&
+      cacheControl.includes("stale-while-revalidate=") &&
+      cacheControl.includes("stale-if-error=") &&
+      cacheTag.includes("markets") &&
+      vary.toLowerCase().includes("x-shongre-market"),
+  });
+  const revalidate = await probeConditionalRead({
+    target: new URL("/api/v1/taxonomy/v1/header-navigation", api),
+    headers,
+    timeoutMs,
+    accept: ({ cacheControl, cacheTag, vary }) =>
+      cacheControl === "private, no-cache" &&
+      cacheTag === "" &&
+      vary.toLowerCase().includes("x-shongre-market"),
+  });
+  return {
+    result:
+      shared.result === "PASS" && revalidate.result === "PASS"
+        ? "PASS"
+        : "FAIL",
+    shared,
+    revalidate,
   };
 }
 
