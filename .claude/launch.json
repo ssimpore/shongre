@@ -2,16 +2,21 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "shongre-dev",
-      "runtimeExecutable": "npm",
+      "name": "shongre-api",
+      "runtimeExecutable": "make",
       "runtimeArgs": [
-        "run",
-        "dev",
-        "--prefix",
+        "backend"
+      ],
+      "port": 4000
+    },
+    {
+      "name": "shongre-dev",
+      "runtimeExecutable": "make",
+      "runtimeArgs": [
         "frontend"
       ],
       "port": 3000,
-      "autoPort": true
+      "url": "http://127.0.0.1:3000"
     }
   ]
 }

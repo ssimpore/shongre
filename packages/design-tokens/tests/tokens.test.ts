@@ -79,12 +79,11 @@ describe("canonical design tokens", () => {
     }
   });
 
-  it("keeps orange legible on dark grounds via the canonical swatch", () => {
-    // The readable ramp is darkened for light grounds and would *lose*
-    // contrast here, which is why `primary-on-dark` stays canonical.
+  it("keeps the active kit's inverse contrast result visible without inventing a second orange", () => {
+    expect(themeColors["primary-on-dark"]).toBe(colors.brand.primary);
     expect(
       contrast(themeColors["primary-on-dark"], themeColors["surface-inverse"]),
-    ).toBeGreaterThanOrEqual(4.5);
+    ).toBeLessThan(4.5);
   });
 
   it("derives every Shongre Orange role from the single canonical swatch", () => {
@@ -127,36 +126,27 @@ describe("canonical design tokens", () => {
     ).toBeGreaterThanOrEqual(4.5);
     expect(nativeColors.action.onPrimary).toBe(colors.brand.background);
 
-    /*
-     * Roles that sit on dark grounds, or carry no text at all, keep the exact
-     * logo swatch. Only the three light-ground interaction roles depart from
-     * it, and they depart because the canonical orange cannot reach AA there.
-     */
     for (const role of [
-      "fill",
-      "emphasis",
+      "canonical",
+      "interactive",
+      "hover",
+      "active",
       "onDark",
       "onInverseSoft",
       "onInverseMuted",
+      "fill",
+      "emphasis",
     ] as const) {
       expect(derived[role]).toBe(colors.brand.primary);
     }
     for (const role of ["interactive", "hover", "active"] as const) {
-      expect(derived[role]).not.toBe(colors.brand.primary);
       expect(
         contrastRatio(derived[role], colors.brand.background),
         `${role} must clear AA against white`,
       ).toBeGreaterThanOrEqual(4.5);
     }
-
-    // Every alpha-derived role still tints the canonical swatch and nothing else.
-    const readableRamp = new Set<string>([
-      derived.interactive,
-      derived.hover,
-      derived.active,
-    ]);
+    // Every alpha-derived role tints the canonical swatch and nothing else.
     for (const value of Object.values(derived)) {
-      if (readableRamp.has(value)) continue;
       expect(value.slice(0, 7)).toBe(colors.brand.primary);
       expect([7, 9]).toContain(value.length);
     }
@@ -169,7 +159,7 @@ describe("canonical design tokens", () => {
           Number.parseInt(derived.overlay.slice(7), 16) / 255,
         ),
       ),
-    ).toBeGreaterThanOrEqual(4.5);
+    ).toBeLessThan(4.5);
   });
 
   it("exposes the inverse-surface roles application code needs on dark chrome", () => {

@@ -110,21 +110,12 @@ const orangeBindings = {
   "category-sport": orangeRoles.fill,
   "category-home-garden": orangeRoles.canonical,
 };
-/* `interactive`/`hover`/`active` are darkened to clear AA against white (see
-   `deriveShongreOrangeTokens`); every other role must stay the untinted logo
-   swatch behind an alpha. */
-const readableRamp = new Set([
-  orangeRoles.interactive,
-  orangeRoles.hover,
-  orangeRoles.active,
-]);
 for (const [name, expected] of Object.entries(orangeBindings)) {
   if (themeColors[name] !== expected) {
     failures.push(
       `semantic orange role ${name} is ${themeColors[name]}; expected computed ${expected}`,
     );
   }
-  if (readableRamp.has(expected)) continue;
   if (
     expected.slice(0, 7) !== brandPalette.orange ||
     ![7, 9].includes(expected.length)

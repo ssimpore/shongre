@@ -26,9 +26,10 @@ override an orange shade. The mutation proof in `make tokens-check` changes the
 canonical input in memory and verifies every orange role still has exactly
 that RGB value, with optional alpha.
 
-The exact logo-white/orange pairing falls below the normal-text contrast
-threshold. Contrast assertions continue to report this; component overrides
-must not substitute another foreground or darken the canonical orange.
+Contrast assertions test the exact logo-white/orange pairing. They must not
+substitute another foreground or darken the canonical orange. On inverse
+surfaces where the canonical swatch is not readable, components use the
+existing inverse text or border roles instead of creating a lighter orange.
 
 - Web consumes the generated Tailwind v4 adapter at `@shongre/design-tokens/tokens.css`.
 - The Web adapter exposes `--font-family-sans` as the single application-family

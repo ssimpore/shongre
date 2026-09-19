@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import {
   REQUIRED_HOSTED_SMOKE_TESTS,
   validatePerformanceEvidence as validatePerformanceRecord,
+  validateStagingCertificationEvidence,
 } from "./lib/release-evidence.mjs";
 
 const root = resolve(import.meta.dirname, "..");
@@ -95,6 +96,7 @@ function validateHostedSmokeReport(path, manifest) {
     ),
     skipped: Number(report.stats?.skipped || 0),
     unexpected: Number(report.stats?.unexpected || 0),
+    flaky: Number(report.stats?.flaky || 0),
     durationMs: Math.round(Number(report.stats?.duration || 0)),
     reportDigest: filePathDigest(path),
   };
@@ -242,26 +244,8 @@ if (command === "create") {
     fail("usage: verify-certification MANIFEST CERTIFICATION");
   }
   const manifest = validateManifest(readJson(manifestPath));
-  const certification = readJson(certificationPath);
-  if (
-    certification.schemaVersion !== 1 ||
-    certification.environment !== "staging" ||
-    certification.result !== "passed"
-  ) {
-    fail("staging certification is not a successful supported record");
-  }
-  if (
-    !certification.checks?.hostedSmoke ||
-    certification.checks.hostedSmoke.unexpected !== 0 ||
-    certification.checks.hostedSmoke.skipped !== 0 ||
-    !REQUIRED_HOSTED_SMOKE_TESTS.every((title) =>
-      certification.checks.hostedSmoke.requiredTests?.includes(title),
-    )
-  ) {
-    fail("staging certification is missing the required hosted smoke evidence");
-  }
-  validatePerformanceRecord(
-    certification.checks?.performance || {},
+  const certification = validateStagingCertificationEvidence(
+    readJson(certificationPath),
     manifest.commit,
   );
   for (const field of [

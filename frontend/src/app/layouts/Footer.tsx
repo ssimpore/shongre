@@ -39,7 +39,7 @@ import {
 import { applicationHref } from "../../platform/applications/use-application-href";
 
 type BrandIcon = ComponentType<SVGProps<SVGSVGElement>>;
-const FOOTER_FOCUS = `${CONTROL_FOCUS_CLASS} focus-visible:outline-primary-on-dark`;
+const FOOTER_FOCUS = `${CONTROL_FOCUS_CLASS} focus-visible:outline-border-on-inverse`;
 const EXTERNAL_CONTROL = `inline-flex items-center ${CONTROL_MOTION_CLASS} ${FOOTER_FOCUS}`;
 const FOOTER_LINK = `inline-flex min-h-control-touch w-full items-center justify-between gap-3 rounded-sm py-0.5 text-sm leading-snug text-text-inverse-muted transition-colors hover:text-text-inverse ${FOOTER_FOCUS}`;
 const LEGAL_CONTROL = `inline-flex min-h-control-touch items-center rounded-sm text-xs text-text-inverse-muted transition-colors hover:text-text-inverse ${FOOTER_FOCUS}`;
@@ -153,7 +153,7 @@ const SocialLink: React.FC<{
   unavailableLabel: string;
 }> = ({ name, url, Icon, accessibleLabel, unavailableLabel }) => {
   const content = <Icon className="h-icon-lg w-icon-lg" />;
-  const className = `${EXTERNAL_CONTROL} h-control-md w-control-md justify-center rounded-full bg-surface-inverse-hover text-text-inverse-muted ${url ? "hover:bg-surface-inverse hover:text-primary-on-dark" : ""}`;
+  const className = `${EXTERNAL_CONTROL} h-control-md w-control-md justify-center rounded-full bg-surface-inverse-hover text-text-inverse-muted ${url ? "hover:bg-surface-inverse hover:text-text-inverse" : ""}`;
   return url ? (
     <a
       href={url}
@@ -190,7 +190,7 @@ const FooterColumn: React.FC<{
   const heading = (
     <span className="flex items-center gap-3">
       <Icon
-        className="h-icon-lg w-icon-lg shrink-0 text-primary-on-dark"
+        className="h-icon-lg w-icon-lg shrink-0 text-text-inverse-faint"
         aria-hidden="true"
       />
       <span>{title}</span>

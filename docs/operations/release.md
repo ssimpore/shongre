@@ -76,6 +76,10 @@ journeys, matching staging/release metadata, no skipped, flaky or failed tests,
 and schema-version-2 performance evidence from `make performance-smoke`,
 including both search transports and the conditional-cache probe. The producer
 and certification consumer share validation in `scripts/lib/release-evidence.mjs`.
+The production gate accepts only a certificate created within the previous 14
+days and bound to the release's exact immutable frontend/backend image digests,
+OpenAPI digest, migration revision, migration digest, hosted-smoke report digest
+and performance report digest.
 
 Set `STAGING_JOURNEY_FIXTURES_JSON` only as a protected GitHub **staging secret**.
 The workflow explicitly sets `PLAYWRIGHT_ALLOW_STAGING_WRITES=true`; the suite

@@ -63,11 +63,21 @@ try {
       verifiedAt: "2026-08-27T10:00:00.000Z",
       result: "PASS",
       budgets: { p95Ms: 750, minimumSuccessRate: 0.99 },
-      conditionalCache: { result: "PASS" },
+      configuration: { requestCount: 4, concurrency: 2, timeoutMs: 1_000 },
+      conditionalCache: {
+        result: "PASS",
+        shared: { result: "PASS", etag: true, conditionalStatus: 304 },
+        revalidate: { result: "PASS", etag: true, conditionalStatus: 304 },
+      },
       endpoints: REQUIRED_PERFORMANCE_ENDPOINTS.map((name) => ({
         name,
+        requests: 4,
+        validResponses: 4,
         successRate: 1,
+        p50Ms: 10,
         p95Ms: 20,
+        p99Ms: 30,
+        statuses: { 200: 4 },
       })),
     }),
   );
@@ -75,6 +85,36 @@ try {
   run(["validate", output, sha]);
   run(["certify", output, certification, hostedReport, performanceEvidence]);
   run(["verify-certification", output, certification]);
+  const validCertification = JSON.parse(readFileSync(certification, "utf8"));
+  for (const mutate of [
+    (value) => {
+      value.checks.hostedSmoke.requiredTests.pop();
+    },
+    (value) => {
+      delete value.checks.hostedSmoke.expected;
+    },
+    (value) => {
+      value.checks.hostedSmoke.flaky = 1;
+    },
+    (value) => {
+      value.checks.performance.schemaVersion = 1;
+    },
+    (value) => {
+      value.checks.performance.endpoints[0].successRate = 0;
+    },
+    (value) => {
+      value.checks.performance.conditionalCache.shared.conditionalStatus = 200;
+    },
+    (value) => {
+      value.checks.performance.reportDigest = "missing";
+    },
+  ]) {
+    const invalidCertification = structuredClone(validCertification);
+    mutate(invalidCertification);
+    writeFileSync(certification, JSON.stringify(invalidCertification));
+    run(["verify-certification", output, certification], 1);
+  }
+  writeFileSync(certification, JSON.stringify(validCertification));
   const manifest = JSON.parse(readFileSync(output, "utf8"));
   if (
     manifest.images.frontend.reference !== frontend ||

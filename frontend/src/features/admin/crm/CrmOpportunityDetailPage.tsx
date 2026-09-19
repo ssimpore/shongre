@@ -406,7 +406,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className={`rounded-pill px-2 py-1 text-micro font-bold ${opportunity.status === "won" ? "bg-success-inverse-deep text-success-on-inverse-strong" : opportunity.status === "lost" ? "bg-critical-inverse-deep text-critical-on-inverse-strong" : "bg-primary-overlay text-primary-on-inverse-muted"}`}
+                  className={`rounded-pill px-2 py-1 text-micro font-bold ${opportunity.status === "won" ? "bg-success-inverse-deep text-success-on-inverse-strong" : opportunity.status === "lost" ? "bg-critical-inverse-deep text-critical-on-inverse-strong" : "bg-primary-overlay text-text-inverse"}`}
                 >
                   {opportunity.stageName}
                 </span>

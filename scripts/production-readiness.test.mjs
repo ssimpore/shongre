@@ -1,7 +1,12 @@
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
+import {
+  PERFORMANCE_EVIDENCE_VERSION,
+  REQUIRED_HOSTED_SMOKE_TESTS,
+  REQUIRED_PERFORMANCE_ENDPOINTS,
+} from "./lib/release-evidence.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const environmentId = "shongre-production";
@@ -154,10 +159,62 @@ function releaseEvidence(directory, release) {
       schemaVersion: 1,
       environment: "staging",
       result: "passed",
+      certifiedAt: new Date().toISOString(),
       commit: release,
+      images: {
+        frontend: {
+          reference: `ghcr.io/shongre/frontend@sha256:${"a".repeat(64)}`,
+          digest: `sha256:${"a".repeat(64)}`,
+        },
+        backend: {
+          reference: `ghcr.io/shongre/backend@sha256:${"b".repeat(64)}`,
+          digest: `sha256:${"b".repeat(64)}`,
+        },
+      },
+      openapiDigest: `sha256:${"c".repeat(64)}`,
+      migrationRevision: "00146_web_push_devices",
+      migrationDigest: `sha256:${"d".repeat(64)}`,
       checks: {
-        hostedSmoke: { unexpected: 0 },
-        performance: { result: "PASS" },
+        hostedSmoke: {
+          requiredTests: REQUIRED_HOSTED_SMOKE_TESTS,
+          expected: REQUIRED_HOSTED_SMOKE_TESTS.length,
+          skipped: 0,
+          unexpected: 0,
+          flaky: 0,
+          durationMs: 1_000,
+          reportDigest: `sha256:${"e".repeat(64)}`,
+        },
+        performance: {
+          schemaVersion: PERFORMANCE_EVIDENCE_VERSION,
+          environment: "staging",
+          release,
+          scope: "MARKET_SCOPED",
+          marketCode: "FR",
+          verifiedAt: new Date().toISOString(),
+          result: "PASS",
+          budgets: { p95Ms: 750, minimumSuccessRate: 0.99 },
+          configuration: { requestCount: 4, concurrency: 2, timeoutMs: 1_000 },
+          endpoints: REQUIRED_PERFORMANCE_ENDPOINTS.map((name) => ({
+            name,
+            requests: 4,
+            validResponses: 4,
+            successRate: 1,
+            p50Ms: 10,
+            p95Ms: 20,
+            p99Ms: 30,
+            statuses: { 200: 4 },
+          })),
+          conditionalCache: {
+            result: "PASS",
+            shared: { result: "PASS", etag: true, conditionalStatus: 304 },
+            revalidate: {
+              result: "PASS",
+              etag: true,
+              conditionalStatus: 304,
+            },
+          },
+          reportDigest: `sha256:${"f".repeat(64)}`,
+        },
       },
     }),
     OBSERVABILITY_EVIDENCE_FILE: file("observability.json", {
@@ -190,6 +247,13 @@ run({ ENABLE_SOCIAL_AUTH: "true" }, 1);
 run({ STRIPE_SECRET_KEY: "sk_test_wrong_mode" }, 1);
 run({ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_wrong_mode" }, 1);
 run({ DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64: "not-a-32-byte-key" }, 1);
+run(
+  {
+    DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64:
+      valid.PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64,
+  },
+  1,
+);
 run({ SHONGRE_FACTURATION_ORIGIN: "https://solutions.shongre.invalid" }, 1);
 run({ PUBLIC_MEDIA_IMAGE_TRANSFORM: "supabase_render" }, 0);
 run({ PUBLIC_MEDIA_IMAGE_TRANSFORM: "imgproxy" }, 1);
@@ -235,6 +299,41 @@ try {
     1,
     requireEvidence,
   );
+  const providerEvidence = readFileSync(
+    evidence.PROVIDER_SMOKE_EVIDENCE_FILE,
+    "utf8",
+  );
+  writeFileSync(
+    evidence.PROVIDER_SMOKE_EVIDENCE_FILE,
+    providerEvidence.replace("stripe_payment=PASS", "stripe_payment=PASSING"),
+  );
+  run(evidence, 1, requireEvidence);
+  releaseEvidence(evidenceDirectory, release);
+  writeFileSync(
+    evidence.STAGING_CERTIFICATION_EVIDENCE_FILE,
+    JSON.stringify({
+      schemaVersion: 1,
+      environment: "staging",
+      result: "passed",
+      commit: release,
+      checks: {
+        hostedSmoke: { unexpected: 0 },
+        performance: { result: "PASS" },
+      },
+    }),
+  );
+  run(evidence, 1, requireEvidence);
+  releaseEvidence(evidenceDirectory, release);
+  const staleCertification = JSON.parse(
+    readFileSync(evidence.STAGING_CERTIFICATION_EVIDENCE_FILE, "utf8"),
+  );
+  staleCertification.certifiedAt = "2020-01-01T00:00:00.000Z";
+  writeFileSync(
+    evidence.STAGING_CERTIFICATION_EVIDENCE_FILE,
+    JSON.stringify(staleCertification),
+  );
+  run(evidence, 1, requireEvidence);
+  releaseEvidence(evidenceDirectory, release);
   run({ ...evidence, RELEASE_SHA: "d".repeat(40) }, 1, requireEvidence);
 } finally {
   rmSync(evidenceDirectory, { recursive: true, force: true });

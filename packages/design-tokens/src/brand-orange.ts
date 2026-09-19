@@ -71,79 +71,25 @@ export function contrastRatio(first: HexColor, second: HexColor): number {
 }
 
 /**
- * Darkens `value` toward black until it clears `target` contrast against
- * `against`, returning the lightest shade that qualifies.
- *
- * Deriving this rather than hard-coding a hex keeps the readable ramp correct
- * if the canonical orange is ever re-tuned: the ratio is the contract, the hex
- * is just its current solution.
- */
-function darkenToContrast(
-  value: HexColor,
-  against: HexColor,
-  target: number,
-): HexColor {
-  for (let weight = 0; weight <= 1; weight += 0.01) {
-    const candidate = mixHex(value, "#000000", weight);
-    if (contrastRatio(candidate, against) >= target) return candidate;
-  }
-  throw new Error(
-    `No shade of ${value} reaches ${target}:1 against ${against}.`,
-  );
-}
-
-/**
- * Composites `orange` at `alpha` over white — what a subtle orange surface
- * actually paints on a light page.
- */
-function overWhite(orange: HexColor, alpha: number): HexColor {
-  return mixHex("#FFFFFF", orange, alpha);
-}
-
-/** The strongest subtle orange surface, at the alpha `surfaceStrong` uses. */
-const STRONGEST_SUBTLE_SURFACE_ALPHA = 0.2;
-
-/**
- * `canonical` is the exact logo swatch, and the alpha-derived surface, border,
- * ring and shadow roles all keep it untinted.
- *
- * `interactive`/`hover`/`active` are the one deliberate departure. The canonical
- * orange measures 2.95:1 against white, so it fails WCAG AA as a text colour on
- * light grounds *and* as a fill behind white labels — the same ratio in both
- * directions. Those three roles are therefore darkened to clear AA by
- * construction. The brand mark itself is an image asset and is unaffected, and
- * `onDark*` stays canonical because orange on a dark ground is the opposite
- * problem: there the canonical swatch already measures ~6:1 and darkening it
- * would lose contrast.
- *
- * The ground the ramp is derived against is the strongest *subtle* orange
- * surface, not white. Orange text and links sit on the page's mist, on the
- * soft and selected surfaces and inside tinted badges as often as on white,
- * and a shade that only just clears AA on white (4.53:1) measured 4.27:1 on
- * the mist ground and 4.07:1 on `surface` — nine account, messaging, CRM and
- * admin screens failed the audit on exactly that. Deriving against the
- * strongest subtle surface makes every orange-on-subtle-orange pairing pass
- * by construction, and the white-on-orange direction only gains.
+ * Every opaque orange role is the exact logo swatch. Interaction feedback uses
+ * motion, elevation, borders, or opacity rather than introducing another
+ * orange; subtle surfaces, rings, borders, shadows, and disabled states may
+ * vary only the canonical swatch's alpha.
  */
 export function deriveShongreOrangeTokens(orange: HexColor) {
   parseHex(orange);
-  const readable = darkenToContrast(
-    orange,
-    overWhite(orange, STRONGEST_SUBTLE_SURFACE_ALPHA),
-    4.5,
-  );
   return {
     canonical: orange,
-    interactive: readable,
-    hover: mixHex(readable, "#000000", 0.1),
-    active: mixHex(readable, "#000000", 0.18),
+    interactive: orange,
+    hover: orange,
+    active: orange,
     disabled: withAlpha(orange, 0.38),
     disabledBorder: withAlpha(orange, 0.54),
     light: withAlpha(orange, 0.05),
     surfaceFaint: withAlpha(orange, 0.015),
     surface: withAlpha(orange, 0.1),
     surfaceSelected: withAlpha(orange, 0.15),
-    surfaceStrong: withAlpha(orange, STRONGEST_SUBTLE_SURFACE_ALPHA),
+    surfaceStrong: withAlpha(orange, 0.2),
     border: withAlpha(orange, 0.32),
     borderSoft: withAlpha(orange, 0.18),
     borderStrong: withAlpha(orange, 0.5),

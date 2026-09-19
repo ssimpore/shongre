@@ -107,7 +107,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         <div className="lg:col-span-5 space-y-2 text-left">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-overlay text-primary-on-dark text-xs font-bold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-overlay text-text-inverse text-xs font-bold">
             <Mail className="w-icon-sm h-icon-sm" />
             <span>{t("newsletter.newsletterSignup.laSelectionShongre")}</span>
           </div>
@@ -144,7 +144,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   )}
                   autoComplete="email"
                   disabled={isSubmitting}
-                  className="w-full h-control-md min-h-control-md pl-11 pr-4 text-xs sm:text-sm bg-surface-inverse-hover border border-border-inverse-subtle text-text-inverse rounded-control placeholder:text-text-inverse-subtle focus:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark transition-colors"
+                  className="w-full h-control-md min-h-control-md pl-11 pr-4 text-xs sm:text-sm bg-surface-inverse-hover border border-border-inverse-subtle text-text-inverse rounded-control placeholder:text-text-inverse-subtle focus:border-border-on-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-on-inverse transition-colors"
                 />
               </div>
 

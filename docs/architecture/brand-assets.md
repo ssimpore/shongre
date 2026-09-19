@@ -172,10 +172,12 @@ swatch exactly, including primary, hover, active, fill, emphasis, and approved
 orange category accents. The private typed recipe accepts only that orange;
 subtle surfaces, borders, shadows, and disabled roles vary its alpha rather
 than blend new shades. Orange controls use the shared logo-white `on-primary`
-foreground for text and icons. The exact pairing is below the normal-text
-contrast threshold; accessibility checks retain that finding, without local
-foreground or orange overrides. Hover and pressed feedback comes from elevation,
-motion, borders, or other non-color cues instead of a darker orange override.
+foreground for text and icons. Accessibility checks measure the active kit's
+exact pairing without local foreground or orange overrides; that measured
+result is authoritative. Inverse surfaces use their existing readable
+foreground roles when the canonical swatch does not qualify. Hover and pressed
+feedback comes from elevation, motion, borders, or other non-color cues instead
+of a darker orange override.
 Functional status, chart, unrelated category, country-flag,
 and provider colors are not
 reclassified as brand colors. `make tokens-check` rejects independently authored
@@ -238,8 +240,18 @@ canonical file.
 
 ## Upgrade procedure
 
-1. Extract the approved release to `brand/shongre/vX.Y.Z/` after checking for
-   unsafe paths/symlinks and verifying its supplier checksums.
+1. Create the approved candidate at `brand/shongre/vX.Y.Z/`. Extract a supplied
+   release only after checking unsafe paths/symlinks and supplier checksums. For
+   a palette-only release derived from the preceding canonical kit, use:
+
+   ```bash
+   make brand-release FROM_VERSION=vA.B.C VERSION=vX.Y.Z ORANGE='#RRGGBB' RELEASE_DATE=YYYY-MM-DD
+   ```
+
+   The command re-tints antialiased artwork, regenerates derived formats,
+   documentation, and the preview board's embedded palette caption, validates
+   the complete candidate, and refuses to overwrite an existing version.
+
 2. Keep the preceding version until all consumers and rollback evidence have
    migrated; do not mutate it.
 3. Preserve the canonical file contract used by

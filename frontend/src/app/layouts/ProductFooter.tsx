@@ -18,7 +18,7 @@ interface ProductFooterProps {
 }
 
 const footerLinkClass =
-  "inline-flex min-h-8 items-center text-xs font-semibold text-text-inverse-subtle transition-colors hover:text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark";
+  "inline-flex min-h-8 items-center text-xs font-semibold text-text-inverse-subtle transition-colors hover:text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-on-inverse";
 
 export const ProductFooter: React.FC<ProductFooterProps> = ({
   productId,
@@ -38,7 +38,7 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
           <div>
             <a
               href={applicationHref(productId, productPath)}
-              className="inline-flex items-center gap-2 text-base font-bold tracking-tight text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
+              className="inline-flex items-center gap-2 text-base font-bold tracking-tight text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-on-inverse"
               aria-label={`SHONGRE. ${productName}`}
             >
               <BrandLogo variant="reverse" size="compact" />

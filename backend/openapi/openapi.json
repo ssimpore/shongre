@@ -63253,74 +63253,84 @@
         ],
         "description": "Semantic icon selected by the published taxonomy field definition. Clients render this role without guessing from field codes or labels."
       },
+      "PublicSearchTermSuggestion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "query", "label", "listingCount"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["term"]
+          },
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "The complete query to run: what was typed, with the last word completed."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "listingCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Discoverable listings in the market whose title, brand or model contains the completed word."
+          }
+        }
+      },
+      "PublicSearchCategorySuggestion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "categoryId", "categorySlug", "label"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["category"]
+          },
+          "categoryId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "categorySlug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parentLabel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "parentSlug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "iconName": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The taxonomy node's authored icon, so clients render the same glyph as category navigation."
+          }
+        }
+      },
       "PublicSearchSuggestion": {
         "oneOf": [
           {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["kind", "query", "label", "listingCount"],
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": ["term"]
-              },
-              "query": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200,
-                "description": "The complete query to run: what was typed, with the last word completed."
-              },
-              "label": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
-              },
-              "listingCount": {
-                "type": "integer",
-                "minimum": 0,
-                "description": "Discoverable listings in the market whose title, brand or model contains the completed word."
-              }
-            }
+            "$ref": "#/components/schemas/PublicSearchTermSuggestion"
           },
           {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["kind", "categoryId", "categorySlug", "label"],
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": ["category"]
-              },
-              "categoryId": {
-                "type": "string",
-                "minLength": 1
-              },
-              "categorySlug": {
-                "type": "string",
-                "minLength": 1
-              },
-              "label": {
-                "type": "string",
-                "minLength": 1
-              },
-              "parentLabel": {
-                "type": "string",
-                "minLength": 1
-              },
-              "parentSlug": {
-                "type": "string",
-                "minLength": 1
-              },
-              "iconName": {
-                "type": "string",
-                "minLength": 1,
-                "description": "The taxonomy node's authored icon, so clients render the same glyph as category navigation."
-              }
-            }
+            "$ref": "#/components/schemas/PublicSearchCategorySuggestion"
           }
         ],
         "discriminator": {
-          "propertyName": "kind"
+          "propertyName": "kind",
+          "mapping": {
+            "term": "#/components/schemas/PublicSearchTermSuggestion",
+            "category": "#/components/schemas/PublicSearchCategorySuggestion"
+          }
         }
       },
       "PublicSearchSuggestions": {

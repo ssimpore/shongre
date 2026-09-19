@@ -637,13 +637,11 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(styles.boxShadow).not.toBe("none");
   });
 
-  test("keeps solid orange controls on the readable brand ramp through interaction states", async ({
+  test("keeps the exact brand orange through solid control interaction states", async ({
     page,
   }) => {
-    // The canonical logo orange measures 2.95:1 against white, so solid
-    // controls paint the AA-readable derivation the tokens publish
-    // (`deriveShongreOrangeTokens`): `primary`, then its hover and pressed
-    // steps. Only the canonical token itself stays the logo swatch.
+    // Solid primary, hover, and pressed roles all remain the active kit's
+    // canonical swatch. Interaction feedback comes from non-colour cues.
     const toRgb = (hex: string) => {
       const value = hex.replace("#", "");
       const channels = [0, 2, 4].map((offset) =>
@@ -706,7 +704,9 @@ test.describe("design-token runtime contracts @serial", () => {
       expect(state?.primary).toBe(toRgb(semanticColors.action.primary));
       expect(state?.hover).toBe(toRgb(semanticColors.action.primaryHover));
       expect(state?.active).toBe(toRgb(semanticColors.action.primaryPressed));
-      expect(state?.primary).not.toBe(state?.brand);
+      expect(state?.primary).toBe(state?.brand);
+      expect(state?.hover).toBe(state?.brand);
+      expect(state?.active).toBe(state?.brand);
       expect(state?.text).toBe(state?.foreground);
       expect(state?.foreground).toBe(state?.logoForeground);
       expect(state?.icons.length).toBeGreaterThan(0);

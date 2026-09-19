@@ -39,6 +39,7 @@
     "tokens:check": "make tokens-check",
     "brand:sync": "node --import tsx scripts/sync-brand-assets.ts",
     "brand:check": "node --import tsx scripts/check-brand-assets.ts",
+    "brand:release": "node --import tsx scripts/brand-kit-release.ts",
     "brand:activate": "node --import tsx scripts/activate-brand.ts",
     "local-fixtures:sync": "node --import tsx scripts/sync-local-development-fixtures.ts --download",
     "local-fixtures:check": "node --import tsx scripts/sync-local-development-fixtures.ts --check",

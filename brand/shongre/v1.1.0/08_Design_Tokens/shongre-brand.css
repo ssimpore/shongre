@@ -1,0 +1,26 @@
+:root {
+  --shongre-orange: #a54200;
+  --shongre-ink: #172033;
+  --shongre-white: #ffffff;
+  --shongre-mist: #f7f8fa;
+  --shongre-border: #d8dde5;
+  --shongre-muted: #5b6474;
+
+  --shongre-font-display: "Manrope", "Inter", Arial, sans-serif;
+  --shongre-font-ui: "Inter", Arial, sans-serif;
+  --shongre-wordmark-tracking: 0.08em;
+
+  --shongre-logo-min-width: 120px;
+  --shongre-icon-min-size: 24px;
+}
+
+.shongre-brand-surface {
+  color: var(--shongre-ink);
+  background-color: var(--shongre-white);
+  font-family: var(--shongre-font-ui);
+}
+
+.shongre-brand-accent {
+  color: var(--shongre-orange);
+}
+

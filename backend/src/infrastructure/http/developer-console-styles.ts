@@ -20,10 +20,11 @@ export function developerConsoleStyles(): string {
   --ink-soft: ${colors.text.inverseMuted};
   --ink-muted: ${colors.text.inverseSubtle};
   --ink-faint: color-mix(in srgb, ${colors.text.inverseSubtle} 84%, var(--page));
-  --accent: ${colors.action.primaryOnDark};
+  --accent: ${colors.text.inverseBright};
+  --accent-fill: ${colors.action.primary};
   --accent-tint: ${colors.action.primaryOverlay};
-  --accent-line: ${colors.action.primaryOnDarkBorder};
-  --on-accent: ${colors.text.deep};
+  --accent-line: ${colors.border.onInverse};
+  --on-accent: ${colors.action.onPrimary};
   --ok: ${colors.status.successOnInverseStrong};
   --info: ${colors.status.infoOnInverse};
   --staff: ${colors.accent.staffOnInverse};
@@ -76,7 +77,7 @@ svg.icon-lg { width: 1.125rem; height: 1.125rem; flex: none; }
 }
 .skip-link {
   position: absolute; left: 0.75rem; top: -3rem; z-index: 60;
-  background: var(--accent); color: var(--on-accent);
+  background: var(--accent-fill); color: var(--on-accent);
   padding: 0.5rem 0.875rem; border-radius: var(--r-md); font-weight: 700;
   transition: top var(--speed) var(--ease);
 }
@@ -253,11 +254,11 @@ svg.icon-lg { width: 1.125rem; height: 1.125rem; flex: none; }
 .btn:hover:not(:disabled) { background: var(--panel-hover); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn-primary {
-  background: var(--accent); border-color: var(--accent); color: var(--on-accent);
+  background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent);
 }
 .btn-primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 86%, var(--ink));
-  border-color: color-mix(in srgb, var(--accent) 86%, var(--ink));
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
 }
 .btn-sm { height: 2rem; padding: 0 0.75rem; font-size: 0.8125rem; }
 
@@ -468,7 +469,7 @@ a.card:hover, .card:has(a:hover) { background: var(--panel-hover); border-color:
   font-size: 0.75rem; font-weight: 700;
 }
 .segmented button:hover { color: var(--ink); }
-.segmented button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.segmented button[aria-pressed="true"] { background: var(--accent-fill); color: var(--on-accent); }
 .table-wrap {
   border: 1px solid var(--line); border-radius: var(--r-xl);
   background: var(--panel); overflow-x: auto;

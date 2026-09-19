@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { loadEnvFiles } from "./lib/env-file.mjs";
+import { validateStagingCertificationEvidence } from "./lib/release-evidence.mjs";
 
 function argumentValue(name) {
   const index = process.argv.indexOf(name);
@@ -97,8 +98,14 @@ function evidenceFile(name, maxAgeDays, requiredMarkers) {
     `${name} is older than the allowed ${maxAgeDays} days`,
   );
   const content = fs.readFileSync(resolved, "utf8");
+  const lines = new Set(
+    content
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean),
+  );
   for (const marker of requiredMarkers) {
-    check(content.includes(marker), `${name} is missing ${marker}`);
+    check(lines.has(marker), `${name} is missing exact line ${marker}`);
   }
 }
 
@@ -272,6 +279,12 @@ exactBase64Bytes(
   digitalFulfillmentKey,
   32,
 );
+check(
+  !Buffer.from(providerCredentialKey, "base64").equals(
+    Buffer.from(digitalFulfillmentKey, "base64"),
+  ),
+  "Provider credential and digital fulfillment encryption keys must be independent",
+);
 required("DIGITAL_FULFILLMENT_KEY_VERSION");
 required("AUTH_EMAIL_DELIVERY_TOKEN", 24);
 required("COMPLIANCE_WEBHOOK_SECRET", 32);
@@ -353,16 +366,14 @@ if (requireEvidence) {
     "unexpected=0",
   ]);
   jsonEvidenceFile("STAGING_CERTIFICATION_EVIDENCE_FILE", 14, (evidence) => {
+    validateStagingCertificationEvidence(evidence, releaseSha);
+    const certifiedAgeMs = Date.now() - Date.parse(evidence.certifiedAt);
     if (
-      evidence.schemaVersion !== 1 ||
-      evidence.environment !== "staging" ||
-      evidence.result !== "passed" ||
-      evidence.commit !== releaseSha ||
-      evidence.checks?.hostedSmoke?.unexpected !== 0 ||
-      evidence.checks?.performance?.result !== "PASS"
+      certifiedAgeMs < -5 * 60 * 1_000 ||
+      certifiedAgeMs > 14 * 24 * 60 * 60 * 1_000
     ) {
       throw new Error(
-        "certificate must bind successful hosted and performance checks to RELEASE_SHA",
+        "certificate certifiedAt must be current within the allowed 14 days",
       );
     }
   });

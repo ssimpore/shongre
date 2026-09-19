@@ -12985,27 +12985,35 @@ export interface components {
             /** @description MapLibre style document URL. */
             readonly styleUrl: string;
         };
-        readonly PublicSearchSuggestion: {
-            /** @enum {string} */
+        readonly PublicSearchCategorySuggestion: {
+            readonly categoryId: string;
+            readonly categorySlug: string;
+            /** @description The taxonomy node's authored icon, so clients render the same glyph as category navigation. */
+            readonly iconName?: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            readonly kind: "category";
+            readonly label: string;
+            readonly parentLabel?: string;
+            readonly parentSlug?: string;
+        };
+        readonly PublicSearchSuggestion: components["schemas"]["PublicSearchTermSuggestion"] | components["schemas"]["PublicSearchCategorySuggestion"];
+        readonly PublicSearchSuggestions: {
+            readonly items: readonly components["schemas"]["PublicSearchSuggestion"][];
+        };
+        readonly PublicSearchTermSuggestion: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
             readonly kind: "term";
             readonly label: string;
             /** @description Discoverable listings in the market whose title, brand or model contains the completed word. */
             readonly listingCount: number;
             /** @description The complete query to run: what was typed, with the last word completed. */
             readonly query: string;
-        } | {
-            readonly categoryId: string;
-            readonly categorySlug: string;
-            /** @description The taxonomy node's authored icon, so clients render the same glyph as category navigation. */
-            readonly iconName?: string;
-            /** @enum {string} */
-            readonly kind: "category";
-            readonly label: string;
-            readonly parentLabel?: string;
-            readonly parentSlug?: string;
-        };
-        readonly PublicSearchSuggestions: {
-            readonly items: readonly components["schemas"]["PublicSearchSuggestion"][];
         };
         /** @description Public seller facts safe for marketplace discovery. Authentication, contact and Staff fields are excluded. */
         readonly PublicSellerProfile: {

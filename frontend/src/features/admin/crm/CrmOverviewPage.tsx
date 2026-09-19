@@ -204,7 +204,7 @@ export const CrmOverviewPage: React.FC = () => {
         <div className="flex flex-col gap-5 p-5 sm:p-6 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wide text-text-disabled">
-              <span className="text-primary-on-dark">CRM commercial</span>
+              <span className="text-text-inverse-faint">CRM commercial</span>
               <span aria-hidden="true">/</span>
               <span>
                 {getCountryConfig(dashboard.marketCode)?.name ??

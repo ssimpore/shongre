@@ -343,7 +343,7 @@ export function FacturationProductPage() {
                 className="flex items-center gap-3 sm:justify-center sm:px-4"
               >
                 <ShieldCheck
-                  className="h-6 w-6 shrink-0 text-primary-on-dark"
+                  className="h-6 w-6 shrink-0 text-text-inverse-faint"
                   aria-hidden="true"
                 />
                 <span className="text-xs font-semibold leading-relaxed text-text-inverse-faint">

@@ -12,7 +12,7 @@ endif
 	frontend frontend-start frontend-build frontend-lint frontend-api-only-check frontend-typecheck frontend-test frontend-test-e2e test-web-api-transport frontend-check frontend-clean frontend-logs seo-check seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
-	brand-sync brand-check brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
+	brand-sync brand-check brand-release brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-api-only-check mobile-dead-code mobile-check \
 	infra-check supabase-up supabase-down supabase-status supabase-health supabase-logs supabase-config \
 	db-migrate db-diff migrations-check db-seed geo-backfill geo-rate-limit-test monetization-draft-import taxonomy-db-dry-run taxonomy-db-import taxonomy-db-test discovery-db-test taxonomy-migration-check db-reset db-types db-types-check db-shell supabase-link supabase-pull supabase-push \
@@ -319,9 +319,16 @@ brand-sync: ## Synchronize approved runtime assets from the canonical SHONGRE. k
 	@npm run brand:sync
 
 brand-check: ## Validate the canonical kit, runtime mappings, and public boundary
+	@node --import tsx --test scripts/brand-kit-retint.test.ts
 	@npm run brand:check
 	@node scripts/check-brand-version-references.mjs
 	@node --import tsx scripts/verify-brand-version-propagation.ts
+
+brand-release: ## Derive a new immutable candidate kit (FROM_VERSION, VERSION, ORANGE; optional RELEASE_DATE)
+	@test -n "$(FROM_VERSION)" || { echo "FROM_VERSION is required" >&2; exit 2; }
+	@test -n "$(VERSION)" || { echo "VERSION is required" >&2; exit 2; }
+	@test -n "$(ORANGE)" || { echo "ORANGE is required" >&2; exit 2; }
+	@npm run brand:release -- --from "$(FROM_VERSION)" --to "$(VERSION)" --orange "$(ORANGE)" $(if $(RELEASE_DATE),--date "$(RELEASE_DATE)",)
 
 brand-activate: ## Activate VERSION transactionally (usage: make brand-activate VERSION=vX.Y.Z)
 	@test -n "$(VERSION)" || { echo "VERSION is required" >&2; exit 2; }

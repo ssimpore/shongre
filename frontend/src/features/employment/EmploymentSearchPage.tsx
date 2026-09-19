@@ -648,7 +648,7 @@ export const EmploymentSearchPage: React.FC = () => {
       <section className="border-b border-border-base bg-surface-inverse text-text-inverse">
         <Container className="py-5 sm:py-8">
           <div className="max-w-3xl">
-            <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary-on-dark">
+            <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-text-inverse-faint">
               <BriefcaseBusiness
                 className="h-icon-sm w-icon-sm"
                 aria-hidden="true"

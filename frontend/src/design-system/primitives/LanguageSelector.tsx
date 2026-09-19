@@ -264,7 +264,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             className={`w-icon-sm h-icon-sm transition-transform ${
               variant === "footer"
                 ? isOpen
-                  ? "rotate-180 text-primary-on-dark"
+                  ? "rotate-180 text-text-inverse"
                   : // Deliberately a light neutral on the footer's dark panel, not
                     // the theme-following "disabled" role — it must not invert.
                     "text-text-inverse-subtle"

@@ -172,8 +172,9 @@ scripts/ + Makefile    repository-level tooling
   and disabled roles; never blend another orange or override it locally.
   Filled orange controls use `on-primary` / `colors.action.onPrimary` for the
   official logo-white text and icons, with no component foreground overrides.
-  Keep contrast failures visible for this exact brand pairing; never silence
-  the accessibility checks or introduce local color corrections.
+  Test the exact brand pairing without silencing failures or introducing local
+  color corrections. When canonical orange is not readable on an inverse
+  surface, use the existing inverse foreground role instead of recoloring it.
   Inverse and danger controls retain their own foregrounds.
   Small labels on subtle orange surfaces use the shared main text foreground.
   Inverse surfaces, borders, and text derive from the official
@@ -1342,8 +1343,11 @@ France-only happy path is insufficient for market-sensitive work.
   is running. CI runs it in the migrations job after `make db-seed`. Hosted
   staging certification requires all public and authenticated journeys for
   the exact release, dedicated staging accounts, sandbox providers and real
-  Staff MFA; missing fixtures, skipped tests and flaky retries cannot certify
-  a release.
+  Staff MFA; it must be no more than 14 days old and bind the exact immutable
+  frontend/backend image digests, OpenAPI digest, migration revision and
+  migration digest to complete hosted-smoke and performance report digests.
+  Missing fixtures, skipped tests, flaky retries or incomplete evidence cannot
+  certify a release.
   The root runner may keep Chromium parallel, but Firefox and WebKit must remain
   single-worker and process-recycled through bounded shards until a full
   sustained matrix proves their browser contexts no longer deadlock during

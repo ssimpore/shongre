@@ -109,6 +109,16 @@ async function validateCanonicalOrangeArtwork(
     .filter(isCanonicalOrangeArtwork)
     .sort();
   let validated = 0;
+  // The family of oranges a pixel must belong to before it is compared with
+  // the canonical: scaled from the canonical itself, so a darker or lighter
+  // release is judged by its own colour rather than by the previous one's.
+  const [targetRed, targetGreen] = target;
+  const isOrangeFamily = (red: number, green: number, blue: number) =>
+    red >= targetRed * 0.7 &&
+    green >= targetGreen * 0.3 &&
+    green <= Math.min(255, targetGreen * 1.8) &&
+    blue <= 100 &&
+    red > green * 1.4;
   for (const source of sources) {
     const isLossy = /\.(?:jpe?g|webp)$/i.test(source);
     const tolerance = isLossy || source.endsWith("favicon-16x16.png") ? 1 : 0;
@@ -124,14 +134,7 @@ async function validateCanonicalOrangeArtwork(
       const green = data[offset + 1];
       const blue = data[offset + 2];
       const alpha = data[offset + 3];
-      if (
-        alpha < 250 ||
-        red < 180 ||
-        green < 30 ||
-        green > 180 ||
-        blue > 100 ||
-        red <= green * 1.4
-      ) {
+      if (alpha < 250 || !isOrangeFamily(red, green, blue)) {
         continue;
       }
       const key = `${red},${green},${blue}`;
