@@ -14,7 +14,6 @@ import { useToast } from "../../app/providers/ToastProvider";
 import {
   Button,
   Container,
-  Drawer,
   DropdownMenu,
   FilterChip,
   FilterPanel,
@@ -24,6 +23,7 @@ import {
   SearchActiveFiltersBar,
   SearchMapResultsLayout,
   SearchResultsToolbar,
+  SearchFilterDrawer,
   SearchSortControl,
   Skeleton,
   StatePanel,
@@ -32,10 +32,7 @@ import {
   countActiveSearchParams,
   useSearchFilterDisclosure,
 } from "../../design-system";
-import type {
-  FilterPanelPresentation,
-  LocationSelectorValue,
-} from "../../design-system";
+import type { LocationSelectorValue } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { AutoVehicleCard } from "./components/AutoVehicleCard";
 import { formatAutoMoney, autoOptions } from "./auto-format";
@@ -66,7 +63,7 @@ interface FiltersProps {
   locationSelectorId: string;
   onReset: () => void;
   onApply?: () => void;
-  presentation?: FilterPanelPresentation;
+  activeSectionId?: string;
 }
 
 const AUTO_FILTER_KEYS = [
@@ -105,7 +102,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
   locationSelectorId,
   onReset,
   onApply,
-  presentation = "surface",
+  activeSectionId,
 }) => {
   const { currentLocale } = useMarketLocation();
   const currencySymbol = formatCurrencySymbol(
@@ -125,8 +122,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
   return (
     <FilterPanel
       id={panelId}
-      title="Filtres"
-      presentation={presentation}
+      activeSectionId={activeSectionId}
       onReset={onReset}
       footer={
         onApply ? (
@@ -136,7 +132,10 @@ const AutoFilters: React.FC<FiltersProps> = ({
         ) : undefined
       }
     >
-      <div className="text-xs font-bold text-text-main">
+      <div
+        data-filter-section="auto-type"
+        className="text-xs font-bold text-text-main"
+      >
         <span className="block">Type de véhicule</span>
         <DropdownMenu
           className="mt-2"
@@ -223,7 +222,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
           />
         </div>
       </fieldset>
-      <fieldset>
+      <fieldset data-filter-section="auto-location">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Localisation
         </legend>
@@ -236,7 +235,10 @@ const AutoFilters: React.FC<FiltersProps> = ({
           onChange={updateLocation}
         />
       </fieldset>
-      <div className="text-xs font-bold text-text-main">
+      <div
+        data-filter-section="auto-make"
+        className="text-xs font-bold text-text-main"
+      >
         <span className="block">Marque</span>
         <DropdownMenu
           className="mt-2"
@@ -279,7 +281,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
           ]}
         />
       </div>
-      <fieldset>
+      <fieldset data-filter-section="auto-price">
         <legend className="mb-2 text-xs font-bold text-text-main">Prix</legend>
         <div className="grid grid-cols-2 gap-2">
           <input
@@ -347,7 +349,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
           ]}
         />
       </div>
-      <fieldset>
+      <fieldset data-filter-section="auto-energy">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Énergie
         </legend>
@@ -438,11 +440,10 @@ export const AutoSearchPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const {
-    desktopFiltersExpanded: showDesktopFilters,
-    mobileFiltersExpanded: filterOpen,
-    toggleDesktopFilters,
-    openMobileFilters,
-    closeMobileFilters,
+    filtersExpanded: filterOpen,
+    activeFilterSection,
+    openFilters,
+    closeFilters,
   } = useSearchFilterDisclosure();
   const requestedView = params.get("view");
   const viewMode =
@@ -784,44 +785,9 @@ export const AutoSearchPage: React.FC = () => {
 
       <div
         className={`grid min-w-0 gap-6 ${
-          showDesktopFilters ? "lg:grid-cols-sidebar" : "lg:grid-cols-1"
-        } ${
-          compared.length
-            ? showDesktopFilters
-              ? "xl:grid-cols-search-compare-auto"
-              : "xl:grid-cols-content-aside-xs"
-            : ""
+          compared.length ? "xl:grid-cols-content-aside-xs" : "lg:grid-cols-1"
         }`}
       >
-        {showDesktopFilters && (
-          <aside
-            className="hidden self-start lg:sticky lg:top-24 lg:block"
-            aria-label="Filtres Auto"
-          >
-            {catalog ? (
-              <AutoFilters
-                panelId="auto-filter-panel-desktop"
-                catalog={catalog}
-                params={params}
-                update={update}
-                updateLocation={updateLocation}
-                locationSelectorId="auto-location-selector-desktop"
-                onReset={resetFilters}
-              />
-            ) : (
-              <div
-                role="status"
-                aria-label="Chargement des filtres Auto"
-                className="space-y-4 rounded-card border border-border-base bg-bg-surface p-4"
-              >
-                <Skeleton className="h-5 w-2/3" />
-                {Array.from({ length: 6 }, (_, index) => (
-                  <Skeleton key={index} shape="control" className="w-full" />
-                ))}
-              </div>
-            )}
-          </aside>
-        )}
         <div className="min-w-0">
           <SearchResultsToolbar
             resultLabel={
@@ -829,13 +795,39 @@ export const AutoSearchPage: React.FC = () => {
                 ? "Recherche…"
                 : `${new Intl.NumberFormat(currentLocale).format(total)} véhicule${total > 1 ? "s" : ""}`
             }
-            desktopFilterPanelId="auto-filter-panel-desktop"
-            mobileFilterPanelId="auto-filter-panel-mobile"
-            desktopFiltersExpanded={showDesktopFilters}
-            mobileFiltersExpanded={filterOpen}
+            filterPanelId="auto-filter-panel"
+            filtersExpanded={filterOpen}
+            filterTriggers={[
+              {
+                sectionId: "auto-type",
+                label: t("ui.filterPanel.quick.vehicleType"),
+                active: Boolean(params.get("type")),
+              },
+              {
+                sectionId: "auto-location",
+                label: t("ui.filterPanel.quick.location"),
+                active: Boolean(params.get("city")),
+              },
+              {
+                sectionId: "auto-make",
+                label: t("ui.filterPanel.quick.makeModel"),
+                active: Boolean(params.get("make") || params.get("model")),
+              },
+              {
+                sectionId: "auto-energy",
+                label: t("ui.filterPanel.quick.energy"),
+                active: Boolean(params.get("fuel")),
+              },
+              {
+                sectionId: "auto-price",
+                label: t("ui.filterPanel.quick.price"),
+                active: Boolean(
+                  params.get("minPrice") || params.get("maxPrice"),
+                ),
+              },
+            ]}
             activeFilterCount={activeFilterCount}
-            onToggleDesktopFilters={toggleDesktopFilters}
-            onOpenMobileFilters={openMobileFilters}
+            onOpenFilters={openFilters}
             actions={
               <Button
                 data-marketplace-action="saved-search.create"
@@ -1098,23 +1090,23 @@ export const AutoSearchPage: React.FC = () => {
       </div>
 
       {catalog && (
-        <Drawer
+        <SearchFilterDrawer
           isOpen={filterOpen}
-          onClose={closeMobileFilters}
+          onClose={closeFilters}
           title="Filtrer les véhicules"
         >
           <AutoFilters
-            panelId="auto-filter-panel-mobile"
+            panelId="auto-filter-panel"
             catalog={catalog}
             params={params}
             update={update}
             updateLocation={updateLocation}
-            locationSelectorId="auto-location-selector-mobile"
+            locationSelectorId="auto-location-selector"
             onReset={resetFilters}
-            onApply={closeMobileFilters}
-            presentation="drawer"
+            onApply={closeFilters}
+            activeSectionId={activeFilterSection}
           />
-        </Drawer>
+        </SearchFilterDrawer>
       )}
       {compared.length > 0 && (
         <div className="fixed inset-x-3 bottom-mobile-nav-clearance-gutter z-sticky rounded-card border border-border-base bg-bg-surface p-3 shadow-overlay xl:hidden md:bottom-4 md:left-auto md:right-4 md:w-80">

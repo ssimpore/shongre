@@ -48,7 +48,6 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
           size={size}
         >
           <LayoutGrid className={iconClassName} />
-          <span className="hidden sm:inline">Grille</span>
         </ViewModeButton>
       ) : null}
 
@@ -60,7 +59,6 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
           size={size}
         >
           <List className={iconClassName} />
-          <span className="hidden sm:inline">Liste</span>
         </ViewModeButton>
       ) : null}
 
@@ -72,7 +70,6 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
           size={size}
         >
           <MapIcon className={iconClassName} />
-          <span className="hidden sm:inline">Carte</span>
         </ViewModeButton>
       ) : null}
     </div>
@@ -97,6 +94,7 @@ const ViewModeButton: React.FC<ViewModeButtonProps> = ({
   <button
     type="button"
     aria-label={label}
+    title={label}
     aria-pressed={active}
     onClick={onClick}
     className={cn(

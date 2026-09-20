@@ -6,9 +6,10 @@ const searchSurfaces = [
   {
     name: "marketplace",
     path: "/recherche?category=materiel-professionnel",
-    panelId: "search-filter-panel-desktop",
+    panelId: "search-filter-panel",
     adaptiveField: "Catégories",
-    locationId: "search-filter-location-desktop",
+    sectionId: "search-category",
+    locationId: "search-filter-location",
     removedControlIds: [
       "search-results-page-category-button",
       "search-results-page-query-input",
@@ -19,9 +20,10 @@ const searchSurfaces = [
   {
     name: "auto",
     path: "/auto",
-    panelId: "auto-filter-panel-desktop",
+    panelId: "auto-filter-panel",
     adaptiveField: "Type de véhicule",
-    locationId: "auto-location-selector-desktop",
+    sectionId: "auto-type",
+    locationId: "auto-location-selector",
     removedControlIds: [
       "auto-search-page-query-input",
       "auto-search-page-submit-button",
@@ -30,9 +32,10 @@ const searchSurfaces = [
   {
     name: "immo",
     path: "/immo",
-    panelId: "immo-filter-panel-desktop",
+    panelId: "immo-filter-panel",
     adaptiveField: "Projet",
-    locationId: "immo-location-selector-desktop",
+    sectionId: "immo-project",
+    locationId: "immo-location-selector",
     removedControlIds: [
       "immo-search-page-query-input",
       "immo-search-page-submit-button",
@@ -41,9 +44,10 @@ const searchSurfaces = [
   {
     name: "emploi",
     path: "/emploi",
-    panelId: "employment-filter-panel-desktop",
+    panelId: "employment-filter-panel",
     adaptiveField: "Métier",
-    locationId: "employment-location-selector-desktop",
+    sectionId: "employment-profession",
+    locationId: "employment-location-selector",
     removedControlIds: [
       "employment-search-page-query-input",
       "employment-search-page-submit-button",
@@ -52,9 +56,10 @@ const searchSurfaces = [
   {
     name: "education",
     path: "/education",
-    panelId: "education-filter-panel-desktop",
+    panelId: "education-filter-panel",
     adaptiveField: "Matière",
-    locationId: "education-location-selector-desktop",
+    sectionId: "education-subject",
+    locationId: "education-location-selector",
     removedControlIds: [
       "education-search-page-query-input",
       "education-search-page-submit-button",
@@ -88,16 +93,27 @@ test.describe("shared search filter panels", () => {
 
       const panel = page.locator(`#${surface.panelId}`);
       await expect(panel).toBeHidden();
-      await page.getByRole("button", { name: "Afficher les filtres" }).click();
+      await page
+        .locator("[data-search-filter-rail]")
+        .getByRole("button", { name: surface.adaptiveField, exact: true })
+        .click();
       await expect(panel).toBeVisible();
-      await expect(panel).toHaveClass(/rounded-listing-card/);
-      await expect(panel).toContainText(surface.adaptiveField);
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(panel).toHaveAttribute("data-filter-panel", "drawer");
+      await expect(
+        panel.locator(`[data-filter-section="${surface.sectionId}"]`),
+      ).toBeVisible();
       await expect(page.locator(`#${surface.locationId}`)).toBeVisible();
-
-      await page.getByRole("button", { name: "Masquer les filtres" }).click();
+      await expect
+        .poll(() =>
+          page.getByRole("dialog").evaluate((dialog) => {
+            const rect = dialog.getBoundingClientRect();
+            return Math.round(rect.right - window.innerWidth);
+          }),
+        )
+        .toBe(0);
+      await page.getByRole("button", { name: "Fermer" }).click();
       await expect(panel).toBeHidden();
-      await page.getByRole("button", { name: "Afficher les filtres" }).click();
-      await expect(page.locator(`#${surface.panelId}`)).toBeVisible();
 
       await page.getByRole("button", { name: "Affichage carte" }).click();
       await expect(

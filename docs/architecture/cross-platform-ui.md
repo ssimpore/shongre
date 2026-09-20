@@ -143,6 +143,12 @@ place navigation beside their heading and retain touch scrolling on phones.
 Web result grids use the shared `ListingGrid`; token-sized card tracks pack from
 the inline start with the shared gap instead of centering or distributing sparse
 results across the available row.
+Web marketplace result controls use one adaptive filter architecture:
+`SearchResultsToolbar` owns the category-aware desktop quick-filter rail,
+while `FilterPanel` supplies one responsive right-side drawer across desktop,
+tablet, and mobile. A quick-filter opens that same drawer at its relevant
+domain section, so routes never duplicate filter forms between breakpoints and
+keep their existing URL-backed search state and service contracts.
 Horizontal cards retain their larger type and richer decision information.
 Online-payment capabilities use the shared `payment` semantic icon, mapped to
 the credit-card glyph on Web and native. The existing localized payment label

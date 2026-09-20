@@ -32,9 +32,8 @@ test.describe("Shongre Education", () => {
       cards.first().locator('[data-listing-card="true"]'),
     ).toBeVisible();
 
-    // Desktop filters live behind the shared disclosure, closed by default.
-    await page.getByRole("button", { name: "Afficher les filtres" }).click();
-    const filters = page.locator("#education-filter-panel-desktop");
+    await page.getByRole("button", { name: "Matière", exact: true }).click();
+    const filters = page.locator("#education-filter-panel");
     await expect(filters).toBeVisible();
     await filters.getByRole("button", { name: "Matière", exact: true }).click();
     await page
@@ -44,7 +43,7 @@ test.describe("Shongre Education", () => {
     await expect(cards.first()).toContainText(/mathématiques/i);
 
     const locationSelector = page.locator(
-      "#education-location-selector-desktop",
+      "#education-location-selector",
     );
     await expect(locationSelector).toHaveAttribute(
       "data-location-selector",
@@ -65,6 +64,7 @@ test.describe("Shongre Education", () => {
       "aria-label",
       "Localisation : Lyon (+20 km)",
     );
+    await filters.getByRole("button", { name: "Voir les résultats" }).click();
 
     const compare = cards.first().getByRole("checkbox", { name: "Comparer" });
     await compare.check();
@@ -152,14 +152,16 @@ test.describe("Shongre Education", () => {
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(390);
-    await page.getByRole("button", { name: "Filtres" }).click();
+    await page
+      .getByRole("button", { name: /Ouvrir les filtres de recherche/ })
+      .click();
     const dialog = page.getByRole("dialog", {
       name: "Filtrer les professeurs",
     });
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText("Matière", { exact: true })).toBeVisible();
     await expect(
-      dialog.locator("#education-location-selector-mobile"),
+      dialog.locator("#education-location-selector"),
     ).toHaveAttribute("data-location-selector", "true");
   });
 

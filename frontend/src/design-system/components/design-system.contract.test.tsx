@@ -3,11 +3,16 @@ import { describe, expect, it } from "vitest";
 import { VerificationBadge } from "@shongre/ui/web";
 import { Button } from "../primitives/Button";
 import { Input, Switch } from "../primitives/FormField";
-import { FilterPanel, FilterPanelToggle } from "../primitives/FilterPanel";
+import {
+  FilterPanel,
+  FilterPanelToggle,
+  SearchFilterDrawer,
+} from "../primitives/FilterPanel";
 import {
   SearchActiveFiltersBar,
   SearchResultsToolbar,
   SearchSortControl,
+  countFittingSearchFilterTriggers,
   countActiveSearchParams,
   useSearchFilterDisclosure,
 } from "../primitives/SearchPageControls";
@@ -21,12 +26,9 @@ function DefaultSearchFilterDisclosureToolbar() {
   return (
     <SearchResultsToolbar
       resultLabel="12 annonces"
-      desktopFilterPanelId="desktop-filters"
-      mobileFilterPanelId="mobile-filters"
-      desktopFiltersExpanded={disclosure.desktopFiltersExpanded}
-      mobileFiltersExpanded={disclosure.mobileFiltersExpanded}
-      onToggleDesktopFilters={disclosure.toggleDesktopFilters}
-      onOpenMobileFilters={disclosure.openMobileFilters}
+      filterPanelId="search-filters"
+      filtersExpanded={disclosure.filtersExpanded}
+      onOpenFilters={disclosure.openFilters}
     />
   );
 }
@@ -95,33 +97,25 @@ describe("design-system representative states", () => {
     expect(html).not.toContain("h-control-lg");
   });
 
-  it("renders the canonical filter shell for sidebars and drawers", () => {
-    const sidebar = renderToStaticMarkup(
-      <FilterPanel title="Filtres Auto" onReset={() => undefined}>
-        <label>
-          Marque
-          <select aria-label="Marque" />
-        </label>
-      </FilterPanel>,
-    );
+  it("renders the canonical right-side search filter drawer", () => {
     const drawer = renderToStaticMarkup(
-      <FilterPanel
-        presentation="drawer"
-        onReset={() => undefined}
-        footer={<button type="button">Voir les résultats</button>}
-      >
-        <span>Filtres adaptés</span>
-      </FilterPanel>,
+      <SearchFilterDrawer isOpen onClose={() => undefined} title="Filtres Auto">
+        <FilterPanel
+          onReset={() => undefined}
+          footer={<button type="button">Voir les résultats</button>}
+        >
+          <fieldset data-filter-section="make">
+            <legend>Marque</legend>
+          </fieldset>
+        </FilterPanel>
+      </SearchFilterDrawer>,
     );
 
-    expect(sidebar).toContain('data-filter-panel="surface"');
-    expect(sidebar).toContain("rounded-listing-card");
-    expect(sidebar).toContain("divide-y");
-    expect(sidebar).toContain("divide-border-subtle");
-    expect(sidebar).toContain("w-full");
-    expect(sidebar).toContain("Filtres Auto");
-    expect(sidebar).toContain("Réinitialiser");
     expect(drawer).toContain('data-filter-panel="drawer"');
+    expect(drawer).toContain('data-filter-section="make"');
+    expect(drawer).toContain("slide-in-from-right");
+    expect(drawer).toContain("Filtres Auto");
+    expect(drawer).toContain("Réinitialiser");
     expect(drawer).toContain("Voir les résultats");
   });
 
@@ -168,13 +162,13 @@ describe("design-system representative states", () => {
           title="Toutes les annonces"
           resultLabel="12 annonces"
           resultDescription="Découvrez les annonces disponibles."
-          desktopFilterPanelId="desktop-filters"
-          mobileFilterPanelId="mobile-filters"
-          desktopFiltersExpanded
-          mobileFiltersExpanded={false}
+          filterPanelId="search-filters"
+          filtersExpanded
+          filterTriggers={[
+            { sectionId: "category", label: "Catégories", active: true },
+          ]}
           activeFilterCount={2}
-          onToggleDesktopFilters={() => undefined}
-          onOpenMobileFilters={() => undefined}
+          onOpenFilters={() => undefined}
           actions={<button type="button">Sauvegarder</button>}
           viewControls={<button type="button">Grille</button>}
           sortControl={
@@ -191,12 +185,27 @@ describe("design-system representative states", () => {
     expect(html).toContain("Toutes les annonces</h1>");
     expect(html).toContain("Découvrez les annonces disponibles.");
     expect(html).toContain('role="status"');
-    expect(html).toContain('aria-controls="desktop-filters"');
-    expect(html).toContain('aria-controls="mobile-filters"');
+    expect(html).toContain('aria-controls="search-filters"');
+    expect(html).toContain("data-search-filter-rail");
+    expect(html).toContain('data-filter-trigger="category"');
+    expect(html).toContain("Tous les filtres");
+    expect(html).toContain('data-search-filter-overflow-count="0"');
     expect(html).toContain("Sauvegarder");
     expect(html).toContain("Plus récentes");
-    expect(html).toContain("overflow-x-auto");
+    expect(html).toContain(
+      'data-search-filter-overflow-count="0" class="hidden min-w-0 flex-1 items-center gap-2 overflow-hidden',
+    );
     expect(html).toContain("order-4");
+  });
+
+  it("keeps only complete quick filters beside the all-filters action", () => {
+    expect(countFittingSearchFilterTriggers(460, [120, 90, 140], 110, 8)).toBe(
+      2,
+    );
+    expect(countFittingSearchFilterTriggers(500, [120, 90, 140], 110, 8)).toBe(
+      3,
+    );
+    expect(countFittingSearchFilterTriggers(100, [120], 110, 8)).toBe(0);
   });
 
   it("keeps shared search filters closed by default", () => {

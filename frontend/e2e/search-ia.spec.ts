@@ -37,23 +37,23 @@ test.describe('search page information architecture', () => {
       );
 
       if (width >= 1024) {
-        await expect(page.locator('#search-filter-panel-desktop')).toBeHidden();
+        await expect(page.locator('#search-filter-panel')).toBeHidden();
         await page
-          .getByRole('button', { name: 'Afficher les filtres' })
+          .getByRole('button', { name: 'Catégories', exact: true })
           .click();
-        await expect(page.locator('#search-filter-panel-desktop')).toBeVisible();
-        await expect(page.locator('#desktop-category-select')).toBeVisible();
+        await expect(page.locator('#search-filter-panel')).toBeVisible();
+        await expect(page.locator('#search-filter-category')).toBeVisible();
         await expect(
-          page.locator('#search-filter-location-desktop'),
+          page.locator('#search-filter-location'),
         ).toBeVisible();
       } else {
         await page
           .getByRole('button', { name: 'Ouvrir les filtres de recherche' })
           .click();
-        await expect(page.locator('#search-filter-panel-mobile')).toBeVisible();
-        await expect(page.locator('#mobile-category-select')).toBeVisible();
+        await expect(page.locator('#search-filter-panel')).toBeVisible();
+        await expect(page.locator('#search-filter-category')).toBeVisible();
         await expect(
-          page.locator('#search-filter-location-mobile'),
+          page.locator('#search-filter-location'),
         ).toBeVisible();
       }
     });

@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { usePersona } from "./personas";
 import { waitForStableLayout } from "./overflow";
 
-test("desktop filters are closed by default and remain togglable", async ({
+test("desktop quick filters open the shared right drawer", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -10,28 +10,19 @@ test("desktop filters are closed by default and remain togglable", async ({
   await page.goto("/recherche", { waitUntil: "domcontentloaded" });
   await waitForStableLayout(page);
 
-  const filterPanel = page.locator("#search-filter-panel-desktop");
+  const filterPanel = page.locator("#search-filter-panel");
   await expect(filterPanel).toBeHidden();
-  const showFilters = page.getByRole("button", {
-    name: "Afficher les filtres",
-  });
-  await expect(showFilters).toHaveAttribute("aria-expanded", "false");
-  await showFilters.click();
+  const categoryFilter = page
+    .locator("[data-search-filter-rail]")
+    .getByRole("button", { name: "Catégories", exact: true });
+  await expect(categoryFilter).toHaveAttribute("aria-expanded", "false");
+  await categoryFilter.click();
   await expect(filterPanel).toBeVisible();
+  await expect(page.getByRole("dialog")).toBeVisible();
 
-  /* One control owns the panel. The sidebar used to carry its own "Masquer"
-     button as well, so with the toolbar toggle also reading "Masquer" once
-     open, the page showed two identically-labelled buttons for one action. */
-  const hideFilters = page.getByRole("button", {
-    name: "Masquer les filtres",
-    exact: true,
-  });
-  await expect(hideFilters).toHaveCount(1);
-  await expect(hideFilters).toBeVisible();
-
-  await hideFilters.click();
+  await page.getByRole("button", { name: "Fermer" }).click();
   await expect(filterPanel).toBeHidden();
-  await expect(showFilters).toHaveAttribute("aria-expanded", "false");
+  await expect(categoryFilter).toHaveAttribute("aria-expanded", "false");
 });
 
 test("condition is filterable, not just displayed", async ({ page }) => {
@@ -42,8 +33,11 @@ test("condition is filterable, not just displayed", async ({ page }) => {
   await page.goto("/recherche", { waitUntil: "domcontentloaded" });
   await waitForStableLayout(page);
 
-  await page.getByRole("button", { name: "Afficher les filtres" }).click();
-  await expect(page.locator("#search-filter-panel-desktop")).toBeVisible();
+  await page
+    .locator("[data-search-filter-rail]")
+    .getByRole("button", { name: "État", exact: true })
+    .click();
+  await expect(page.locator("#search-filter-panel")).toBeVisible();
 
   const count = page
     .getByRole("status")

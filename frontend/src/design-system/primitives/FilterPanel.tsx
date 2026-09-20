@@ -1,14 +1,13 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { cn } from "../utils/variants";
 import { Button } from "./Button";
+import { Drawer } from "./Modal";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../utils/controlMetrics";
-
-export type FilterPanelPresentation = "surface" | "drawer";
 
 export type FilterPanelTogglePresentation = "desktop" | "drawer";
 
@@ -18,27 +17,36 @@ export interface FilterPanelToggleProps {
   controls: string;
   presentation?: FilterPanelTogglePresentation;
   activeCount?: number;
+  label?: string;
   className?: string;
 }
 
 export interface FilterPanelProps {
   id?: string;
   children: React.ReactNode;
-  title?: string;
   onReset?: () => void;
   resetLabel?: string;
-  presentation?: FilterPanelPresentation;
   footer?: React.ReactNode;
   className?: string;
   contentClassName?: string;
+  activeSectionId?: string;
+}
+
+export interface SearchFilterDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  className?: string;
 }
 
 /**
- * Shared visibility control for filter sidebars and their mobile drawers.
+ * Shared visibility control for the desktop quick-filter rail and compact
+ * mobile filter action.
  *
  * Search features own their filter state and domain fields; this primitive
- * keeps the disclosure language, accessible state, iconography, and responsive
- * styling consistent across every results page.
+ * keeps disclosure language, accessible state, iconography, and responsive
+ * visibility consistent across every results page.
  */
 export const FilterPanelToggle: React.FC<FilterPanelToggleProps> = ({
   isExpanded,
@@ -46,6 +54,7 @@ export const FilterPanelToggle: React.FC<FilterPanelToggleProps> = ({
   controls,
   presentation = "desktop",
   activeCount = 0,
+  label,
   className,
 }) => {
   const { t } = useTranslation();
@@ -77,7 +86,7 @@ export const FilterPanelToggle: React.FC<FilterPanelToggleProps> = ({
       {/* Keep the visible label stable; aria-expanded announces disclosure. */}
       <SlidersHorizontal className="h-icon-md w-icon-md" aria-hidden="true" />
       <span className={isDrawer ? "sr-only sm:not-sr-only" : undefined}>
-        {t("ui.filterPanel.filters")}
+        {label || t("ui.filterPanel.filters")}
       </span>
       {activeCount > 0 ? (
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-bg-surface px-1 text-micro font-bold text-text-main">
@@ -89,24 +98,37 @@ export const FilterPanelToggle: React.FC<FilterPanelToggleProps> = ({
 };
 
 /**
- * Canonical shell for marketplace filters.
+ * Canonical content shell for the shared marketplace filter drawer.
  *
  * Domain pages own their category-specific fields and URL state; this
- * primitive owns the repeated panel surface, heading, reset action, spacing,
- * and drawer adaptation.
+ * primitive owns the reset action, card spacing, targeted-section scrolling,
+ * and apply footer.
  */
 export const FilterPanel: React.FC<FilterPanelProps> = ({
   id,
   children,
-  title = "Filtres",
   onReset,
   resetLabel = "Réinitialiser",
-  presentation = "surface",
   footer,
   className,
   contentClassName,
+  activeSectionId,
 }) => {
-  const isDrawer = presentation === "drawer";
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!activeSectionId) return;
+    const content = contentRef.current;
+    const target = content?.querySelector<HTMLElement>(
+      `[data-filter-section="${activeSectionId}"]`,
+    );
+    const scrollContainer = content?.parentElement?.parentElement;
+    if (!content || !target || !scrollContainer) return;
+    scrollContainer.scrollTop = Math.max(
+      0,
+      target.offsetTop - content.offsetTop,
+    );
+  }, [activeSectionId]);
   const resetAction = onReset ? (
     <button
       type="button"
@@ -124,35 +146,17 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   return (
     <div
       id={id}
-      data-filter-panel={presentation}
-      className={cn(
-        isDrawer
-          ? "min-w-0"
-          : "min-w-0 rounded-listing-card border border-border-base bg-bg-surface p-6 shadow-sm",
-        className,
-      )}
+      data-filter-panel="drawer"
+      className={cn("min-w-0", className)}
     >
-      {isDrawer ? (
-        resetAction ? (
-          <div className="mb-5 flex justify-end">{resetAction}</div>
-        ) : null
-      ) : (
-        <div className="flex items-center justify-between gap-3 border-b border-border-subtle pb-4">
-          <h2 className="flex min-w-0 items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-text-main">
-            <SlidersHorizontal
-              className="h-icon-sm w-icon-sm shrink-0 text-primary"
-              aria-hidden="true"
-            />
-            <span className="truncate">{title}</span>
-          </h2>
-          {resetAction}
-        </div>
-      )}
+      {resetAction ? (
+        <div className="mb-5 flex justify-end">{resetAction}</div>
+      ) : null}
 
       <div
+        ref={contentRef}
         className={cn(
-          "space-y-0 divide-y divide-border-subtle [&>*]:w-full [&>*]:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0",
-          !isDrawer && title && "mt-5",
+          "space-y-3 [&>*]:w-full [&>*]:scroll-mt-3 [&>*]:rounded-card [&>*]:border [&>*]:border-border-base [&>*]:bg-bg-surface [&>*]:p-4",
           contentClassName,
         )}
       >
@@ -167,3 +171,31 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     </div>
   );
 };
+
+/**
+ * One responsive search-filter surface for desktop, tablet, and mobile.
+ *
+ * Domain pages supply their own fields and URL state. This shell owns the
+ * right-side sheet, reset/apply placement, and optional section targeting used
+ * by the desktop quick-filter rail.
+ */
+export const SearchFilterDrawer: React.FC<SearchFilterDrawerProps> = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  className,
+}) => (
+  <Drawer
+    isOpen={isOpen}
+    onClose={onClose}
+    title={title}
+    position="right"
+    className={cn(
+      "[&>div:first-child]:border-b-2 [&>div:first-child]:border-primary",
+      className,
+    )}
+  >
+    {children}
+  </Drawer>
+);

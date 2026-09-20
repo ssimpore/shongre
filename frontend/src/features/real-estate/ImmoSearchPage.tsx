@@ -18,7 +18,6 @@ import { useToast } from "../../app/providers/ToastProvider";
 import {
   Button,
   Container,
-  Drawer,
   DropdownMenu,
   FilterChip,
   FilterPanel,
@@ -29,6 +28,7 @@ import {
   SearchActiveFiltersBar,
   SearchMapResultsLayout,
   SearchResultsToolbar,
+  SearchFilterDrawer,
   SearchSortControl,
   Skeleton,
   StatePanel,
@@ -36,10 +36,7 @@ import {
   countActiveSearchParams,
   useSearchFilterDisclosure,
 } from "../../design-system";
-import type {
-  FilterPanelPresentation,
-  LocationSelectorValue,
-} from "../../design-system";
+import type { LocationSelectorValue } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 // Leaflet reads `window` when its module body runs, so a static import puts the
 // map engine in the server graph: every render of /immo threw
@@ -86,9 +83,9 @@ const ImmoFilters: React.FC<{
   updateLocation: (value: LocationSelectorValue) => void;
   locationSelectorId: string;
   onReset: () => void;
-  presentation?: FilterPanelPresentation;
   onApply?: () => void;
   resultCount?: number;
+  activeSectionId?: string;
 }> = ({
   panelId,
   catalog,
@@ -97,9 +94,9 @@ const ImmoFilters: React.FC<{
   updateLocation,
   locationSelectorId,
   onReset,
-  presentation = "surface",
   onApply,
   resultCount = 0,
+  activeSectionId,
 }) => {
   const { currentLocale } = useMarketLocation();
   const currencySymbol = formatCurrencySymbol(
@@ -123,8 +120,7 @@ const ImmoFilters: React.FC<{
   return (
     <FilterPanel
       id={panelId}
-      title="Filtres"
-      presentation={presentation}
+      activeSectionId={activeSectionId}
       onReset={onReset}
       footer={
         onApply ? (
@@ -134,7 +130,7 @@ const ImmoFilters: React.FC<{
         ) : undefined
       }
     >
-      <fieldset>
+      <fieldset data-filter-section="immo-project">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Projet
         </legend>
@@ -157,7 +153,7 @@ const ImmoFilters: React.FC<{
           )}
         />
       </fieldset>
-      <fieldset>
+      <fieldset data-filter-section="immo-location">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Localisation
         </legend>
@@ -170,7 +166,7 @@ const ImmoFilters: React.FC<{
           onChange={updateLocation}
         />
       </fieldset>
-      <fieldset>
+      <fieldset data-filter-section="immo-type">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Type de bien
         </legend>
@@ -191,7 +187,7 @@ const ImmoFilters: React.FC<{
           ))}
         </div>
       </fieldset>
-      <fieldset>
+      <fieldset data-filter-section="immo-budget">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Budget
         </legend>
@@ -395,11 +391,10 @@ export const ImmoSearchPage: React.FC = () => {
   const [error, setError] = useState<string>();
   const [selectedId, setSelectedId] = useState<string>();
   const {
-    desktopFiltersExpanded: showDesktopFilters,
-    mobileFiltersExpanded: mobileFilters,
-    toggleDesktopFilters,
-    openMobileFilters,
-    closeMobileFilters,
+    filtersExpanded: mobileFilters,
+    activeFilterSection,
+    openFilters,
+    closeFilters,
   } = useSearchFilterDisclosure();
   const view = params.get("view") === "list" ? "list" : "map";
   const queryText = params.get("q") || "";
@@ -741,13 +736,32 @@ export const ImmoSearchPage: React.FC = () => {
         <SearchResultsToolbar
           resultLabel={loading ? "Recherche…" : `${total} biens`}
           resultDescription="Localisation volontairement approximative sur la carte."
-          desktopFilterPanelId="immo-filter-panel-desktop"
-          mobileFilterPanelId="immo-filter-panel-mobile"
-          desktopFiltersExpanded={showDesktopFilters}
-          mobileFiltersExpanded={mobileFilters}
+          filterPanelId="immo-filter-panel"
+          filtersExpanded={mobileFilters}
+          filterTriggers={[
+            {
+              sectionId: "immo-project",
+              label: t("ui.filterPanel.quick.project"),
+              active: Boolean(params.get("transaction")),
+            },
+            {
+              sectionId: "immo-location",
+              label: t("ui.filterPanel.quick.location"),
+              active: Boolean(params.get("city")),
+            },
+            {
+              sectionId: "immo-type",
+              label: t("ui.filterPanel.quick.propertyType"),
+              active: Boolean(params.get("types")),
+            },
+            {
+              sectionId: "immo-budget",
+              label: t("ui.filterPanel.quick.budget"),
+              active: Boolean(params.get("minPrice") || params.get("maxPrice")),
+            },
+          ]}
           activeFilterCount={activeFilterCount}
-          onToggleDesktopFilters={toggleDesktopFilters}
-          onOpenMobileFilters={openMobileFilters}
+          onOpenFilters={openFilters}
           actions={
             <Button
               aria-label="Créer une alerte"
@@ -800,28 +814,8 @@ export const ImmoSearchPage: React.FC = () => {
           />
         ) : null}
         {!error && catalog ? (
-          <div
-            className={`grid items-start gap-6 ${
-              showDesktopFilters ? "lg:grid-cols-sidebar" : "lg:grid-cols-1"
-            }`}
-          >
+          <div className="grid items-start gap-6 lg:grid-cols-1">
             <h2 className="sr-only">{t("search.resultsHeading")}</h2>
-            {showDesktopFilters ? (
-              <aside
-                className="sticky top-24 hidden lg:block"
-                aria-label="Filtres immobiliers"
-              >
-                <ImmoFilters
-                  panelId="immo-filter-panel-desktop"
-                  catalog={catalog}
-                  params={params}
-                  setParam={setParam}
-                  updateLocation={updateLocation}
-                  locationSelectorId="immo-location-selector-desktop"
-                  onReset={resetFilters}
-                />
-              </aside>
-            ) : null}
             {view === "map" ? (
               <SearchMapResultsLayout
                 resultsLabel="Biens immobiliers sur la carte"
@@ -951,24 +945,24 @@ export const ImmoSearchPage: React.FC = () => {
       </Container>
 
       {catalog ? (
-        <Drawer
+        <SearchFilterDrawer
           isOpen={mobileFilters}
-          onClose={closeMobileFilters}
+          onClose={closeFilters}
           title="Filtres immobiliers"
         >
           <ImmoFilters
-            panelId="immo-filter-panel-mobile"
+            panelId="immo-filter-panel"
             catalog={catalog}
             params={params}
             setParam={setParam}
             updateLocation={updateLocation}
-            locationSelectorId="immo-location-selector-mobile"
+            locationSelectorId="immo-location-selector"
             onReset={resetFilters}
-            presentation="drawer"
             resultCount={total}
-            onApply={closeMobileFilters}
+            onApply={closeFilters}
+            activeSectionId={activeFilterSection}
           />
-        </Drawer>
+        </SearchFilterDrawer>
       ) : null}
     </div>
   );

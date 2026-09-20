@@ -205,7 +205,7 @@ if (incompleteShippedLocales.length) {
  * shipping, so it has to be a number that only goes down. Lower it whenever a
  * surface is migrated; never raise it.
  */
-const CEILING = 2065;
+const CEILING = 2062;
 
 if (totalStrings > CEILING) {
   console.error(

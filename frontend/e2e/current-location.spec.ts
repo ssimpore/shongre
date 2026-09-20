@@ -130,9 +130,10 @@ test.describe("current location picker", () => {
     await page.goto("/recherche?city=Paris&radius=30");
     await waitForStableLayout(page);
 
-    // Desktop filters live behind the shared disclosure, closed by default.
-    await page.getByRole("button", { name: "Afficher les filtres" }).click();
-    const selector = page.locator("#search-filter-location-desktop");
+    await page
+      .getByRole("button", { name: "Localisation", exact: true })
+      .click();
+    const selector = page.locator("#search-filter-location");
     await expect(selector).toHaveAttribute(
       "aria-label",
       "Localisation : Paris (+30 km)",

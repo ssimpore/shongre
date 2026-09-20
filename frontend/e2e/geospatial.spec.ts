@@ -148,12 +148,9 @@ test.describe("map and filter layout", () => {
     page,
   }) => {
     /*
-     * Opening or hiding the filter panel resizes the map, which the renderer
-     * reports as a `moveend` — the same event a drag produces. Acted
-     * on blindly, that applies a viewport filter nobody asked for: the count
-     * on this page dropped from two results to one on a layout change alone.
-     * Only a move carrying an `originalEvent` is the reader asking to search
-     * somewhere else.
+     * The filter drawer overlays the map instead of resizing it. Opening and
+     * closing that surface must remain presentation-only and never issue a
+     * catalogue query or change the result count.
      */
     const searches: string[] = [];
     page.on("request", (request) => {
@@ -172,12 +169,14 @@ test.describe("map and filter layout", () => {
     const searchesBefore = searches.length;
 
     const toggle = page
-      .locator('button[aria-expanded][aria-controls*="filter"]')
-      .first();
+      .locator(
+        '[data-search-filter-rail] button[aria-controls="immo-filter-panel"]',
+      )
+      .last();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await toggle.click();
+    await page.getByRole("button", { name: "Fermer" }).click();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await page.waitForTimeout(2_500);
 
@@ -200,15 +199,17 @@ test.describe("map and filter layout", () => {
     await waitForStableLayout(page);
 
     const toggle = page
-      .locator('button[aria-expanded][aria-controls*="filter"]')
-      .first();
+      .locator(
+        '[data-search-filter-rail] button[aria-controls="immo-filter-panel"]',
+      )
+      .last();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
-    await expect(toggle).toHaveText(/Filtres/i);
+    await expect(toggle).toHaveText(/Tous les filtres/i);
     await expect(toggle).toHaveAttribute("aria-label", /Afficher les filtres/i);
 
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
-    await expect(toggle).toHaveText(/Filtres/i);
+    await expect(toggle).toHaveText(/Tous les filtres/i);
     await expect(toggle).toHaveAttribute("aria-label", /Masquer les filtres/i);
   });
 });

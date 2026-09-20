@@ -31,14 +31,16 @@ test.describe("Shongre Auto", () => {
     ).toBeVisible();
     const cards = page.locator('[data-listing-card-consumer="auto"]');
     await expect(cards).toHaveCount(4);
-    // Desktop filters live behind the shared disclosure, closed by default.
-    await page.getByRole("button", { name: "Afficher les filtres" }).click();
-    const filters = page.locator("#auto-filter-panel-desktop");
+    await page
+      .getByRole("button", { name: "Marque et modèle", exact: true })
+      .click();
+    const filters = page.locator("#auto-filter-panel");
     await expect(filters).toBeVisible();
     await filters.getByRole("button", { name: "Marque", exact: true }).click();
     await page.getByRole("option", { name: "Peugeot", exact: true }).click();
     await expect(page).toHaveURL(/make=peugeot/);
     await expect(cards).toHaveCount(3);
+    await filters.getByRole("button", { name: "Voir les véhicules" }).click();
 
     await cards
       .nth(0)
@@ -73,7 +75,9 @@ test.describe("Shongre Auto", () => {
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(390);
-    await page.getByRole("button", { name: "Filtres" }).click();
+    await page
+      .getByRole("button", { name: /Ouvrir les filtres de recherche/ })
+      .click();
     const dialog = page.getByRole("dialog", {
       name: "Filtrer les véhicules",
     });
@@ -85,7 +89,7 @@ test.describe("Shongre Auto", () => {
       dialog.getByLabel("Autonomie électrique minimum"),
     ).toBeVisible();
     await expect(
-      dialog.locator("#auto-location-selector-mobile"),
+      dialog.locator("#auto-location-selector"),
     ).toHaveAttribute("data-location-selector", "true");
 
     const results = await new AxeBuilder({ page })

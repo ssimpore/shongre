@@ -33,9 +33,11 @@ test.describe("Shongre Immo", () => {
       }),
     ).toBeVisible();
     await expect(page.getByRole("article").first()).toBeVisible();
-    // Desktop filters live behind the shared disclosure, closed by default.
-    await page.getByRole("button", { name: "Afficher les filtres" }).click();
-    const locationSelector = page.locator("#immo-location-selector-desktop");
+    await page
+      .getByRole("button", { name: "Localisation", exact: true })
+      .click();
+    const filterPanel = page.locator("#immo-filter-panel");
+    const locationSelector = page.locator("#immo-location-selector");
     await expect(locationSelector).toHaveAttribute(
       "data-location-selector",
       "true",
@@ -50,6 +52,7 @@ test.describe("Shongre Immo", () => {
       .click();
     await expect(page).toHaveURL(/city=%C3%89cully/);
     await expect(page.getByRole("article")).toHaveCount(1);
+    await filterPanel.getByRole("button", { name: /^Voir \d+ bien/ }).click();
     await page.getByRole("button", { name: "Créer une alerte" }).click();
     await expect(
       page.getByText(
@@ -93,7 +96,7 @@ test.describe("Shongre Immo", () => {
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(390);
     await page
-      .locator('button[aria-controls="immo-filter-panel-mobile"]')
+      .getByRole("button", { name: /Ouvrir les filtres de recherche/ })
       .click();
     const dialog = page.getByRole("dialog", { name: "Filtres immobiliers" });
     await expect(dialog.getByText("Type de bien")).toBeVisible();

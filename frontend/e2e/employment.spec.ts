@@ -112,12 +112,10 @@ test.describe("Shongre Emploi journeys", () => {
     ).toBeVisible();
     // On a phone the location control lives in the shared filter drawer.
     await page
-      .locator('button[aria-controls="employment-filter-panel-mobile"]')
+      .getByRole("button", { name: /Ouvrir les filtres de recherche/ })
       .click();
     const filters = page.getByRole("dialog", { name: "Filtres emploi" });
-    const locationSelector = filters.locator(
-      "#employment-location-selector-mobile",
-    );
+    const locationSelector = filters.locator("#employment-location-selector");
     await expect(locationSelector).toHaveAttribute(
       "data-location-selector",
       "true",

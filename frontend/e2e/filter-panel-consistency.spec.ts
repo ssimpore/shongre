@@ -6,32 +6,32 @@ const FILTER_SURFACES = [
   {
     name: "marketplace search",
     path: "/recherche",
-    desktopTrigger: "Afficher les filtres",
+    desktopTrigger: "Catégories",
     mobileTrigger: /^Ouvrir les filtres de recherche/,
   },
   {
     name: "vehicles",
     path: "/auto",
-    desktopTrigger: "Afficher les filtres",
-    mobileTrigger: "Filtres",
+    desktopTrigger: "Type de véhicule",
+    mobileTrigger: /^Ouvrir les filtres de recherche/,
   },
   {
     name: "real estate",
     path: "/immo",
-    desktopTrigger: "Afficher les filtres",
-    mobileTrigger: "Filtres",
+    desktopTrigger: "Projet",
+    mobileTrigger: /^Ouvrir les filtres de recherche/,
   },
   {
     name: "employment",
     path: "/emploi",
-    desktopTrigger: "Afficher les filtres",
-    mobileTrigger: "Filtres",
+    desktopTrigger: "Métier",
+    mobileTrigger: /^Ouvrir les filtres de recherche/,
   },
   {
     name: "education",
     path: "/education",
-    desktopTrigger: "Afficher les filtres",
-    mobileTrigger: "Filtres",
+    desktopTrigger: "Matière",
+    mobileTrigger: /^Ouvrir les filtres de recherche/,
   },
 ] as const;
 
@@ -112,29 +112,90 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("canonical marketplace filter panel", () => {
+  test("desktop quick-filter rails show only complete controls", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 800 });
+
+    for (const surface of FILTER_SURFACES) {
+      await page.goto(surface.path, { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+
+      const rail = page.locator("[data-search-filter-rail]");
+      await expect(rail).toBeVisible();
+      const geometry = await rail.evaluate((element) => {
+        const railRect = element.getBoundingClientRect();
+        const buttons = [...element.querySelectorAll("button")].filter(
+          (button) => getComputedStyle(button).visibility !== "hidden",
+        );
+        return {
+          railLeft: railRect.left,
+          railRight: railRect.right,
+          buttons: buttons.map((button) => {
+            const rect = button.getBoundingClientRect();
+            return { left: rect.left, right: rect.right };
+          }),
+          visibleCount: Number(
+            element.getAttribute("data-search-filter-visible-count"),
+          ),
+          overflowCount: Number(
+            element.getAttribute("data-search-filter-overflow-count"),
+          ),
+        };
+      });
+
+      expect(geometry.buttons.length).toBeGreaterThan(0);
+      for (const button of geometry.buttons) {
+        expect(button.left).toBeGreaterThanOrEqual(geometry.railLeft - 1);
+        expect(button.right).toBeLessThanOrEqual(geometry.railRight + 1);
+      }
+      expect(geometry.visibleCount + geometry.overflowCount).toBe(
+        surface.name === "real estate" ? 4 : 5,
+      );
+      await expect(
+        rail.getByRole("button", { name: /Afficher les filtres/ }),
+      ).toBeVisible();
+    }
+  });
+
   for (const surface of FILTER_SURFACES) {
-    test(`${surface.name} uses the shared desktop surface`, async ({
+    test(`${surface.name} uses the shared desktop right drawer`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: 1280, height: 800 });
       await page.goto(surface.path, { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
-      const panel = page.locator('[data-filter-panel="surface"]');
+      const panel = page.locator('[data-filter-panel="drawer"]');
       await expect(panel).toBeHidden();
-      await page.getByRole("button", { name: surface.desktopTrigger }).click();
+      await page
+        .locator("[data-search-filter-rail]")
+        .getByRole("button", {
+          name: surface.desktopTrigger,
+          exact: true,
+        })
+        .click();
 
       await expect(panel).toHaveCount(1);
       await expect(panel).toBeVisible();
-      await expect(panel).toHaveClass(/rounded-listing-card/);
-      await expect(panel).toHaveClass(/border-border-base/);
-      await expect(panel).toHaveClass(/bg-bg-surface/);
-      await expect(
-        panel.getByRole("heading", { name: "Filtres", exact: true }),
-      ).toBeVisible();
+      await expect(page.getByRole("dialog").getByRole("heading")).toBeVisible();
       await expect(
         panel.getByRole("button", { name: "Réinitialiser", exact: true }),
       ).toBeVisible();
+      await expect
+        .poll(() =>
+          panel
+            .locator("[data-filter-section]")
+            .first()
+            .evaluate((section) => {
+              const style = getComputedStyle(section);
+              return {
+                hasBorder: Number.parseFloat(style.borderTopWidth) > 0,
+                hasRadius: Number.parseFloat(style.borderTopLeftRadius) > 0,
+              };
+            }),
+        )
+        .toEqual({ hasBorder: true, hasRadius: true });
 
       const checkbox = panel.getByRole("checkbox").first();
       await expect(checkbox).toBeVisible();
@@ -144,12 +205,12 @@ test.describe("canonical marketplace filter panel", () => {
       await expectBrandedBooleanControl(checkbox, "checkbox");
 
       if (surface.name === "marketplace search") {
-        const radio = panel.getByRole("radio", {
-          name: "Tous les vendeurs",
+        const selectedSellerType = panel.getByRole("button", {
+          name: "Tous",
           exact: true,
         });
-        await expect(radio).toBeChecked();
-        await expectBrandedBooleanControl(radio, "radio");
+        await expect(selectedSellerType).toHaveClass(/bg-primary/);
+        await expect(selectedSellerType).toHaveClass(/text-on-primary/);
       }
     });
 
@@ -186,24 +247,30 @@ test.describe("canonical vertical dropdowns", () => {
 
       const main = page.locator("main#main-content");
       await expect(main.locator("select")).toHaveCount(0);
-      await main.getByRole("button", { name: "Afficher les filtres" }).click();
+      await main
+        .locator("[data-search-filter-rail]")
+        .getByRole("button", { name: surface.filterLabel, exact: true })
+        .click();
 
-      const filter = main.getByRole("button", {
+      const panel = main.locator('[data-filter-panel="drawer"]');
+      const filter = panel.getByRole("button", {
         name: surface.filterLabel,
         exact: true,
       });
+      await expect(filter).toBeVisible();
+      await expect(filter).toHaveAttribute("aria-haspopup", "listbox");
+      await expect(filter).toHaveClass(/rounded-control/);
+      await expect(filter).toHaveClass(/border-border-base/);
+      await page.getByRole("button", { name: "Fermer" }).click();
+
       const sort = main.getByRole("button", {
         name: surface.sortLabel,
         exact: true,
       });
-      await expect(filter).toBeVisible();
       await expect(sort).toBeVisible();
-
-      for (const trigger of [filter, sort]) {
-        await expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
-        await expect(trigger).toHaveClass(/rounded-control/);
-        await expect(trigger).toHaveClass(/border-border-base/);
-      }
+      await expect(sort).toHaveAttribute("aria-haspopup", "listbox");
+      await expect(sort).toHaveClass(/rounded-control/);
+      await expect(sort).toHaveClass(/border-border-base/);
 
       await sort.click();
       const listbox = main.getByRole("listbox", {

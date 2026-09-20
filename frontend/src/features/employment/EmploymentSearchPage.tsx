@@ -14,7 +14,6 @@ import { useToast } from "../../app/providers/ToastProvider";
 import {
   Button,
   Container,
-  Drawer,
   DropdownMenu,
   FilterChip,
   FilterPanel,
@@ -26,6 +25,7 @@ import {
   SearchActiveFiltersBar,
   SearchMapResultsLayout,
   SearchResultsToolbar,
+  SearchFilterDrawer,
   SearchSortControl,
   Skeleton,
   StatePanel,
@@ -33,10 +33,7 @@ import {
   countActiveSearchParams,
   useSearchFilterDisclosure,
 } from "../../design-system";
-import type {
-  FilterPanelPresentation,
-  LocationSelectorValue,
-} from "../../design-system";
+import type { LocationSelectorValue } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { routes } from "../../configuration/routes";
@@ -93,9 +90,9 @@ const EmploymentFilters: React.FC<{
   updateLocation: (value: LocationSelectorValue) => void;
   locationSelectorId: string;
   onReset: () => void;
-  presentation?: FilterPanelPresentation;
   onApply?: () => void;
   resultCount?: number;
+  activeSectionId?: string;
 }> = ({
   panelId,
   catalog,
@@ -104,9 +101,9 @@ const EmploymentFilters: React.FC<{
   updateLocation,
   locationSelectorId,
   onReset,
-  presentation = "surface",
   onApply,
   resultCount = 0,
+  activeSectionId,
 }) => {
   const { currencySymbol, currentLocale } = useMarketLocation();
   const dictionaries = (
@@ -118,8 +115,7 @@ const EmploymentFilters: React.FC<{
   return (
     <FilterPanel
       id={panelId}
-      title="Filtres"
-      presentation={presentation}
+      activeSectionId={activeSectionId}
       onReset={onReset}
       footer={
         onApply ? (
@@ -129,7 +125,7 @@ const EmploymentFilters: React.FC<{
         ) : undefined
       }
     >
-      <fieldset>
+      <fieldset data-filter-section="employment-location">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Localisation
         </legend>
@@ -156,7 +152,7 @@ const EmploymentFilters: React.FC<{
         ["schedule", "Horaires", "work_schedule"],
         ["employerType", "Type d’employeur", "employer_type"],
       ].map(([param, label, kind]) => (
-        <div key={param}>
+        <div key={param} data-filter-section={`employment-${param}`}>
           <span className="mb-2 block text-xs font-bold text-text-main">
             {label}
           </span>
@@ -196,7 +192,7 @@ const EmploymentFilters: React.FC<{
           ]}
         />
       </div>
-      <div>
+      <div data-filter-section="employment-salary">
         <label
           className="mb-2 block text-xs font-semibold text-text-main"
           htmlFor="employment-salary"
@@ -288,11 +284,10 @@ export const EmploymentSearchPage: React.FC = () => {
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(false);
   const {
-    desktopFiltersExpanded: showDesktopFilters,
-    mobileFiltersExpanded: mobileFilters,
-    toggleDesktopFilters,
-    openMobileFilters,
-    closeMobileFilters,
+    filtersExpanded: mobileFilters,
+    activeFilterSection,
+    openFilters,
+    closeFilters,
   } = useSearchFilterDisclosure();
   const requestedView = params.get("view");
   const viewMode =
@@ -740,13 +735,37 @@ export const EmploymentSearchPage: React.FC = () => {
               {t("employment.trust.sponsoredTransparency")}
             </span>
           }
-          desktopFilterPanelId="employment-filter-panel-desktop"
-          mobileFilterPanelId="employment-filter-panel-mobile"
-          desktopFiltersExpanded={showDesktopFilters}
-          mobileFiltersExpanded={mobileFilters}
+          filterPanelId="employment-filter-panel"
+          filtersExpanded={mobileFilters}
+          filterTriggers={[
+            {
+              sectionId: "employment-location",
+              label: t("ui.filterPanel.quick.location"),
+              active: Boolean(params.get("location")),
+            },
+            {
+              sectionId: "employment-profession",
+              label: t("ui.filterPanel.quick.profession"),
+              active: Boolean(params.get("profession")),
+            },
+            {
+              sectionId: "employment-contract",
+              label: t("ui.filterPanel.quick.contractType"),
+              active: Boolean(params.get("contract")),
+            },
+            {
+              sectionId: "employment-arrangement",
+              label: t("ui.filterPanel.quick.workplace"),
+              active: Boolean(params.get("arrangement")),
+            },
+            {
+              sectionId: "employment-salary",
+              label: t("ui.filterPanel.quick.compensation"),
+              active: Boolean(params.get("salary")),
+            },
+          ]}
           activeFilterCount={activeFilterCount}
-          onToggleDesktopFilters={toggleDesktopFilters}
-          onOpenMobileFilters={openMobileFilters}
+          onOpenFilters={openFilters}
           actions={
             <Button
               aria-label={savingAlert ? "Création…" : "Créer une alerte"}
@@ -800,29 +819,7 @@ export const EmploymentSearchPage: React.FC = () => {
           </p>
         )}
 
-        <div
-          className={`grid gap-6 ${showDesktopFilters ? "lg:grid-cols-sidebar" : "lg:grid-cols-1"}`}
-        >
-          {showDesktopFilters ? (
-            <aside
-              className="hidden self-start lg:sticky lg:top-24 lg:block"
-              aria-label="Filtres emploi"
-            >
-              {catalog ? (
-                <EmploymentFilters
-                  panelId="employment-filter-panel-desktop"
-                  catalog={catalog}
-                  params={params}
-                  setParam={setParam}
-                  updateLocation={updateLocation}
-                  locationSelectorId="employment-location-selector-desktop"
-                  onReset={resetFilters}
-                />
-              ) : (
-                <Skeleton className="h-96" />
-              )}
-            </aside>
-          ) : null}
+        <div className="grid gap-6 lg:grid-cols-1">
           <section aria-live="polite" aria-busy={loading} className="min-w-0">
             <h2 className="sr-only">{t("search.resultsHeading")}</h2>
             {loading && viewMode === "map" ? (
@@ -937,24 +934,24 @@ export const EmploymentSearchPage: React.FC = () => {
       </Container>
 
       {catalog ? (
-        <Drawer
+        <SearchFilterDrawer
           isOpen={mobileFilters}
-          onClose={closeMobileFilters}
+          onClose={closeFilters}
           title="Filtres emploi"
         >
           <EmploymentFilters
-            panelId="employment-filter-panel-mobile"
+            panelId="employment-filter-panel"
             catalog={catalog}
             params={params}
             setParam={setParam}
             updateLocation={updateLocation}
-            locationSelectorId="employment-location-selector-mobile"
+            locationSelectorId="employment-location-selector"
             onReset={resetFilters}
-            presentation="drawer"
             resultCount={total}
-            onApply={closeMobileFilters}
+            onApply={closeFilters}
+            activeSectionId={activeFilterSection}
           />
-        </Drawer>
+        </SearchFilterDrawer>
       ) : null}
     </div>
   );

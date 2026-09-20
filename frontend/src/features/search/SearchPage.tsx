@@ -38,8 +38,8 @@ import { Container } from "../../design-system/primitives/Layout";
 import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { Button } from "../../design-system/primitives/Button";
+import { IconButton } from "../../design-system/primitives/IconButton";
 import { Input, Checkbox } from "../../design-system/primitives/FormField";
-import { Drawer } from "../../design-system/primitives/Modal";
 import { plural } from "../../utilities/formatters";
 import {
   ListingCardSkeleton,
@@ -49,6 +49,7 @@ import {
   SearchActiveFiltersBar,
   SearchMapResultsLayout,
   SearchResultsToolbar,
+  SearchFilterDrawer,
   SearchSortControl,
   Skeleton,
   StatePanel,
@@ -156,11 +157,10 @@ export const SearchPage: React.FC = () => {
   const viewMode =
     urlViewParam === "map" || urlViewParam === "list" ? urlViewParam : "grid";
   const {
-    desktopFiltersExpanded: showDesktopFilters,
-    mobileFiltersExpanded: isFilterDrawerOpen,
-    toggleDesktopFilters,
-    openMobileFilters,
-    closeMobileFilters,
+    filtersExpanded: isFilterDrawerOpen,
+    activeFilterSection,
+    openFilters,
+    closeFilters,
   } = useSearchFilterDisclosure();
   const lastStartedSearchKey = useRef<string | null>(null);
   const cursorByPage = useRef(new Map<number, string | undefined>());
@@ -939,7 +939,7 @@ export const SearchPage: React.FC = () => {
           "Rechercher" tab points here, so on a phone the tab promised search
           and delivered a facet list. The desktop multi-field bar stays out —
           `shared-search-filters.spec.ts` locks its controls out of all five
-          search surfaces, and the sidebar panel plus the header bar already
+          search surfaces, and the filter drawer plus the header bar already
           cover that width. This is the compact drawer variant with category and
           location suppressed, because the filter drawer owns both on mobile.
 
@@ -973,28 +973,50 @@ export const SearchPage: React.FC = () => {
               ? `Au moins ${plural(totalCount, "annonce")}`
               : plural(totalCount, "annonce")
         }
-        desktopFilterPanelId="search-filter-panel-desktop"
-        mobileFilterPanelId="search-filter-panel-mobile"
-        desktopFiltersExpanded={showDesktopFilters}
-        mobileFiltersExpanded={isFilterDrawerOpen}
+        filterPanelId="search-filter-panel"
+        filtersExpanded={isFilterDrawerOpen}
+        filterTriggers={[
+          {
+            sectionId: "search-category",
+            label: t("ui.filterPanel.quick.category"),
+            active: Boolean(categorySlug || subCategorySlug),
+          },
+          {
+            sectionId: "search-location",
+            label: t("ui.filterPanel.quick.location"),
+            active: Boolean(city),
+          },
+          {
+            sectionId: "search-seller",
+            label: t("ui.filterPanel.quick.sellerType"),
+            active: sellerType !== "all",
+          },
+          {
+            sectionId: "search-condition",
+            label: t("ui.filterPanel.quick.condition"),
+            active: conditions.length > 0,
+          },
+          {
+            sectionId: "search-price",
+            label: t("ui.filterPanel.quick.price"),
+            active: minPrice !== undefined || maxPrice !== undefined,
+          },
+        ]}
         activeFilterCount={activeFilterCount + (query ? 1 : 0)}
-        onToggleDesktopFilters={toggleDesktopFilters}
-        onOpenMobileFilters={openMobileFilters}
+        onOpenFilters={openFilters}
         actions={
-          <Button
-            type="button"
+          <IconButton
             onClick={handleSaveSearch}
-            variant="secondary"
+            variant="outline"
             size="md"
             className="shrink-0"
-            leftIcon={
-              <Bookmark className="w-icon-sm h-icon-sm text-text-tertiary" />
-            }
-            title={t("search.searchPage.sauvegarderCetteRecherche")}
-            aria-label={t("search.searchPage.sauvegarderCetteRecherche")}
+            ariaLabel={t("search.searchPage.sauvegarderCetteRecherche")}
           >
-            <span className="hidden sm:inline">Sauvegarder</span>
-          </Button>
+            <Bookmark
+              className="h-icon-sm w-icon-sm text-text-tertiary"
+              aria-hidden="true"
+            />
+          </IconButton>
         }
         viewControls={
           <ViewModeToggle
@@ -1165,326 +1187,9 @@ export const SearchPage: React.FC = () => {
         </SearchActiveFiltersBar>
       )}
 
-      {/* Main Content Layout: Sidebar + Grid */}
-      <div
-        className={
-          showDesktopFilters
-            ? "grid grid-cols-1 lg:grid-cols-4 gap-6"
-            : "w-full space-y-4"
-        }
-      >
-        {/* Desktop Sidebar Filters */}
-        {showDesktopFilters && (
-          <aside
-            className="hidden lg:col-span-1 lg:block"
-            aria-label="Filtres de recherche"
-          >
-            <FilterPanel
-              id="search-filter-panel-desktop"
-              title="Filtres"
-              onReset={clearAllFilters}
-            >
-              {/* Categories */}
-              <div>
-                <label
-                  htmlFor="desktop-category-select"
-                  className="text-xs font-semibold text-text-main uppercase tracking-wider block mb-2"
-                >
-                  {t("search.searchPage.categories2")}
-                </label>
-                <div className="space-y-2.5">
-                  <DropdownMenu
-                    id="desktop-category-select"
-                    ariaLabel="Filtrer par catégorie"
-                    fullWidth
-                    searchable
-                    searchPlaceholder="Rechercher une catégorie…"
-                    headerTitle={
-                      <div className="flex items-center gap-1.5 text-text-supporting normal-case font-semibold">
-                        <Layers className="w-icon-sm h-icon-sm text-primary shrink-0" />
-                        <span>{t("search.searchPage.categories")}</span>
-                      </div>
-                    }
-                    options={categoryDropdownOptions}
-                    value={categorySlug || ""}
-                    onChange={(val) =>
-                      updateFilter("category", val || undefined)
-                    }
-                  />
-
-                  {/* Subcategory dropdown when category with children is active */}
-                  {subcategoryDropdownOptions.length > 0 && (
-                    <div className="pt-1">
-                      <label
-                        htmlFor="desktop-subcategory-select"
-                        className="text-micro font-semibold text-text-supporting block mb-1.5"
-                      >
-                        {t("search.searchPage.sousCategorie")}
-                      </label>
-                      <DropdownMenu
-                        id="desktop-subcategory-select"
-                        ariaLabel="Filtrer par sous-catégorie"
-                        fullWidth
-                        searchable={subcategoryDropdownOptions.length > 5}
-                        searchPlaceholder="Rechercher une sous-catégorie…"
-                        headerTitle={
-                          <div className="flex items-center gap-1.5 text-text-supporting normal-case font-semibold">
-                            <Tag className="w-icon-sm h-icon-sm text-primary shrink-0" />
-                            <span>{t("search.searchPage.sousCategories")}</span>
-                          </div>
-                        }
-                        options={subcategoryDropdownOptions}
-                        value={subCategorySlug || ""}
-                        onChange={(val) =>
-                          updateFilter("subCategory", val || undefined)
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="search-filter-location-desktop"
-                  className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-main"
-                >
-                  {t("search.searchPage.localisation")}
-                </label>
-                <LocationSelector
-                  id="search-filter-location-desktop"
-                  city={city}
-                  radiusKm={city ? radiusKm : undefined}
-                  onChange={updateLocationFilter}
-                />
-              </div>
-
-              {/* Seller Type */}
-              <div>
-                <h2 className="text-xs font-bold text-text-main uppercase tracking-wider mb-3">
-                  {t("search.searchPage.typeDeVendeur")}
-                </h2>
-                <div className="space-y-2">
-                  {[
-                    { value: "all", label: "Tous les vendeurs" },
-                    { value: "individual", label: "Particuliers uniquement" },
-                    { value: "pro", label: "Professionnels (Boutiques)" },
-                  ].map((s) => (
-                    <label
-                      key={s.value}
-                      className="flex items-center gap-2 min-h-6 text-xs font-medium text-text-emphasis cursor-pointer"
-                    >
-                      <input
-                        type="radio"
-                        name="sellerType"
-                        checked={sellerType === s.value}
-                        onChange={() => updateFilter("sellerType", s.value)}
-                        className="w-4 h-4 shrink-0 text-primary focus:ring-primary"
-                      />
-                      <span>{s.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Condition. The data layer has always supported
-                  `filters.conditions`; nothing ever exposed it, so the one facet
-                  printed on every card was the one you could not filter by. */}
-              <div>
-                <h2 className="text-xs font-bold text-text-main uppercase tracking-wider mb-3">
-                  {t("search.searchPage.etat")}
-                </h2>
-                <div className="space-y-2">
-                  {CONDITION_FILTER_OPTIONS.map((option) => (
-                    <label
-                      key={option.value}
-                      className="touch-row gap-2 min-h-6 text-xs font-medium text-text-emphasis cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={conditions.includes(option.value)}
-                        onChange={() => toggleCondition(option.value)}
-                        className="w-4 h-4 shrink-0"
-                      />
-                      <span>{option.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Range. The slider commits on release, so the separate
-                  "Appliquer le prix" button that the two number fields needed
-                  as a commit point is gone with them. */}
-              <div>
-                <h2 className="text-xs font-bold text-text-main uppercase tracking-wider mb-3">
-                  {t("search.searchPage.priceInCurrency", {
-                    currency: currencySymbol,
-                  })}
-                </h2>
-                <PriceRangeSlider
-                  min={minPrice}
-                  max={maxPrice}
-                  onChange={handlePriceChange}
-                  currencySymbol={currencySymbol}
-                />
-              </div>
-
-              {/* Delivery & Payment Toggles */}
-              <div className="space-y-2.5">
-                <Checkbox
-                  label={t("search.searchPage.livraisonDisponible")}
-                  description="Mondial Relay, Colissimo"
-                  checked={delivery}
-                  onChange={(e) =>
-                    updateFilter(
-                      "delivery",
-                      e.target.checked ? "true" : undefined,
-                    )
-                  }
-                />
-                <Checkbox
-                  label={t("search.searchPage.paiementSecuriseEnLigne")}
-                  checked={onlinePayment}
-                  onChange={(e) =>
-                    updateFilter(
-                      "onlinePayment",
-                      e.target.checked ? "true" : undefined,
-                    )
-                  }
-                />
-                <Checkbox
-                  label="Bons plans uniquement"
-                  checked={onlyDeals}
-                  onChange={(e) =>
-                    updateFilter(
-                      "onlyDeals",
-                      e.target.checked ? "true" : undefined,
-                    )
-                  }
-                />
-              </div>
-
-              {/* Dynamic Category Specific Facets */}
-              {dynamicFacets.length > 0 && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xs font-bold text-text-main uppercase tracking-wider">
-                      {t("search.searchPage.filtresSpecifiques")}
-                    </h2>
-                    <span className="text-micro bg-surface-muted text-text-supporting px-1.5 py-0.5 rounded font-mono">
-                      {dynamicFacets.length}
-                    </span>
-                  </div>
-
-                  {dynamicFacets.map((facet) => {
-                    const attr = facet.attribute;
-                    const currentValue =
-                      searchParams.get(`attr_${attr.code}`) || "";
-                    const facetOptions =
-                      dynamicFacetDropdownOptions[attr.code] || [];
-
-                    if (
-                      (facet.facetType === "select" ||
-                        facet.facetType === "multi_select") &&
-                      facetOptions.length > 1
-                    ) {
-                      return (
-                        <div key={attr.id} className="space-y-1">
-                          <label className="text-xs font-semibold text-text-emphasis block">
-                            {attr.label}
-                          </label>
-                          <DropdownMenu
-                            id={`attr-${attr.code}-select`}
-                            ariaLabel={`Filtrer par ${attr.label}`}
-                            fullWidth
-                            size="sm"
-                            headerTitle={attr.label}
-                            options={facetOptions}
-                            value={currentValue}
-                            onChange={(val) =>
-                              updateFilter(
-                                `attr_${attr.code}`,
-                                val || undefined,
-                              )
-                            }
-                          />
-                        </div>
-                      );
-                    }
-
-                    if (facet.facetType === "range") {
-                      return (
-                        <div key={attr.id} className="space-y-1">
-                          <label className="text-xs font-semibold text-text-emphasis block">
-                            {attr.label} {attr.unit ? `(${attr.unit})` : ""}
-                          </label>
-                          <div className="grid grid-cols-2 gap-1.5">
-                            <Input
-                              type="number"
-                              placeholder="Min"
-                              aria-label="Prix minimum en euros"
-                              value={
-                                searchParams.get(`attr_${attr.code}_min`) || ""
-                              }
-                              onChange={(e) =>
-                                updateFilter(
-                                  `attr_${attr.code}_min`,
-                                  e.target.value || undefined,
-                                )
-                              }
-                              className="h-control-sm text-xs"
-                            />
-                            <Input
-                              type="number"
-                              placeholder="Max"
-                              aria-label="Prix maximum en euros"
-                              value={
-                                searchParams.get(`attr_${attr.code}_max`) || ""
-                              }
-                              onChange={(e) =>
-                                updateFilter(
-                                  `attr_${attr.code}_max`,
-                                  e.target.value || undefined,
-                                )
-                              }
-                              className="h-control-sm text-xs"
-                            />
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    if (facet.facetType === "boolean") {
-                      return (
-                        <Checkbox
-                          key={attr.id}
-                          label={attr.label}
-                          checked={currentValue === "true"}
-                          onChange={(event) =>
-                            updateFilter(
-                              `attr_${attr.code}`,
-                              event.target.checked ? "true" : undefined,
-                            )
-                          }
-                        />
-                      );
-                    }
-
-                    return null;
-                  })}
-                </div>
-              )}
-            </FilterPanel>
-          </aside>
-        )}
-
+      <div className="w-full space-y-4">
         {/* Results Column */}
-        <div
-          aria-busy={searchQuery.isFetching}
-          className={
-            showDesktopFilters ? "lg:col-span-3 space-y-4" : "w-full space-y-4"
-          }
-        >
+        <div aria-busy={searchQuery.isFetching} className="w-full space-y-4">
           {/* The card titles are `h3`, so without this the outline jumped
               straight from the page `h1` to `h3`. The count is already shown
               in the toolbar, so the heading is visually hidden rather than
@@ -1640,29 +1345,28 @@ export const SearchPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Filters Drawer */}
-      <Drawer
+      <SearchFilterDrawer
         isOpen={isFilterDrawerOpen}
-        onClose={closeMobileFilters}
+        onClose={closeFilters}
         title={t("search.searchPage.filtresDeRecherche")}
       >
         <FilterPanel
-          id="search-filter-panel-mobile"
-          presentation="drawer"
+          id="search-filter-panel"
+          activeSectionId={activeFilterSection}
           onReset={clearAllFilters}
           footer={
-            <Button variant="primary" fullWidth onClick={closeMobileFilters}>
+            <Button variant="primary" fullWidth onClick={closeFilters}>
               Voir les résultats ({totalCount})
             </Button>
           }
         >
           {/* Category */}
-          <div>
+          <div data-filter-section="search-category">
             <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider block mb-2">
               {t("search.searchPage.categorie")}
             </label>
             <DropdownMenu
-              id="mobile-category-select"
+              id="search-filter-category"
               ariaLabel="Filtrer par catégorie"
               fullWidth
               searchable
@@ -1685,7 +1389,7 @@ export const SearchPage: React.FC = () => {
                   {t("search.searchPage.sousCategorie")}
                 </label>
                 <DropdownMenu
-                  id="mobile-subcategory-select"
+                  id="search-filter-subcategory"
                   ariaLabel="Filtrer par sous-catégorie"
                   fullWidth
                   searchable={subcategoryDropdownOptions.length > 5}
@@ -1706,15 +1410,15 @@ export const SearchPage: React.FC = () => {
             )}
           </div>
 
-          <div>
+          <div data-filter-section="search-location">
             <label
-              htmlFor="search-filter-location-mobile"
+              htmlFor="search-filter-location"
               className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-emphasis"
             >
               {t("search.searchPage.localisation")}
             </label>
             <LocationSelector
-              id="search-filter-location-mobile"
+              id="search-filter-location"
               city={city}
               radiusKm={city ? radiusKm : undefined}
               onChange={updateLocationFilter}
@@ -1722,7 +1426,7 @@ export const SearchPage: React.FC = () => {
           </div>
 
           {/* Seller type */}
-          <div>
+          <div data-filter-section="search-seller">
             <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider block mb-2">
               {t("search.searchPage.typeDeVendeur")}
             </label>
@@ -1749,7 +1453,7 @@ export const SearchPage: React.FC = () => {
           </div>
 
           {/* Condition */}
-          <div>
+          <div data-filter-section="search-condition">
             <span className="text-xs font-bold text-text-emphasis uppercase tracking-wider block mb-2">
               {t("search.searchPage.etat")}
             </span>
@@ -1772,7 +1476,7 @@ export const SearchPage: React.FC = () => {
           </div>
 
           {/* Price */}
-          <div>
+          <div data-filter-section="search-price">
             <span className="text-xs font-bold text-text-emphasis uppercase tracking-wider block mb-2">
               {t("search.searchPage.budgetInCurrency", {
                 currency: currencySymbol,
@@ -1839,7 +1543,7 @@ export const SearchPage: React.FC = () => {
                         {attr.label}
                       </label>
                       <DropdownMenu
-                        id={`mobile-attr-${attr.code}-select`}
+                        id={`search-filter-attr-${attr.code}`}
                         ariaLabel={`Filtrer par ${attr.label}`}
                         fullWidth
                         size="md"
@@ -1915,7 +1619,7 @@ export const SearchPage: React.FC = () => {
             </div>
           )}
         </FilterPanel>
-      </Drawer>
+      </SearchFilterDrawer>
     </Container>
   );
 };

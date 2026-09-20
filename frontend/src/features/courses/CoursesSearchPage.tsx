@@ -17,7 +17,6 @@ import { routes } from "../../configuration/routes";
 import {
   Button,
   Container,
-  Drawer,
   DropdownMenu,
   FilterChip,
   FilterPanel,
@@ -27,16 +26,14 @@ import {
   SearchActiveFiltersBar,
   SearchMapResultsLayout,
   SearchResultsToolbar,
+  SearchFilterDrawer,
   SearchSortControl,
   StatePanel,
   ViewModeToggle,
   countActiveSearchParams,
   useSearchFilterDisclosure,
 } from "../../design-system";
-import type {
-  FilterPanelPresentation,
-  LocationSelectorValue,
-} from "../../design-system";
+import type { LocationSelectorValue } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -59,7 +56,7 @@ interface CourseFiltersProps {
   locationSelectorId: string;
   onReset: () => void;
   onApplyMobile?: () => void;
-  presentation?: FilterPanelPresentation;
+  activeSectionId?: string;
 }
 
 const COURSE_FILTER_KEYS = [
@@ -92,7 +89,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
   locationSelectorId,
   onReset,
   onApplyMobile,
-  presentation = "surface",
+  activeSectionId,
 }) => {
   const { formatMoney } = useRegionalFormatters();
   const levels = splitParam(params.get("levels"));
@@ -108,8 +105,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
   return (
     <FilterPanel
       id={panelId}
-      title="Filtres"
-      presentation={presentation}
+      activeSectionId={activeSectionId}
       onReset={onReset}
       footer={
         onApplyMobile ? (
@@ -119,7 +115,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         ) : undefined
       }
     >
-      <fieldset>
+      <fieldset data-filter-section="education-subject">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Matière
         </legend>
@@ -139,7 +135,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         />
       </fieldset>
 
-      <fieldset>
+      <fieldset data-filter-section="education-level">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Niveau
         </legend>
@@ -160,7 +156,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         </div>
       </fieldset>
 
-      <fieldset>
+      <fieldset data-filter-section="education-location">
         <legend className="mb-2 text-xs font-bold text-text-main">Lieu</legend>
         <LocationSelector
           id={locationSelectorId}
@@ -172,7 +168,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         />
       </fieldset>
 
-      <fieldset>
+      <fieldset data-filter-section="education-delivery">
         <legend className="mb-2 text-xs font-bold text-text-main">
           En ligne / À domicile
         </legend>
@@ -196,7 +192,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         </div>
       </fieldset>
 
-      <fieldset>
+      <fieldset data-filter-section="education-availability">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Disponibilités
         </legend>
@@ -221,7 +217,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
         </div>
       </fieldset>
 
-      <fieldset>
+      <fieldset data-filter-section="education-price">
         <legend className="mb-2 text-xs font-bold text-text-main">
           Prix par heure
         </legend>
@@ -331,11 +327,10 @@ export const CoursesSearchPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const {
-    desktopFiltersExpanded: showDesktopFilters,
-    mobileFiltersExpanded: isFilterOpen,
-    toggleDesktopFilters,
-    openMobileFilters,
-    closeMobileFilters,
+    filtersExpanded: isFilterOpen,
+    activeFilterSection,
+    openFilters,
+    closeFilters,
   } = useSearchFilterDisclosure();
   const requestedView = params.get("view");
   const viewMode =
@@ -667,34 +662,11 @@ export const CoursesSearchPage: React.FC = () => {
 
       <div
         className={`grid min-w-0 gap-6 ${
-          showDesktopFilters ? "lg:grid-cols-sidebar" : "lg:grid-cols-1"
-        } ${
           compared.length > 0
-            ? showDesktopFilters
-              ? "xl:grid-cols-search-compare-balanced"
-              : "xl:grid-cols-content-aside-xs"
-            : ""
+            ? "xl:grid-cols-content-aside-xs"
+            : "lg:grid-cols-1"
         }`}
       >
-        {showDesktopFilters ? (
-          <aside
-            className="hidden self-start lg:sticky lg:top-24 lg:block"
-            aria-label={t("verticals.education.filters")}
-          >
-            {catalog && (
-              <CourseFilters
-                panelId="education-filter-panel-desktop"
-                catalog={catalog}
-                params={params}
-                updateParam={updateParam}
-                updateLocation={updateLocation}
-                locationSelectorId="education-location-selector-desktop"
-                onReset={resetFilters}
-              />
-            )}
-          </aside>
-        ) : null}
-
         <div className="min-w-0">
           <SearchResultsToolbar
             resultLabel={
@@ -702,13 +674,37 @@ export const CoursesSearchPage: React.FC = () => {
                 ? "Recherche en cours…"
                 : `${total} professeur${total > 1 ? "s" : ""}`
             }
-            desktopFilterPanelId="education-filter-panel-desktop"
-            mobileFilterPanelId="education-filter-panel-mobile"
-            desktopFiltersExpanded={showDesktopFilters}
-            mobileFiltersExpanded={isFilterOpen}
+            filterPanelId="education-filter-panel"
+            filtersExpanded={isFilterOpen}
+            filterTriggers={[
+              {
+                sectionId: "education-subject",
+                label: t("ui.filterPanel.quick.subject"),
+                active: Boolean(params.get("subject")),
+              },
+              {
+                sectionId: "education-level",
+                label: t("ui.filterPanel.quick.level"),
+                active: Boolean(params.get("levels")),
+              },
+              {
+                sectionId: "education-location",
+                label: t("ui.filterPanel.quick.location"),
+                active: Boolean(params.get("city")),
+              },
+              {
+                sectionId: "education-delivery",
+                label: t("ui.filterPanel.quick.lessonMode"),
+                active: Boolean(params.get("delivery")),
+              },
+              {
+                sectionId: "education-price",
+                label: t("ui.filterPanel.quick.price"),
+                active: Boolean(params.get("maxPrice")),
+              },
+            ]}
             activeFilterCount={activeFilterCount}
-            onToggleDesktopFilters={toggleDesktopFilters}
-            onOpenMobileFilters={openMobileFilters}
+            onOpenFilters={openFilters}
             viewControls={
               <ViewModeToggle
                 viewMode={viewMode}
@@ -955,23 +951,23 @@ export const CoursesSearchPage: React.FC = () => {
       </div>
 
       {catalog && (
-        <Drawer
+        <SearchFilterDrawer
           isOpen={isFilterOpen}
-          onClose={closeMobileFilters}
+          onClose={closeFilters}
           title="Filtrer les professeurs"
         >
           <CourseFilters
-            panelId="education-filter-panel-mobile"
+            panelId="education-filter-panel"
             catalog={catalog}
             params={params}
             updateParam={updateParam}
             updateLocation={updateLocation}
-            locationSelectorId="education-location-selector-mobile"
+            locationSelectorId="education-location-selector"
             onReset={resetFilters}
-            onApplyMobile={closeMobileFilters}
-            presentation="drawer"
+            onApplyMobile={closeFilters}
+            activeSectionId={activeFilterSection}
           />
-        </Drawer>
+        </SearchFilterDrawer>
       )}
 
       {compared.length > 0 && (

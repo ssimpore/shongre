@@ -43,5 +43,9 @@ describe("ViewModeToggle Primitive", () => {
     expect(html).toContain("Affichage liste");
     expect(html).toContain("Affichage carte");
     expect(html).not.toContain("Affichage grille");
+    expect(html).not.toContain(">Liste<");
+    expect(html).not.toContain(">Carte<");
+    expect(html).toContain('title="Affichage liste"');
+    expect(html).toContain('title="Affichage carte"');
   });
 });

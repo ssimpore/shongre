@@ -13,23 +13,20 @@ for (const width of [1408, 390]) {
     await waitForStableLayout(page);
     const toolbar = page.locator("#search-results-toolbar");
     const mobile = width < 1024;
-    const panel = page.locator(
-      mobile ? "#search-filter-panel-mobile" : "#search-filter-panel-desktop",
-    );
+    const panel = page.locator("#search-filter-panel");
     const openPanel = async () => {
       if (mobile) {
         await toolbar
           .getByRole("button", { name: "Ouvrir les filtres de recherche" })
           .click();
-      } else if (!(await panel.isVisible())) {
+      } else {
         await toolbar
-          .getByRole("button", { name: "Afficher les filtres" })
+          .getByRole("button", { name: "Type de vendeur", exact: true })
           .click();
       }
     };
     const closePanel = async () => {
-      if (mobile)
-        await panel.getByRole("button", { name: /Voir les résultats/ }).click();
+      await panel.getByRole("button", { name: /Voir les résultats/ }).click();
     };
     const assertResults = async (categorySlug: string, sellerType: string) => {
       const response = await request.get("/api/v1/listings/search", {
@@ -56,24 +53,13 @@ for (const width of [1408, 390]) {
       return data.items as Array<{ publisherType: string }>;
     };
 
-    for (const [value, desktopLabel, mobileLabel] of [
-      ["pro", "Professionnels (Boutiques)", "Pros"],
-      ["individual", "Particuliers uniquement", "Particuliers"],
-      ["all", "Tous les vendeurs", "Tous"],
+    for (const [value, label] of [
+      ["pro", "Pros"],
+      ["individual", "Particuliers"],
+      ["all", "Tous"],
     ]) {
       await openPanel();
-      if (mobile)
-        await panel
-          .getByRole("button", { name: mobileLabel, exact: true })
-          .click();
-      else {
-        const radio = panel.getByRole("radio", {
-          name: desktopLabel,
-          exact: true,
-        });
-        await radio.click();
-        await expect(radio).toBeChecked();
-      }
+      await panel.getByRole("button", { name: label, exact: true }).click();
       await closePanel();
       await expect
         .poll(() => new URL(page.url()).searchParams.get("sellerType") || "all")

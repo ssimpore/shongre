@@ -988,7 +988,10 @@ France-only happy path is insufficient for market-sensitive work.
   remain specialized when they are not listing-card equivalents.
 - Marketplace results pages must use the canonical Web `SearchResultsToolbar`,
   `FilterPanel`, and `FilterPanelToggle` primitives for results controls,
-  desktop sidebar, collapse/restore disclosure, and mobile drawer. The optional
+  category-aware desktop quick-filter rails, and the single responsive
+  right-side filter drawer used at every viewport. Quick-filter triggers open
+  that shared drawer at the relevant domain section; pages must not render a
+  second inline or breakpoint-specific filter form. The optional
   `SearchActiveFiltersBar` is the only standalone summary for applied filters.
   Do not repeat global query, category, location, or submit controls above the
   results when the application header and adaptive filter surface already own
