@@ -548,7 +548,6 @@ export const themeSpacing = {
      keeps that footprint when space allows and scales down only below it. */
   "listing-card": "13.75rem",
   "listing-card-mobile-max": "13.75rem",
-  "listing-card-grid-min": "13.75rem",
   /* A media-led crop preserves the reference hierarchy while leaving a fixed
      body for category, price, title, seller trust and category-specific facts. */
   "listing-card-height": "26.25rem",
@@ -683,8 +682,6 @@ export const themeGridTemplates = {
   "admin-monetization": "minmax(13.75rem, 1fr) 8.125rem 6.875rem 6.875rem 2rem",
   "agency-fields": "minmax(0, 1fr) 10rem 10rem",
   "listing-grid-fixed": "repeat(auto-fill, var(--spacing-listing-card))",
-  "listing-grid-fluid":
-    "repeat(auto-fit, minmax(var(--spacing-listing-card-grid-min), 1fr))",
   "description-list": "auto 1fr",
   "plans-tiers": "1fr 1.4fr 1fr",
   "admin-content-aside": "minmax(0, 1fr) 21.25rem",

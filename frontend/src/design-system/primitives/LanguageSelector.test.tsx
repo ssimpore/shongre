@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import React from "react";
 import {
   LanguageSelector,
+  AVAILABLE_LANGUAGES,
   SUPPORTED_LANGUAGES,
   SHIPPED_LOCALES,
 } from "./LanguageSelector";
@@ -48,9 +49,7 @@ describe("LanguageSelector Primitive", () => {
  */
 describe("language availability is measured, not declared", () => {
   it("offers exactly the locales declared shipped", () => {
-    const availableCodes = SUPPORTED_LANGUAGES.filter((l) => l.isAvailable).map(
-      (l) => l.code,
-    );
+    const availableCodes = AVAILABLE_LANGUAGES.map((language) => language.code);
     expect(availableCodes).toEqual([...SHIPPED_LOCALES]);
   });
 

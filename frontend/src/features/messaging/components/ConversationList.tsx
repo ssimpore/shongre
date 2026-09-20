@@ -211,7 +211,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
                   {/* Listing Title Context */}
                   {listingContext && (
-                    <div className="text-micro font-semibold text-primary truncate mb-1">
+                    <div className="text-micro font-semibold text-text-main truncate mb-1">
                       {listingContext.listingTitle} (
                       {formatPrice(listingContext.listingPrice)})
                     </div>

@@ -751,10 +751,7 @@ export const CoursesSearchPage: React.FC = () => {
             </div>
           ) : isLoading ? (
             <div aria-label="Chargement des professeurs" aria-busy="true">
-              <ListingGrid
-                fluid={viewMode === "grid"}
-                variant={viewMode === "list" ? "list" : "grid"}
-              >
+              <ListingGrid variant={viewMode === "list" ? "list" : "grid"}>
                 {[0, 1, 2].map((index) => (
                   <ListingCardSkeleton key={index} />
                 ))}
@@ -835,10 +832,7 @@ export const CoursesSearchPage: React.FC = () => {
             )
           ) : (
             <>
-              <ListingGrid
-                fluid={viewMode === "grid"}
-                variant={viewMode === "list" ? "list" : "grid"}
-              >
+              <ListingGrid variant={viewMode === "list" ? "list" : "grid"}>
                 {items.map((item, index) => (
                   <CourseTutorCard
                     key={item.offer.id}

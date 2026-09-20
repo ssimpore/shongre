@@ -141,7 +141,7 @@ function OpportunityCard({
             onClick={onMove}
             disabled={pending}
             aria-label={`Passer ${opportunity.name} à l’étape ${nextStage.name}`}
-            className="inline-flex h-7 shrink-0 items-center gap-1 rounded-control px-2 text-micro font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50"
+            className="inline-flex h-7 shrink-0 items-center gap-1 rounded-control px-2 text-micro font-semibold text-text-main hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50"
           >
             {pending ? (
               <Spinner size="sm" />
@@ -654,7 +654,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
             <button
               type="button"
               onClick={() => onNavigate(view)}
-              className="mt-3 inline-flex items-center gap-1 text-micro font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"
+              className="mt-3 inline-flex items-center gap-1 text-micro font-semibold text-text-main hover:underline focus-visible:outline-2 focus-visible:outline-primary"
             >
               {detail} <ArrowRight className="h-icon-xs w-icon-xs" />
             </button>
@@ -703,7 +703,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
             <button
               type="button"
               onClick={() => onNavigate("tasks")}
-              className="text-micro font-semibold text-primary hover:underline"
+              className="text-micro font-semibold text-text-main hover:underline"
             >
               Voir tout
             </button>
@@ -745,7 +745,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
             <button
               type="button"
               onClick={() => onNavigate("campaigns")}
-              className="text-micro font-semibold text-primary hover:underline"
+              className="text-micro font-semibold text-text-main hover:underline"
             >
               Voir toutes
             </button>

@@ -3,7 +3,7 @@ import { Check, Building2, Coins, Languages } from "lucide-react";
 import { Modal } from "../../design-system/primitives/Modal";
 import { Button } from "../../design-system/primitives/Button";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
-import { SUPPORTED_LANGUAGES } from "../../design-system/primitives/LanguageSelector";
+import { AVAILABLE_LANGUAGES } from "../../design-system/primitives/LanguageSelector";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
   formatCurrencySymbol,
@@ -120,6 +120,52 @@ export const PreferencesModal: React.FC = () => {
           ) : null}
         </div>
 
+        {/* Language Selection */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-text-strong uppercase tracking-wider">
+            <Languages className="w-icon-sm h-icon-sm text-primary" />
+            <span>{t("shell.preferencesModal.langueDeLInterface")}</span>
+          </div>
+          <div
+            className="grid grid-cols-1 gap-2"
+            role="radiogroup"
+            aria-label={t("shell.preferencesModal.langueDeLInterface")}
+          >
+            {AVAILABLE_LANGUAGES.map((lang) => {
+              const isSelected =
+                currentLocale === lang.code ||
+                currentLocale.startsWith(lang.code.slice(0, 2));
+              return (
+                <button
+                  key={lang.code}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  onClick={() => setLocale(lang.code)}
+                  className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                    isSelected
+                      ? "border-primary bg-primary-light text-text-main font-semibold ring-1 ring-primary"
+                      : "border-border-base bg-bg-surface hover:bg-bg-subtle text-text-strong font-medium"
+                  }`}
+                >
+                  <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
+                    <CountryFlag countryCode={lang.countryCode} />
+                    <span className="truncate text-sm">{lang.nativeName}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="shrink-0 text-micro font-normal uppercase text-text-tertiary">
+                      {lang.code.slice(0, 2)}
+                    </span>
+                    {isSelected ? (
+                      <Check className="h-icon-md w-icon-md shrink-0 text-primary" />
+                    ) : null}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Currency Selection */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-bold text-text-strong uppercase tracking-wider">
@@ -174,61 +220,6 @@ export const PreferencesModal: React.FC = () => {
               {t("shell.preferencesModal.currencyEstimateNotice")}
             </p>
           )}
-        </div>
-
-        {/* Language Selection */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-text-strong uppercase tracking-wider">
-            <Languages className="w-icon-sm h-icon-sm text-primary" />
-            <span>{t("shell.preferencesModal.langueDeLInterface")}</span>
-          </div>
-          <div
-            className="grid grid-cols-1 gap-2"
-            role="radiogroup"
-            aria-label={t("shell.preferencesModal.langueDeLInterface")}
-          >
-            {SUPPORTED_LANGUAGES.map((lang) => {
-              const isSelected =
-                currentLocale === lang.code ||
-                currentLocale.startsWith(lang.code.slice(0, 2));
-              return (
-                <button
-                  key={lang.code}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  disabled={!lang.isAvailable}
-                  aria-disabled={!lang.isAvailable}
-                  onClick={() => lang.isAvailable && setLocale(lang.code)}
-                  className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                    !lang.isAvailable
-                      ? "border-border-subtle bg-bg-subtle text-text-inverse-subtle cursor-not-allowed"
-                      : isSelected
-                        ? "border-primary bg-primary-light text-text-main font-semibold ring-1 ring-primary cursor-pointer"
-                        : "border-border-base bg-bg-surface hover:bg-bg-subtle text-text-strong font-medium cursor-pointer"
-                  }`}
-                >
-                  <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
-                    <CountryFlag
-                      countryCode={lang.countryCode}
-                      className={lang.isAvailable ? "" : "grayscale opacity-60"}
-                    />
-                    <span className="truncate text-sm">{lang.nativeName}</span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    <span className="shrink-0 text-micro font-normal uppercase text-text-tertiary">
-                      {lang.isAvailable
-                        ? lang.code.slice(0, 2)
-                        : t("shell.preferencesModal.bientot")}
-                    </span>
-                    {isSelected && lang.isAvailable ? (
-                      <Check className="h-icon-md w-icon-md shrink-0 text-primary" />
-                    ) : null}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         {/* Action Buttons */}

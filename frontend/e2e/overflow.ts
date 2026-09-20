@@ -115,7 +115,7 @@ async function measureOverflow(page: Page): Promise<OverflowReport> {
  */
 export async function waitForStableLayout(
   page: Page,
-  timeoutMs = 15_000,
+  timeoutMs = 20_000,
 ): Promise<void> {
   // Lazy route chunks can arrive after DOMContentLoaded, while remote demo
   // media can keep the page from ever becoming fully network-idle. Give route

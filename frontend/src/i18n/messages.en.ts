@@ -576,7 +576,6 @@ export const messagesEn: MessageCatalogue = {
     "Currency conversion is temporarily unavailable. Amounts remain displayed in their original currency.",
   "shell.preferencesModal.currencyEstimateNotice":
     "Converted amounts are estimates and are prefixed with the ≈ symbol.",
-  "shell.preferencesModal.bientot": "Coming soon",
   "shell.preferencesModal.langueDeLInterface": "Interface language",
   "shell.marketDetection.recommendationTitle":
     "You seem to be in {country}. Open Shongre {country}?",

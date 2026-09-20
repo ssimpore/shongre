@@ -2,5 +2,5 @@
   "$schema": "./brand.config.schema.json",
   "schemaVersion": 1,
   "brand": "shongre",
-  "activeVersion": "1.1.0"
+  "activeVersion": "1.2.0"
 }

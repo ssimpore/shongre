@@ -522,7 +522,7 @@ export const HomepageConfigurationPanel: React.FC<
                 {section.type === "universe_explorer" ? (
                   <div className="space-y-4 rounded-control border border-primary-border bg-primary-light p-4 sm:col-span-2">
                     <div>
-                      <h3 className="text-xs font-bold uppercase tracking-wide text-primary">
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-text-main">
                         {t(
                           "admin.homepageConfigurationPanel.categoriesDeLExplorateur",
                         )}
@@ -966,7 +966,7 @@ export const HomepageConfigurationPanel: React.FC<
                 ) : null}
                 {section.type === "deals" ? (
                   <div className="space-y-3 rounded-control border border-primary-border bg-primary-light p-4 sm:col-span-2">
-                    <h3 className="text-xs font-bold uppercase tracking-wide text-primary">
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-text-main">
                       {t(
                         "admin.homepageConfigurationPanel.reglesDEligibiliteDesOffres",
                       )}

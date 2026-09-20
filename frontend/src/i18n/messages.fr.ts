@@ -590,7 +590,6 @@ export const messagesFr = {
     "La conversion est momentanément indisponible. Les montants restent affichés dans leur devise d’origine.",
   "shell.preferencesModal.currencyEstimateNotice":
     "Les montants convertis sont indicatifs et précédés du symbole ≈.",
-  "shell.preferencesModal.bientot": "Bientôt",
   "shell.preferencesModal.langueDeLInterface": "Langue de l'interface",
 
   // --- shell.marketDetection ---

@@ -5,32 +5,26 @@ export interface ListingGridProps {
   className?: string;
   /** One full-width result per row; pair with list-variant listing cards. */
   variant?: "grid" | "list";
-  /** Fill the row with as many canonical card tracks as the viewport allows. */
-  fluid?: boolean;
 }
 
 /**
  * The shared grid geometry for standard listing surfaces.
  *
- * Mobile keeps one readable column. The default desktop layout uses the same
- * fixed width as rail cards. Result-heavy surfaces can opt into `fluid`, which
- * fills each row with as many canonical token-sized columns as the available
- * space can hold without stretching an individual card.
+ * Mobile keeps one readable column. Desktop uses the same content-sized width
+ * as rail cards and packs each row from the inline start without stretching an
+ * individual card or distributing sparse results across the container.
  */
 export const ListingGrid: React.FC<ListingGridProps> = ({
   children,
   className = "",
   variant = "grid",
-  fluid = false,
 }) => (
   <div
     data-listing-grid-variant={variant}
     className={`listing-grid grid grid-cols-1 gap-3 sm:gap-4 ${
       variant === "list"
         ? "listing-grid-list sm:grid-cols-1"
-        : fluid
-          ? "listing-grid-fluid sm:grid-cols-listing-grid-fluid"
-          : "sm:grid-cols-listing-grid-fixed sm:justify-start"
+        : "sm:grid-cols-listing-grid-fixed sm:justify-start"
     } ${className}`}
   >
     {children}

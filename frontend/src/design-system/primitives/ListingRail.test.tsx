@@ -25,17 +25,7 @@ describe("listing layout primitives", () => {
     );
 
     expect(html).toContain("sm:grid-cols-listing-grid-fixed");
-  });
-
-  it("fills a result row with token-sized responsive columns", () => {
-    const html = renderToStaticMarkup(
-      <ListingGrid fluid>
-        <div>card</div>
-      </ListingGrid>,
-    );
-
-    expect(html).toContain("listing-grid-fluid");
-    expect(html).toContain("sm:grid-cols-listing-grid-fluid");
+    expect(html).toContain("sm:justify-start");
   });
 
   it("owns one full-width track for horizontal list results", () => {
@@ -48,6 +38,5 @@ describe("listing layout primitives", () => {
     expect(html).toContain('data-listing-grid-variant="list"');
     expect(html).toContain("listing-grid-list sm:grid-cols-1");
     expect(html).not.toContain("sm:grid-cols-listing-grid-fixed");
-    expect(html).not.toContain("sm:grid-cols-listing-grid-fluid");
   });
 });

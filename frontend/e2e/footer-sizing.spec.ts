@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { useEstablishedConsent } from "./personas";
 import { expectNoHorizontalOverflow } from "./overflow";
 
-for (const width of [320, 390, 768, 1024, 1408, 1776, 2048]) {
+for (const width of [320, 390, 768, 1024, 1055, 1408, 1776, 2048]) {
   test.describe(`footer sizing at ${width}px`, () => {
     test.use({ viewport: { width, height: 900 }, hasTouch: width < 1024 });
 
@@ -86,16 +86,17 @@ for (const width of [320, 390, 768, 1024, 1408, 1776, 2048]) {
       const storeBadgeGeometry = await storeBadges.evaluateAll((badges) =>
         badges.map((badge) => {
           const { width, height } = badge.getBoundingClientRect();
-          return { width, height };
+          return {
+            width,
+            height,
+            borderRadius: getComputedStyle(badge).borderRadius,
+          };
         }),
       );
-      expect(new Set(storeBadgeGeometry.map(({ height }) => height)).size).toBe(
-        1,
-      );
-      for (const { width, height } of storeBadgeGeometry) {
-        expect(width).toBeGreaterThanOrEqual(128);
-        expect(height).toBe(48);
-      }
+      expect(storeBadgeGeometry).toEqual([
+        { width: 160, height: 48, borderRadius: "10px" },
+        { width: 160, height: 48, borderRadius: "10px" },
+      ]);
       const storeIconGeometry = await storeBadges
         .locator("svg")
         .evaluateAll((icons) =>
@@ -118,7 +119,7 @@ for (const width of [320, 390, 768, 1024, 1408, 1776, 2048]) {
       );
       expect(oversizedIcons).toBe(0);
       await expectNoHorizontalOverflow(page, `footer ${width}px`);
-      if ([390, 1408, 2048].includes(width)) {
+      if ([390, 1055, 1408, 2048].includes(width)) {
         await footer.screenshot({
           path: `/tmp/shongre-footer-sizing-${width}.png`,
         });

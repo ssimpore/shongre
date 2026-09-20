@@ -737,6 +737,12 @@
   margin-inline: auto;
 }
 
+/* Standalone cards may center within narrow surfaces, but result grids follow
+   the same inline-start alignment as homepage rails at every viewport. */
+.listing-grid[data-listing-grid-variant="grid"] .listing-card-standard {
+  margin-inline: 0;
+}
+
 .listing-card-title-vertical {
   display: -webkit-box;
   min-height: 2lh;
@@ -955,21 +961,6 @@
 
 @variant sm {
   .listing-card-standard {
-    width: var(--spacing-listing-card);
-    min-width: var(--spacing-listing-card);
-    max-width: var(--spacing-listing-card);
-  }
-
-  /* Result grids reuse the same token width as rails. Their grid template owns
-     the remaining row space instead of stretching individual cards. Centering
-     each fixed card inside its equal flexible track makes the first and last
-     cards balance the complete results row. Homepage rails are unaffected. */
-  .listing-grid-fluid {
-    justify-items: center;
-  }
-
-  .listing-grid-fluid .listing-card-standard,
-  .listing-grid-fluid .listing-card-skeleton {
     width: var(--spacing-listing-card);
     min-width: var(--spacing-listing-card);
     max-width: var(--spacing-listing-card);

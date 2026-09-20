@@ -302,7 +302,9 @@ printf 'export type Database = { public: { Tables: {} } };\\n'
         TEST_CLI_FAILURE: String(fail),
       },
       encoding: "utf8",
-      timeout: 10000,
+      // Cold tsx and Prettier startup can exceed ten seconds while the brand
+      // gate is generating and indexing its platform artwork in parallel.
+      timeout: 30000,
     });
   await writeFile(output, "stale fixture\n");
   assert.equal(generate(["--check"]).status, 1);

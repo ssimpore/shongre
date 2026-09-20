@@ -889,10 +889,7 @@ export const AutoSearchPage: React.FC = () => {
               <Skeleton className="h-full w-full rounded-card" />
             </div>
           ) : loading ? (
-            <ListingGrid
-              fluid={viewMode === "grid"}
-              variant={viewMode === "list" ? "list" : "grid"}
-            >
+            <ListingGrid variant={viewMode === "list" ? "list" : "grid"}>
               {Array.from({ length: 6 }, (_, index) => (
                 <div key={index} className="flex min-w-0 flex-col gap-2">
                   <ListingCardSkeleton />
@@ -991,10 +988,7 @@ export const AutoSearchPage: React.FC = () => {
               />
             )
           ) : (
-            <ListingGrid
-              fluid={viewMode === "grid"}
-              variant={viewMode === "list" ? "list" : "grid"}
-            >
+            <ListingGrid variant={viewMode === "list" ? "list" : "grid"}>
               {vehicles.map((vehicle, index) => {
                 const isCompared = compared.some(
                   (row) => row.id === vehicle.id,

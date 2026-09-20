@@ -210,7 +210,7 @@ export const AccountOverviewPage: React.FC = () => {
           </div>
           <Link
             to="/compte/verification"
-            className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
+            className="text-xs font-bold text-text-main hover:underline inline-flex items-center gap-1 min-h-6"
           >
             {t(
               "sellerworkspace.accountOverviewPage.centreDeVerificationKycKyb",
@@ -253,7 +253,7 @@ export const AccountOverviewPage: React.FC = () => {
               ) : (
                 <Link
                   to="/verification-email"
-                  className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
+                  className="text-xs font-bold text-text-main hover:underline inline-flex items-center gap-1 min-h-6"
                 >
                   Confirmer mon email →
                 </Link>
@@ -290,7 +290,7 @@ export const AccountOverviewPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPhoneModal(true)}
-                className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
+                className="text-xs font-semibold text-text-main hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
               >
                 {hasVerifiedPhone
                   ? "Modifier / Re-vérifier"
@@ -329,7 +329,7 @@ export const AccountOverviewPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate("/compte/securite-compte")}
-                className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
+                className="text-xs font-semibold text-text-main hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
               >
                 {currentUser?.mfaEnabled
                   ? "Gérer les codes de secours"
@@ -429,7 +429,7 @@ export const AccountOverviewPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsEditingProfile(!isEditingProfile)}
-            className="inline-flex items-center gap-1.5 min-h-6 text-xs font-semibold text-primary hover:underline cursor-pointer"
+            className="inline-flex items-center gap-1.5 min-h-6 text-xs font-semibold text-text-main hover:underline cursor-pointer"
           >
             <Edit3 className="w-icon-sm h-icon-sm" />
             {isEditingProfile ? "Fermer" : "Modifier mes informations"}
@@ -582,7 +582,7 @@ export const AccountOverviewPage: React.FC = () => {
           </h2>
           <Link
             to="/compte/annonces"
-            className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6"
+            className="text-xs font-bold text-text-main hover:underline inline-flex items-center gap-1 min-h-6"
           >
             {t("sellerworkspace.accountOverviewPage.toutesMesAnnonces")}
           </Link>
@@ -655,8 +655,8 @@ export const AccountOverviewPage: React.FC = () => {
       {!isProSeller(currentUser) && (
         <div className="flex flex-col items-center justify-between gap-4 rounded-card border border-primary-border bg-primary-light p-5 sm:flex-row">
           <div className="space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
-              <Sparkles className="w-icon-md h-icon-md" />
+            <div className="flex items-center gap-1.5 text-xs font-bold text-text-main">
+              <Sparkles className="w-icon-md h-icon-md text-primary" />
               {t(
                 "sellerworkspace.accountOverviewPage.passezALaVitesseSuperieure",
               )}

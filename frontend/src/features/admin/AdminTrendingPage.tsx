@@ -463,7 +463,7 @@ export const AdminTrendingPage: React.FC = () => {
                     </button>
                   </div>
                   <details className="mt-3 border-t border-border-disabled pt-3">
-                    <summary className="cursor-pointer text-xs font-bold text-primary focus-visible:outline-2 focus-visible:outline-primary">
+                    <summary className="cursor-pointer text-xs font-bold text-text-main focus-visible:outline-2 focus-visible:outline-primary">
                       {t("admin.adminTrendingPage.editionEditorialeAvancee")}
                     </summary>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">

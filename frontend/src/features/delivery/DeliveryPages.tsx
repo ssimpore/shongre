@@ -125,7 +125,7 @@ function LoadingCards() {
   const { t } = useTranslation(deliveryCatalogueFr);
   return (
     <section aria-busy="true" aria-label={t("common.loading")}>
-      <ListingGrid fluid>
+      <ListingGrid>
         {[1, 2, 3, 4].map((key) => (
           <ListingCardSkeleton key={key} />
         ))}
@@ -285,7 +285,7 @@ export function DeliveryMarketplacePage() {
             <LoadingCards />
           ) : requests.length ? (
             <section aria-live="polite">
-              <ListingGrid fluid>
+              <ListingGrid>
                 {requests.map((request) => (
                   <DeliveryRequestCard
                     key={request.id}

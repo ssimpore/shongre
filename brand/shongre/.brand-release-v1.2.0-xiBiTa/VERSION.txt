@@ -1,7 +1,0 @@
-Shongre Brand Kit
-Version: 1.2.0
-Release date: 2026-09-19
-Primary signature: SHONGRE.
-Primary orange: #FF5722
-Primary ink: #172033
-

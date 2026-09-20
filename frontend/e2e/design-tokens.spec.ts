@@ -119,7 +119,7 @@ test.describe("design-token runtime contracts @serial", () => {
     }
   });
 
-  test("packs available desktop search cards into shared dense columns", async ({
+  test("left-packs available desktop search cards into shared columns", async ({
     page,
   }) => {
     await page.goto("/recherche", {
@@ -151,11 +151,14 @@ test.describe("design-token runtime contracts @serial", () => {
       const gridBounds = grid?.getBoundingClientRect();
       const firstBounds = firstRow[0]?.getBoundingClientRect();
       const lastBounds = firstRow.at(-1)?.getBoundingClientRect();
+      const firstRowGaps = firstRow.slice(1).map((candidate, index) => {
+        const previous = firstRow[index]?.getBoundingClientRect();
+        return previous
+          ? candidate.getBoundingClientRect().left - previous.right
+          : null;
+      });
       return {
         tokenWidth: root.getPropertyValue("--spacing-listing-card").trim(),
-        gridMinWidth: root
-          .getPropertyValue("--spacing-listing-card-grid-min")
-          .trim(),
         tokenHeight: root
           .getPropertyValue("--spacing-listing-card-height")
           .trim(),
@@ -169,11 +172,11 @@ test.describe("design-token runtime contracts @serial", () => {
           gridBounds && firstBounds ? firstBounds.left - gridBounds.left : null,
         rowRightInset:
           gridBounds && lastBounds ? gridBounds.right - lastBounds.right : null,
+        firstRowGaps,
       };
     });
 
     expect(contract.tokenWidth).toBe("13.75rem");
-    expect(contract.gridMinWidth).toBe("13.75rem");
     expect(contract.tokenHeight).toBe("26.25rem");
     const columns = contract.gridColumns
       .split(" ")
@@ -182,21 +185,22 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(contract.cardCount).toBeGreaterThanOrEqual(6);
     expect(columns.length).toBeGreaterThanOrEqual(4);
     expect(contract.firstRowCount).toBe(columns.length);
-    expect(columns.every((column) => column >= 200)).toBe(true);
-    expect(
-      columns.every((column) => Math.abs(column - (columns[0] ?? 0)) < 1),
-    ).toBe(true);
+    expect(columns.every((column) => Math.abs(column - 220) < 1)).toBe(true);
     expect(contract.cardWidth).toBeCloseTo(220, 0);
     expect(contract.cardHeight).toBeCloseTo(420, 0);
     expect(contract.cardMinHeight).toBe("420px");
     expect(contract.rowLeftInset).not.toBeNull();
     expect(contract.rowRightInset).not.toBeNull();
-    expect(contract.rowLeftInset ?? Number.POSITIVE_INFINITY).toBeLessThan(16);
-    expect(contract.rowRightInset ?? Number.POSITIVE_INFINITY).toBeLessThan(16);
-    expect(contract.rowLeftInset).toBeCloseTo(contract.rowRightInset ?? 0, 0);
+    expect(contract.rowLeftInset).toBeCloseTo(0, 0);
+    expect(contract.rowRightInset).toBeGreaterThan(
+      contract.rowLeftInset ?? Number.POSITIVE_INFINITY,
+    );
+    for (const gap of contract.firstRowGaps) {
+      expect(gap).toBeCloseTo(16, 0);
+    }
   });
 
-  test("centres a sparse result card within the complete results row", async ({
+  test("left-aligns a sparse result card within the complete results row", async ({
     page,
   }) => {
     await page.goto("/recherche?category=mode-accessoires", {
@@ -230,9 +234,6 @@ test.describe("design-token runtime contracts @serial", () => {
 
       return {
         tokenWidth: root.getPropertyValue("--spacing-listing-card").trim(),
-        gridMinWidth: root
-          .getPropertyValue("--spacing-listing-card-grid-min")
-          .trim(),
         tokenHeight: root
           .getPropertyValue("--spacing-listing-card-height")
           .trim(),
@@ -249,20 +250,93 @@ test.describe("design-token runtime contracts @serial", () => {
     });
 
     expect(contract.tokenWidth).toBe("13.75rem");
-    expect(contract.gridMinWidth).toBe("13.75rem");
     expect(contract.tokenHeight).toBe("26.25rem");
     expect(contract.cardCount).toBe(1);
-    expect(contract.columns).toHaveLength(1);
-    expect(contract.columns.every((column) => column >= 200)).toBe(true);
-    expect(
-      contract.columns.every(
-        (column) => Math.abs(column - (contract.columns[0] ?? 0)) < 1,
-      ),
-    ).toBe(true);
+    expect(contract.columns.length).toBeGreaterThan(1);
+    expect(contract.columns.every((column) => Math.abs(column - 220) < 1)).toBe(
+      true,
+    );
     expect(contract.cardWidth).toBeCloseTo(220, 0);
     expect(contract.cardHeight).toBeCloseTo(420, 0);
     expect(contract.imageHeight).toBeLessThan(contract.cardHeight ?? 0);
-    expect(contract.rowLeftInset).toBeCloseTo(contract.rowRightInset ?? 0, 0);
+    expect(contract.rowLeftInset).toBeCloseTo(0, 0);
+    expect(contract.rowRightInset).toBeGreaterThan(
+      contract.rowLeftInset ?? Number.POSITIVE_INFINITY,
+    );
+  });
+
+  test("left-aligns electronics results at phone and desktop widths", async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
+
+    for (const width of [390, 1408]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 701 });
+      await page.goto("/recherche?category=electronique", {
+        waitUntil: "domcontentloaded",
+      });
+      await waitForStableLayout(page);
+      await expect(page).toHaveTitle(/SHONGRE/);
+      await expect(page.locator("#main-content")).toBeVisible();
+      await expect(page.locator("nextjs-portal")).toHaveCount(0);
+
+      if (width === 1408) {
+        await page
+          .getByRole("button", { name: "Affichage liste", exact: true })
+          .click();
+        await expect(
+          page.locator('[data-listing-grid-variant="list"]'),
+        ).toBeVisible();
+        await page
+          .getByRole("button", { name: "Affichage grille", exact: true })
+          .click();
+      }
+
+      const grid = page.locator('[data-listing-grid-variant="grid"]').first();
+      await expect(
+        grid.locator('article[data-listing-card="true"]'),
+      ).not.toHaveCount(0);
+      const geometry = await grid.evaluate((element) => {
+        const gridBounds = element.getBoundingClientRect();
+        const cards = Array.from(
+          element.querySelectorAll<HTMLElement>(
+            'article[data-listing-card="true"]',
+          ),
+        );
+        const firstTop = cards[0]?.getBoundingClientRect().top;
+        const firstRow = cards.filter(
+          (candidate) =>
+            Math.abs(candidate.getBoundingClientRect().top - (firstTop ?? 0)) <
+            1,
+        );
+        const firstBounds = firstRow[0]?.getBoundingClientRect();
+        const firstGap =
+          firstRow.length > 1 && firstBounds
+            ? firstRow[1]!.getBoundingClientRect().left - firstBounds.right
+            : null;
+        return {
+          leftInset: firstBounds ? firstBounds.left - gridBounds.left : null,
+          firstGap,
+        };
+      });
+
+      expect(geometry.leftInset).toBeCloseTo(0, 0);
+      if (geometry.firstGap !== null) {
+        expect(geometry.firstGap).toBeCloseTo(width < 640 ? 12 : 16, 0);
+      }
+      await expectNoHorizontalOverflow(
+        page,
+        `left-aligned electronics results at ${width}px`,
+      );
+      await grid.screenshot({
+        path: `/tmp/shongre-listing-grid-left-${width}.png`,
+      });
+    }
+    expect(errors).toEqual([]);
   });
 
   test("keeps listing rails and grids responsive across the supported viewport matrix", async ({
@@ -708,6 +782,7 @@ test.describe("design-token runtime contracts @serial", () => {
       expect(state?.hover).toBe(state?.brand);
       expect(state?.active).toBe(state?.brand);
       expect(state?.text).toBe(state?.foreground);
+      expect(state?.foreground).toBe(toRgb(semanticColors.action.onPrimary));
       expect(state?.foreground).toBe(state?.logoForeground);
       expect(state?.icons.length).toBeGreaterThan(0);
       for (const color of state?.icons ?? [])

@@ -834,10 +834,7 @@ export const EmploymentSearchPage: React.FC = () => {
                 <Skeleton className="h-full w-full rounded-card" />
               </div>
             ) : loading ? (
-              <ListingGrid
-                fluid={viewMode === "grid"}
-                variant={viewMode === "list" ? "list" : "grid"}
-              >
+              <ListingGrid variant={viewMode === "list" ? "list" : "grid"}>
                 {Array.from({ length: 6 }, (_, index) => (
                   <div key={index} className="min-w-0">
                     <ListingCardSkeleton />
@@ -906,10 +903,7 @@ export const EmploymentSearchPage: React.FC = () => {
                 />
               )
             ) : items.length ? (
-              <ListingGrid
-                fluid={viewMode === "grid"}
-                variant={viewMode === "list" ? "list" : "grid"}
-              >
+              <ListingGrid variant={viewMode === "list" ? "list" : "grid"}>
                 {items.map((job, index) => (
                   <JobCard
                     key={job.id}

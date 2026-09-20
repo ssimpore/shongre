@@ -118,7 +118,7 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = LANGUAGES.map(
  * turned a one-item picker into a scrolling panel. A language appears when it
  * works, and not before — the roadmap does not belong in a control.
  */
-const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES.filter(
+export const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES.filter(
   (lang) => lang.isAvailable,
 );
 

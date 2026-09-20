@@ -339,7 +339,7 @@ export const DealsPage: React.FC = () => {
           role="region"
           aria-label={t("legal.legalPages.annoncesEnPromotion")}
         >
-          <ListingGrid fluid>
+          <ListingGrid>
             {deals.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}

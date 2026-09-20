@@ -299,7 +299,10 @@ function BriefContent({
             aria-labelledby="brief-next-step"
             className="rounded-control border border-primary-border bg-primary-light p-4"
           >
-            <h4 id="brief-next-step" className="text-xs font-bold text-primary">
+            <h4
+              id="brief-next-step"
+              className="text-xs font-bold text-text-main"
+            >
               Prochaine action suggérée
             </h4>
             <p className="mt-1 text-xs leading-relaxed text-text-secondary">
@@ -858,10 +861,10 @@ export const ProspectingWorkspacePage: React.FC<
                       />
                       Critères appliqués
                     </span>
-                    <span className="shrink-0 font-semibold text-primary-hover group-open:hidden">
+                    <span className="shrink-0 font-semibold text-text-main group-open:hidden">
                       Modifier les critères
                     </span>
-                    <span className="hidden shrink-0 font-semibold text-primary group-open:inline">
+                    <span className="hidden shrink-0 font-semibold text-text-main group-open:inline">
                       Masquer les critères
                     </span>
                   </summary>

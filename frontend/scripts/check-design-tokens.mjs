@@ -849,7 +849,6 @@ function contrast(a, b) {
 }
 
 const contrastFailures = [];
-const brandContrastNotices = [];
 for (const [textToken, surfaceToken] of SEMANTIC_TEXT_SURFACE_PAIRS) {
   const fg = readToken(textToken);
   if (!fg) continue;
@@ -857,30 +856,8 @@ for (const [textToken, surfaceToken] of SEMANTIC_TEXT_SURFACE_PAIRS) {
   if (!bg) continue;
   const ratio = contrast(fg, bg);
   if (ratio < AA_NORMAL_TEXT) {
-    if (textToken === "on-primary" && surfaceToken.startsWith("primary")) {
-      brandContrastNotices.push({ textToken, surfaceToken, fg, bg, ratio });
-    } else {
-      contrastFailures.push({ textToken, surfaceToken, fg, bg, ratio });
-    }
+    contrastFailures.push({ textToken, surfaceToken, fg, bg, ratio });
   }
-}
-
-if (brandContrastNotices.length > 0) {
-  console.warn(
-    `\n⚠ design tokens: ${brandContrastNotices.length} canonical brand text/surface pair(s) below WCAG AA (documented brand invariant).\n`,
-  );
-  console.warn(
-    "  Official SHONGRE. logo-white on canonical orange is preserved without artificial tinting.",
-  );
-  console.warn(
-    "  Contrast failures remain visible in accordance with repository invariants.\n",
-  );
-  for (const f of brandContrastNotices) {
-    console.warn(
-      `  --color-${f.textToken} (${f.fg}) on --color-${f.surfaceToken} (${f.bg})\n      ${f.ratio.toFixed(2)}:1  →  needs ${AA_NORMAL_TEXT}:1`,
-    );
-  }
-  console.warn("");
 }
 
 if (contrastFailures.length > 0) {

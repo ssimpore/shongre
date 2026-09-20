@@ -120,7 +120,7 @@ const StoreBadge: React.FC<{
       </span>
     </>
   );
-  const className = `${EXTERNAL_CONTROL} h-control-lg min-w-32 flex-1 gap-2 rounded-control border border-border-inverse-muted bg-surface-inverse-deep px-3 text-text-inverse shadow-xs ${url ? "hover:border-border-on-inverse hover:bg-surface-inverse-hover" : ""}`;
+  const className = `${EXTERNAL_CONTROL} h-control-lg w-40 shrink-0 gap-2 rounded-control border border-border-inverse-muted bg-surface-inverse-deep px-3 text-text-inverse shadow-xs ${url ? "hover:border-border-on-inverse hover:bg-surface-inverse-hover" : ""}`;
   return url ? (
     <a
       data-store-badge={id}
@@ -279,7 +279,7 @@ export const Footer: React.FC = () => {
             </section>
             <section
               aria-label={t("footer.mobileAppsHeading")}
-              className="mt-4 flex w-full max-w-xs flex-wrap gap-3"
+              className="mt-4 flex flex-wrap gap-3"
             >
               {MOBILE_STORE_LINKS.map((store) => (
                 <StoreBadge

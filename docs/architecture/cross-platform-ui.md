@@ -140,6 +140,9 @@ its compact price-first layout. Media geometry, card widths, typography, spacing
 and colors come from the shared design tokens. Long titles and financial values
 may grow without clipping; rails align only their own cards. Discovery rails
 place navigation beside their heading and retain touch scrolling on phones.
+Web result grids use the shared `ListingGrid`; token-sized card tracks pack from
+the inline start with the shared gap instead of centering or distributing sparse
+results across the available row.
 Horizontal cards retain their larger type and richer decision information.
 Online-payment capabilities use the shared `payment` semantic icon, mapped to
 the credit-card glyph on Web and native. The existing localized payment label

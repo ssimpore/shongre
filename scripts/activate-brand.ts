@@ -54,7 +54,10 @@ async function atomicWrite(
 }
 
 async function managedPaths(): Promise<string[]> {
-  const paths = new Set<string>(brandGeneratedDestinations);
+  const paths = new Set<string>([
+    ...brandGeneratedDestinations,
+    path.relative(repositoryRoot, generatedInventoryPath),
+  ]);
   try {
     const inventory = JSON.parse(
       await readFile(generatedInventoryPath, "utf8"),
@@ -163,6 +166,12 @@ async function main(): Promise<void> {
     await rm(path.join(repositoryRoot, "frontend", ".next"), {
       recursive: true,
       force: true,
+      maxRetries: 5,
+      retryDelay: 200,
+    }).catch((cacheError: NodeJS.ErrnoException) => {
+      process.stderr.write(
+        `Could not fully clear the disposable Next.js cache during rollback (${cacheError.code ?? "unknown"}); canonical generated files will still be restored and verified.\n`,
+      );
     });
     run(
       "npm",

@@ -721,8 +721,8 @@ test.describe("canonical listing cards", () => {
             `${category.consumer} @ ${width}px`,
           );
           if (category.variant === "grid") {
-            const rowBalance = await page
-              .locator(".listing-grid-fluid")
+            const rowGeometry = await page
+              .locator('[data-listing-grid-variant="grid"]')
               .first()
               .evaluate((grid) => {
                 const gridBounds = grid.getBoundingClientRect();
@@ -751,9 +751,10 @@ test.describe("canonical listing cards", () => {
                       : gridBounds.right - lastBounds.right,
                 };
               });
-            expect(rowBalance.left).not.toBeNull();
-            expect(rowBalance.right).not.toBeNull();
-            expect(rowBalance.left).toBeCloseTo(rowBalance.right ?? 0, 0);
+            expect(rowGeometry.left).not.toBeNull();
+            expect(rowGeometry.right).not.toBeNull();
+            expect(rowGeometry.left).toBeCloseTo(0, 0);
+            expect(rowGeometry.right).toBeGreaterThanOrEqual(0);
           }
           await expectNoHorizontalOverflow(
             page,

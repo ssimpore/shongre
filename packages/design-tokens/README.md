@@ -26,8 +26,9 @@ override an orange shade. The mutation proof in `make tokens-check` changes the
 canonical input in memory and verifies every orange role still has exactly
 that RGB value, with optional alpha.
 
-Contrast assertions test the exact logo-white/orange pairing. They must not
-substitute another foreground or darken the canonical orange. On inverse
+Contrast assertions test the exact logo-white/orange pairing. A release must
+choose a canonical orange that clears WCAG AA; consumers must not darken it or
+allow a component-level foreground substitute. On inverse
 surfaces where the canonical swatch is not readable, components use the
 existing inverse text or border roles instead of creating a lighter orange.
 

@@ -776,7 +776,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             </dl>
             {opportunity.nextStep && (
               <div className="mt-3 rounded-control border border-primary-border-soft bg-primary-light p-3">
-                <span className="text-micro font-bold uppercase tracking-wider text-primary">
+                <span className="text-micro font-bold uppercase tracking-wider text-text-main">
                   {t("admin.crmOpportunityDetailPage.prochaineEtape")}
                 </span>
                 <p className="mt-1 text-xs font-semibold text-text-strong">

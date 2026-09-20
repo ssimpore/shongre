@@ -1493,7 +1493,7 @@ export const SearchPage: React.FC = () => {
 
           {/* Results Display (Grid / List / Map) */}
           {isLoading ? (
-            <ListingGrid fluid>
+            <ListingGrid>
               {[...Array(12)].map((_, i) => (
                 <ListingCardSkeleton key={i} />
               ))}
@@ -1555,10 +1555,7 @@ export const SearchPage: React.FC = () => {
                 }
               />
             ) : (
-              <ListingGrid
-                fluid={viewMode === "grid"}
-                variant={viewMode === "list" ? "list" : "grid"}
-              >
+              <ListingGrid variant={viewMode === "list" ? "list" : "grid"}>
                 {listings.map((listing, index) => (
                   <ListingCard
                     key={listing.id}

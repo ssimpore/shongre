@@ -119,9 +119,9 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
                 <span className="flex min-w-0 flex-1 flex-col items-start gap-1.5">
                   {recommended && (
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1 rounded-pill border border-primary-border bg-primary-surface-soft px-2.5 py-1 text-xs font-extrabold text-primary">
+                      <span className="inline-flex items-center gap-1 rounded-pill border border-primary-border bg-primary-surface-soft px-2.5 py-1 text-xs font-extrabold text-text-main">
                         <Crown
-                          className="h-icon-sm w-icon-sm"
+                          className="h-icon-sm w-icon-sm text-primary"
                           aria-hidden="true"
                         />
                         {t("auth.accountTypeSelector.recommended")}

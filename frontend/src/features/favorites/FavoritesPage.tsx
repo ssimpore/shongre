@@ -91,7 +91,7 @@ export const FavoritesPage: React.FC = () => {
       </div>
 
       {isLoading ? (
-        <ListingGrid fluid>
+        <ListingGrid>
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <ListingCardSkeleton key={i} />
           ))}
@@ -119,7 +119,7 @@ export const FavoritesPage: React.FC = () => {
           <h2 id="favorites-grid-heading" className="sr-only">
             {t("favorites.favoritesPage.annoncesSauvegardees")}
           </h2>
-          <ListingGrid fluid>
+          <ListingGrid>
             {favoriteListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}

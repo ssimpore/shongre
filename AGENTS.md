@@ -172,8 +172,10 @@ scripts/ + Makefile    repository-level tooling
   and disabled roles; never blend another orange or override it locally.
   Filled orange controls use `on-primary` / `colors.action.onPrimary` for the
   official logo-white text and icons, with no component foreground overrides.
-  Test the exact brand pairing without silencing failures or introducing local
-  color corrections. When canonical orange is not readable on an inverse
+  The canonical orange must clear WCAG AA against that white foreground; select
+  a compliant canonical orange rather than tinting it locally or substituting a
+  dark component foreground. Test the exact brand pairing without silencing
+  failures or introducing local color corrections. When canonical orange is not readable on an inverse
   surface, use the existing inverse foreground role instead of recoloring it.
   Inverse and danger controls retain their own foregrounds.
   Small labels on subtle orange surfaces use the shared main text foreground.
@@ -977,9 +979,10 @@ France-only happy path is insufficient for market-sensitive work.
   shrinking content below the supported footprint. Longer values clamp or use
   the compact typography defined by the shared card rather than stretching a
   rail or creating page-specific dimensions. Search and other result grids use
-  the shared fluid `ListingGrid`: equal flexible tracks distribute fixed-size
-  cards across the complete row, including its outer remainder, while homepage
-  rails retain their independent content-sized scrolling layout.
+  the shared `ListingGrid`: content-sized token tracks pack from the inline
+  start with the shared gap, so sparse rows never center or distribute cards
+  across the remaining row width. Homepage rails retain their independent
+  content-sized scrolling layout.
   Keep deferred section rendering intact.
   Profile results, hero media slides, operational rows, and map popups may
   remain specialized when they are not listing-card equivalents.

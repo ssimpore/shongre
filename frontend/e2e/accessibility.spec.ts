@@ -299,6 +299,7 @@ test.describe("keyboard and focus", () => {
    */
   test("focus indicators in main content meet SC 2.4.11 contrast", async ({
     page,
+    browserName,
   }) => {
     await usePersona(page, "individual_buyer");
     await page.setViewportSize({ width: 1440, height: 900 });
@@ -312,14 +313,8 @@ test.describe("keyboard and focus", () => {
       first?.focus();
     });
 
-    const weak: string[] = [];
-    let checked = 0;
-    // The toolbar takes the first ~6 stops; the walk has to run well past it to
-    // reach the card links, which are the controls this test exists for.
-    for (let attempt = 0; attempt < 70 && checked < 16; attempt += 1) {
-      await page.keyboard.press("Tab");
-      await page.waitForTimeout(250);
-      const info = await page.evaluate(() => {
+    const inspectActiveFocus = () =>
+      page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null;
         if (!el || el === document.body) return null;
         if (el.closest("nextjs-portal")) return { skip: true };
@@ -389,10 +384,30 @@ test.describe("keyboard and focus", () => {
           .slice(0, 40);
         return { skip: false, ratio: best, label, tag: el.tagName };
       });
-      if (!info || info.skip) continue;
+
+    const weak: string[] = [];
+    let checked = 0;
+    const record = (info: Awaited<ReturnType<typeof inspectActiveFocus>>) => {
+      if (!info || info.skip) return;
       checked += 1;
       if (info.ratio < 3)
         weak.push(`${info.tag} "${info.label}" — ${info.ratio.toFixed(2)}:1`);
+    };
+
+    // Safari on macOS follows the host keyboard-navigation preference: Option +
+    // Tab always traverses links even when plain Tab is configured for form
+    // controls only. Chromium and non-macOS engines use the ordinary key.
+    const focusAdvance =
+      browserName === "webkit" && process.platform === "darwin"
+        ? "Alt+Tab"
+        : "Tab";
+
+    // The toolbar takes the first ~6 stops; the walk has to run well past it to
+    // reach the card links, which are the controls this test exists for.
+    for (let attempt = 0; attempt < 70 && checked < 16; attempt += 1) {
+      await page.keyboard.press(focusAdvance);
+      await page.waitForTimeout(250);
+      record(await inspectActiveFocus());
     }
 
     // Guard the guard: if the walk stops short of the cards it proves nothing.

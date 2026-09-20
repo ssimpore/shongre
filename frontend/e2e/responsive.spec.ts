@@ -138,17 +138,28 @@ test.describe("open dropdowns stay on screen", () => {
         name: /préférences régionales/i,
       });
       await expect(dialog).toBeVisible();
-      const optionGroupColumns = await dialog
-        .getByRole("radiogroup")
-        .evaluateAll((groups) =>
-          groups.map(
-            (group) =>
-              getComputedStyle(group)
-                .gridTemplateColumns.split(/\s+/)
-                .filter(Boolean).length,
-          ),
-        );
-      expect(optionGroupColumns).toEqual([1, 1, 1]);
+      const optionGroups = dialog.getByRole("radiogroup");
+      const optionGroupContract = await optionGroups.evaluateAll((groups) =>
+        groups.map((group) => ({
+          label: group.getAttribute("aria-label"),
+          columns: getComputedStyle(group)
+            .gridTemplateColumns.split(/\s+/)
+            .filter(Boolean).length,
+        })),
+      );
+      expect(optionGroupContract).toEqual([
+        { label: "Marché / Pays", columns: 1 },
+        { label: "Langue de l'interface", columns: 1 },
+        { label: "Devise d'affichage", columns: 1 },
+      ]);
+      const languageGroup = dialog.getByRole("radiogroup", {
+        name: "Langue de l'interface",
+      });
+      await expect(languageGroup.getByRole("radio")).toHaveCount(1);
+      await expect(
+        languageGroup.getByRole("radio", { name: /^Français\b/ }),
+      ).toBeVisible();
+      await expect(dialog.getByText("Bientôt", { exact: true })).toHaveCount(0);
       const bounds = await dialog.boundingBox();
       const viewportWidth = await page.evaluate(() => window.innerWidth);
       const box = bounds

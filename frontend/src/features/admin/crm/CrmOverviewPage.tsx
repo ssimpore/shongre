@@ -313,7 +313,7 @@ export const CrmOverviewPage: React.FC = () => {
             </div>
             <Link
               to={crmPaths.pipeline}
-              className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-bold text-text-main hover:underline"
             >
               {t("admin.crmOverviewPage.ouvrirLePipeline")}{" "}
               <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
@@ -425,7 +425,7 @@ export const CrmOverviewPage: React.FC = () => {
           <div className="border-t border-border-subtle p-3">
             <Link
               to={crmPaths.tasks}
-              className="flex items-center justify-center gap-1 text-xs font-bold text-primary hover:underline"
+              className="flex items-center justify-center gap-1 text-xs font-bold text-text-main hover:underline"
             >
               {t("admin.crmTasksPage.voirToutesLesTaches")}{" "}
               <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
@@ -549,7 +549,7 @@ export const CrmOverviewPage: React.FC = () => {
           </span>
           <Link
             to={crmPaths.pipeline}
-            className="font-bold text-primary hover:underline"
+            className="font-bold text-text-main hover:underline"
           >
             {t("admin.crmOverviewPage.afficherLePipelineComplet")}
           </Link>

@@ -172,9 +172,9 @@ swatch exactly, including primary, hover, active, fill, emphasis, and approved
 orange category accents. The private typed recipe accepts only that orange;
 subtle surfaces, borders, shadows, and disabled roles vary its alpha rather
 than blend new shades. Orange controls use the shared logo-white `on-primary`
-foreground for text and icons. Accessibility checks measure the active kit's
-exact pairing without local foreground or orange overrides; that measured
-result is authoritative. Inverse surfaces use their existing readable
+foreground for text and icons. The canonical swatch must clear WCAG AA against
+that white; a release that does not is rejected instead of receiving local
+foreground or orange overrides. Inverse surfaces use their existing readable
 foreground roles when the canonical swatch does not qualify. Hover and pressed
 feedback comes from elevation, motion, borders, or other non-color cues instead
 of a darker orange override.

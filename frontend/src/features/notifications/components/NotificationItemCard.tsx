@@ -110,7 +110,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
         {!isCompact &&
           notification.actions &&
           notification.actions.length > 0 && (
-            <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-primary group-hover:underline">
+            <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-text-main group-hover:underline">
               <span>{notification.actions[0].label}</span>
               <ArrowRight className="w-icon-xs h-icon-xs group-hover:translate-x-0.5 transition-transform" />
             </div>
