@@ -99,7 +99,7 @@ test("save search shares the results toolbar row with filters", async ({
   expect(alignment).toEqual({ sameRow: true, saveStartsAfterFilter: true });
 });
 
-test("empty-search save action fits and preserves the guest return path", async ({
+test("empty search keeps one toolbar save action and preserves the guest return path", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1408, height: 795 });
@@ -109,8 +109,20 @@ test("empty-search save action fits and preserves the guest return path", async 
   });
   await waitForStableLayout(page);
 
-  const saveButton = page.locator("#search-no-results-save-search-btn");
+  const emptyState = page.locator("#search-no-results");
+  const saveButton = page
+    .locator("#search-results-toolbar")
+    .getByRole("button", {
+      name: "Sauvegarder cette recherche",
+      exact: true,
+    });
   await expect(saveButton).toBeVisible();
+  await expect(
+    emptyState.getByRole("button", {
+      name: "Sauvegarder cette recherche",
+      exact: true,
+    }),
+  ).toHaveCount(0);
   expect(
     await saveButton.evaluate(
       (button) => button.scrollWidth <= button.clientWidth,

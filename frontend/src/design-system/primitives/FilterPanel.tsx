@@ -89,7 +89,10 @@ export const FilterPanelToggle: React.FC<FilterPanelToggleProps> = ({
         {label || t("ui.filterPanel.filters")}
       </span>
       {activeCount > 0 ? (
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-bg-surface px-1 text-micro font-bold text-text-main">
+        <span
+          data-active-filter-count={activeCount}
+          className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-micro font-bold text-on-primary shadow-xs"
+        >
           {activeCount}
         </span>
       ) : null}

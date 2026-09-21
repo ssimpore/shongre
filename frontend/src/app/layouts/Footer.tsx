@@ -120,7 +120,7 @@ const StoreBadge: React.FC<{
       </span>
     </>
   );
-  const className = `${EXTERNAL_CONTROL} h-control-lg w-40 shrink-0 gap-2 rounded-control border border-border-inverse-muted bg-surface-inverse-deep px-3 text-text-inverse shadow-xs ${url ? "hover:border-border-on-inverse hover:bg-surface-inverse-hover" : ""}`;
+  const className = `${EXTERNAL_CONTROL} h-control-lg w-40 max-w-full shrink-0 gap-2 rounded-control border border-border-inverse-muted bg-surface-inverse-deep px-3 text-text-inverse shadow-xs ${url ? "hover:border-border-on-inverse hover:bg-surface-inverse-hover" : ""}`;
   return url ? (
     <a
       data-store-badge={id}

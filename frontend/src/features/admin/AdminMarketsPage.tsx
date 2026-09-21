@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { MarketLaunchStatus } from "@shongre/contracts/market-country";
+import type { CurrencyCatalog } from "@shongre/contracts/currency";
 import type {
   CountryMarketDefinition,
   MarketConfigurationChangeRequest,
@@ -11,6 +12,9 @@ import { Button } from "../../design-system/primitives/Button";
 import { Input, Textarea } from "../../design-system/primitives/FormField";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
+import { AdminCurrencyConfigurationPanel } from "./AdminCurrencyConfigurationPanel";
 
 const LAUNCH_STATUSES: readonly MarketLaunchStatus[] = [
   "disabled",
@@ -24,7 +28,14 @@ const LAUNCH_STATUSES: readonly MarketLaunchStatus[] = [
 
 type EditableMarket = Pick<
   CountryMarketDefinition,
-  "name" | "nativeName" | "enabled" | "launchStatus" | "gatewayVisible"
+  | "name"
+  | "nativeName"
+  | "enabled"
+  | "launchStatus"
+  | "gatewayVisible"
+  | "currency"
+  | "currencySymbol"
+  | "supportedCurrencies"
 >;
 
 const toEditable = (market: CountryMarketDefinition): EditableMarket => ({
@@ -33,9 +44,13 @@ const toEditable = (market: CountryMarketDefinition): EditableMarket => ({
   enabled: market.enabled,
   launchStatus: market.launchStatus,
   gatewayVisible: market.gatewayVisible,
+  currency: market.currency,
+  currencySymbol: market.currencySymbol,
+  supportedCurrencies: market.supportedCurrencies,
 });
 
 export const AdminMarketsPage: React.FC = () => {
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: "Administration des marchés",
     description: "Configuration et gouvernance des marchés Shongre.",
@@ -43,6 +58,8 @@ export const AdminMarketsPage: React.FC = () => {
     noIndex: true,
   });
   const [markets, setMarkets] = useState<CountryMarketDefinition[]>([]);
+  const [currencyCatalog, setCurrencyCatalog] =
+    useState<CurrencyCatalog | null>(null);
   const [selectedCode, setSelectedCode] = useState("");
   const [form, setForm] = useState<EditableMarket | null>(null);
   const [changes, setChanges] = useState<
@@ -63,8 +80,12 @@ export const AdminMarketsPage: React.FC = () => {
     setState("loading");
     setError(null);
     try {
-      const loaded = await services.markets.getAllMarkets();
+      const [loaded, catalog] = await Promise.all([
+        services.markets.getAllMarkets(),
+        services.currencies.getAdminCatalog(),
+      ]);
       setMarkets(loaded);
+      setCurrencyCatalog(catalog);
       setSelectedCode((current) => current || loaded[0]?.code || "");
       setState("ready");
     } catch (cause) {
@@ -305,6 +326,80 @@ export const AdminMarketsPage: React.FC = () => {
                     Visible dans le sélecteur
                   </label>
                 </div>
+                <label className="text-sm font-semibold text-text-main">
+                  {t("admin.currencies.defaultCurrency")}
+                  <Select
+                    labelledByAncestor
+                    className="mt-1 w-full"
+                    value={form.currency}
+                    onChange={(event) => {
+                      const currency = currencyCatalog?.currencies.find(
+                        (item) => item.code === event.target.value,
+                      );
+                      const nextCode = event.target.value;
+                      setForm({
+                        ...form,
+                        currency: nextCode,
+                        currencySymbol: currency?.symbol,
+                        supportedCurrencies: form.supportedCurrencies.includes(
+                          nextCode,
+                        )
+                          ? form.supportedCurrencies
+                          : [...form.supportedCurrencies, nextCode],
+                      });
+                    }}
+                  >
+                    {currencyCatalog?.currencies
+                      .filter((currency) => currency.enabled)
+                      .map((currency) => (
+                        <option key={currency.code} value={currency.code}>
+                          {currency.symbol} {currency.code} ·{" "}
+                          {currency.displayName}
+                        </option>
+                      ))}
+                  </Select>
+                </label>
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-semibold text-text-main">
+                    {t("admin.currencies.displayCurrencies")}
+                  </legend>
+                  <div className="flex flex-wrap gap-x-4 gap-y-2">
+                    {currencyCatalog?.currencies.map((currency) => {
+                      const checked = form.supportedCurrencies.includes(
+                        currency.code,
+                      );
+                      return (
+                        <label
+                          key={currency.code}
+                          className="flex items-center gap-2 text-sm text-text-main"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={
+                              !currency.enabled ||
+                              currency.code === form.currency
+                            }
+                            onChange={(event) =>
+                              setForm({
+                                ...form,
+                                supportedCurrencies: event.target.checked
+                                  ? [...form.supportedCurrencies, currency.code]
+                                  : form.supportedCurrencies.filter(
+                                      (code) => code !== currency.code,
+                                    ),
+                              })
+                            }
+                          />
+                          {currency.symbol} {currency.code}
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-text-tertiary">
+                    {t("admin.currencies.marketRateRequirement")}
+                  </p>
+                </fieldset>
               </div>
               <label className="block text-sm font-semibold text-text-main">
                 Justification
@@ -393,6 +488,12 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
         )}
       </div>
+      {currencyCatalog ? (
+        <AdminCurrencyConfigurationPanel
+          catalog={currencyCatalog}
+          onCatalogChange={setCurrencyCatalog}
+        />
+      ) : null}
     </div>
   );
 };

@@ -22,6 +22,10 @@ for (const width of [1408, 390, 320]) {
     );
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    let sharedHeadingTypography:
+      { fontSize: string; fontWeight: string; lineHeight: string } | undefined;
+    let sharedSubtitleTypography:
+      { fontSize: string; lineHeight: string; maxWidth: string } | undefined;
     for (const path of [
       "/connexion",
       "/inscription",
@@ -32,7 +36,30 @@ for (const width of [1408, 390, 320]) {
       "/auth/callback?status=cancelled",
     ]) {
       await page.goto(path);
-      await expect(page.locator("[data-auth-layout] h1")).toBeVisible();
+      const heading = page.locator("[data-auth-layout] h1");
+      await expect(heading).toBeVisible();
+      const headingTypography = await heading.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          lineHeight: style.lineHeight,
+        };
+      });
+      const subtitleTypography = await heading
+        .locator("xpath=following-sibling::p[1]")
+        .evaluate((element) => {
+          const style = getComputedStyle(element);
+          return {
+            fontSize: style.fontSize,
+            lineHeight: style.lineHeight,
+            maxWidth: style.maxWidth,
+          };
+        });
+      sharedHeadingTypography ??= headingTypography;
+      sharedSubtitleTypography ??= subtitleTypography;
+      expect(headingTypography).toEqual(sharedHeadingTypography);
+      expect(subtitleTypography).toEqual(sharedSubtitleTypography);
       const card = page.locator("[data-auth-card]");
       await expect(card).toBeVisible();
       if (path === "/connexion" || path.startsWith("/inscription")) {
@@ -78,9 +105,21 @@ for (const width of [1408, 390, 320]) {
               exact: true,
             }),
           ).toBeEnabled();
+          const professionalOption = card.locator(
+            '[data-account-type="professional"]',
+          );
           await expect(
-            card.getByText("Recommandé", { exact: true }),
-          ).toBeVisible();
+            professionalOption.getByText("Recommandé", { exact: true }),
+          ).toHaveCount(0);
+          await expect(
+            professionalOption.getByText("Pro", { exact: true }),
+          ).toHaveCount(0);
+          const choiceMedia = page.locator("[data-auth-choice-media]");
+          if (width >= 1280) {
+            await expect(choiceMedia).toBeVisible();
+          } else {
+            await expect(choiceMedia).toBeHidden();
+          }
           const optionBounds = await card
             .locator("[data-account-type]")
             .evaluateAll((options) =>
@@ -98,7 +137,7 @@ for (const width of [1408, 390, 320]) {
           expect(optionBounds).toHaveLength(2);
           expect(optionBounds[0]!.width).toBeCloseTo(optionBounds[1]!.width, 0);
           if (width >= 768) {
-            expect(optionBounds[0]!.width).toBeCloseTo(280, 0);
+            expect(optionBounds[0]!.width).toBeCloseTo(328, 0);
             expect(optionBounds[0]!.top).toBeCloseTo(optionBounds[1]!.top, 0);
             expect(optionBounds[0]!.bottom).toBeCloseTo(
               optionBounds[1]!.bottom,

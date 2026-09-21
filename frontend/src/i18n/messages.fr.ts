@@ -576,8 +576,6 @@ export const messagesFr = {
 
   // --- shell.preferencesModal ---
   "shell.preferencesModal.preferencesRegionales": "Préférences régionales",
-  "shell.preferencesModal.personnalisezVotrePaysDeNavigation":
-    "Personnalisez votre pays de navigation, votre devise d'affichage et votre langue",
   "shell.preferencesModal.marchePays": "Marché / Pays",
   "shell.preferencesModal.manualSelectionActive":
     "Votre choix manuel reste prioritaire sur la détection automatique.",
@@ -970,7 +968,6 @@ export const messagesFr = {
     "Vitrine personnalisable",
   "auth.accountTypeSelector.facturationAutomatiqueAvecTva":
     "Outils de facturation",
-  "auth.accountTypeSelector.recommended": "Recommandé",
   "auth.accountTypeSelector.selectProfile": "Choisir ce profil",
 
   // --- Shared authentication frame ---
@@ -1488,6 +1485,8 @@ export const messagesFr = {
   "search.searchPage.filtresDeRecherche": "Filtres de recherche",
   "search.searchPage.resultatsDeRecherche": "Résultats de recherche",
   "search.searchPage.recherchePersonnalisee": "Recherche personnalisée",
+  "search.searchPage.minimumForAttribute": "Minimum pour {attribute}",
+  "search.searchPage.maximumForAttribute": "Maximum pour {attribute}",
   "search.searchPage.categories": "Catégories",
   "search.searchPage.sousCategories": "Sous-catégories",
   "search.searchPage.trierPar": "Trier par :",
@@ -1848,9 +1847,6 @@ export const messagesFr = {
 
   // --- shell.locationPickerModal ---
   "shell.locationPickerModal.appliquerLaZone": "Appliquer la zone",
-
-  // --- shell.preferencesModal ---
-  "shell.preferencesModal.validerLesPreferences": "Valider les préférences",
 
   // --- ui.categoryFilterRail ---
   "ui.categoryFilterRail.sousCategories": "Sous-catégories :",

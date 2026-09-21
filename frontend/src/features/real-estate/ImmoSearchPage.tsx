@@ -738,6 +738,7 @@ export const ImmoSearchPage: React.FC = () => {
           resultDescription="Localisation volontairement approximative sur la carte."
           filterPanelId="immo-filter-panel"
           filtersExpanded={mobileFilters}
+          activeFilterSection={activeFilterSection}
           filterTriggers={[
             {
               sectionId: "immo-project",

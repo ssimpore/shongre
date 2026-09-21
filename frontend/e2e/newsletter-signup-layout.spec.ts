@@ -1,6 +1,19 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { useEstablishedConsent } from "./personas";
+
+async function expectConsentAlignedWithEmailIcon(form: Locator) {
+  const [emailIconBox, consentCheckboxBox] = await Promise.all([
+    form.locator('[data-newsletter-email-icon="true"]').boundingBox(),
+    form.getByRole("checkbox").boundingBox(),
+  ]);
+
+  expect(emailIconBox).not.toBeNull();
+  expect(consentCheckboxBox).not.toBeNull();
+  expect(
+    Math.abs(emailIconBox!.x - consentCheckboxBox!.x),
+  ).toBeLessThanOrEqual(1);
+}
 
 for (const width of [390, 1024, 1408]) {
   test.describe(`newsletter signup at ${width}px`, () => {
@@ -48,6 +61,7 @@ for (const width of [390, 1024, 1408]) {
       await expect(email).toHaveValue("newsletter-layout@example.com");
       await form.getByRole("checkbox").check();
       await expect(form.getByRole("checkbox")).toBeChecked();
+      await expectConsentAlignedWithEmailIcon(form);
       await expectNoHorizontalOverflow(page, `newsletter signup ${width}px`);
 
       if (testInfo.project.name === "chromium" && width !== 1024) {
@@ -150,6 +164,7 @@ for (const width of [390, 1408]) {
       await form.getByRole("checkbox").check();
       await expect(email).toHaveValue("home@example.com");
       await expect(form.getByRole("checkbox")).toBeChecked();
+      await expectConsentAlignedWithEmailIcon(form);
       await expectNoHorizontalOverflow(page, `homepage newsletter ${width}px`);
 
       await newsletter.scrollIntoViewIfNeeded();

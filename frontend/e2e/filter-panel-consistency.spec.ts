@@ -106,6 +106,40 @@ const expectBrandedBooleanControl = async (
     });
 };
 
+const expectBrandedFilterCount = async (badge: Locator) => {
+  await expect(badge).toBeVisible();
+  await expect
+    .poll(async () =>
+      badge.evaluate((element) => {
+        const style = getComputedStyle(element);
+        const rootStyle = getComputedStyle(document.documentElement);
+        const rect = element.getBoundingClientRect();
+        const probe = document.createElement("span");
+        probe.style.color = rootStyle.getPropertyValue("--color-primary");
+        document.body.appendChild(probe);
+        const primary = getComputedStyle(probe).color;
+        probe.style.color = rootStyle.getPropertyValue("--color-on-primary");
+        const onPrimary = getComputedStyle(probe).color;
+        probe.remove();
+
+        return {
+          text: element.textContent?.trim(),
+          usesPrimaryBackground: style.backgroundColor === primary,
+          usesOnPrimaryText: style.color === onPrimary,
+          isCircular:
+            Math.abs(rect.width - rect.height) < 1 &&
+            Number.parseFloat(style.borderRadius) >= rect.height / 2,
+        };
+      }),
+    )
+    .toEqual({
+      text: "1",
+      usesPrimaryBackground: true,
+      usesOnPrimaryText: true,
+      isCircular: true,
+    });
+};
+
 test.beforeEach(async ({ page }) => {
   await useEstablishedConsent(page);
   await usePersona(page, "guest");
@@ -156,6 +190,26 @@ test.describe("canonical marketplace filter panel", () => {
         rail.getByRole("button", { name: /Afficher les filtres/ }),
       ).toBeVisible();
     }
+  });
+
+  test("active filter counts use the branded indicator responsively", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 800 });
+    await page.goto("/recherche?category=maison-jardin", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    await expectBrandedFilterCount(
+      page.locator('[data-active-filter-count="1"]:visible'),
+    );
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await waitForStableLayout(page);
+    await expectBrandedFilterCount(
+      page.locator('[data-active-filter-count="1"]:visible'),
+    );
   });
 
   for (const surface of FILTER_SURFACES) {

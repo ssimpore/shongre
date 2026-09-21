@@ -61,7 +61,7 @@ describe("currency administration", () => {
     await expect(
       service.upsertExchangeRate(
         "EUR",
-        "USD",
+        "CAD",
         {
           rateNumerator: 11,
           rateDenominator: 10,
@@ -136,5 +136,69 @@ describe("currency administration", () => {
         ACTOR,
       ),
     ).rejects.toThrow(/désactivées/);
+  });
+
+  it("requires a current conversion path before a market can offer a display currency", async () => {
+    const currencyRepo = new DemoCurrencyRepository();
+    const service = new MarketsService(
+      new DemoMarketRepository(),
+      currencyRepo,
+    );
+    await currencyRepo.upsertExchangeRate(
+      "EUR",
+      "USD",
+      {
+        rateNumerator: 11,
+        rateDenominator: 10,
+        source: "Test administrateur",
+        asOf: "2026-09-01T00:00:00.000Z",
+        expiresAt: "2099-09-03T00:00:00.000Z",
+        enabled: false,
+        reason: "Désactivation du taux pour vérifier le refus",
+      },
+      ACTOR,
+    );
+
+    await expect(
+      service.updateCountryConfiguration(
+        "FR",
+        {
+          expectedVersion: 1,
+          reason: "Ajout contrôlé du dollar au marché français",
+          patch: { supportedCurrencies: ["EUR", "USD"] },
+        },
+        ACTOR,
+      ),
+    ).rejects.toThrow(/taux de conversion actif et à jour/);
+
+    await currencyRepo.upsertExchangeRate(
+      "EUR",
+      "USD",
+      {
+        rateNumerator: 11,
+        rateDenominator: 10,
+        source: "Test administrateur",
+        asOf: "2026-09-01T00:00:00.000Z",
+        expiresAt: "2099-09-03T00:00:00.000Z",
+        enabled: true,
+        reason: "Activation du taux après validation administrateur",
+      },
+      ACTOR,
+    );
+
+    await expect(
+      service.updateCountryConfiguration(
+        "FR",
+        {
+          expectedVersion: 1,
+          reason: "Ajout contrôlé du dollar au marché français",
+          patch: { supportedCurrencies: ["EUR", "USD"] },
+        },
+        ACTOR,
+      ),
+    ).resolves.toMatchObject({
+      marketCode: "FR",
+      candidate: { supportedCurrencies: ["EUR", "USD"] },
+    });
   });
 });

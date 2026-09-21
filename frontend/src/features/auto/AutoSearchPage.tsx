@@ -797,6 +797,7 @@ export const AutoSearchPage: React.FC = () => {
             }
             filterPanelId="auto-filter-panel"
             filtersExpanded={filterOpen}
+            activeFilterSection={activeFilterSection}
             filterTriggers={[
               {
                 sectionId: "auto-type",

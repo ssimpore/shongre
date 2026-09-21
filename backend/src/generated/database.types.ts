@@ -34813,6 +34813,14 @@ export type Database = {
         Args: { p_market_code: string };
         Returns: Json;
       };
+      get_discovery_collection_inventory: {
+        Args: { p_groups: Json; p_market_code: string };
+        Returns: {
+          cover_image_url: string;
+          listing_count: number;
+          root_id: string;
+        }[];
+      };
       get_discovery_metrics: {
         Args: { p_market_code: string; p_since?: string };
         Returns: Json;

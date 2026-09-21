@@ -676,6 +676,7 @@ export const CoursesSearchPage: React.FC = () => {
             }
             filterPanelId="education-filter-panel"
             filtersExpanded={isFilterOpen}
+            activeFilterSection={activeFilterSection}
             filterTriggers={[
               {
                 sectionId: "education-subject",

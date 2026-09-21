@@ -10,7 +10,7 @@ export interface ModalProps {
   description?: React.ReactNode;
   headerIcon?: React.ReactNode;
   children: React.ReactNode;
-  maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
+  maxWidth?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
   className?: string;
   /** Prevents closing through Escape, the backdrop, or a close button. */
   dismissible?: boolean;
@@ -36,6 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   const maxWidths = {
+    xs: "max-w-xs",
     sm: "max-w-sm",
     md: "max-w-md",
     lg: "max-w-lg",

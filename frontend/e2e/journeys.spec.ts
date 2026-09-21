@@ -602,9 +602,52 @@ test.describe("honest product surfaces", () => {
     await page.goto("/");
 
     await page.locator("#header-desktop-lang-button").click();
+    const dialog = page.getByRole("dialog", {
+      name: "Préférences régionales",
+    });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator("h2 + div")).toHaveCount(0);
+    const dialogBounds = (await dialog.boundingBox())!;
+    expect(dialogBounds.width).toBeGreaterThanOrEqual(312);
+    expect(dialogBounds.width).toBeLessThanOrEqual(320);
+    const dialogRadii = await dialog.evaluate((element) => {
+      const probe = document.createElement("div");
+      probe.style.borderRadius = "var(--radius-listing-card)";
+      document.body.append(probe);
+      const expected = getComputedStyle(probe).borderTopLeftRadius;
+      probe.remove();
+
+      return {
+        actual: getComputedStyle(element).borderTopLeftRadius,
+        expected,
+      };
+    });
+    expect(dialogRadii.actual).toBe(dialogRadii.expected);
+    expect(
+      await dialog.evaluate(
+        (element) => element.scrollWidth <= element.clientWidth,
+      ),
+    ).toBe(true);
+    const dropdownTriggers = dialog.locator('button[aria-haspopup="listbox"]');
+    await expect(dropdownTriggers).toHaveCount(3);
+    const marketDropdown = dialog.getByRole("button", {
+      name: "Marché / Pays",
+    });
+    await marketDropdown.click();
+    const marketOptions = dialog.getByRole("listbox", {
+      name: "Marché / Pays",
+    });
+    await expect(marketOptions.getByRole("option")).toHaveCount(6);
     await expect(
-      page.getByRole("dialog", { name: "Préférences régionales" }),
-    ).toBeVisible();
+      marketOptions.getByRole("option", { name: "France" }),
+    ).toHaveAttribute("aria-selected", "true");
+    await marketDropdown.press("Escape");
+    await expect(marketOptions).toHaveCount(0);
+    await expect(marketDropdown).toBeFocused();
+    await expect(
+      dialog.getByRole("button", { name: "Valider les préférences" }),
+    ).toHaveCount(0);
+    await expect(dialog.getByRole("radiogroup")).toHaveCount(0);
     await expect(page.getByRole("menu")).toHaveCount(0);
   });
 

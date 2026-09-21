@@ -17,6 +17,7 @@ import {
 } from "../../infrastructure/database/repositories/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { logger } from "../../infrastructure/logging/logger.js";
+import { convertMoney } from "@shongre/shared/currency-conversion";
 
 export const CANONICAL_MARKETS = CANONICAL_DEMO_MARKETS;
 
@@ -240,6 +241,27 @@ export class MarketsService {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: `Les devises suivantes sont inconnues ou désactivées : ${unavailableCurrencies.join(", ")}.`,
+      });
+    }
+    const currenciesWithoutCurrentRate = candidate.supportedCurrencies.filter(
+      (currency) => {
+        if (currency === candidate.currency) return false;
+        try {
+          convertMoney(
+            { amountMinor: 0, currency: candidate.currency },
+            currency,
+            currencyCatalog,
+          );
+          return false;
+        } catch {
+          return true;
+        }
+      },
+    );
+    if (currenciesWithoutCurrentRate.length > 0) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: `Configurez un taux de conversion actif et à jour avant d’autoriser : ${currenciesWithoutCurrentRate.join(", ")}.`,
       });
     }
     if (candidate.isDefault && candidate.basePath !== "/") {

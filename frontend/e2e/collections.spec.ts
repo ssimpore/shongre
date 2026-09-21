@@ -20,16 +20,19 @@ test.describe("API-backed collections", () => {
       });
       await page.goto("/");
       await expect(page).toHaveTitle(/Shongre/i);
+      await waitForStableLayout(page);
       const listing = page.locator("[data-listing-card]").first();
       await expect(listing).toBeVisible();
       const radius = await listing.evaluate(
         (element) => getComputedStyle(element).borderRadius,
       );
       const collections = page.getByTestId("home-collection-explorer");
-      await collections.scrollIntoViewIfNeeded();
       const homeCards = collections.getByRole("link", {
         name: /^Explorer la collection/,
       });
+      // The homepage intentionally swaps its below-fold placeholder for the
+      // API-backed collection section. Waiting on a card lets Playwright
+      // re-resolve that replacement instead of scrolling a detached wrapper.
       await expect(homeCards.first()).toBeVisible();
       for (const card of await homeCards.all()) {
         await expect(card).toHaveCSS("border-radius", radius);

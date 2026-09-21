@@ -564,8 +564,6 @@ export const messagesEn: MessageCatalogue = {
   "shell.locationPickerModal.locationUnresolved":
     "No supported city was found near your location.",
   "shell.preferencesModal.preferencesRegionales": "Regional preferences",
-  "shell.preferencesModal.personnalisezVotrePaysDeNavigation":
-    "Set your browsing country, display currency and language",
   "shell.preferencesModal.marchePays": "Market / Country",
   "shell.preferencesModal.manualSelectionActive":
     "Your manual choice takes priority over automatic detection.",
@@ -915,7 +913,6 @@ export const messagesEn: MessageCatalogue = {
   "auth.accountTypeSelector.vitrineDeBoutiquePersonnalisable":
     "Custom storefront",
   "auth.accountTypeSelector.facturationAutomatiqueAvecTva": "Invoicing tools",
-  "auth.accountTypeSelector.recommended": "Recommended",
   "auth.accountTypeSelector.selectProfile": "Choose this profile",
   "auth.frame.privateAccount": "Personal account",
   "auth.frame.identityControl": "Identity verification",
@@ -1417,6 +1414,8 @@ export const messagesEn: MessageCatalogue = {
   "search.searchPage.filtresDeRecherche": "Search filters",
   "search.searchPage.resultatsDeRecherche": "Search results",
   "search.searchPage.recherchePersonnalisee": "Custom search",
+  "search.searchPage.minimumForAttribute": "Minimum for {attribute}",
+  "search.searchPage.maximumForAttribute": "Maximum for {attribute}",
   "search.searchPage.categories": "Categories",
   "search.searchPage.sousCategories": "Subcategories",
   "search.searchPage.trierPar": "Sort by:",
@@ -1724,6 +1723,8 @@ export const messagesEn: MessageCatalogue = {
   "admin.currencies.marketDefaults": "Currencies by market",
   "admin.currencies.enabled": "Enabled",
   "admin.currencies.disabled": "Disabled",
+  "admin.currencies.enable": "Enable",
+  "admin.currencies.disable": "Disable",
   "admin.currencies.code": "ISO 4217 code",
   "admin.currencies.name": "Public name",
   "admin.currencies.symbol": "Symbol",
@@ -1731,6 +1732,7 @@ export const messagesEn: MessageCatalogue = {
   "admin.currencies.currencyEnabled": "Currency available",
   "admin.currencies.rateEnabled": "Rate available",
   "admin.currencies.reason": "Auditable reason",
+  "admin.currencies.reasonHint": "At least {minimum} characters.",
   "admin.currencies.base": "Source currency",
   "admin.currencies.quote": "Target currency",
   "admin.currencies.numerator": "Exact numerator",
@@ -1741,6 +1743,8 @@ export const messagesEn: MessageCatalogue = {
   "admin.currencies.market": "Market",
   "admin.currencies.defaultCurrency": "Default currency",
   "admin.currencies.displayCurrencies": "Allowed display currencies",
+  "admin.currencies.marketRateRequirement":
+    "A currency must be enabled and have a current rate before submission.",
   "admin.currencies.requestMarketChange": "Submit change",
   "admin.currencies.currencySaved": "Currency saved and audited.",
   "admin.currencies.rateSaved": "Rate saved and audited.",
@@ -2391,7 +2395,6 @@ export const messagesEn: MessageCatalogue = {
   "shell.header.accountMenu.status.suspended": "Suspended account",
   "shell.header.accountMenu.status.inactive": "Deactivated account",
   "shell.locationPickerModal.appliquerLaZone": "Apply area",
-  "shell.preferencesModal.validerLesPreferences": "Save preferences",
   "ui.categoryFilterRail.sousCategories": "Subcategories:",
   "ui.dropdownMenu.selectionne": "selected",
   "ui.dropdownMenu.aucunResultatTrouve": "No results found",

@@ -86,6 +86,17 @@ export interface SearchTermSuggestion {
   matchKind: "prefix" | "fuzzy";
 }
 
+export interface ListingCollectionInventoryGroup {
+  rootId: string;
+  categoryIds: readonly string[];
+}
+
+export interface ListingCollectionInventory {
+  rootId: string;
+  listingCount: number;
+  coverImageUrl?: string;
+}
+
 /*
  * The fixture ranks the way `suggest_listing_search_terms` and
  * `correct_listing_search_query` do, with the same thresholds, so the browser
@@ -105,6 +116,15 @@ export interface IListingRepository {
     ids: readonly string[],
     marketCode: string,
   ): Promise<Listing[]>;
+  /**
+   * Exact inventory counts and the newest usable cover for every requested
+   * taxonomy root. The database implementation must resolve the complete
+   * batch in one operation so homepage collections never become N+1 search.
+   */
+  getDiscoveryCollectionInventory(input: {
+    marketCode: string;
+    groups: readonly ListingCollectionInventoryGroup[];
+  }): Promise<ListingCollectionInventory[]>;
   search(filter: SearchFilters): Promise<{
     items: Listing[];
     total: number;
@@ -603,6 +623,56 @@ export class DemoListingRepository implements IListingRepository {
       [...new Set(ids)].map((id) => this.findPublicById(id, marketCode)),
     );
     return listings.filter((listing): listing is Listing => Boolean(listing));
+  }
+
+  async getDiscoveryCollectionInventory(input: {
+    marketCode: string;
+    groups: readonly ListingCollectionInventoryGroup[];
+  }): Promise<ListingCollectionInventory[]> {
+    const marketCode = requireMarketCode(input.marketCode);
+    return input.groups.map((group) => {
+      const categoryIds = new Set(group.categoryIds);
+      const eligible = Array.from(this.listings.values())
+        .flatMap((listing) => {
+          if (
+            listing.status !== "published" ||
+            !categoryIds.has(listing.categoryId)
+          )
+            return [];
+          const publication = listing.marketPublications?.find(
+            (entry) =>
+              entry.marketCode === marketCode &&
+              entry.status === "active" &&
+              entry.complianceState === "approved",
+          );
+          if (listing.marketPublications?.length && !publication) return [];
+          if (!publication && listing.marketCode !== marketCode) return [];
+          return [
+            {
+              listing,
+              sortDate:
+                publication?.sortDate ||
+                listing.organicFreshnessAt ||
+                listing.publishedAt ||
+                listing.createdAt,
+            },
+          ];
+        })
+        .sort(
+          (left, right) =>
+            new Date(right.sortDate).getTime() -
+              new Date(left.sortDate).getTime() ||
+            right.listing.id.localeCompare(left.listing.id),
+        );
+      const coverImageUrl = eligible
+        .flatMap(({ listing }) => listing.images || [])
+        .find((url) => url.trim().length > 0);
+      return {
+        rootId: group.rootId,
+        listingCount: eligible.length,
+        ...(coverImageUrl ? { coverImageUrl } : {}),
+      };
+    });
   }
 
   async search(filters: SearchFilters): Promise<{
@@ -1825,6 +1895,33 @@ export class PostgresListingRepository implements IListingRepository {
     } catch (error) {
       databaseFailure("listings.findPublicByIds", error);
     }
+  }
+
+  async getDiscoveryCollectionInventory(input: {
+    marketCode: string;
+    groups: readonly ListingCollectionInventoryGroup[];
+  }): Promise<ListingCollectionInventory[]> {
+    if (!input.groups.length) return [];
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase.rpc(
+      "get_discovery_collection_inventory",
+      {
+        p_market_code: requireMarketCode(input.marketCode),
+        p_groups: input.groups.map((group) => ({
+          root_id: group.rootId,
+          category_ids: [...new Set(group.categoryIds)],
+        })),
+      },
+    );
+    if (error)
+      databaseFailure("listings.getDiscoveryCollectionInventory", error);
+    return (data || []).map((row) => ({
+      rootId: String(row.root_id),
+      listingCount: Number(row.listing_count || 0),
+      ...(typeof row.cover_image_url === "string" && row.cover_image_url.trim()
+        ? { coverImageUrl: row.cover_image_url }
+        : {}),
+    }));
   }
 
   async search(filters: SearchFilters): Promise<{

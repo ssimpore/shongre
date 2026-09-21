@@ -55,6 +55,7 @@ export interface SearchResultsToolbarProps {
   resultDescription?: ReactNode;
   filterPanelId: string;
   filtersExpanded: boolean;
+  activeFilterSection?: string;
   filterTriggers?: readonly SearchFilterTrigger[];
   activeFilterCount?: number;
   onOpenFilters: (sectionId?: string) => void;
@@ -130,6 +131,7 @@ export function SearchResultsToolbar({
   resultDescription,
   filterPanelId,
   filtersExpanded,
+  activeFilterSection,
   filterTriggers = [],
   activeFilterCount = 0,
   onOpenFilters,
@@ -255,7 +257,9 @@ export function SearchResultsToolbar({
                 variant="secondary"
                 size="md"
                 aria-controls={filterPanelId}
-                aria-expanded={filtersExpanded}
+                aria-expanded={
+                  filtersExpanded && activeFilterSection === trigger.sectionId
+                }
                 data-filter-trigger={trigger.sectionId}
                 onClick={() => onOpenFilters(trigger.sectionId)}
                 rightIcon={

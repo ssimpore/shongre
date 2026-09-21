@@ -11,6 +11,8 @@ export interface AuthLayoutProps {
   contentFrame?: "card" | "open";
   illustration?: React.ReactNode;
   progress?: React.ReactNode;
+  backdrop?: React.ReactNode;
+  density?: "default" | "compact";
   headingRef?: React.Ref<HTMLHeadingElement>;
   footerLink?: { text: string; linkText: string; to: string };
   showLegalNotice?: boolean;
@@ -31,24 +33,28 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   contentFrame = "card",
   illustration,
   progress,
+  backdrop,
+  density = "default",
   headingRef,
   footerLink,
   showLegalNotice = false,
 }) => {
   const { t } = useTranslation();
   const heading = (
-    <div className="mb-6 text-center sm:mb-8">
+    <div
+      className={`text-center ${density === "compact" ? "mb-4" : "mb-6 sm:mb-8"}`}
+    >
       {illustration}
       <h1
         ref={headingRef}
         tabIndex={headingRef ? -1 : undefined}
-        className={`tracking-tight text-text-main ${width === "wide" ? "text-display-md font-extrabold" : illustration ? "text-2xl font-bold sm:text-display-sm" : "text-2xl font-bold sm:text-3xl"}`}
+        className={`tracking-tight text-text-main ${illustration ? "text-2xl font-bold sm:text-display-sm" : "text-2xl font-bold sm:text-3xl"}`}
       >
         {title}
       </h1>
       {subtitle && (
         <p
-          className={`mx-auto mt-3 leading-relaxed text-text-muted ${width === "wide" ? "max-w-2xl text-base sm:text-xl" : "max-w-lg text-sm sm:text-base"}`}
+          className={`mx-auto max-w-lg text-sm leading-relaxed text-text-muted sm:text-base ${density === "compact" ? "mt-2" : "mt-3"}`}
         >
           {subtitle}
         </p>
@@ -58,42 +64,46 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   return (
     <div
       data-auth-layout
-      className="relative isolate flex flex-1 flex-col justify-center bg-surface-soft px-4 py-8 sm:px-6 sm:py-12"
+      className={`relative isolate flex flex-1 flex-col justify-center bg-surface-soft px-4 sm:px-6 ${density === "compact" ? "py-4 sm:py-3" : "py-8 sm:py-12"}`}
     >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 z-base overflow-hidden"
       >
-        <svg
-          viewBox="0 0 400 360"
-          focusable="false"
-          className="absolute -left-48 -top-2 h-96 w-96 fill-primary-surface-soft sm:-left-40"
-        >
-          <path d="M0 0 326 64Q400 80 383 161L352 291Q338 358 268 342L0 280Z" />
-        </svg>
-        <svg
-          viewBox="0 0 400 440"
-          focusable="false"
-          className="absolute -right-48 -bottom-16 h-96 w-96 fill-primary-surface-soft sm:-right-32 sm:bottom-0"
-        >
-          <path d="M141 18Q176-13 229 10L400 91V440L70 393Q-7 372 24 286L101 71Q115 36 141 18Z" />
-        </svg>
-        <div className="absolute bottom-40 left-16 hidden grid-cols-5 gap-7 lg:grid">
-          {Array.from({ length: 20 }, (_, index) => (
-            <span
-              key={index}
-              className="h-2 w-2 rounded-full bg-border-disabled"
-            />
-          ))}
-        </div>
-        <div className="absolute right-16 top-28 hidden grid-cols-5 gap-7 lg:grid">
-          {Array.from({ length: 20 }, (_, index) => (
-            <span
-              key={index}
-              className="h-2 w-2 rounded-full bg-border-disabled"
-            />
-          ))}
-        </div>
+        {backdrop ?? (
+          <>
+            <svg
+              viewBox="0 0 400 360"
+              focusable="false"
+              className="absolute -left-48 -top-2 h-96 w-96 fill-primary-surface-soft sm:-left-40"
+            >
+              <path d="M0 0 326 64Q400 80 383 161L352 291Q338 358 268 342L0 280Z" />
+            </svg>
+            <svg
+              viewBox="0 0 400 440"
+              focusable="false"
+              className="absolute -right-48 -bottom-16 h-96 w-96 fill-primary-surface-soft sm:-right-32 sm:bottom-0"
+            >
+              <path d="M141 18Q176-13 229 10L400 91V440L70 393Q-7 372 24 286L101 71Q115 36 141 18Z" />
+            </svg>
+            <div className="absolute bottom-40 left-16 hidden grid-cols-5 gap-7 lg:grid">
+              {Array.from({ length: 20 }, (_, index) => (
+                <span
+                  key={index}
+                  className="h-2 w-2 rounded-full bg-border-disabled"
+                />
+              ))}
+            </div>
+            <div className="absolute right-16 top-28 hidden grid-cols-5 gap-7 lg:grid">
+              {Array.from({ length: 20 }, (_, index) => (
+                <span
+                  key={index}
+                  className="h-2 w-2 rounded-full bg-border-disabled"
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
       <div
         className={`relative z-raised mx-auto w-full ${AUTH_CONTENT_WIDTH[width]}`}
@@ -111,7 +121,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           {illustration && heading}
           {children}
           {footerLink && (
-            <div className="mt-6 border-t border-border-soft pt-5 text-center text-sm text-text-supporting">
+            <div
+              className={`border-t border-border-soft text-center text-sm text-text-supporting ${density === "compact" ? "mt-3 pt-3" : "mt-6 pt-5"}`}
+            >
               {footerLink.text}{" "}
               <Link
                 to={footerLink.to}
@@ -124,7 +136,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           {showLegalNotice && (
             <p
               data-auth-legal-notice
-              className="mt-5 text-center text-xs leading-relaxed text-text-muted"
+              className={`text-center text-xs leading-relaxed text-text-muted ${density === "compact" ? "mt-2" : "mt-5"}`}
             >
               {t("auth.social.privacy")}{" "}
               <Link
@@ -145,7 +157,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
           )}
         </div>
       </div>
-      <ul className="relative z-raised mx-auto mt-6 flex max-w-5xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-text-muted sm:mt-8 sm:text-sm md:gap-x-0">
+      <ul
+        className={`relative z-raised mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-text-muted sm:text-sm md:gap-x-0 ${density === "compact" ? "mt-2" : "mt-6 sm:mt-8"}`}
+      >
         {[
           { Icon: LockKeyhole, label: t("auth.frame.privateAccount") },
           { Icon: ShieldCheck, label: t("auth.frame.identityControl") },

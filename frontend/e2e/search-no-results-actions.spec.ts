@@ -9,7 +9,7 @@ test.describe("search empty-state actions", () => {
     { name: "tablet", width: 768, height: 1024 },
     { name: "desktop", width: 1280, height: 800 },
   ]) {
-    test(`keeps both actions the same width at ${viewport.name}`, async ({
+    test(`does not repeat the toolbar save action at ${viewport.name}`, async ({
       page,
     }) => {
       await page.setViewportSize({
@@ -25,19 +25,36 @@ test.describe("search empty-state actions", () => {
       );
       await waitForStableLayout(page);
 
-      const actions = page.locator("#search-no-results-actions");
-      const buttons = actions.getByRole("button");
-      await expect(buttons).toHaveCount(2);
-
-      const widths = await buttons.evaluateAll((elements) =>
-        elements.map((element) =>
-          Math.round(element.getBoundingClientRect().width),
-        ),
-      );
+      const emptyState = page.locator("#search-no-results");
+      await expect(
+        emptyState.getByRole("button", {
+          name: "Effacer tous les filtres",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        emptyState.getByRole("button", {
+          name: "Sauvegarder cette recherche",
+          exact: true,
+        }),
+      ).toHaveCount(0);
+      await expect(
+        page.locator("#search-results-toolbar").getByRole("button", {
+          name: "Sauvegarder cette recherche",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("button", {
+          name: "Sauvegarder cette recherche",
+          exact: true,
+        }),
+      ).toHaveCount(1);
       expect(
-        new Set(widths).size,
-        `action widths differ: ${widths.join(", ")}`,
-      ).toBe(1);
+        await emptyState.evaluate(
+          (element) => element.scrollWidth <= element.clientWidth,
+        ),
+      ).toBe(true);
     });
   }
 });

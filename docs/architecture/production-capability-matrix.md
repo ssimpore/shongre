@@ -64,8 +64,8 @@ evidence.
 <!-- capability-inventory:start -->
 
 Current generated repository inventory: 551 OpenAPI operations across 487
-paths, including 542 runtime routes, and 146 ordered migrations through
-`00146_web_push_devices.sql`. There are 452 non-E2E test source files.
+paths, including 542 runtime routes, and 148 ordered migrations through
+`00148_currency_catalog_usd_and_rate_gate.sql`. There are 454 non-E2E test source files.
 <!-- capability-inventory:end -->
 
 Statuses in this ledger are intentionally stricter than feature-development
@@ -162,7 +162,7 @@ User-approved choices for subsequent slices:
 
 | Area                   | Decision      | Remaining gate                                                                                                                                                                                                                                                                         |
 | ---------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Additional language    | English first | Migrate remaining UI and domain copy and pass full coverage/browser gates before adding English to `SHIPPED_LOCALES`. The current coverage check reports 2,588 untranslated UI strings.                                                                                                |
+| Additional language    | English first | Migrate remaining UI and domain copy and pass full coverage/browser gates before adding English to `SHIPPED_LOCALES`. The current coverage check reports 2,062 untranslated UI strings across 146 files.                                                                               |
 | First shipping carrier | Colissimo     | Implement label, tracking and reconciliation flows; obtain approved environment-specific credentials and certify sandbox behavior. No live carrier integration is enabled.                                                                                                             |
 | Return shipping cost   | Seller pays   | Encode this in the approved, market-scoped return policy. Eligibility, return window, response deadlines and refund approval rules are not yet defined; do not enable automatic return/refund decisions from this answer alone. Existing explicit staff refund authority is unchanged. |
 
@@ -357,7 +357,7 @@ The labels below have deliberately narrow meanings:
 |  45 | Analytics dashboards                    | PARTIAL · VERIFIED · TESTED                     | Operational/product/finance views exist; the metric dictionary and warehouse/BI lineage are incomplete.                                                                                                                                                                           |
 |  46 | AI features                             | IMPLEMENTED · VERIFIED · TESTED · RELEASE-GATED | Provider-safe publication/safety paths exist; live evaluation and advanced conversational/lead models remain unverified.                                                                                                                                                          |
 |  47 | Provider abstraction                    | IMPLEMENTED · VERIFIED · TESTED · RELEASE-GATED | Fail-closed payment/KYC/registry/AI/notification/search boundaries exist; live credentials and health evidence are not source-code artifacts.                                                                                                                                     |
-|  48 | Internationalization / geography        | PARTIAL · VERIFIED · TESTED                     | Market/locale/currency/timezone logic is centralized; French alone ships and 2,578 strings in 177 files remain in the measured catalogue migration.                                                                                                                               |
+|  48 | Internationalization / geography        | PARTIAL · VERIFIED · TESTED                     | Market/locale/currency/timezone logic is centralized; French alone ships and 2,062 strings across 146 files remain in the measured catalogue migration.                                                                                                                           |
 |  49 | Design system                           | IMPLEMENTED · VERIFIED · TESTED                 | Canonical tokens, shared primitives and semantic-value/control guards pass.                                                                                                                                                                                                       |
 |  50 | UX consistency                          | IMPLEMENTED · VERIFIED · TESTED                 | 132 registered routes and 262 static destinations pass navigation and responsive checks.                                                                                                                                                                                          |
 |  51 | Accessibility                           | IMPLEMENTED · VERIFIED · TESTED                 | WCAG-oriented component and axe/browser suites cover landmarks, names, focus, consent, motion and mobile clearance; release still benefits from manual screen-reader evidence.                                                                                                    |

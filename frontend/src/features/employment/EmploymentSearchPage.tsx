@@ -737,6 +737,7 @@ export const EmploymentSearchPage: React.FC = () => {
           }
           filterPanelId="employment-filter-panel"
           filtersExpanded={mobileFilters}
+          activeFilterSection={activeFilterSection}
           filterTriggers={[
             {
               sectionId: "employment-location",

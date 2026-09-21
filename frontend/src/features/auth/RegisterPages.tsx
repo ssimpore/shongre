@@ -19,6 +19,7 @@ import { Button } from "../../design-system/primitives/Button";
 import { PasswordField } from "./components/PasswordField";
 import { AuthLayout } from "./components/AuthLayout";
 import { AccountTypeSelector } from "./components/AccountTypeSelector";
+import { AccountTypeBackdrop } from "./components/AccountTypeBackdrop";
 import { SocialLoginButtons } from "./components/SocialLoginButtons";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -73,6 +74,8 @@ export const RegisterChoicePage: React.FC = () => {
       showLegalNotice
       width="wide"
       contentFrame="open"
+      density="compact"
+      backdrop={<AccountTypeBackdrop />}
       title={t("auth.registerPages.chooseProfile")}
       subtitle={t("auth.registerPages.chooseProfileDescription")}
       footerLink={{

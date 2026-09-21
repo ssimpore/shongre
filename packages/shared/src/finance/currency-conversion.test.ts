@@ -47,6 +47,26 @@ describe("currency conversion", () => {
     ).toEqual({ amountMinor: 94, currency: "CHF" });
   });
 
+  it("projects EUR amounts into USD and XOF with their configured precision", () => {
+    expect(
+      convertMoney(
+        { amountMinor: 100, currency: "EUR" },
+        "USD",
+        DETERMINISTIC_DEMO_CURRENCY_CATALOG,
+        NOW,
+      ).display,
+    ).toEqual({ amountMinor: 110, currency: "USD" });
+
+    expect(
+      convertMoney(
+        { amountMinor: 100, currency: "EUR" },
+        "XOF",
+        DETERMINISTIC_DEMO_CURRENCY_CATALOG,
+        NOW,
+      ).display,
+    ).toEqual({ amountMinor: 656, currency: "XOF" });
+  });
+
   it("rounds positive and negative half units consistently", () => {
     const catalog: CurrencyCatalog = {
       ...DETERMINISTIC_DEMO_CURRENCY_CATALOG,

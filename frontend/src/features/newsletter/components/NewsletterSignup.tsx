@@ -131,7 +131,10 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
           >
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <Mail className="w-icon-lg h-icon-lg text-text-inverse-subtle absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail
+                  data-newsletter-email-icon="true"
+                  className="w-icon-lg h-icon-lg text-text-inverse-subtle absolute left-3.5 top-1/2 -translate-y-1/2"
+                />
                 <input
                   type="email"
                   value={email}
@@ -160,7 +163,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             </div>
 
             {showConsentCheckbox && (
-              <label className="flex items-start gap-2 cursor-pointer select-none text-micro text-text-inverse-subtle min-h-6">
+              <label className="flex items-start gap-2 pl-3.5 cursor-pointer select-none text-micro text-text-inverse-subtle min-h-6">
                 <input
                   type="checkbox"
                   checked={consent}

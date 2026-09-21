@@ -975,6 +975,7 @@ export const SearchPage: React.FC = () => {
         }
         filterPanelId="search-filter-panel"
         filtersExpanded={isFilterDrawerOpen}
+        activeFilterSection={activeFilterSection}
         filterTriggers={[
           {
             sectionId: "search-category",
@@ -1279,8 +1280,6 @@ export const SearchPage: React.FC = () => {
               onDidYouMean={(corrected) => updateFilter("query", corrected)}
               onClearFilters={clearAllFilters}
               clearFiltersLabel={t("search.searchPage.effacerTousLesFiltres")}
-              onSaveSearch={handleSaveSearch}
-              saveSearchLabel={t("search.searchPage.sauvegarderCetteRecherche")}
             />
           )}
 
@@ -1568,7 +1567,12 @@ export const SearchPage: React.FC = () => {
                         <Input
                           type="number"
                           placeholder="Min"
-                          aria-label="Prix minimum en euros"
+                          aria-label={t(
+                            "search.searchPage.minimumForAttribute",
+                            {
+                              attribute: attr.label,
+                            },
+                          )}
                           value={
                             searchParams.get(`attr_${attr.code}_min`) || ""
                           }
@@ -1582,7 +1586,12 @@ export const SearchPage: React.FC = () => {
                         <Input
                           type="number"
                           placeholder="Max"
-                          aria-label="Prix maximum en euros"
+                          aria-label={t(
+                            "search.searchPage.maximumForAttribute",
+                            {
+                              attribute: attr.label,
+                            },
+                          )}
                           value={
                             searchParams.get(`attr_${attr.code}_max`) || ""
                           }

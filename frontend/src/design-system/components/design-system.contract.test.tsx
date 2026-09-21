@@ -149,6 +149,10 @@ describe("design-system representative states", () => {
     expect(drawer).toContain('aria-expanded="false"');
     expect(drawer).toContain("Ouvrir les filtres de recherche");
     expect(drawer).toContain("sr-only sm:not-sr-only");
+    expect(drawer).toContain('data-active-filter-count="3"');
+    expect(drawer).toContain(
+      "bg-primary px-1 text-micro font-bold text-on-primary shadow-xs",
+    );
     expect(drawer).toContain(">3<");
   });
 
@@ -164,8 +168,10 @@ describe("design-system representative states", () => {
           resultDescription="Découvrez les annonces disponibles."
           filterPanelId="search-filters"
           filtersExpanded
+          activeFilterSection="category"
           filterTriggers={[
             { sectionId: "category", label: "Catégories", active: true },
+            { sectionId: "location", label: "Localisation" },
           ]}
           activeFilterCount={2}
           onOpenFilters={() => undefined}
@@ -188,6 +194,12 @@ describe("design-system representative states", () => {
     expect(html).toContain('aria-controls="search-filters"');
     expect(html).toContain("data-search-filter-rail");
     expect(html).toContain('data-filter-trigger="category"');
+    expect(html).toContain(
+      'aria-expanded="true" data-filter-trigger="category"',
+    );
+    expect(html).toContain(
+      'aria-expanded="false" data-filter-trigger="location"',
+    );
     expect(html).toContain("Tous les filtres");
     expect(html).toContain('data-search-filter-overflow-count="0"');
     expect(html).toContain("Sauvegarder");

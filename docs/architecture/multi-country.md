@@ -204,7 +204,12 @@ backend stopped in demo mode.
 
 The Markets administration surface exposes canonical domain mode, base path, default and
 supported locales, currency, timezone, launch status, marketplace/payment
-availability, SEO visibility, compliance review and launch copy. Backend
+availability, SEO visibility, compliance review and launch copy. The currency
+panel governs the platform currency directory, exact audited display rates, and
+each market's default and allowed display currencies. A currency cannot be
+published for a market until it is enabled and a current conversion path from
+that market's default currency exists; both the service and approval trigger
+enforce that rule, and no migration invents a live exchange rate. Backend
 validation prevents duplicate mode/path pairs, a non-root France route, a
 root international market, payment without a provider, or activation before
 routing, localization, legal, compliance, provider, payment, explicit indexing,
@@ -228,7 +233,8 @@ Before production activation verify:
 - `.fr`, gateway, `/be`, `/ch`, `/sn` and `/bf` on mobile and desktop;
 - 308 targets and query preservation for France and `www` aliases;
 - canonical, Open Graph locale, reciprocal `hreflang`, robots and sitemaps;
-- EUR/CHF/XOF presentation and locale-specific formatting;
+- EUR/CHF/USD/XOF presentation, current-rate failure behavior and
+  locale-specific formatting;
 - search/listing isolation and wrong-market API rejection;
 - guest switching and one-use authenticated domain handoff;
 - admin legal/provider gates and configuration audit;

@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
-import { Check, Building2, Coins, Languages } from "lucide-react";
+import { Coins, Globe2, Languages } from "lucide-react";
 import { Modal } from "../../design-system/primitives/Modal";
 import { Button } from "../../design-system/primitives/Button";
+import { DropdownMenu } from "../../design-system/primitives/DropdownMenu";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { AVAILABLE_LANGUAGES } from "../../design-system/primitives/LanguageSelector";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -47,61 +48,42 @@ export const PreferencesModal: React.FC = () => {
     }));
   }, [availableCurrencies, currentLocale]);
 
+  const selectedLanguageCode = AVAILABLE_LANGUAGES.find(
+    (language) =>
+      currentLocale === language.code ||
+      currentLocale.startsWith(language.code.slice(0, 2)),
+  )?.code;
+
   return (
     <Modal
       isOpen={isPreferencesModalOpen}
       onClose={closePreferencesModal}
       title={t("shell.preferencesModal.preferencesRegionales")}
-      description={t(
-        "shell.preferencesModal.personnalisezVotrePaysDeNavigation",
-      )}
-      maxWidth="lg"
+      maxWidth="xs"
+      className="!rounded-listing-card"
     >
-      <div className="space-y-4">
+      <div className="divide-y divide-border-subtle">
         {/* Country / Market Selection */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-text-strong uppercase tracking-wider">
-            <Building2 className="w-icon-sm h-icon-sm text-primary" />
+        <div className="space-y-2 pb-4">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-text-strong">
+            <Globe2 className="h-icon-md w-icon-md text-primary" />
             <span>{t("shell.preferencesModal.marchePays")}</span>
           </div>
-          <div
-            className="grid grid-cols-1 gap-2"
-            role="radiogroup"
-            aria-label={t("shell.preferencesModal.marchePays")}
-          >
-            {selectableCountries.map((m) => {
-              const isSelected = activeMarket.code === m.code;
-              return (
-                <button
-                  key={m.code}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  onClick={() => handleMarketChange(m.code)}
-                  className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                    isSelected
-                      ? "border-primary bg-primary-light text-text-main font-semibold ring-1 ring-primary"
-                      : "border-border-base bg-bg-surface hover:bg-bg-subtle text-text-strong font-medium"
-                  }`}
-                >
-                  <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
-                    <CountryFlag countryCode={m.code} size="lg" />
-                    <span className="truncate text-sm">{m.name}</span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    <span className="shrink-0 text-micro font-normal text-text-tertiary">
-                      {m.code}
-                    </span>
-                    {isSelected ? (
-                      <Check className="h-icon-md w-icon-md shrink-0 text-primary" />
-                    ) : null}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <DropdownMenu
+            ariaLabel={t("shell.preferencesModal.marchePays")}
+            fullWidth
+            size="lg"
+            value={activeMarket.code}
+            onChange={handleMarketChange}
+            options={selectableCountries.map((market) => ({
+              value: market.code,
+              label: market.name,
+              icon: <CountryFlag countryCode={market.code} size="lg" />,
+            }))}
+            triggerClassName="border-primary bg-primary-light hover:bg-primary-light"
+          />
           {manualMarketSelection ? (
-            <div className="flex flex-col gap-2 rounded-control bg-bg-subtle p-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-2 rounded-control bg-bg-subtle p-3">
               <p className="text-xs leading-relaxed text-text-secondary">
                 {t("shell.preferencesModal.manualSelectionActive")}
               </p>
@@ -110,7 +92,7 @@ export const PreferencesModal: React.FC = () => {
                 size="sm"
                 onClick={resetManualMarketSelection}
                 disabled={isDetectingMarket}
-                className="shrink-0"
+                className="w-full"
               >
                 {isDetectingMarket
                   ? t("common.loading")
@@ -121,92 +103,51 @@ export const PreferencesModal: React.FC = () => {
         </div>
 
         {/* Language Selection */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-text-strong uppercase tracking-wider">
-            <Languages className="w-icon-sm h-icon-sm text-primary" />
+        <div className="space-y-2 py-4">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-text-strong">
+            <Languages className="h-icon-md w-icon-md text-primary" />
             <span>{t("shell.preferencesModal.langueDeLInterface")}</span>
           </div>
-          <div
-            className="grid grid-cols-1 gap-2"
-            role="radiogroup"
-            aria-label={t("shell.preferencesModal.langueDeLInterface")}
-          >
-            {AVAILABLE_LANGUAGES.map((lang) => {
-              const isSelected =
-                currentLocale === lang.code ||
-                currentLocale.startsWith(lang.code.slice(0, 2));
-              return (
-                <button
-                  key={lang.code}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  onClick={() => setLocale(lang.code)}
-                  className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                    isSelected
-                      ? "border-primary bg-primary-light text-text-main font-semibold ring-1 ring-primary"
-                      : "border-border-base bg-bg-surface hover:bg-bg-subtle text-text-strong font-medium"
-                  }`}
-                >
-                  <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
-                    <CountryFlag countryCode={lang.countryCode} />
-                    <span className="truncate text-sm">{lang.nativeName}</span>
-                  </span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    <span className="shrink-0 text-micro font-normal uppercase text-text-tertiary">
-                      {lang.code.slice(0, 2)}
-                    </span>
-                    {isSelected ? (
-                      <Check className="h-icon-md w-icon-md shrink-0 text-primary" />
-                    ) : null}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <DropdownMenu
+            ariaLabel={t("shell.preferencesModal.langueDeLInterface")}
+            fullWidth
+            size="lg"
+            value={selectedLanguageCode}
+            onChange={setLocale}
+            options={AVAILABLE_LANGUAGES.map((language) => ({
+              value: language.code,
+              label: language.nativeName,
+              icon: (
+                <CountryFlag countryCode={language.countryCode} size="lg" />
+              ),
+            }))}
+            triggerClassName="border-primary bg-primary-light hover:bg-primary-light"
+          />
         </div>
 
         {/* Currency Selection */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-text-strong uppercase tracking-wider">
-            <Coins className="w-icon-sm h-icon-sm text-primary" />
+        <div className="space-y-2 pt-4">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-text-strong">
+            <Coins className="h-icon-md w-icon-md text-primary" />
             <span>{t("shell.preferencesModal.deviseAffichage")}</span>
           </div>
-          <div
-            className="grid grid-cols-1 gap-2"
-            role="radiogroup"
-            aria-label={t("shell.preferencesModal.deviseAffichage")}
-          >
-            {currencies.map((c) => {
-              const isSelected = currentCurrency === c.code;
-              return (
-                <button
-                  key={c.code}
-                  type="button"
-                  role="radio"
-                  aria-checked={isSelected}
-                  onClick={() => setCurrency(c.code)}
-                  className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-                    isSelected
-                      ? "border-primary bg-primary-light text-text-main font-semibold ring-1 ring-primary"
-                      : "border-border-base bg-bg-surface hover:bg-bg-subtle text-text-strong font-medium"
-                  }`}
-                >
-                  <span className="flex min-w-0 flex-1 items-baseline gap-2 whitespace-nowrap">
-                    <span className="shrink-0 text-sm font-bold">
-                      {c.symbol === c.code ? c.code : c.symbol + " " + c.code}
-                    </span>
-                    <span className="truncate text-xs font-normal text-text-tertiary">
-                      {c.label}
-                    </span>
-                  </span>
-                  {isSelected ? (
-                    <Check className="h-icon-md w-icon-md shrink-0 text-primary" />
-                  ) : null}
-                </button>
-              );
-            })}
-          </div>
+          <DropdownMenu
+            ariaLabel={t("shell.preferencesModal.deviseAffichage")}
+            fullWidth
+            size="lg"
+            placement="top-left"
+            value={currentCurrency}
+            onChange={setCurrency}
+            options={currencies.map((currency) => ({
+              value: currency.code,
+              label: `${
+                currency.symbol === currency.code
+                  ? currency.code
+                  : `${currency.symbol} ${currency.code}`
+              } · ${currency.label}`,
+            }))}
+            triggerClassName="border-primary bg-primary-light hover:bg-primary-light"
+          />
           {currencyCatalogStatus === "loading" ? (
             <p className="text-micro text-text-muted">
               {t("shell.preferencesModal.currencyRatesLoading")}
@@ -220,13 +161,6 @@ export const PreferencesModal: React.FC = () => {
               {t("shell.preferencesModal.currencyEstimateNotice")}
             </p>
           )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-border-subtle">
-          <Button variant="primary" size="sm" onClick={closePreferencesModal}>
-            {t("shell.preferencesModal.validerLesPreferences")}
-          </Button>
         </div>
       </div>
     </Modal>

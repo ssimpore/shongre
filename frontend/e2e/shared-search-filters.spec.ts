@@ -178,6 +178,10 @@ test.describe("shared search filter panels", () => {
         .first();
       await expect(listGrid).toBeVisible();
       await expect(listCard).toBeVisible();
+      // A view change briefly renders list-shaped skeletons while the route
+      // query refreshes. Wait for the actual shared card anatomy before
+      // measuring it, especially on WebKit where the refresh is slower.
+      await expect(listCard.locator(".listing-card-list-link")).toBeVisible();
       const geometry = await listCard.evaluate((card) => {
         const grid = card.closest<HTMLElement>(
           '[data-listing-grid-variant="list"]',
