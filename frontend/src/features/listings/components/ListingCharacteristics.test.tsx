@@ -40,6 +40,8 @@ describe("listing characteristics presentation", () => {
     expect(html).toContain("<dl");
     expect(html).toContain(">Année modèle</span></dt>");
     expect(html).toContain("2022</dd>");
+    expect(html).toContain('data-detail-section-surface="card"');
+    expect(html).toContain("rounded-card border border-border-base");
     // A short list is the key set; there is nothing to defer and so no button.
     expect(html).not.toContain("data-detail-disclosure");
   });
@@ -71,6 +73,9 @@ describe("listing characteristics presentation", () => {
     expect(html).toContain("Équipements et services");
     expect(html).toContain("Piscine");
     expect(html).toContain('data-detail-feature="pool"');
+    // Facts and capabilities are separate bounded surfaces, even when one
+    // category publishes both kinds of information.
+    expect(html.match(/data-detail-section-surface="card"/g)).toHaveLength(2);
     // The capability is named, never rendered as a value row reading "Oui".
     expect(html).not.toContain("Oui</dd>");
     expect(html).toContain("8 personnes</dd>");

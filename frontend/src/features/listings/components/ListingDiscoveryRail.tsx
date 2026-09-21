@@ -32,7 +32,8 @@ export interface ListingDiscoveryRailProps {
  * depending on where the visitor landed, and on one page not at all.
  *
  * Built on `DetailSection` so these rails sit in the same rhythm as the facts
- * and the location above them: one rule, one heading, one trailing action.
+ * and the location above them: one bounded surface, one heading, one trailing
+ * action.
  */
 export const ListingDiscoveryRail: React.FC<ListingDiscoveryRailProps> = ({
   title,

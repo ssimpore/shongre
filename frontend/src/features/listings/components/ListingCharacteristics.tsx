@@ -85,7 +85,7 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
   return (
     <div
       data-listing-characteristics="true"
-      className={`space-y-7 ${className}`}
+      className={`space-y-6 ${className}`}
     >
       {keyFacts.length ? (
         <DetailSection title={t("listings.characteristics.keyInformation")}>

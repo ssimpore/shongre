@@ -29,8 +29,9 @@ describe("listing discovery rail", () => {
     expect(html).toContain('data-listing-discovery-rail="seller"');
     expect(html).toContain('data-card="a"');
     expect(html).toContain('data-card="b"');
-    // The same titled, ruled section the facts and the location above it use.
+    // The same titled, bounded section the facts and the location above it use.
     expect(html).toContain('data-detail-section="true"');
+    expect(html).toContain('data-detail-section-surface="card"');
   });
 
   it("is absent entirely when there is nothing to show", () => {

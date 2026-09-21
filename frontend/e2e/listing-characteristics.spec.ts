@@ -35,6 +35,9 @@ for (const width of [1408, 390]) {
     await expect(page).toHaveTitle(/Shongre/i);
     const panel = page.locator("[data-listing-characteristics]");
     await panel.scrollIntoViewIfNeeded();
+    await expect(
+      panel.locator('[data-detail-section-surface="card"]').first(),
+    ).toBeVisible();
     const disclosure = panel.locator("[data-detail-disclosure]");
     for (const button of await disclosure.all()) await button.click();
     for (const group of data.groups) {
@@ -117,6 +120,9 @@ for (const width of [1408, 390]) {
       vehicle.title,
     );
     const panel = page.locator("[data-listing-characteristics]");
+    await expect(
+      panel.locator('[data-detail-section-surface="card"]').first(),
+    ).toBeVisible();
     const visibleFacts = panel.locator("[data-detail-fact]:visible");
     await expect(visibleFacts).toHaveCount(8);
     const button = panel.locator("[data-detail-disclosure]").first();

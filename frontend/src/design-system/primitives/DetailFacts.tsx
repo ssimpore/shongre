@@ -10,9 +10,9 @@ import type { IconName } from "@shongre/ui/web";
  * cell grid on vehicles, bordered cards on generic listings, something else
  * again on property and jobs — so the same fact looked like a different kind of
  * thing depending on where a visitor arrived. These primitives are the one
- * shape all of them use: a titled section separated by a rule, facts as a
- * two-column list of icon, label and value, and capabilities as named
- * amenities. Nothing here knows which vertical it is rendering.
+ * shape all of them use: a titled, bounded card surface, facts as a two-column
+ * list of icon, label and value, and capabilities as named amenities. Nothing
+ * here knows which vertical it is rendering.
  */
 
 export interface DetailSectionProps {
@@ -27,8 +27,6 @@ export interface DetailSectionProps {
    */
   action?: React.ReactNode;
   children: React.ReactNode;
-  /** Omit the leading rule when the section opens a column. */
-  divider?: boolean;
   className?: string;
   id?: string;
 }
@@ -38,14 +36,14 @@ export const DetailSection: React.FC<DetailSectionProps> = ({
   subtitle,
   action,
   children,
-  divider = true,
   className = "",
   id,
 }) => (
   <section
     id={id}
     data-detail-section="true"
-    className={`${divider ? "border-t border-border-base pt-7" : ""} ${className}`}
+    data-detail-section-surface="card"
+    className={`min-w-0 rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6 ${className}`}
   >
     <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
       <h2 className="text-xl font-bold tracking-tight text-text-main sm:text-2xl">
