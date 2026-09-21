@@ -956,12 +956,17 @@ France-only happy path is insufficient for market-sensitive work.
   preference, keep its runtime utilities mounted, and provide an accessible
   restore control. Never manipulate the launcher's shadow DOM or let development
   tooling determine production chrome geometry.
-- Homepage sections use the same shared Web `Container` with `width="results"`
-  and standard responsive gutters as the search page, including hero, discovery,
-  collection, universe, recent-search, Pro, loading, and error surfaces. Keep
-  their responsive widths and content edges aligned; the marketplace header
-  and footer use `width="full"` so desktop chrome spans the viewport independently
-  of homepage content.
+- Homepage sections use the shared Web `Container` with `width="results"` and
+  standard responsive gutters, including hero, discovery, collection, universe,
+  recent-search, Pro, loading, and error surfaces. Keep their responsive widths
+  and content edges aligned. Search and vertical marketplace result pages use
+  `width="listingResults"`, whose token-backed breakpoint widths include the
+  same gutters and expose only complete canonical listing-card rows. Its
+  capacity thresholds follow the space required by each row rather than named
+  device breakpoints, so overlay and classic scrollbar platforms keep the same
+  card count at standard window sizes. Do not apply that quantized result width
+  to the homepage. The marketplace header and footer use `width="full"` so
+  desktop chrome spans the viewport independently of homepage content.
   The marketplace footer uses the header's compact `BrandHeaderSignature`
   geometry with reverse artwork and the same `text-sm`/`text-xs` typography
   scale; wide breakpoints must not enlarge its logo, icons, or text.

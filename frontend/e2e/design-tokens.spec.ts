@@ -339,6 +339,128 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(errors).toEqual([]);
   });
 
+  test("fits result-page shells to complete card rows without changing the homepage", async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const viewports = [
+      { width: 390, height: 844, columns: 1 },
+      { width: 640, height: 900, columns: 2 },
+      { width: 768, height: 1024, columns: 3 },
+      { width: 1024, height: 768, columns: 4 },
+      { width: 1280, height: 800, columns: 5 },
+      { width: 1600, height: 900, columns: 6 },
+    ] as const;
+    const scrollbarModels = [
+      { name: "overlay", reservedWidth: 0 },
+      { name: "classic", reservedWidth: 17 },
+    ] as const;
+
+    await page.goto("/recherche", { waitUntil: "domcontentloaded" });
+    for (const viewport of viewports) {
+      for (const scrollbar of scrollbarModels) {
+        await page.setViewportSize({
+          width: viewport.width - scrollbar.reservedWidth,
+          height: viewport.height,
+        });
+        await waitForStableLayout(page);
+
+        const geometry = await page.evaluate(() => {
+          const shell = document.querySelector<HTMLElement>(
+            '#main-content > [class*="max-w-listing-results"]',
+          );
+          const toolbar = document.querySelector<HTMLElement>(
+            "#search-results-toolbar",
+          );
+          const root = getComputedStyle(document.documentElement);
+          const cardWidthToken = root
+            .getPropertyValue("--spacing-listing-card")
+            .trim();
+          const viewportWidth = document.documentElement.clientWidth;
+          const capacityBand = [
+            { shell: 1464, content: 1400, columns: 6 },
+            { shell: 1228, content: 1164, columns: 5 },
+            { shell: 992, content: 928, columns: 4 },
+            { shell: 740, content: 692, columns: 3 },
+            { shell: 504, content: 456, columns: 2 },
+          ].find((band) => viewportWidth >= band.shell);
+          return {
+            shellWidth: shell?.getBoundingClientRect().width ?? null,
+            contentWidth: toolbar?.getBoundingClientRect().width ?? null,
+            cardWidth:
+              Number.parseFloat(cardWidthToken) *
+              (cardWidthToken.endsWith("rem")
+                ? Number.parseFloat(root.fontSize)
+                : 1),
+            expectedShellWidth: capacityBand?.shell ?? viewportWidth,
+            expectedContentWidth: capacityBand?.content ?? viewportWidth - 32,
+            expectedColumns: capacityBand?.columns ?? 1,
+            overflow:
+              document.documentElement.scrollWidth -
+              document.documentElement.clientWidth,
+          };
+        });
+
+        expect(
+          geometry.expectedColumns,
+          `${viewport.width}px ${scrollbar.name} scrollbar card count`,
+        ).toBe(viewport.columns);
+        expect(geometry.shellWidth).toBeCloseTo(geometry.expectedShellWidth, 0);
+        expect(geometry.contentWidth).toBeCloseTo(
+          geometry.expectedContentWidth,
+          0,
+        );
+        expect(geometry.cardWidth).toBe(220);
+        if (geometry.expectedColumns > 1) {
+          expect(
+            (geometry.expectedContentWidth + 16) / (geometry.cardWidth + 16),
+          ).toBe(geometry.expectedColumns);
+        }
+        expect(geometry.overflow).toBeLessThanOrEqual(0);
+      }
+    }
+
+    await page.setViewportSize({ width: 1408, height: 900 });
+    await page
+      .getByRole("button", { name: "Affichage liste", exact: true })
+      .click();
+    await expect
+      .poll(() => new URL(page.url()).searchParams.get("view"))
+      .toBe("list");
+    await expect(
+      page.locator('[data-listing-grid-variant="list"]'),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Affichage grille", exact: true })
+      .click();
+    await expect
+      .poll(() => new URL(page.url()).searchParams.get("view"))
+      .toBeNull();
+
+    for (const route of ["/auto", "/emploi", "/education", "/immo"]) {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+      const shell = page.locator(
+        '#main-content [class*="max-w-listing-results"]',
+      );
+      await shell.waitFor({ state: "attached", timeout: 30_000 });
+      await expect(shell, `${route}: shared result shell`).toHaveCount(1);
+      await expect(shell).toHaveCSS("max-width", "1228px");
+    }
+
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page
+      .locator("main .max-w-page")
+      .first()
+      .waitFor({ state: "attached", timeout: 30_000 });
+    await expect(page.locator('[class*="max-w-listing-results"]')).toHaveCount(
+      0,
+    );
+    await expect(page.locator("main .max-w-page").first()).toHaveCSS(
+      "max-width",
+      "1280px",
+    );
+  });
+
   test("keeps listing rails and grids responsive across the supported viewport matrix", async ({
     page,
   }) => {

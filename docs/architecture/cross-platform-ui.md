@@ -142,7 +142,14 @@ may grow without clipping; rails align only their own cards. Discovery rails
 place navigation beside their heading and retain touch scrolling on phones.
 Web result grids use the shared `ListingGrid`; token-sized card tracks pack from
 the inline start with the shared gap instead of centering or distributing sparse
-results across the available row.
+results across the available row. Search and vertical result pages pair that
+grid with the shared `Container` `listingResults` width so every responsive
+desktop band ends on a complete card track. Its gutter and width thresholds are
+based on the space that each complete row requires, not named device
+breakpoints, so overlay-scrollbar and classic-scrollbar platforms select the
+same card count at standard window sizes. Homepage sections retain the wider
+`results` container because their mixed-content rails and editorial surfaces are
+not a quantized search-result grid.
 Web marketplace result controls use one adaptive filter architecture:
 `SearchResultsToolbar` owns the category-aware desktop quick-filter rail,
 while `FilterPanel` supplies one responsive right-side drawer across desktop,

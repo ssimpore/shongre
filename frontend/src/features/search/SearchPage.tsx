@@ -933,7 +933,7 @@ export const SearchPage: React.FC = () => {
   usePageMeta(searchMeta);
 
   return (
-    <Container width="results" className="py-4 sm:py-6">
+    <Container width="listingResults" className="py-4 sm:py-6">
       {/* Mobile keyword entry.
           The desktop header slot is `hidden md:block` and the bottom tab bar's
           "Rechercher" tab points here, so on a phone the tab promised search

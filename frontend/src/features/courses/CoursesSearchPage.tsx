@@ -589,7 +589,7 @@ export const CoursesSearchPage: React.FC = () => {
   }
 
   return (
-    <Container width="results" className="py-5 sm:py-7">
+    <Container width="listingResults" className="py-5 sm:py-7">
       <div className="mb-5 flex flex-col gap-4 sm:mb-7">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>

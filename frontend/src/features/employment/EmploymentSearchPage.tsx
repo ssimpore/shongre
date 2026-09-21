@@ -700,7 +700,7 @@ export const EmploymentSearchPage: React.FC = () => {
         </Container>
       </section>
 
-      <Container width="results" className="py-5 sm:py-6">
+      <Container width="listingResults" className="py-5 sm:py-6">
         {recentJobs.length > 0 && !params.toString() && catalog ? (
           <section className="mb-7" aria-labelledby="employment-recent-title">
             <h2

@@ -714,7 +714,7 @@ export const AutoSearchPage: React.FC = () => {
   };
 
   return (
-    <Container width="results" className="py-4 sm:py-6">
+    <Container width="listingResults" className="py-4 sm:py-6">
       <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-end">
         <div>
           <p className="mb-1 flex items-center gap-2 text-xs font-bold text-primary">

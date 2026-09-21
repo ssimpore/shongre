@@ -15,7 +15,14 @@ const gapClasses: Record<LayoutSpace, string> = {
 
 export interface ContainerProps extends React.HTMLAttributes<HTMLElement> {
   as?: "div" | "section" | "header" | "footer" | "main";
-  width?: "task" | "content" | "page" | "results" | "workspace" | "full";
+  width?:
+    | "task"
+    | "content"
+    | "page"
+    | "results"
+    | "listingResults"
+    | "workspace"
+    | "full";
   gutter?: "none" | "standard";
 }
 
@@ -36,6 +43,17 @@ const containerClasses = createVariants({
        * the grid's `auto-fill` picks up the extra column on its own.
        */
       results: "max-w-page 2xl:max-w-workspace",
+      /**
+       * Marketplace result pages expose complete canonical card rows. The
+       * content-fit thresholds intentionally do not reuse viewport breakpoints:
+       * classic Windows/WebKit scrollbars reduce the CSS layout viewport while
+       * overlay scrollbars do not. Switching only when the next complete row
+       * and its gutter fit keeps both models on the same card count at standard
+       * window sizes. Homepage sections deliberately retain `results`, whose
+       * wider canvas also serves non-card content.
+       */
+      listingResults:
+        "listing-2:max-w-listing-results-sm listing-2:px-6 listing-3:max-w-listing-results-md listing-4:max-w-listing-results-lg listing-4:px-8 listing-5:max-w-listing-results-xl listing-6:max-w-listing-results-2xl",
       workspace: "max-w-workspace",
       full: "max-w-none",
     },

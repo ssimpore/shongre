@@ -732,7 +732,7 @@ export const ImmoSearchPage: React.FC = () => {
         </Container>
       </section>
 
-      <Container width="results" className="py-5">
+      <Container width="listingResults" className="py-5">
         <SearchResultsToolbar
           resultLabel={loading ? "Recherche…" : `${total} biens`}
           resultDescription="Localisation volontairement approximative sur la carte."

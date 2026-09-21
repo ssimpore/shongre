@@ -18,6 +18,20 @@ describe("layout and typography primitives", () => {
     expect(html).toContain("shadow-dropdown");
   });
 
+  it("maps listing results to complete-card responsive container tokens", () => {
+    const html = renderToStaticMarkup(
+      <Container width="listingResults">results</Container>,
+    );
+
+    expect(html).toContain("listing-2:max-w-listing-results-sm");
+    expect(html).toContain("listing-2:px-6");
+    expect(html).toContain("listing-3:max-w-listing-results-md");
+    expect(html).toContain("listing-4:max-w-listing-results-lg");
+    expect(html).toContain("listing-4:px-8");
+    expect(html).toContain("listing-5:max-w-listing-results-xl");
+    expect(html).toContain("listing-6:max-w-listing-results-2xl");
+  });
+
   it("provides responsive grids and semantic type roles", () => {
     const html = renderToStaticMarkup(
       <Grid columns={3}>

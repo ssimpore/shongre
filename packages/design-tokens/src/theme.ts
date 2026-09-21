@@ -728,19 +728,36 @@ export const themeControlSizes = {
   "control-touch": themeSpacing["control-touch"],
 } as const;
 
-/** Page shell widths. */
+/**
+ * Page shell widths.
+ *
+ * Listing-result widths include their responsive page gutters. Each width is
+ * also the content-fit threshold for exposing the next complete row of 220px
+ * card tracks with the shared 16px gap: 2 / 3 / 4 / 5 / 6 cards. This avoids
+ * coupling row capacity to platform-dependent scrollbar geometry.
+ */
 export const themeContainers = {
   task: "56rem",
   content: "72rem",
   page: "80rem",
+  "listing-results-sm": "31.5rem",
+  "listing-results-md": "46.25rem",
+  "listing-results-lg": "62rem",
+  "listing-results-xl": "76.75rem",
+  "listing-results-2xl": "91.5rem",
   workspace: "96rem",
 } as const;
 
 export const themeBreakpoints = {
+  "listing-2": themeContainers["listing-results-sm"],
   sm: "40rem",
+  "listing-3": themeContainers["listing-results-md"],
   md: "48rem",
+  "listing-4": themeContainers["listing-results-lg"],
   lg: "64rem",
+  "listing-5": themeContainers["listing-results-xl"],
   xl: "80rem",
+  "listing-6": themeContainers["listing-results-2xl"],
   "2xl": "96rem",
 } as const;
 

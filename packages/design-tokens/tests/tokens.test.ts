@@ -16,6 +16,8 @@ import {
   nativeSpacing,
   nativeTypography,
   radius,
+  themeBreakpoints,
+  themeContainers,
   themeFontFamilies,
   themeFontWeights,
   themeColors,
@@ -240,6 +242,29 @@ describe("canonical design tokens", () => {
     expect(radius["listing-card"]).toBe("0.625rem");
     expect(radius["listing-card"]).toBe(radius.control);
     expect(nativeRadius.listingCard).toBe(nativeRadius.control);
+  });
+
+  it("sizes result containers to complete canonical card rows", () => {
+    expect(themeContainers["listing-results-sm"]).toBe("31.5rem");
+    expect(themeContainers["listing-results-md"]).toBe("46.25rem");
+    expect(themeContainers["listing-results-lg"]).toBe("62rem");
+    expect(themeContainers["listing-results-xl"]).toBe("76.75rem");
+    expect(themeContainers["listing-results-2xl"]).toBe("91.5rem");
+    expect(themeBreakpoints["listing-2"]).toBe(
+      themeContainers["listing-results-sm"],
+    );
+    expect(themeBreakpoints["listing-3"]).toBe(
+      themeContainers["listing-results-md"],
+    );
+    expect(themeBreakpoints["listing-4"]).toBe(
+      themeContainers["listing-results-lg"],
+    );
+    expect(themeBreakpoints["listing-5"]).toBe(
+      themeContainers["listing-results-xl"],
+    );
+    expect(themeBreakpoints["listing-6"]).toBe(
+      themeContainers["listing-results-2xl"],
+    );
   });
 
   it("owns one Web application font family and caps the weight hierarchy", () => {
