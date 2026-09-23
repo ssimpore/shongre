@@ -55,12 +55,12 @@
     }
   },
   "devDependencies": {
-    "@redocly/cli": "^2.47.0",
+    "@redocly/cli": "^2.53.3",
     "openapi-typescript": "^7.13.0",
-    "prettier": "^3.6.2",
+    "prettier": "^3.9.8",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "read-excel-file": "9.3.10",
-    "tsx": "^4.23.12"
+    "tsx": "^4.23.15"
   }
 }
