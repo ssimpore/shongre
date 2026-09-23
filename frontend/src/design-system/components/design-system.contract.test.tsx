@@ -114,6 +114,8 @@ describe("design-system representative states", () => {
     expect(drawer).toContain('data-filter-panel="drawer"');
     expect(drawer).toContain('data-filter-section="make"');
     expect(drawer).toContain("slide-in-from-right");
+    expect(drawer).toContain("sm:max-w-md");
+    expect(drawer).not.toContain("sm:max-w-lg");
     expect(drawer).toContain("Filtres Auto");
     expect(drawer).toContain("Réinitialiser");
     expect(drawer).toContain("Voir les résultats");

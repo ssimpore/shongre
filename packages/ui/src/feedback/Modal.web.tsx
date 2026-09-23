@@ -2,6 +2,7 @@ import React from "react";
 import { X } from "lucide-react";
 import { IconButton } from "../primitives/IconButton.web";
 import { useDialogBehavior } from "../hooks/useDialogBehavior.web";
+import { cn } from "../utils/variants";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -127,11 +128,13 @@ export const Drawer: React.FC<DrawerProps> = ({
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`flex w-full flex-col overflow-hidden bg-bg-surface shadow-overlay animate-in ${
+        className={cn(
+          "flex w-full flex-col overflow-hidden bg-bg-surface shadow-overlay animate-in",
           isRight
             ? "h-side-sheet-height sm:w-side-sheet-width sm:max-w-lg sm:border-l border-border-base slide-in-from-right pb-safe"
-            : "max-w-lg max-h-dialog-drawer-max-height rounded-t-overlay border border-border-base slide-in-from-bottom pb-safe sm:rounded-overlay sm:pb-0"
-        } ${className}`}
+            : "max-w-lg max-h-dialog-drawer-max-height rounded-t-overlay border border-border-base slide-in-from-bottom pb-safe sm:rounded-overlay sm:pb-0",
+          className,
+        )}
       >
         <div className="flex items-center justify-between p-5 border-b border-border-subtle shrink-0">
           {title ? (

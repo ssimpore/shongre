@@ -195,6 +195,7 @@ export const SearchFilterDrawer: React.FC<SearchFilterDrawerProps> = ({
     title={title}
     position="right"
     className={cn(
+      "sm:max-w-md",
       "[&>div:first-child]:border-b-2 [&>div:first-child]:border-primary",
       className,
     )}

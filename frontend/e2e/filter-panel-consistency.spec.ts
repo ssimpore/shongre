@@ -232,7 +232,13 @@ test.describe("canonical marketplace filter panel", () => {
 
       await expect(panel).toHaveCount(1);
       await expect(panel).toBeVisible();
-      await expect(page.getByRole("dialog").getByRole("heading")).toBeVisible();
+      const drawer = page.getByRole("dialog");
+      await expect(drawer.getByRole("heading")).toBeVisible();
+      await expect
+        .poll(() =>
+          drawer.evaluate((element) => element.getBoundingClientRect().width),
+        )
+        .toBe(448);
       await expect(
         panel.getByRole("button", { name: "Réinitialiser", exact: true }),
       ).toBeVisible();
@@ -283,6 +289,13 @@ test.describe("canonical marketplace filter panel", () => {
       const panel = page.locator('[data-filter-panel="drawer"]');
       await expect(panel).toHaveCount(1);
       await expect(panel).toBeVisible();
+      await expect
+        .poll(() =>
+          page
+            .getByRole("dialog")
+            .evaluate((element) => element.getBoundingClientRect().width),
+        )
+        .toBe(390);
       await expect(
         panel.getByRole("button", { name: "Réinitialiser", exact: true }),
       ).toBeVisible();
