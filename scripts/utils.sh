@@ -23,31 +23,57 @@ shongre_require_command() {
   return 1
 }
 
+shongre_docker_daemon_ready() {
+  node --input-type=module -e '
+    import { spawnSync } from "node:child_process";
+    const timeout = Number(process.argv[1]);
+    process.exit(spawnSync("docker", ["version", "--format", "{{.Server.Version}}"], {
+      stdio: "ignore",
+      timeout,
+    }).status === 0 ? 0 : 1);
+  ' "$1"
+}
+
 shongre_require_docker_daemon() {
   if ! command -v docker >/dev/null 2>&1; then
     shongre_fail "docker is required but was not found on PATH"
     return 1
   fi
-  # Probe the server API without the optional plugin discovery done by info.
-  # Docker Desktop parks its virtual machine while idle, and the first call has
-  # to wake it: measured at ~27 seconds here against ~0.05 seconds once warm. A
-  # single short attempt therefore fails whenever Docker has been left alone,
-  # so the first probe is a generous wake-up and the second is the real check.
-  # A daemon that is genuinely stopped still fails immediately, because the CLI
-  # reports a missing socket instead of waiting.
-  if ! node --input-type=module -e '
-    import { spawnSync } from "node:child_process";
-    const probe = (timeout) =>
-      spawnSync("docker", ["version", "--format", "{{.Server.Version}}"], {
-        stdio: "ignore",
-        timeout,
-      }).status === 0;
-    process.exit(probe(45_000) && probe(10_000) ? 0 : 1);
-  '; then
+  # A parked Docker Desktop VM can take time to answer the first probe.
+  if ! shongre_docker_daemon_ready 45000 || ! shongre_docker_daemon_ready 10000; then
     shongre_fail "Docker daemon is unavailable or did not respond within 45 seconds"
-    shongre_info "restart Docker Desktop and verify that its data store is writable"
+    shongre_info "start Docker and verify that its data store is writable"
     return 1
   fi
+}
+
+shongre_ensure_docker_for_dev() {
+  if ! command -v docker >/dev/null 2>&1; then
+    shongre_fail "docker is required but was not found on PATH"
+    return 1
+  fi
+  if shongre_docker_daemon_ready 45000 && shongre_docker_daemon_ready 10000; then
+    return 0
+  fi
+  if [[ "$(uname -s)" != Darwin ]] || ! command -v open >/dev/null 2>&1; then
+    shongre_fail "Docker daemon is unavailable; start it before running make dev"
+    return 1
+  fi
+  shongre_info "starting Docker Desktop"
+  if ! open -a Docker; then
+    shongre_fail "could not launch Docker Desktop"
+    return 1
+  fi
+  local deadline=$((SECONDS + 120))
+  while (( SECONDS < deadline )); do
+    if shongre_docker_daemon_ready 5000 && shongre_docker_daemon_ready 10000; then
+      shongre_pass "Docker daemon is ready"
+      return 0
+    fi
+    sleep 2
+  done
+  shongre_fail "Docker Desktop did not become ready within 120 seconds"
+  return 1
 }
 
 shongre_pid_is_running() {

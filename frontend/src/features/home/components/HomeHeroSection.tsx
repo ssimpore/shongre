@@ -128,7 +128,10 @@ export const HomeHeroSection: React.FC<{
                   idPrefix="homepage-hero-search"
                   className="mb-3 md:hidden"
                 />
-                <div className="flex w-full flex-col gap-3 sm:w-fit sm:flex-row">
+                <div
+                  data-home-hero-actions="true"
+                  className="flex w-full flex-col gap-3 sm:mx-auto sm:w-fit sm:flex-row lg:mx-0"
+                >
                   <PublishCtaButton variant="primary" />
                   <Button
                     to="/recherche"

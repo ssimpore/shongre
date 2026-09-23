@@ -131,6 +131,42 @@ async function executable(path, body) {
   await writeFile(path, `#!/bin/bash\n${body}\n`, { mode: 0o755 });
 }
 
+test("local development starts Docker Desktop only when its daemon is stopped", async (t) => {
+  const directory = await temporaryWorkspace(t);
+  const bin = join(directory, "bin");
+  await mkdir(bin);
+  const state = join(directory, "docker-ready");
+  const launches = join(directory, "docker-launches");
+  await executable(join(bin, "docker"), '[[ -f "$TEST_DOCKER_STATE" ]]');
+  await executable(
+    join(bin, "open"),
+    'printf "launch\\n" >> "$TEST_DOCKER_LAUNCHES"; : > "$TEST_DOCKER_STATE"',
+  );
+  await executable(join(bin, "uname"), "printf 'Darwin\\n'");
+  const env = {
+    ...process.env,
+    PATH: `${bin}:${process.env.PATH}`,
+    TEST_DOCKER_STATE: state,
+    TEST_DOCKER_LAUNCHES: launches,
+  };
+  const run = () =>
+    spawnSync(
+      "/bin/bash",
+      [
+        "-c",
+        `source '${fileURLToPath(new URL("scripts/utils.sh", root))}'; shongre_ensure_docker_for_dev`,
+      ],
+      { env, encoding: "utf8", timeout: 5000 },
+    );
+
+  await writeFile(state, "");
+  assert.equal(run().status, 0);
+  await assert.rejects(readFile(launches));
+  await unlink(state);
+  assert.equal(run().status, 0);
+  assert.equal(await readFile(launches, "utf8"), "launch\n");
+});
+
 async function runLauncher(
   t,
   { mode = "web", reusable = false, typesExit = 0, environment = "local" } = {},
@@ -152,6 +188,7 @@ async function runLauncher(
 shongre_info() { :; }
 shongre_pass() { :; }
 shongre_fail() { :; }
+shongre_ensure_docker_for_dev() { printf '%s\n' docker-ready >> "$TEST_EVENTS"; }
 shongre_pid_file() { printf '%s/.runtime/%s.pid' "$SHONGRE_ROOT" "$1"; }
 shongre_service_port() { printf none; }
 `,
@@ -227,7 +264,7 @@ for (const mode of ["web", "mobile", "all"]) {
     assert.equal(result.status, 77, result.stderr);
     assert.match(
       result.events,
-      /database migrate\nmake db-types\ndatabase seed\nservice start backend/,
+      /docker-ready\ncompose prune-stale[\s\S]*database migrate\nmake db-types\ndatabase seed\nservice start backend/,
     );
     assert.equal(result.events.match(/make db-types/g)?.length, 1);
   });
@@ -346,7 +383,8 @@ test("local Supabase tooling is installed and runtime credentials stay ignored",
   // The daemon probe stays bounded: a slower warm-up attempt is allowed, but
   // the confirming probe is capped at ten seconds.
   assert.match(utils, /spawnSync\("docker",[\s\S]*?\n\s*timeout,/);
-  assert.match(utils, /probe\(10_000\)/);
+  assert.match(utils, /shongre_docker_daemon_ready 10000/);
+  assert.match(utils, /open -a Docker/);
   assert.match(utils, /\["version", "--format", "\{\{\.Server\.Version\}\}"\]/);
   const redis = await read("scripts/redis.sh");
   assert.match(redis, /shongre_require_docker_daemon/);

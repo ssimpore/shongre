@@ -136,9 +136,10 @@ filesystem stays read-only. `WORKER_HEALTH_FILE` may override the path; native
 Make launchers use an ignored file in the checkout’s `.runtime/`. CI checks the
 heartbeat, Redis PING, and API readiness in the built containers.
 
-`make dev` ensures local Supabase, Mailpit, and Redis before stopping
-applications, then applies pending migrations and the deterministic seed. A
-repeat invocation reuses the healthy selected stack when
+On macOS, `make dev` starts Docker Desktop if needed and waits for its daemon
+before touching local containers. `make dev` ensures local Supabase, Mailpit,
+and Redis before stopping applications, then applies pending migrations and the
+deterministic seed. A repeat invocation reuses the healthy selected stack when
 environment/lockfile/migration hashes match; it
 never records secret values in process metadata. `make dev-down` stops tracked
 applications, the canonical local Compose project and Supabase without deleting

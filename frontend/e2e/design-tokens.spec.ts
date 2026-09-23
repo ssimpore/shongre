@@ -1339,6 +1339,20 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(await readMetric(heroPublish)).toEqual(standardControl);
     expect(await readMetric(heroExplore)).toEqual(standardControl);
 
+    await page.setViewportSize({ width: 664, height: 701 });
+    const actions = main.locator('[data-home-hero-actions="true"]');
+    await expect(actions).toBeVisible();
+    expect(
+      await actions.evaluate((element) => {
+        const group = element.getBoundingClientRect();
+        const parent = element.parentElement!.getBoundingClientRect();
+        return Math.abs(
+          group.left + group.width / 2 - (parent.left + parent.width / 2),
+        );
+      }),
+    ).toBeLessThan(1);
+    await expectNoHorizontalOverflow(page, "tablet homepage hero actions");
+
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(heroPublish).toBeVisible();
     await expect(heroExplore).toBeVisible();

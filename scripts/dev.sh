@@ -59,6 +59,7 @@ esac
 
 # Infrastructure/configuration checks happen before tracked applications stop.
 if [[ "$APP_ENV" == local ]]; then
+  shongre_ensure_docker_for_dev
   # Clear containers and untagged layers a previous run left behind before the
   # stack comes up. Running containers, tagged images and named volumes are
   # preserved, so this stays a no-op on a healthy machine.

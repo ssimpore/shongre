@@ -206,9 +206,12 @@ before reusing a healthy stack. Matching files are left untouched; a generation
 failure stops the launcher before it starts applications. CI's
 `make db-types-check` remains read-only and rejects drift.
 
-Docker must be installed and running first, its data store must be writable, and
-the host must have at least 5 GiB free. The startup preflight fails with an
-actionable error instead of waiting indefinitely for an unhealthy daemon.
+Docker must be installed and its data store must be writable. On macOS,
+`make dev` starts Docker Desktop when its daemon is stopped and waits for it
+to become ready before starting local services. On other platforms, start the
+Docker daemon first. The host must have at least 5 GiB free. The startup
+preflight fails with an actionable error instead of waiting indefinitely for
+an unhealthy daemon.
 The frontend fails closed when its API is unavailable; it never switches to
 browser fixtures or mock storage.
 
