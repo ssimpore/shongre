@@ -31,27 +31,43 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [loadedMarketCode, setLoadedMarketCode] = useState("");
   const [error, setError] = useState("");
+  const [nextCursor, setNextCursor] = useState<string>();
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [pageError, setPageError] = useState("");
   const requestId = useRef(0);
+  const paginationInFlight = useRef(false);
 
   const fetchListings = useCallback(
-    async (marketCode: string, currentRequest: number) => {
+    async (marketCode: string, currentRequest: number, cursor?: string) => {
       try {
-        const results = await listingsService.list(marketCode);
+        const results = await listingsService.search({ marketCode, cursor });
         if (currentRequest === requestId.current) {
-          setItems(results);
+          setItems((current) =>
+            cursor ? [...current, ...results.items] : results.items,
+          );
+          setNextCursor(results.pageInfo.nextCursor);
           setError("");
+          setPageError("");
           setLoadedMarketCode(marketCode);
         }
       } catch (reason) {
         if (currentRequest === requestId.current) {
-          setItems([]);
-          setError(
-            reason instanceof Error ? reason.message : "Chargement impossible.",
-          );
+          const message =
+            reason instanceof Error ? reason.message : "Chargement impossible.";
+          if (cursor) setPageError(message);
+          else {
+            setItems([]);
+            setError(message);
+          }
           setLoadedMarketCode(marketCode);
         }
       } finally {
-        if (currentRequest === requestId.current) setLoading(false);
+        if (currentRequest === requestId.current) {
+          if (cursor) {
+            paginationInFlight.current = false;
+            setLoadingMore(false);
+          } else setLoading(false);
+        }
       }
     },
     [],
@@ -59,6 +75,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const currentRequest = ++requestId.current;
+    paginationInFlight.current = false;
     void fetchListings(activeMarket.code, currentRequest);
     return () => {
       requestId.current += 1;
@@ -69,8 +86,32 @@ export default function HomeScreen() {
     const currentRequest = ++requestId.current;
     setError("");
     setLoading(true);
+    setNextCursor(undefined);
+    setPageError("");
+    paginationInFlight.current = false;
     void fetchListings(activeMarket.code, currentRequest);
   }, [activeMarket.code, fetchListings]);
+
+  const loadMore = useCallback(() => {
+    if (
+      !nextCursor ||
+      loading ||
+      loadingMore ||
+      paginationInFlight.current ||
+      loadedMarketCode !== activeMarket.code
+    )
+      return;
+    paginationInFlight.current = true;
+    setLoadingMore(true);
+    void fetchListings(activeMarket.code, requestId.current, nextCursor);
+  }, [
+    activeMarket.code,
+    fetchListings,
+    loadedMarketCode,
+    loading,
+    loadingMore,
+    nextCursor,
+  ]);
 
   const marketIsLoading = loading || loadedMarketCode !== activeMarket.code;
   const visibleItems = loadedMarketCode === activeMarket.code ? items : [];
@@ -79,6 +120,8 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <FlatList
         data={visibleItems}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
         accessibilityState={{ busy: marketIsLoading }}
         keyExtractor={(item) => item.id}
         /* Remounts the list on rotation, which is what `numColumns` requires:
@@ -140,6 +183,22 @@ export default function HomeScreen() {
               tone={error ? "error" : "neutral"}
             />
           )
+        }
+        ListFooterComponent={
+          visibleItems.length && (loadingMore || pageError) ? (
+            <View style={styles.loadingState} accessibilityLiveRegion="polite">
+              {loadingMore ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : null}
+              {pageError ? (
+                <Button
+                  label="Réessayer de charger les annonces"
+                  variant="secondary"
+                  onPress={loadMore}
+                />
+              ) : null}
+            </View>
+          ) : null
         }
       />
     </SafeAreaView>

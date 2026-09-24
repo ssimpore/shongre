@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -30,7 +30,10 @@ import {
   type MobileSearchScope,
   type MobileSearchSuggestion,
 } from "@/features/listings/listings.service";
-import { parseMobileSearchPriceRange } from "@/features/listings/search-input";
+import {
+  mobileSavedSearchTargetId,
+  parseMobileSearchPriceRange,
+} from "@/features/listings/search-input";
 import { useMarket } from "@/features/market/MarketProvider";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { watchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
@@ -62,7 +65,12 @@ export default function SearchScreen() {
   const [error, setError] = useState("");
   const [completedRequestKey, setCompletedRequestKey] = useState("");
   const [retryVersion, setRetryVersion] = useState(0);
+  const [resultsMarketCode, setResultsMarketCode] = useState("");
+  const [nextCursor, setNextCursor] = useState<string>();
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [pageError, setPageError] = useState("");
   const requestId = useRef(0);
+  const paginationInFlight = useRef(false);
   const priceRange = useMemo(
     () => parseMobileSearchPriceRange(minPrice, maxPrice),
     [maxPrice, minPrice],
@@ -72,7 +80,8 @@ export default function SearchScreen() {
   );
   const requestKey = `${activeMarket.code}\u0000${scope}\u0000${categoryId}\u0000${query}\u0000${minPrice}\u0000${maxPrice}\u0000${retryVersion}`;
   const loading = !hasPriceError && completedRequestKey !== requestKey;
-  const visibleItems = loading ? [] : items;
+  const visibleItems =
+    !hasPriceError && resultsMarketCode === activeMarket.code ? items : [];
   const visibleError = loading ? "" : error;
 
   const saveAlert = async () => {
@@ -92,25 +101,31 @@ export default function SearchScreen() {
         priceRange.maximum !== undefined
           ? majorToMinorAmount(priceRange.maximum, activeMarket.currency)
           : undefined;
-      const categoryId = mobileSearchCategoryId(scope);
+      const alertCategoryId = categoryId || mobileSearchCategoryId(scope);
       await watchSubscriptionsService.createOrReplace(user.id, {
         marketCode: activeMarket.code,
         targetType: "saved_search",
-        targetId: `mobile-${scope}-${normalizedQuery
-          .toLocaleLowerCase(activeMarket.defaultLocale)
-          .replace(/[^a-z0-9]+/g, "-")
-          .slice(0, 80)}`,
+        targetId: mobileSavedSearchTargetId({
+          marketCode: activeMarket.code,
+          query: normalizedQuery,
+          locale: activeMarket.defaultLocale,
+          categoryId: alertCategoryId,
+          minPriceMinor,
+          maxPriceMinor,
+        }),
         title: normalizedQuery,
         frequency: "daily",
         channels: { inApp: true, email: false, push: true },
         searchFilter: {
           query: normalizedQuery,
-          ...(categoryId ? { categoryId } : {}),
+          ...(alertCategoryId ? { categoryId: alertCategoryId } : {}),
           ...(minPriceMinor !== undefined ? { minPriceMinor } : {}),
           ...(maxPriceMinor !== undefined ? { maxPriceMinor } : {}),
         },
       });
-      setAlertNotice("Alerte quotidienne créée pour cette recherche.");
+      setAlertNotice(
+        `Alerte quotidienne créée pour « ${normalizedQuery} »${alertCategoryId ? ` dans ${categoryLabel || "la catégorie sélectionnée"}` : ""}.`,
+      );
     } catch (reason) {
       setAlertNotice(
         reason instanceof Error
@@ -125,6 +140,7 @@ export default function SearchScreen() {
   useEffect(() => {
     const currentRequest = ++requestId.current;
     const currentRequestKey = requestKey;
+    paginationInFlight.current = false;
     if (hasPriceError) {
       return () => {
         requestId.current += 1;
@@ -143,6 +159,9 @@ export default function SearchScreen() {
         .then((results) => {
           if (currentRequest === requestId.current) {
             setItems(results.items);
+            setResultsMarketCode(activeMarket.code);
+            setNextCursor(results.pageInfo.nextCursor);
+            setPageError("");
             setDidYouMean(results.didYouMean ?? "");
             setError("");
           }
@@ -150,6 +169,7 @@ export default function SearchScreen() {
         .catch((reason) => {
           if (currentRequest === requestId.current) {
             setItems([]);
+            setResultsMarketCode(activeMarket.code);
             setDidYouMean("");
             setError(
               reason instanceof Error
@@ -161,6 +181,7 @@ export default function SearchScreen() {
         .finally(() => {
           if (currentRequest === requestId.current) {
             setCompletedRequestKey(currentRequestKey);
+            setLoadingMore(false);
           }
         });
     }, 250);
@@ -178,6 +199,59 @@ export default function SearchScreen() {
     priceRange.minimum,
     query,
     requestKey,
+    scope,
+  ]);
+
+  const loadMore = useCallback(() => {
+    if (
+      !nextCursor ||
+      loading ||
+      loadingMore ||
+      paginationInFlight.current ||
+      hasPriceError
+    )
+      return;
+    paginationInFlight.current = true;
+    setLoadingMore(true);
+    const currentRequest = requestId.current;
+    void listingsService
+      .search({
+        marketCode: activeMarket.code,
+        query,
+        scope,
+        ...(categoryId ? { categoryId } : {}),
+        minPrice: priceRange.minimum,
+        maxPrice: priceRange.maximum,
+        cursor: nextCursor,
+      })
+      .then((results) => {
+        if (currentRequest !== requestId.current) return;
+        setItems((current) => [...current, ...results.items]);
+        setNextCursor(results.pageInfo.nextCursor);
+        setPageError("");
+      })
+      .catch((reason) => {
+        if (currentRequest === requestId.current)
+          setPageError(
+            reason instanceof Error ? reason.message : "Chargement impossible.",
+          );
+      })
+      .finally(() => {
+        if (currentRequest === requestId.current) {
+          paginationInFlight.current = false;
+          setLoadingMore(false);
+        }
+      });
+  }, [
+    activeMarket.code,
+    categoryId,
+    hasPriceError,
+    loading,
+    loadingMore,
+    nextCursor,
+    priceRange.maximum,
+    priceRange.minimum,
+    query,
     scope,
   ]);
 
@@ -219,6 +293,8 @@ export default function SearchScreen() {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <FlatList
         data={visibleItems}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
         accessibilityState={{ busy: loading }}
         keyExtractor={(item) => item.id}
         key={`search-results-${columns}`}
@@ -236,6 +312,11 @@ export default function SearchScreen() {
             <Text accessibilityRole="header" style={styles.heading}>
               Rechercher
             </Text>
+            {loading && visibleItems.length ? (
+              <Text accessibilityLiveRegion="polite" style={styles.notice}>
+                Mise à jour des résultats…
+              </Text>
+            ) : null}
             <FormField
               label="Que recherchez-vous ?"
               value={query}
@@ -403,6 +484,22 @@ export default function SearchScreen() {
               }
             />
           )
+        }
+        ListFooterComponent={
+          visibleItems.length && (loadingMore || pageError) ? (
+            <View style={styles.loadingState} accessibilityLiveRegion="polite">
+              {loadingMore ? (
+                <ActivityIndicator color={colors.primary} />
+              ) : null}
+              {pageError ? (
+                <Button
+                  label="Réessayer de charger la suite"
+                  variant="secondary"
+                  onPress={loadMore}
+                />
+              ) : null}
+            </View>
+          ) : null
         }
       />
     </SafeAreaView>

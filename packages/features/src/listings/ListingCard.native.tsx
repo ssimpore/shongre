@@ -147,6 +147,9 @@ export function ListingCard({
     Boolean(listing.priceLabel) &&
     Boolean(price && price.length > 18);
   const badges = getListingPromotionBadges(listing, labels);
+  const compactNoMedia = !listing.imageUrl;
+  const noMediaNeedsOverlaySpace =
+    badges.length > 0 || (listing.photoCount ?? 0) > 1;
   const capabilities = getListingCapabilityPresentation(listing, labels);
   const verifiedCapability = capabilities.find(
     (capability) => capability.kind === "verified_seller",
@@ -247,7 +250,15 @@ export function ListingCard({
     <Card
       testID="listing-card"
       padding="none"
-      style={[styles.card, !horizontal && styles.verticalCard]}
+      style={[
+        styles.card,
+        !horizontal && styles.verticalCard,
+        !horizontal && compactNoMedia && styles.noMediaCard,
+        !horizontal &&
+          compactNoMedia &&
+          noMediaNeedsOverlaySpace &&
+          styles.noMediaOverlayCard,
+      ]}
     >
       <Pressable
         accessibilityRole="link"
@@ -282,6 +293,11 @@ export function ListingCard({
           style={[
             styles.media,
             horizontal ? styles.horizontalMedia : styles.verticalMedia,
+            !horizontal && compactNoMedia && styles.noMediaWell,
+            !horizontal &&
+              compactNoMedia &&
+              noMediaNeedsOverlaySpace &&
+              styles.noMediaOverlayWell,
           ]}
         >
           {listing.imageUrl && !imageFailed ? (
@@ -496,6 +512,20 @@ const styles = StyleSheet.create({
     height: nativeSizing.listingCardHeight,
     alignSelf: "center",
   },
+  noMediaCard: {
+    height:
+      nativeSizing.listingCardHeight -
+      nativeSizing.listingCardMediaHeight +
+      nativeSizing.controlLg +
+      nativeSpacing.md,
+  },
+  noMediaOverlayCard: {
+    height:
+      nativeSizing.listingCardHeight -
+      nativeSizing.listingCardMediaHeight +
+      nativeSizing.controlLg +
+      nativeSpacing.lg,
+  },
   link: { flexDirection: "column" },
   verticalLink: { height: nativeSizing.full },
   pressed: { opacity: nativeOpacity.pressed },
@@ -506,6 +536,8 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   verticalMedia: { height: nativeSizing.listingCardMediaHeight },
+  noMediaWell: { height: nativeSizing.controlLg + nativeSpacing.md },
+  noMediaOverlayWell: { height: nativeSizing.controlLg + nativeSpacing.lg },
   horizontalMedia: {
     width: nativeSizing.listingCardListImageSm,
     aspectRatio: nativeAspect.square,

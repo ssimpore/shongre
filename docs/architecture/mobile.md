@@ -28,6 +28,12 @@ rotates a successful session securely, clears a rejected session, and never
 falls back to local success data. Runtime routes provide loading, empty,
 error/retry, and mutation-pending behavior appropriate to each surface.
 
+The generic publication editor restores and autosaves the same backend-owned,
+account-and-market-scoped draft as Web. Viewing an existing draft does not
+rewrite it. Native edits preserve fields that its editor does not expose, and
+local photo URIs are not treated as durable uploads; the seller is prompted to
+check photos before publication.
+
 Authentication tokens use `expo-secure-store`; web fallback is process memory, never localStorage. Permissions are requested from the feature that needs them. Selected photos and notifications are the only declared user-facing mobile permissions. Camera, location, motion, microphone, contacts, and overlay permissions are blocked because no reachable feature needs them.
 
 Expo config is environment-driven through `mobile/app.config.ts`. Run `make mobile-prebuild-clean` after native configuration changes and review generated manifests before release.

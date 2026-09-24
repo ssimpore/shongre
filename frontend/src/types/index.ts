@@ -304,14 +304,8 @@ export interface ListingPhoto {
   alt?: string;
 }
 
-export interface ListingPricePresentation {
-  kind: "price" | "salary" | "rent" | "service_rate";
-  visibility: "public" | "undisclosed";
-  minimumAmountMinor?: number;
-  maximumAmountMinor?: number;
-  currency: string;
-  period?: "hour" | "day" | "week" | "month" | "year" | "total";
-}
+export type ListingPricePresentation =
+  import("@shongre/contracts/openapi").components["schemas"]["ListingPricePresentation"];
 
 export interface Listing {
   taxonomy?: import("@shongre/contracts/openapi").components["schemas"]["ListingTaxonomyProjection"];

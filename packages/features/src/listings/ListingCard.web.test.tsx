@@ -82,6 +82,16 @@ function renderCard(listing: ListingCardView = baseListing) {
 }
 
 describe("canonical web listing card", () => {
+  it("compacts photo-free cards even when a promotion badge is present", () => {
+    const html = renderCard({
+      ...baseListing,
+      imageUrl: undefined,
+      photoCount: 0,
+    });
+    expect(html).toContain("listing-card-no-media-overlay");
+    expect(renderCard()).not.toContain("listing-card-no-media-overlay");
+  });
+
   it.each(["grid", "compact", "showcase", "list", "hero"] as const)(
     "keeps category-aware capabilities in the content area (%s)",
     (variant) => {

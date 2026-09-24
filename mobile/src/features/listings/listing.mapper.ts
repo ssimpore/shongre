@@ -12,6 +12,7 @@ import {
 import type { components } from "@shongre/contracts/openapi";
 import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
 import { formatCompactMoney, majorToMinorAmount } from "@shongre/shared/money";
+import { formatListingPricePresentation } from "@shongre/shared";
 import { messagesFr } from "@/i18n/messages.fr";
 
 const RECURRING_PRICE_SUFFIXES = {
@@ -62,18 +63,32 @@ export function mapBackendListing(item: BackendListing): ListingCardView {
           item.attributes.brand.trim()
         ? item.attributes.brand.trim()
         : undefined;
+  const semantic = item.pricePresentation;
+  const semanticAmount =
+    semantic?.visibility === "public"
+      ? (semantic.minimumAmountMinor ?? semantic.maximumAmountMinor)
+      : undefined;
   const price = {
-    amountMinor: majorToMinorAmount(Number(item.price), item.currency),
-    currency: item.currency,
+    amountMinor:
+      semanticAmount ?? majorToMinorAmount(Number(item.price), item.currency),
+    currency: semantic?.currency ?? item.currency,
   };
   const priceKind: NonNullable<ListingCardView["priceKind"]> =
-    priceType === "free"
-      ? "free"
-      : priceType === "on_request"
-        ? "on_request"
-        : priceType === "unpriced" || Number(item.price) === 0
-          ? "unpriced"
-          : "amount";
+    semantic?.visibility === "undisclosed"
+      ? semantic.kind === "salary"
+        ? "unpriced"
+        : "on_request"
+      : semantic?.visibility === "public"
+        ? semanticAmount !== undefined && semanticAmount > 0
+          ? "amount"
+          : "unpriced"
+        : priceType === "free"
+          ? "free"
+          : priceType === "on_request"
+            ? "on_request"
+            : priceType === "unpriced" || Number(item.price) === 0
+              ? "unpriced"
+              : "amount";
   const recurringSuffix =
     typeof priceType === "string" && priceType in RECURRING_PRICE_SUFFIXES
       ? RECURRING_PRICE_SUFFIXES[
@@ -113,9 +128,11 @@ export function mapBackendListing(item: BackendListing): ListingCardView {
             currency: item.currency,
           }
         : undefined,
-    priceLabel: recurringSuffix
-      ? `${formatCompactMoney(price, locale)}${recurringSuffix}`
-      : undefined,
+    priceLabel: semantic
+      ? formatListingPricePresentation(semantic, locale)
+      : recurringSuffix
+        ? `${formatCompactMoney(price, locale)}${recurringSuffix}`
+        : undefined,
     priceKind,
     imageUrl: item.images[0],
     photoCount: item.images.length,

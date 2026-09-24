@@ -61,6 +61,7 @@ function mapPricePresentation(
   listing: BackendListing,
   priceType: unknown,
 ): ListingPricePresentation | undefined {
+  if (listing.pricePresentation) return listing.pricePresentation;
   if (priceType === "on_request") {
     return {
       kind: "price",

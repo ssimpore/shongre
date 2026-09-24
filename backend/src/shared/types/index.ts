@@ -288,6 +288,7 @@ export type PublicListing = Omit<
   promotionSource?: Listing["promotionSource"];
   promotionSourceId?: string;
   marketPublications?: PublicListingMarketPublication[];
+  pricePresentation?: import("@shongre/contracts/openapi").components["schemas"]["ListingPricePresentation"];
   fulfillmentTypes: import("@shongre/contracts/digital-products").FulfillmentType[];
   requiresPhysicalDelivery: boolean;
   /**

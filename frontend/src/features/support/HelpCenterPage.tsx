@@ -146,6 +146,7 @@ export const HelpCenterPage: React.FC = () => {
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategory(cat.id)}
+              aria-pressed={isActive}
               className={`px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all flex items-center gap-2 cursor-pointer ${
                 isActive
                   ? "bg-surface-inverse text-text-inverse shadow-xs"
@@ -204,7 +205,9 @@ export const HelpCenterPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setOpenFaqId(isOpen ? null : art.id)}
-                    className="w-full flex items-center justify-between gap-4 min-h-6 text-left font-semibold text-xs sm:text-sm text-text-main hover:text-primary transition-colors cursor-pointer"
+                    aria-expanded={isOpen}
+                    aria-controls={`help-faq-${art.id}`}
+                    className="w-full flex items-center justify-between gap-4 min-h-control-target text-left font-semibold text-xs sm:text-sm text-text-main hover:text-primary transition-colors cursor-pointer"
                   >
                     <span>{art.question}</span>
                     <ChevronDown
@@ -214,20 +217,24 @@ export const HelpCenterPage: React.FC = () => {
                     />
                   </button>
 
-                  {isOpen && (
-                    <div className="mt-3 space-y-3 text-xs text-text-supporting leading-relaxed pl-1 animate-fadeIn">
-                      <p>{art.answer}</p>
-                      {art.linkText && art.linkHref && (
-                        <Link
-                          to={art.linkHref}
-                          className="inline-flex items-center gap-1 font-bold text-primary hover:underline"
-                        >
-                          <span>{art.linkText}</span>
-                          <ArrowRight className="w-icon-xs h-icon-xs" />
-                        </Link>
-                      )}
-                    </div>
-                  )}
+                  <div
+                    id={`help-faq-${art.id}`}
+                    role="region"
+                    aria-label={art.question}
+                    hidden={!isOpen}
+                    className="mt-3 space-y-3 text-xs text-text-supporting leading-relaxed pl-1 animate-fadeIn"
+                  >
+                    <p>{art.answer}</p>
+                    {art.linkText && art.linkHref && (
+                      <Link
+                        to={art.linkHref}
+                        className="inline-flex items-center gap-1 font-bold text-primary hover:underline"
+                      >
+                        <span>{art.linkText}</span>
+                        <ArrowRight className="w-icon-xs h-icon-xs" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
               );
             })}

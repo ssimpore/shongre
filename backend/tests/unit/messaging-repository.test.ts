@@ -57,8 +57,13 @@ describe("PostgresMessagingRepository", () => {
       error: null,
     });
     select.mockReturnValue(query);
+    const rpc = vi.fn().mockResolvedValue({
+      data: [{ conversation_id: "conversation-id", unread_count: 2 }],
+      error: null,
+    });
     mocks.getSupabaseAdminClient.mockReturnValue({
       from: vi.fn().mockReturnValue({ select }),
+      rpc,
     });
 
     const result = await new PostgresMessagingRepository().getUserConversations(
@@ -73,5 +78,10 @@ describe("PostgresMessagingRepository", () => {
       "https://cdn.example/first.jpg",
       "https://cdn.example/second.jpg",
     ]);
+    expect(result.items[0]?.unreadCount).toBe(2);
+    expect(rpc).toHaveBeenCalledWith("get_conversation_unread_counts", {
+      p_user_id: "buyer-id",
+      p_conversation_ids: ["conversation-id"],
+    });
   });
 });

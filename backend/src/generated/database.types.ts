@@ -34813,6 +34813,13 @@ export type Database = {
         Args: { p_market_code: string };
         Returns: Json;
       };
+      get_conversation_unread_counts: {
+        Args: { p_conversation_ids: string[]; p_user_id: string };
+        Returns: {
+          conversation_id: string;
+          unread_count: number;
+        }[];
+      };
       get_discovery_collection_inventory: {
         Args: { p_groups: Json; p_market_code: string };
         Returns: {

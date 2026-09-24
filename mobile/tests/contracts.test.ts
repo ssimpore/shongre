@@ -51,6 +51,36 @@ const backendListing: BackendListing = {
 };
 
 describe("mobile public contracts", () => {
+  it("shows employment salary range and period in general discovery", () => {
+    const job = mapBackendListing({
+      ...backendListing,
+      categoryId: "jobs",
+      price: 12.5,
+      pricePresentation: {
+        kind: "salary",
+        visibility: "public",
+        currency: "EUR",
+        minimumAmountMinor: 1250,
+        maximumAmountMinor: 1450,
+        period: "hour",
+      },
+    });
+    expect(job.priceLabel).toContain("12,50");
+    expect(job.priceLabel).toContain("14,50");
+    expect(job.priceLabel).toContain("h");
+    const hidden = mapBackendListing({
+      ...backendListing,
+      categoryId: "jobs",
+      price: 0,
+      pricePresentation: {
+        kind: "salary",
+        visibility: "undisclosed",
+        currency: "EUR",
+      },
+    });
+    expect(hidden.priceKind).toBe("unpriced");
+    expect(hidden.priceLabel).toBe("Rémunération non communiquée");
+  });
   it("keeps an unmapped historical listing without inventing a category label", () => {
     expect(
       mapBackendListing({ ...backendListing, taxonomy: undefined })

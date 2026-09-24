@@ -40,6 +40,50 @@ const INTERNAL_ATTRIBUTE_KEYS = new Set([
   "taxonomyValid",
 ]);
 
+function employmentPricePresentation(
+  listing: Listing,
+): PublicListing["pricePresentation"] {
+  const attributes = listing.attributes;
+  if (
+    listing.categoryId !== "jobs" ||
+    typeof attributes?.salaryIsPublic !== "boolean"
+  )
+    return undefined;
+  const currency = listing.currency;
+  if (!/^[A-Z]{3}$/.test(currency)) return undefined;
+  const visible = attributes.salaryIsPublic;
+  const minor = (value: unknown) =>
+    typeof value === "number" && Number.isSafeInteger(value) && value >= 0
+      ? value
+      : undefined;
+  const frequency =
+    typeof attributes.salaryFrequencyId === "string"
+      ? attributes.salaryFrequencyId.split(".").at(-1)
+      : undefined;
+  const period =
+    frequency === "hour" ||
+    frequency === "day" ||
+    frequency === "week" ||
+    frequency === "month" ||
+    frequency === "year"
+      ? frequency
+      : undefined;
+  const minimumAmountMinor = minor(attributes.salaryMinimumMinor);
+  const maximumAmountMinor = minor(attributes.salaryMaximumMinor);
+  return {
+    kind: "salary",
+    visibility: visible ? "public" : "undisclosed",
+    currency,
+    ...(visible && minimumAmountMinor !== undefined
+      ? { minimumAmountMinor }
+      : {}),
+    ...(visible && maximumAmountMinor !== undefined
+      ? { maximumAmountMinor }
+      : {}),
+    ...(period ? { period } : {}),
+  };
+}
+
 export function toPublicSellerProfile(
   profile: UserProfile,
 ): PublicSellerProfile | null {
@@ -251,9 +295,11 @@ export function toPublicListing(
     return publicPublication;
   });
   const publicLocation = projectListingLocation(listing, locationPolicy);
+  const pricePresentation = employmentPricePresentation(listing);
 
   return {
     ...publicFields,
+    ...(pricePresentation ? { pricePresentation } : {}),
     ...(publicLocation.coordinate
       ? {
           latitude: publicLocation.coordinate.latitude,

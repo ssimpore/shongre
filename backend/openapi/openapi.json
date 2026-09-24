@@ -28144,7 +28144,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/ConversationListPage"
                 }
               }
             }
@@ -47644,6 +47644,25 @@
           }
         }
       },
+      "ListingPricePresentation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "visibility", "currency"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["price", "salary", "rent", "service_rate"]
+          },
+          "visibility": { "type": "string", "enum": ["public", "undisclosed"] },
+          "minimumAmountMinor": { "type": "integer", "minimum": 0 },
+          "maximumAmountMinor": { "type": "integer", "minimum": 0 },
+          "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+          "period": {
+            "type": "string",
+            "enum": ["hour", "day", "week", "month", "year", "total"]
+          }
+        }
+      },
       "PublicListing": {
         "type": "object",
         "description": "Public marketplace listing projection after private seller, entitlement, provider and risk fields are removed.",
@@ -47737,6 +47756,9 @@
           "price": {
             "type": "number",
             "description": "Legacy major-unit listing amount. Client adapters convert this value to integer minor units at their transport boundary."
+          },
+          "pricePresentation": {
+            "$ref": "#/components/schemas/ListingPricePresentation"
           },
           "originalPrice": {
             "type": "number"
@@ -63161,6 +63183,52 @@
           "activity": {
             "type": "string",
             "enum": ["active", "idle", "background", "offline"]
+          }
+        }
+      },
+      "ConversationListPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "pageInfo"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "listingId",
+                "buyerId",
+                "sellerId",
+                "lastMessageAt",
+                "createdAt",
+                "unreadCount"
+              ],
+              "properties": {
+                "id": { "type": "string", "format": "uuid" },
+                "listingId": { "type": "string", "format": "uuid" },
+                "buyerId": { "type": "string", "format": "uuid" },
+                "sellerId": { "type": "string", "format": "uuid" },
+                "listing": { "$ref": "#/components/schemas/JsonValue" },
+                "buyer": { "$ref": "#/components/schemas/JsonValue" },
+                "seller": { "$ref": "#/components/schemas/JsonValue" },
+                "lastMessageText": { "type": "string" },
+                "lastMessageAt": { "type": "string", "format": "date-time" },
+                "createdAt": { "type": "string", "format": "date-time" },
+                "unreadCount": { "type": "integer", "minimum": 0 }
+              }
+            }
+          },
+          "pageInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["hasNextPage"],
+            "properties": {
+              "hasNextPage": { "type": "boolean" },
+              "nextCursor": { "type": "string" }
+            }
           }
         }
       },

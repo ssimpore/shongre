@@ -1439,6 +1439,7 @@ export const SearchPage: React.FC = () => {
                   key={s.value}
                   type="button"
                   onClick={() => updateFilter("sellerType", s.value)}
+                  aria-pressed={sellerType === s.value}
                   className={`h-control-md px-2 text-xs font-semibold rounded-control border text-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                     sellerType === s.value
                       ? "bg-primary text-on-primary border-primary shadow-xs"

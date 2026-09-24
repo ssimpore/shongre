@@ -29,6 +29,7 @@ export interface MobileListingSearchInput {
   categoryId?: string;
   minPrice?: number;
   maxPrice?: number;
+  cursor?: string;
 }
 
 export function mobileSearchCategoryId(
@@ -45,6 +46,8 @@ export function mobileSearchCategoryId(
 
 export interface MobileListingSearchResult {
   items: ListingCardView[];
+  total: number;
+  pageInfo: { hasNextPage: boolean; nextCursor?: string };
   /** The API's nearest known spelling, offered only when nothing matched. */
   didYouMean?: string;
 }
@@ -56,8 +59,31 @@ export interface MobileSearchSuggestion {
   label: string;
 }
 
+export interface MobilePublicationDraft {
+  title: string;
+  description: string;
+  price: string;
+  city: string;
+  postalCode: string;
+  categoryId: string;
+  listingTypeId: string;
+  attributes: Record<string, unknown>;
+  images: string[];
+  /** Preserved by the adapter when the same draft was started on Web. */
+  source: Record<string, unknown>;
+}
+
+function record(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function string(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
 export interface ListingsService {
-  list(marketCode: string): Promise<ListingCardView[]>;
   search(input: MobileListingSearchInput): Promise<MobileListingSearchResult>;
   /** Completions for the search field; categories are folded into queries. */
   suggest(
@@ -79,12 +105,128 @@ export interface ListingsService {
     limit?: number,
   ): Promise<ListingCardView[]>;
   publish(input: PublicationInput, actor: AuthUser): Promise<ListingCardView>;
+  getDraft(marketCode: string): Promise<MobilePublicationDraft | null>;
+  saveDraft(
+    marketCode: string,
+    input: MobilePublicationDraft & {
+      listingIntent?: string;
+      taxonomyRevision?: number;
+    },
+  ): Promise<MobilePublicationDraft>;
 }
 
 export class HttpListingsService implements ListingsService {
-  async list(marketCode: string): Promise<ListingCardView[]> {
-    const response = await apiOperation("getListings", {}, marketCode);
-    return response.listings.map(mapBackendListing);
+  async getDraft(marketCode: string): Promise<MobilePublicationDraft | null> {
+    const response = await apiOperation(
+      "getListingDraftsCurrent",
+      {},
+      marketCode,
+    );
+    if (!response || typeof response !== "object" || Array.isArray(response))
+      return null;
+    const source = record(response);
+    const pricing = record(source.pricing);
+    const location = record(source.location);
+    const photos = Array.isArray(source.photos) ? source.photos : [];
+    return {
+      title: string(source.title),
+      description: string(source.description),
+      price:
+        string(source.nativePriceInput) ||
+        (typeof pricing.amount === "number"
+          ? String(pricing.amount)
+          : typeof source.price === "number"
+            ? String(source.price)
+            : ""),
+      city: string(location.city) || string(source.city),
+      postalCode: string(location.postalCode) || string(source.postalCode),
+      categoryId: string(source.taxonomyNodeId) || string(source.categoryId),
+      listingTypeId: string(source.listingTypeId),
+      attributes: record(source.attributes),
+      images: photos.flatMap((photo) => {
+        const url = string(record(photo).url);
+        return /^https?:\/\//.test(url) ? [url] : [];
+      }),
+      source,
+    };
+  }
+
+  async saveDraft(
+    marketCode: string,
+    input: MobilePublicationDraft & {
+      listingIntent?: string;
+      taxonomyRevision?: number;
+    },
+  ): Promise<MobilePublicationDraft> {
+    const source = input.source;
+    const amount = Number(input.price.replace(",", "."));
+    const remotePhotos = input.images.filter((url) => /^https?:\/\//.test(url));
+    const sourcePhotos = Array.isArray(source.photos) ? source.photos : [];
+    const pricing = record(source.pricing);
+    const location = record(source.location);
+    const draft = {
+      ...source,
+      marketCode,
+      selectedMarkets: Array.isArray(source.selectedMarkets)
+        ? source.selectedMarkets
+        : [marketCode],
+      taxonomyNodeId: input.categoryId,
+      listingTypeId: input.listingTypeId,
+      ...(input.taxonomyRevision !== undefined
+        ? { taxonomyRevision: input.taxonomyRevision }
+        : {}),
+      taxonomyVersion: "v1",
+      listingIntent: input.listingIntent || source.listingIntent || "SELL",
+      title: input.title,
+      description: input.description,
+      condition: source.condition || "very_good",
+      attributes: input.attributes,
+      photos: remotePhotos.map(
+        (url, index) =>
+          sourcePhotos.find((photo) => string(record(photo).url) === url) ?? {
+            id: `${index}:${url}`,
+            url,
+            isCover: index === 0,
+          },
+      ),
+      pricing: {
+        ...pricing,
+        priceModel:
+          input.listingIntent === "DONATE"
+            ? "free"
+            : pricing.priceModel || "fixed",
+        amount: Number.isFinite(amount) && amount >= 0 ? amount : 0,
+        currency:
+          getCountryConfig(marketCode)?.currency || string(pricing.currency),
+        isNegotiable: pricing.isNegotiable ?? false,
+        isFreeDonation: input.listingIntent
+          ? input.listingIntent === "DONATE"
+          : (pricing.isFreeDonation ?? false),
+      },
+      nativePriceInput: input.price,
+      fulfillment: source.fulfillment || {
+        allowHandDelivery: true,
+        allowParcelShipping: false,
+      },
+      location: {
+        ...location,
+        city: input.city,
+        postalCode: input.postalCode,
+        countryCode: marketCode,
+        hideExactAddress: location.hideExactAddress ?? true,
+      },
+      currentStep:
+        typeof source.currentStep === "number" ? source.currentStep : 1,
+      updatedAt: new Date().toISOString(),
+    };
+    await apiOperation(
+      "putListingDraftsCurrent",
+      {
+        body: draft,
+      },
+      marketCode,
+    );
+    return { ...input, source: draft };
   }
 
   async search(
@@ -99,6 +241,7 @@ export class HttpListingsService implements ListingsService {
       ...(categoryId ? { categoryId } : {}),
       ...(input.minPrice !== undefined ? { minPrice: input.minPrice } : {}),
       ...(input.maxPrice !== undefined ? { maxPrice: input.maxPrice } : {}),
+      ...(input.cursor ? { cursor: input.cursor } : {}),
     };
     const response = await apiOperation(
       "postListingsSearch",
@@ -107,6 +250,8 @@ export class HttpListingsService implements ListingsService {
     );
     return {
       items: response.items.map(mapBackendListing),
+      total: response.total,
+      pageInfo: response.pageInfo,
       ...(response.didYouMean ? { didYouMean: response.didYouMean } : {}),
     };
   }

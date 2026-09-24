@@ -1,3 +1,25 @@
+import { deterministicUuid } from "@shongre/shared/deterministic-id";
+
+export function mobileSavedSearchTargetId(input: {
+  marketCode: string;
+  query: string;
+  locale: string;
+  categoryId?: string;
+  minPriceMinor?: number;
+  maxPriceMinor?: number;
+}): string {
+  return `mobile-${deterministicUuid(
+    "saved-search",
+    JSON.stringify({
+      marketCode: input.marketCode,
+      query: input.query.trim().toLocaleLowerCase(input.locale),
+      categoryId: input.categoryId ?? null,
+      minPriceMinor: input.minPriceMinor ?? null,
+      maxPriceMinor: input.maxPriceMinor ?? null,
+    }),
+  )}`;
+}
+
 export interface MobileSearchPriceRange {
   minimum?: number;
   maximum?: number;

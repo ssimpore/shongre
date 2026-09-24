@@ -725,9 +725,9 @@
   }
 }
 
-/* The shared vertical card follows the canonical 220 x 420 footprint. Narrow
-   viewports may reduce its width, while the complete accessible values remain
-   available through native titles and the listing link label. */
+/* Vertical cards with media follow the canonical 220 x 420 footprint; cards
+   without photos use the compact media well below. Narrow viewports may reduce
+   width while accessible values remain in titles and listing link labels. */
 .listing-card-standard {
   width: min(100%, var(--spacing-listing-card-mobile-max));
   max-width: var(--spacing-listing-card-mobile-max);
@@ -735,6 +735,34 @@
   min-height: var(--spacing-listing-card-height);
   max-height: var(--spacing-listing-card-height);
   margin-inline: auto;
+}
+
+.listing-card-standard.listing-card-no-media {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  height: auto;
+  min-height: calc(
+    var(--spacing-listing-card-height) -
+      var(--spacing-listing-card-media-height) + var(--spacing-control-lg) +
+      var(--spacing-semantic-md)
+  );
+  max-height: none;
+}
+
+.listing-card-no-media .listing-card-media {
+  height: calc(var(--spacing-control-lg) + var(--spacing-semantic-md));
+}
+
+.listing-card-no-media-overlay.listing-card-standard {
+  min-height: calc(
+    var(--spacing-listing-card-height) -
+      var(--spacing-listing-card-media-height) + var(--spacing-control-lg) +
+      var(--spacing-semantic-lg)
+  );
+}
+
+.listing-card-no-media-overlay .listing-card-media {
+  height: calc(var(--spacing-control-lg) + var(--spacing-semantic-lg));
 }
 
 /* Standalone cards may center within narrow surfaces, but result grids follow
@@ -912,6 +940,22 @@
   gap: var(--spacing-semantic-xs);
   padding: var(--spacing-semantic-sm) var(--spacing-semantic-md);
   padding-bottom: calc(var(--spacing-control-sm) + var(--spacing-semantic-lg));
+}
+
+.listing-card-hero-horizontal [data-listing-card-title] {
+  flex-shrink: 0;
+}
+
+@media (max-width: 374px) {
+  .listing-card-hero-horizontal .listing-card-list-content {
+    gap: 0;
+    padding: var(--spacing-semantic-xs);
+    padding-bottom: var(--spacing-control-sm);
+  }
+
+  .listing-card-hero-horizontal .listing-card-hero-seller {
+    display: none;
+  }
 }
 
 @variant sm {

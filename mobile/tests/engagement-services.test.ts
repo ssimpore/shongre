@@ -39,6 +39,72 @@ const listing = {
 describe("API-backed mobile engagement services", () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it("restores and saves the shared private draft without sending local photo URIs", async () => {
+    const service = new HttpListingsService();
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      marketCode: "FR",
+      taxonomyNodeId: "electronics.phones",
+      title: "Téléphone",
+      pricing: {
+        amount: 120,
+        currency: "EUR",
+        priceModel: "negotiable",
+        isNegotiable: true,
+      },
+      location: { city: "Lyon", postalCode: "69002" },
+      photos: [
+        {
+          id: "remote",
+          url: "https://media.example.test/phone.jpg",
+          isCover: true,
+        },
+      ],
+      selectedMarkets: ["FR"],
+      fulfillment: { allowHandDelivery: false, allowParcelShipping: true },
+      proInventory: { stock: 3, sku: "WEB-3" },
+    });
+    const restored = await service.getDraft("FR");
+    expect(restored).toMatchObject({
+      title: "Téléphone",
+      price: "120",
+      categoryId: "electronics.phones",
+      images: ["https://media.example.test/phone.jpg"],
+    });
+    vi.mocked(apiRequest).mockResolvedValueOnce({ success: true });
+    await service.saveDraft("FR", {
+      ...restored!,
+      title: "Téléphone révisé",
+      images: [
+        "https://media.example.test/phone.jpg",
+        "file:///private/new.jpg",
+      ],
+    });
+    expect(apiRequest).toHaveBeenLastCalledWith(
+      "/listing-drafts/current",
+      expect.objectContaining({
+        method: "PUT",
+        body: expect.stringContaining('"title":"Téléphone révisé"'),
+      }),
+      "FR",
+    );
+    const body = JSON.parse(
+      vi.mocked(apiRequest).mock.lastCall?.[1]?.body as string,
+    );
+    expect(body.selectedMarkets).toEqual(["FR"]);
+    expect(body.photos).toHaveLength(1);
+    expect(body.photos[0].url).toBe("https://media.example.test/phone.jpg");
+    expect(body.photos[0].id).toBe("remote");
+    expect(body.pricing).toMatchObject({
+      priceModel: "negotiable",
+      isNegotiable: true,
+    });
+    expect(body.fulfillment).toEqual({
+      allowHandDelivery: false,
+      allowParcelShipping: true,
+    });
+    expect(body.proInventory).toEqual({ stock: 3, sku: "WEB-3" });
+  });
+
   it("preserves a boundary title and rejects overlong publication before HTTP", async () => {
     const title = "é".repeat(PUBLICATION_CONSTRAINTS.title.maxLength);
     const input = {
@@ -181,7 +247,11 @@ describe("API-backed mobile engagement services", () => {
   });
 
   it("sends authoritative scope and price filters to search", async () => {
-    vi.mocked(apiRequest).mockResolvedValueOnce({ items: [listing] });
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      items: [listing],
+      total: 2,
+      pageInfo: { hasNextPage: true, nextCursor: "page-2" },
+    });
 
     const result = await new HttpListingsService().search({
       marketCode: "FR",
@@ -192,6 +262,8 @@ describe("API-backed mobile engagement services", () => {
     });
 
     expect(result.items).toHaveLength(1);
+    expect(result.pageInfo.nextCursor).toBe("page-2");
+    expect(result.total).toBe(2);
     expect(result.didYouMean).toBeUndefined();
     expect(apiRequest).toHaveBeenCalledWith(
       "/listings/search",
@@ -213,6 +285,8 @@ describe("API-backed mobile engagement services", () => {
   it("carries the API's spelling correction when nothing matched", async () => {
     vi.mocked(apiRequest).mockResolvedValueOnce({
       items: [],
+      total: 0,
+      pageInfo: { hasNextPage: false },
       didYouMean: "vélo",
     });
 
@@ -222,7 +296,31 @@ describe("API-backed mobile engagement services", () => {
       scope: "marketplace",
     });
 
-    expect(result).toEqual({ items: [], didYouMean: "vélo" });
+    expect(result).toEqual({
+      items: [],
+      total: 0,
+      pageInfo: { hasNextPage: false },
+      didYouMean: "vélo",
+    });
+  });
+
+  it("forwards the API cursor for the next page", async () => {
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      items: [],
+      total: 39,
+      pageInfo: { hasNextPage: false },
+    });
+    await new HttpListingsService().search({
+      marketCode: "FR",
+      cursor: "page-2",
+    });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/listings/search",
+      expect.objectContaining({
+        body: JSON.stringify({ marketCode: "FR", cursor: "page-2" }),
+      }),
+      "FR",
+    );
   });
 
   it("preserves API errors instead of returning listing fixtures", async () => {

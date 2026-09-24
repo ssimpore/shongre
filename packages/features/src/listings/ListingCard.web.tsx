@@ -295,6 +295,9 @@ export function ListingCard({
       })
     : undefined;
   const badges = getListingPromotionBadges(listing, labels);
+  const compactNoMedia = !listing.imageUrl && !image;
+  const noMediaNeedsOverlaySpace =
+    badges.length > 0 || (listing.photoCount ?? 0) > 1;
   const capabilities = getListingCapabilityPresentation(listing, labels);
   const verifiedCapability = capabilities.find(
     (capability) => capability.kind === "verified_seller",
@@ -579,7 +582,7 @@ export function ListingCard({
       } ${
         horizontal
           ? "listing-card-list flex"
-          : `listing-card-standard ${variant === "showcase" ? "listing-card-showcase" : ""} flex flex-col`
+          : `listing-card-standard ${variant === "showcase" ? "listing-card-showcase" : ""} ${compactNoMedia ? `listing-card-no-media ${noMediaNeedsOverlaySpace ? "listing-card-no-media-overlay" : ""}` : ""} flex flex-col`
       } ${className ?? ""}`}
     >
       {!interactive ? (

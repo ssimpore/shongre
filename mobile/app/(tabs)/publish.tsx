@@ -38,7 +38,10 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import { useAuth } from "@/features/auth/AuthProvider";
-import { listingsService } from "@/features/listings/listings.service";
+import {
+  listingsService,
+  type MobilePublicationDraft,
+} from "@/features/listings/listings.service";
 import { useMarket } from "@/features/market/MarketProvider";
 import { permissionsService } from "@/services/permissions/permissions.service";
 import { TaxonomyV1Field } from "@/features/taxonomy/TaxonomyV1Field";
@@ -104,11 +107,20 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
     () => availableNodes.filter((category) => !category.parentId),
     [availableNodes],
   );
+  const [categoryId, setCategoryId] = useState("");
   const [rootCategoryId, setRootCategoryId] = useState("");
+  const categoryRootId = useMemo(() => {
+    if (!categoryId) return "";
+    const byId = new Map(availableNodes.map((node) => [node.id, node]));
+    let node = byId.get(categoryId);
+    while (node?.parentId) node = byId.get(node.parentId);
+    return node?.id ?? "";
+  }, [availableNodes, categoryId]);
+  const selectedRootId = categoryRootId || rootCategoryId;
   const activeRootCategoryId = rootCategories.some(
-    (category) => category.id === rootCategoryId,
+    (category) => category.id === selectedRootId,
   )
-    ? rootCategoryId
+    ? selectedRootId
     : (rootCategories[0]?.id ?? "");
   const publishableCategories = useMemo(() => {
     const descendants = new Set<string>();
@@ -130,7 +142,16 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
   const [price, setPrice] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
-  const [categoryId, setCategoryId] = useState("");
+  const [draftHydrated, setDraftHydrated] = useState(!user?.id);
+  const [draftStatus, setDraftStatus] = useState<
+    "loading" | "ready" | "saving" | "saved" | "error"
+  >(user?.id ? "loading" : "ready");
+  const [draftRetry, setDraftRetry] = useState(0);
+  const [saveRetry, setSaveRetry] = useState(0);
+  const restoredDraft = useRef<MobilePublicationDraft | null>(null);
+  const savedDraftSignature = useRef("");
+  const saveChain = useRef<Promise<unknown>>(Promise.resolve());
+  const published = useRef(false);
   const activeCategoryId = publishableCategories.some(
     (category) => category.id === categoryId,
   )
@@ -159,6 +180,59 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
   const [taxonomyAttributes, setTaxonomyAttributes] = useState<
     Record<string, unknown>
   >({});
+  const [images, setImages] = useState<string[]>([]);
+  const [error, setError] = useState("");
+  const [taxonomyNotice, setTaxonomyNotice] = useState(
+    scopeChanged
+      ? "Le compte ou le marché a changé. Choisissez la catégorie et renseignez les informations pour ce contexte."
+      : "",
+  );
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let active = true;
+    void listingsService
+      .getDraft(activeMarket.code)
+      .then((saved) => {
+        if (!active) return;
+        restoredDraft.current = saved;
+        if (saved) {
+          savedDraftSignature.current = JSON.stringify({
+            title: saved.title,
+            description: saved.description,
+            price: saved.price,
+            city: saved.city,
+            postalCode: saved.postalCode,
+            categoryId: saved.categoryId,
+            listingTypeId: saved.listingTypeId,
+            attributes: saved.attributes,
+            images: saved.images,
+          });
+          setTitle(saved.title);
+          setDescription(saved.description);
+          setPrice(saved.price);
+          setCity(saved.city);
+          setPostalCode(saved.postalCode);
+          setCategoryId(saved.categoryId);
+          setListingTypeId(saved.listingTypeId);
+          setTaxonomyAttributes(saved.attributes);
+          setImages(saved.images);
+          if (saved.title || saved.description)
+            setTaxonomyNotice(
+              "Votre brouillon a été récupéré. Vérifiez les photos avant de publier.",
+            );
+        }
+        setDraftHydrated(true);
+        setDraftStatus("ready");
+      })
+      .catch(() => {
+        if (active) setDraftStatus("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, draftRetry, user?.id]);
+
   const [schemaRetry, setSchemaRetry] = useState(0);
   const schemaRequestKey = `${activeMarket.code}:${activeMarket.defaultLocale}:${activeCategoryId}:${activeListingTypeId}:${sellerType}:${schemaRetry}`;
   const [schemaResult, setSchemaResult] = useState<{
@@ -178,13 +252,6 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
         : schemaResult.error
           ? "error"
           : "ready";
-  const [images, setImages] = useState<string[]>([]);
-  const [error, setError] = useState("");
-  const [taxonomyNotice, setTaxonomyNotice] = useState(
-    scopeChanged
-      ? "Le compte ou le marché a changé. Choisissez la catégorie et renseignez les informations pour ce contexte."
-      : "",
-  );
   const [publishing, setPublishing] = useState(false);
   const [loadedDigitalContext, setLoadedDigitalContext] = useState<{
     scope: string;
@@ -356,6 +423,96 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
     provisioningHours,
     requirements,
     user,
+  ]);
+
+  useEffect(() => {
+    if (
+      !user?.id ||
+      !draftHydrated ||
+      published.current ||
+      treeState !== "ready"
+    )
+      return;
+    if (categoryId && activeCategoryId !== categoryId) return;
+    if (listingTypeId && activeListingTypeId !== listingTypeId) return;
+    if (
+      ![title, description, price, city, postalCode, categoryId].some((value) =>
+        value.trim(),
+      ) &&
+      !images.length
+    )
+      return;
+    const signature = JSON.stringify({
+      title,
+      description,
+      price,
+      city,
+      postalCode,
+      categoryId: activeCategoryId,
+      listingTypeId: activeListingTypeId,
+      attributes: taxonomyAttributes,
+      images,
+    });
+    if (signature === savedDraftSignature.current) return;
+    let active = true;
+    setDraftStatus("ready");
+    const timer = setTimeout(() => {
+      if (published.current) return;
+      setDraftStatus("saving");
+      const next = saveChain.current
+        .catch(() => undefined)
+        .then(() =>
+          listingsService.saveDraft(activeMarket.code, {
+            title,
+            description,
+            price,
+            city,
+            postalCode,
+            categoryId: activeCategoryId,
+            listingTypeId: activeListingTypeId,
+            listingIntent: resolvedSchema?.listingType.intent,
+            taxonomyRevision: resolvedSchema?.revision,
+            attributes: taxonomyAttributes,
+            images,
+            source: restoredDraft.current?.source ?? {},
+          }),
+        );
+      saveChain.current = next;
+      void next
+        .then((saved) => {
+          if (active && !published.current) {
+            restoredDraft.current = saved;
+            savedDraftSignature.current = signature;
+            setDraftStatus("saved");
+          }
+        })
+        .catch(() => {
+          if (active && !published.current) setDraftStatus("error");
+        });
+    }, 700);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [
+    activeCategoryId,
+    activeListingTypeId,
+    activeMarket.code,
+    categoryId,
+    city,
+    description,
+    draftHydrated,
+    images,
+    listingTypeId,
+    postalCode,
+    price,
+    resolvedSchema?.listingType.intent,
+    resolvedSchema?.revision,
+    saveRetry,
+    taxonomyAttributes,
+    title,
+    treeState,
+    user?.id,
   ]);
 
   useEffect(() => {
@@ -852,10 +1009,29 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
     setError("");
     try {
       const listing = await listingsService.publish(parsed.data, user);
+      published.current = true;
+      await saveChain.current.catch(() => undefined);
+      let draftCleared = true;
+      try {
+        await listingsService.saveDraft(activeMarket.code, {
+          title: "",
+          description: "",
+          price: "",
+          city: "",
+          postalCode: "",
+          categoryId: "",
+          listingTypeId: "",
+          attributes: {},
+          images: [],
+          source: {},
+        });
+      } catch {
+        draftCleared = false;
+      }
       await mobileDigitalDraftStore.clear(user.id, activeMarket.code);
       Alert.alert(
         "Annonce envoyée",
-        "Votre annonce est publiée ou en cours de vérification selon les contrôles de sécurité.",
+        `Votre annonce est publiée ou en cours de vérification selon les contrôles de sécurité.${draftCleared ? "" : " Votre ancien brouillon n’a pas pu être effacé."}`,
         [
           {
             text: "Voir l’annonce",
@@ -882,6 +1058,35 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
           Ajoutez l’essentiel maintenant. Vous pourrez compléter les détails
           depuis votre espace vendeur.
         </Text>
+        {user ? (
+          <Text
+            accessibilityLiveRegion="polite"
+            style={draftStatus === "error" ? styles.error : styles.subtitle}
+          >
+            {draftStatus === "loading"
+              ? "Chargement de votre brouillon…"
+              : draftStatus === "saving"
+                ? "Sauvegarde du brouillon…"
+                : draftStatus === "saved"
+                  ? "Brouillon sauvegardé."
+                  : draftStatus === "error"
+                    ? "Le brouillon n’a pas pu être chargé ou sauvegardé."
+                    : "Votre brouillon est sauvegardé automatiquement."}
+          </Text>
+        ) : null}
+        {user && draftStatus === "error" ? (
+          <Button
+            label="Réessayer le brouillon"
+            variant="secondary"
+            onPress={() => {
+              if (draftHydrated) setSaveRetry((value) => value + 1);
+              else {
+                setDraftStatus("loading");
+                setDraftRetry((value) => value + 1);
+              }
+            }}
+          />
+        ) : null}
       </View>
 
       {treeState === "loading" ? (
@@ -911,6 +1116,9 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
         </Text>
       ) : null}
 
+      <Text accessibilityRole="header" style={styles.sectionHeading}>
+        1. Choisir l’annonce
+      </Text>
       <View style={styles.categoryGroup} accessibilityRole="radiogroup">
         <Text style={styles.label}>Univers</Text>
         <View style={styles.categoryRow}>
@@ -1002,6 +1210,9 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
         </View>
       </View>
 
+      <Text accessibilityRole="header" style={styles.sectionHeading}>
+        2. Décrire et fixer le prix
+      </Text>
       <FormField
         label="Titre"
         value={title}
@@ -1324,6 +1535,9 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
           />
         </View>
       ) : null}
+      <Text accessibilityRole="header" style={styles.sectionHeading}>
+        3. Ajouter les détails et photos
+      </Text>
       {resolvedSchema?.attributes.map((field) => {
         if (NATIVE_MANAGED_FIELDS.has(field.definition.id)) return null;
         const fieldState = resolveTaxonomyFieldState({
@@ -1416,6 +1630,12 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
 
 const styles = StyleSheet.create({
   header: { gap: spacing.sm },
+  sectionHeading: {
+    color: colors.text,
+    fontSize: nativeTypography.size.headingSm,
+    fontFamily: nativeTypography.fontFamily.bold,
+    marginTop: spacing.lg,
+  },
   heading: {
     color: colors.text,
     fontSize: nativeTypography.size.headingLg,

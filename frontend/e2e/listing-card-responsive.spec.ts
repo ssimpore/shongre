@@ -15,6 +15,7 @@ async function expectCardContentContained(card: Locator, label: string) {
       ?.getBoundingClientRect();
     return {
       variant: element.getAttribute("data-listing-card-variant"),
+      noMedia: element.classList.contains("listing-card-no-media"),
       viewportWidth: window.innerWidth,
       width: rect.width,
       height: rect.height,
@@ -55,10 +56,18 @@ async function expectCardContentContained(card: Locator, label: string) {
   expect(geometry.height, `${label}: height`).toBeLessThanOrEqual(520);
   expect(geometry.controlsContained, `${label}: controls`).toBe(true);
   if (geometry.variant === "grid" || geometry.variant === "showcase") {
-    expect(geometry.mediaRatio, `${label}: media-led crop`).toBeGreaterThan(
-      0.9,
-    );
-    expect(geometry.mediaRatio, `${label}: media-led crop`).toBeLessThan(1.1);
+    if (geometry.noMedia) {
+      expect(
+        geometry.mediaRatio,
+        `${label}: compact neutral media`,
+      ).toBeGreaterThan(2);
+      expect(geometry.height, `${label}: compact card`).toBeLessThan(420);
+    } else {
+      expect(geometry.mediaRatio, `${label}: media-led crop`).toBeGreaterThan(
+        0.9,
+      );
+      expect(geometry.mediaRatio, `${label}: media-led crop`).toBeLessThan(1.1);
+    }
   }
   if (geometry.variant === "grid" || geometry.variant === "showcase") {
     const title = card.locator('[data-listing-card-title="true"]');
@@ -692,18 +701,18 @@ test.describe("canonical listing cards", () => {
     }
   });
 
-  test("structured searches reuse the primitive at phone, tablet and desktop widths", async ({
-    page,
-  }) => {
-    test.setTimeout(90_000);
-    const categories = [
-      { path: "/immo", consumer: "real-estate", variant: "list" },
-      { path: "/auto", consumer: "auto", variant: "grid" },
-      { path: "/emploi", consumer: "employment", variant: "grid" },
-      { path: "/education", consumer: "courses", variant: "grid" },
-    ] as const;
+  for (const width of [320, 768, 1440]) {
+    test(`structured searches reuse the primitive at ${width}px`, async ({
+      page,
+    }) => {
+      test.setTimeout(45_000);
+      const categories = [
+        { path: "/immo", consumer: "real-estate", variant: "list" },
+        { path: "/auto", consumer: "auto", variant: "grid" },
+        { path: "/emploi", consumer: "employment", variant: "grid" },
+        { path: "/education", consumer: "courses", variant: "grid" },
+      ] as const;
 
-    for (const width of [320, 768, 1440]) {
       await page.setViewportSize({ width, height: width === 320 ? 844 : 900 });
       for (const category of categories) {
         await test.step(`${category.consumer} @ ${width}px`, async () => {
@@ -762,6 +771,6 @@ test.describe("canonical listing cards", () => {
           );
         });
       }
-    }
-  });
+    });
+  }
 });

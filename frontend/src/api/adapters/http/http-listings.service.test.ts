@@ -180,6 +180,28 @@ describe("HTTP listing publication payload", () => {
     });
   });
 
+  it("keeps backend employment salary semantics for mixed search and workspaces", () => {
+    const job = mapBackendListing({
+      ...backendListing,
+      categoryId: "jobs",
+      price: 12.5,
+      pricePresentation: {
+        kind: "salary",
+        visibility: "public",
+        currency: "EUR",
+        minimumAmountMinor: 1250,
+        maximumAmountMinor: 1450,
+        period: "hour",
+      },
+    });
+    expect(job.pricePresentation).toMatchObject({
+      kind: "salary",
+      period: "hour",
+      maximumAmountMinor: 1450,
+    });
+    expect(job.isFreeDonation).toBe(false);
+  });
+
   it("shows only transaction capabilities explicitly projected by the API", () => {
     const absent = mapBackendListing(backendListing);
     const available = mapBackendListing({

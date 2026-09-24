@@ -104,7 +104,8 @@ export function ListingCardViewCard({
         <Avatar src={src} name={name} size="sm" />
       )}
       image={
-        image ?? (
+        image ??
+        (listing.imageUrl ? (
           <Image
             src={listing.imageUrl}
             alt=""
@@ -127,7 +128,7 @@ export function ListingCardViewCard({
                 : "object-cover"
             }`}
           />
-        )
+        ) : undefined)
       }
       favoriteAction={
         onFavoriteToggle || onFavoriteRetry ? (

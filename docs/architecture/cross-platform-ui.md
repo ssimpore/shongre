@@ -140,6 +140,10 @@ its compact price-first layout. Media geometry, card widths, typography, spacing
 and colors come from the shared design tokens. Long titles and financial values
 may grow without clipping; rails align only their own cards. Discovery rails
 place navigation beside their heading and retain touch scrolling on phones.
+Vertical cards without a photo use a compact neutral media well on Web and
+native, with extra space for media badges when present. Cards with media
+keep the standard 210-pixel well. The shared card owns this decision, so search
+and discovery surfaces stay consistent.
 Web result grids use the shared `ListingGrid`; token-sized card tracks pack from
 the inline start with the shared gap instead of centering or distributing sparse
 results across the available row. Search and vertical result pages pair that

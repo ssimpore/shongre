@@ -589,6 +589,25 @@ export class PostgresMessagingRepository implements IMessagingRepository {
         databaseFailure("messaging.getUserConversations", error);
       const page = data.map((r: any) => this.mapRowToConversation(r));
       const items = page.slice(0, limit);
+      if (items.length) {
+        const { data: unreadCounts, error: unreadError } = await supabase.rpc(
+          "get_conversation_unread_counts",
+          {
+            p_user_id: userId,
+            p_conversation_ids: items.map((item) => item.id),
+          },
+        );
+        if (unreadError || !unreadCounts)
+          databaseFailure("messaging.getConversationUnreadCounts", unreadError);
+        const byConversation = new Map(
+          unreadCounts.map((row) => [
+            row.conversation_id,
+            Number(row.unread_count),
+          ]),
+        );
+        for (const item of items)
+          item.unreadCount = byConversation.get(item.id) ?? 0;
+      }
       return {
         items,
         pageInfo: {

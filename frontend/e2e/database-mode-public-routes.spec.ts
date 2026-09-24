@@ -149,6 +149,29 @@ test.describe("database-mode public routes", () => {
     expect(helpArticleCalls.some((call) => call.startsWith("200 "))).toBe(true);
   });
 
+  test("keeps salary meaning and compact photo-free cards in mixed search", async ({
+    page,
+  }) => {
+    const response = await page.goto("/recherche", { waitUntil: "load" });
+    expect(response?.status()).toBe(200);
+    await expect(
+      page
+        .locator(".listing-card-standard")
+        .filter({ hasText: /€\s*\/\s*(?:h|mois|an)/ })
+        .first(),
+    ).toBeVisible();
+    const card = page.locator(".listing-card-no-media").first();
+    await expect(card).toBeVisible();
+    const geometry = await card.evaluate((element) => ({
+      cardHeight: element.getBoundingClientRect().height,
+      mediaHeight: element
+        .querySelector('[data-listing-card-media="true"]')
+        ?.getBoundingClientRect().height,
+    }));
+    expect(geometry.cardHeight).toBeLessThan(320);
+    expect(geometry.mediaHeight).toBeLessThan(100);
+  });
+
   test("names the category in the server-rendered h1", async ({ request }) => {
     // The heading a crawler reads is the one in the initial HTML, before any
     // client taxonomy fetch resolves. A category page used to render "Toutes

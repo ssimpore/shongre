@@ -926,10 +926,13 @@ France-only happy path is insufficient for market-sensitive work.
   and multi-photo evidence; category/universe with optional real
   brand; price; a two-line title; location/date; independent seller trust and
   rating; then up to two category-aware capability or characteristic facts.
-  Vertical Web and native cards use the shared token-backed 220 by 420 footprint
-  with a 210 media well, shared card title/price typography, and brand-orange
-  price role. A professional listing shows only `Pro`; a verified private
-  seller shows the icon-free `VerificationBadge`; an unverified private seller
+  Vertical Web and native cards with media use the shared token-backed 220 by
+  420 footprint with a 210 media well. Cards without a photo use a compact,
+  token-backed neutral media well that accommodates applicable media badges
+  so empty media does not dominate the card. All cards share title/price
+  typography and the brand-orange price role. A professional listing shows
+  only `Pro`; a verified private seller shows the icon-free
+  `VerificationBadge`; an unverified private seller
   shows no redundant `Particulier` marker. Rating remains an independent real
   fact. Horizontal cards retain their price-row seller summary and available
   public seller identity. If public seller identity is absent, retain any

@@ -1,7 +1,39 @@
 import { describe, expect, it } from "vitest";
-import { parseMobileSearchPriceRange } from "@/features/listings/search-input";
+import {
+  mobileSavedSearchTargetId,
+  parseMobileSearchPriceRange,
+} from "@/features/listings/search-input";
 
 describe("mobile search price input", () => {
+  it("keeps alerts for distinct categories and price ranges separate", () => {
+    const base = { marketCode: "FR", query: "vélo", locale: "fr-FR" };
+    const first = mobileSavedSearchTargetId({
+      ...base,
+      categoryId: "vehicles.bikes",
+      minPriceMinor: 1000,
+    });
+    expect(first).toBe(
+      mobileSavedSearchTargetId({
+        ...base,
+        categoryId: "vehicles.bikes",
+        minPriceMinor: 1000,
+      }),
+    );
+    expect(first).not.toBe(
+      mobileSavedSearchTargetId({
+        ...base,
+        categoryId: "vehicles.cars",
+        minPriceMinor: 1000,
+      }),
+    );
+    expect(first).not.toBe(
+      mobileSavedSearchTargetId({
+        ...base,
+        categoryId: "vehicles.bikes",
+        minPriceMinor: 2000,
+      }),
+    );
+  });
   it("accepts empty and localized decimal bounds", () => {
     expect(parseMobileSearchPriceRange("", "")).toMatchObject({
       minimum: undefined,

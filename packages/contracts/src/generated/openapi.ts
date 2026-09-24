@@ -9363,6 +9363,31 @@ export interface components {
             /** @enum {string} */
             readonly synchronizationStatus: "missing" | "pending" | "synchronized" | "mismatch" | "disabled";
         };
+        readonly ConversationListPage: {
+            readonly items: readonly {
+                readonly buyer?: components["schemas"]["JsonValue"];
+                /** Format: uuid */
+                readonly buyerId: string;
+                /** Format: date-time */
+                readonly createdAt: string;
+                /** Format: uuid */
+                readonly id: string;
+                /** Format: date-time */
+                readonly lastMessageAt: string;
+                readonly lastMessageText?: string;
+                readonly listing?: components["schemas"]["JsonValue"];
+                /** Format: uuid */
+                readonly listingId: string;
+                readonly seller?: components["schemas"]["JsonValue"];
+                /** Format: uuid */
+                readonly sellerId: string;
+                readonly unreadCount: number;
+            }[];
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+        };
         readonly ConversationPresencePage: {
             readonly items: readonly {
                 readonly conversationId: string;
@@ -11598,6 +11623,17 @@ export interface components {
             readonly p75Minor?: number;
             readonly sampleSize?: number;
         };
+        readonly ListingPricePresentation: {
+            readonly currency: string;
+            /** @enum {string} */
+            readonly kind: "price" | "salary" | "rent" | "service_rate";
+            readonly maximumAmountMinor?: number;
+            readonly minimumAmountMinor?: number;
+            /** @enum {string} */
+            readonly period?: "hour" | "day" | "week" | "month" | "year" | "total";
+            /** @enum {string} */
+            readonly visibility: "public" | "undisclosed";
+        };
         readonly ListingPriceQuote: {
             readonly currency: string;
             readonly deliveryMethod: components["schemas"]["ListingDeliveryMethod"];
@@ -12849,6 +12885,7 @@ export interface components {
             readonly postalCode: string;
             /** @description Legacy major-unit listing amount. Client adapters convert this value to integer minor units at their transport boundary. */
             readonly price: number;
+            readonly pricePresentation?: components["schemas"]["ListingPricePresentation"];
             readonly productVersion?: string;
             /** Format: date-time */
             readonly promotedAt?: string;
@@ -29316,7 +29353,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["ConversationListPage"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

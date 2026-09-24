@@ -46,6 +46,53 @@ const listing = (overrides: Partial<Listing> = {}): Listing =>
     ...overrides,
   }) as unknown as Listing;
 
+describe("public employment price presentation", () => {
+  it("keeps the published salary range and period without exposing raw salary attributes", () => {
+    const published = toPublicListing(
+      listing({
+        categoryId: "jobs",
+        price: 12.5,
+        attributes: {
+          salaryIsPublic: true,
+          salaryMinimumMinor: 1250,
+          salaryMaximumMinor: 1450,
+          salaryFrequencyId: "employment.fr.salary_frequency.hour",
+        },
+      }),
+      taxonomy,
+    );
+    expect(published.pricePresentation).toEqual({
+      kind: "salary",
+      visibility: "public",
+      currency: "EUR",
+      minimumAmountMinor: 1250,
+      maximumAmountMinor: 1450,
+      period: "hour",
+    });
+    expect(published.attributes.salaryMinimumMinor).toBeUndefined();
+  });
+
+  it("does not disclose hidden salary amounts", () => {
+    const published = toPublicListing(
+      listing({
+        categoryId: "jobs",
+        attributes: {
+          salaryIsPublic: false,
+          salaryMinimumMinor: 4500000,
+          salaryFrequencyId: "employment.fr.salary_frequency.year",
+        },
+      }),
+      taxonomy,
+    );
+    expect(published.pricePresentation).toEqual({
+      kind: "salary",
+      visibility: "undisclosed",
+      currency: "EUR",
+      period: "year",
+    });
+  });
+});
+
 describe("public listing location", () => {
   it("never publishes the stored point verbatim under the default policy", () => {
     const published = toPublicListing(
