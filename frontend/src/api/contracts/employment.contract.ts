@@ -162,7 +162,11 @@ export interface EmploymentServiceContract {
   }>;
   flagProhibitedLanguage(content: string): Promise<ProhibitedLanguageFlag[]>;
   getCandidateWorkspace(marketCode: string): Promise<CandidateWorkspace>;
-  saveCandidateProfile(profile: CandidateProfile): Promise<CandidateProfile>;
+  /** A first save may carry only the market and visibility; the API completes it. */
+  saveCandidateProfile(
+    profile:
+      CandidateProfile | Pick<CandidateProfile, "marketCode" | "visibility">,
+  ): Promise<CandidateProfile>;
   apply(
     jobId: string,
     input: EmploymentApplicationDraft,

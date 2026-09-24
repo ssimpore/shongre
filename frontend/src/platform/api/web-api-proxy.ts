@@ -3,6 +3,7 @@ import { SHONGRE_API_PREFIX } from "@shongre/contracts/openapi";
 import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 import { webEnvironmentFromEnvironment } from "../market/market-infrastructure";
 import { createApplicationRegistry } from "../applications/application-registry";
+import { edgeIdentityHeaders } from "./edge-identity";
 
 const forwardedHeaders = [
   "accept",
@@ -142,12 +143,10 @@ export async function forwardWebApiRequest(
       // Market resolution needs the path, never private query-string values.
       headers.set("referer", `${origin}${parsedReferrer.pathname}`);
     }
-    if (process.env.SHONGRE_TRUST_PROXY_IP === "true") {
-      for (const name of ["cf-connecting-ip", "cf-ipcountry"]) {
-        const value = request.headers.get(name);
-        if (value) headers.set(name, value);
-      }
-    }
+    for (const [name, value] of Object.entries(
+      edgeIdentityHeaders(request.headers),
+    ))
+      headers.set(name, value);
     const upstream = await fetch(target, {
       method: request.method,
       headers,

@@ -4,6 +4,8 @@ import type { components } from "@shongre/contracts/openapi";
 
 /** The buyer-facing price breakdown, as the contract defines it. */
 export type ListingPriceQuote = components["schemas"]["ListingPriceQuote"];
+export type ListingRemovalOutcome =
+  components["schemas"]["ListingRemovalResult"]["outcome"];
 
 export type ListingCharacteristicsData =
   components["schemas"]["ListingCharacteristics"];
@@ -70,6 +72,8 @@ export interface ListingsServiceContract {
     total: number;
     page: number;
     totalPages: number;
+    /** Continues the same result set; absent on the last page. */
+    pageInfo?: { hasNextPage: boolean; nextCursor?: string };
   }>;
   createListingDraft(marketCode: string): Promise<PublicationDraftState>;
   getListingDraft(marketCode: string): Promise<PublicationDraftState | null>;
@@ -90,7 +94,8 @@ export interface ListingsServiceContract {
     condition?: string;
   }): Promise<ListingPriceEstimate>;
   markListingSold(id: string): Promise<Listing>;
-  deleteListing(id: string): Promise<boolean>;
+  /** `archived` when the listing had a public history that is kept. */
+  deleteListing(id: string): Promise<ListingRemovalOutcome>;
   setFavorite(
     listingId: string,
     marketCode: string,

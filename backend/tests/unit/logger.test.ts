@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   Logger,
+  errorDiagnostics,
   redactLogContext,
 } from "../../src/infrastructure/logging/logger.js";
 import { requestContext } from "../../src/infrastructure/observability/request-context.js";
@@ -95,5 +96,44 @@ describe("structured logger", () => {
         self: "[Circular]",
       },
     });
+  });
+
+  it("describes a provider error by code and message, never by its row details", () => {
+    const diagnostics = errorDiagnostics({
+      code: "23505",
+      message:
+        'duplicate key value violates unique constraint "profiles_email_key"',
+      details: "Key (email)=(person@example.test) already exists.",
+    });
+    expect(diagnostics).toEqual({
+      errorName: "Object",
+      errorCode: "23505",
+      errorMessage:
+        'duplicate key value violates unique constraint "profiles_email_key"',
+    });
+    expect(JSON.stringify(diagnostics)).not.toContain("person@example.test");
+  });
+
+  it("includes a bounded stack only when asked", () => {
+    const error = new TypeError("x".repeat(2_000));
+    expect(errorDiagnostics(error)).not.toHaveProperty("errorStack");
+    const diagnostics = errorDiagnostics(error, { includeStack: true });
+    expect(diagnostics.errorName).toBe("TypeError");
+    expect(String(diagnostics.errorMessage)).toHaveLength(500);
+    expect(String(diagnostics.errorStack).length).toBeLessThanOrEqual(4_000);
+    expect(errorDiagnostics(undefined)).toEqual({});
+  });
+
+  it("redacts configured secrets that reach a diagnostic message", () => {
+    process.env.STRIPE_SECRET_KEY = "sk_test_sensitive_value";
+    const output = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    new Logger("Server").error(
+      "http_operation_failed",
+      errorDiagnostics(new Error("provider rejected sk_test_sensitive_value")),
+    );
+    const payload = JSON.parse(String(output.mock.calls[0]?.[0]));
+    expect(payload.errorMessage).toBe("provider rejected [REDACTED]");
   });
 });

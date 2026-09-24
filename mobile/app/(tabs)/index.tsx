@@ -42,9 +42,15 @@ export default function HomeScreen() {
       try {
         const results = await listingsService.search({ marketCode, cursor });
         if (currentRequest === requestId.current) {
-          setItems((current) =>
-            cursor ? [...current, ...results.items] : results.items,
-          );
+          // A listing re-sorted between pages must not appear twice.
+          setItems((current) => {
+            if (!cursor) return results.items;
+            const seen = new Set(current.map((item) => item.id));
+            return [
+              ...current,
+              ...results.items.filter((item) => !seen.has(item.id)),
+            ];
+          });
           setNextCursor(results.pageInfo.nextCursor);
           setError("");
           setPageError("");
@@ -57,6 +63,8 @@ export default function HomeScreen() {
           if (cursor) setPageError(message);
           else {
             setItems([]);
+            // Another market's (or the failed load's) cursor must not page this one.
+            setNextCursor(undefined);
             setError(message);
           }
           setLoadedMarketCode(marketCode);

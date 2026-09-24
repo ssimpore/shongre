@@ -20,7 +20,8 @@ import { routes } from "../../configuration/routes";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Image } from "../../design-system/primitives/Image";
 import { Button } from "../../design-system/primitives/Button";
-import { EmptyState } from "../../design-system";
+import { EmptyState, Skeleton } from "../../design-system";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { TransactionDetailModal } from "./components/TransactionDetailModal";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { digitalMessagesFr } from "../../i18n/digital.catalogue.fr";
@@ -33,6 +34,7 @@ type StatusFilter =
 
 export const TransactionsPage: React.FC = () => {
   const { t } = useTranslation(digitalMessagesFr);
+  const { t: tCommon } = useTranslation();
   const { formatPrice } = useMarketLocation();
   usePageMeta({
     title: t("meta.transactions.title"),
@@ -52,7 +54,8 @@ export const TransactionsPage: React.FC = () => {
   const [userTransactions, setUserTransactions] = useState<Transaction[]>([]);
   const [purchasesCount, setPurchasesCount] = useState(0);
   const [salesCount, setSalesCount] = useState(0);
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [paymentReturnStatus] = useState<"processing" | "cancelled" | null>(
     checkoutReturn === "success"
       ? "processing"
@@ -64,6 +67,7 @@ export const TransactionsPage: React.FC = () => {
   const fetchTransactions = async () => {
     if (!currentUser?.id) return;
     setLoading(true);
+    setLoadError(false);
     try {
       const [purchases, sales] = await Promise.all([
         services.orders.getPurchases(),
@@ -84,6 +88,9 @@ export const TransactionsPage: React.FC = () => {
       if (requestedTab !== activeTab) setActiveTab(requestedTab);
       setUserTransactions(requestedTab === "purchases" ? purchases : sales);
       if (requestedTransaction) setSelectedTx(requestedTransaction);
+    } catch {
+      // A failed load must not read as "no purchases".
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -389,7 +396,23 @@ export const TransactionsPage: React.FC = () => {
       </div>
 
       {/* Transaction List */}
-      {filteredTransactions.length > 0 ? (
+      {loading ? (
+        <div className="space-y-3" aria-busy="true">
+          <Skeleton className="h-28 w-full rounded-card" />
+          <Skeleton className="h-28 w-full rounded-card" />
+        </div>
+      ) : loadError ? (
+        <StatePanel
+          variant="error"
+          title={tCommon("common.error")}
+          description={tCommon("common.loadErrorDescription")}
+          action={
+            <Button onClick={() => void fetchTransactions()}>
+              {tCommon("common.retry")}
+            </Button>
+          }
+        />
+      ) : filteredTransactions.length > 0 ? (
         <section
           aria-labelledby="transactions-list-heading"
           className="space-y-4"

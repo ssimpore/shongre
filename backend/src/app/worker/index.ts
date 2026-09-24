@@ -1,9 +1,11 @@
 import { bootstrapApp } from "../bootstrap/index.js";
+import { installProcessFaultHandlers } from "../bootstrap/process-faults.js";
 import { config } from "../config/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { scheduledWorkerRuntime } from "../../workers/scheduled-worker-runtime.js";
 
 export async function startWorker(): Promise<void> {
+  installProcessFaultHandlers("worker");
   await bootstrapApp();
   await scheduledWorkerRuntime.start();
 
@@ -19,6 +21,7 @@ export async function startWorker(): Promise<void> {
     deadline.unref();
     await scheduledWorkerRuntime.stop();
     clearTimeout(deadline);
+    logger.info("worker_shutdown_completed", { signal });
   };
 
   process.once("SIGTERM", shutdown);

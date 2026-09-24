@@ -152,6 +152,10 @@ export const messagesEn: MessageCatalogue = {
   "common.loading": "Loading…",
   "common.home": "Home",
   "common.retry": "Try again",
+  "common.loadErrorDescription":
+    "This content could not be loaded. Check your connection and try again.",
+  "publishing.autosaveFailed":
+    "Draft not saved: it will retry on your next change.",
   "common.cancel": "Cancel",
   "common.save": "Save",
   "common.confirm": "Confirm",
@@ -207,6 +211,11 @@ export const messagesEn: MessageCatalogue = {
   "verticals.education.organizationTitle": "Organisation — Shongre Education",
   "verticals.education.unavailable": "Shongre Education is unavailable",
   "verticals.education.workspaceUnavailable": "Education workspace unavailable",
+  "verticals.education.workspaceLoadError":
+    "The Education space could not be loaded. Try again in a moment.",
+  "verticals.education.tutorOnboardingTitle": "Create your tutor profile",
+  "verticals.education.tutorOnboardingDescription":
+    "Present your subjects, rates and availability to receive student requests in this space.",
   "verticals.education.filters": "Education filters",
   "verticals.education.organizationWorkspace": "Education organisation",
   "verticals.education.openWorkspace": "Open my Education workspace",
@@ -3006,6 +3015,20 @@ export const messagesEn: MessageCatalogue = {
     "Manage your subscriptions to weekly selections, deals and Shongre news.",
   "newsletter.newsletterPreferencesPage.seDesabonner": "Unsubscribe",
   "newsletter.newsletterPreferencesPage.seReabonner": "Resubscribe",
+  "newsletter.newsletterPreferencesPage.sAbonner": "Subscribe",
+  "newsletter.newsletterPreferencesPage.programUnavailable":
+    "Newsletter unavailable in this market",
+  "newsletter.newsletterPreferencesPage.programUnavailableDescription":
+    "The Shongre newsletter is not offered in this market yet. There is nothing to set up for now.",
+  "newsletter.newsletterPreferencesPage.notSubscribed": "Not subscribed",
+  "newsletter.newsletterPreferencesPage.notSubscribedDescription":
+    "Subscribe to receive our selections and deals on the topics you choose.",
+  "newsletter.newsletterPreferencesPage.loadError":
+    "Your preferences could not be loaded.",
+  "newsletter.newsletterPreferencesPage.subscribedToast":
+    "Your newsletter subscription is saved.",
+  "newsletter.newsletterPreferencesPage.subscribedToastTitle":
+    "Subscription saved",
   "newsletter.newsletterPreferencesPage.cochezLesThematiquesQuiVous":
     "Tick the topics that interest you to tailor your next editions.",
   "newsletter.newsletterPreferencesPage.communicationsObligatoiresDeService":
@@ -3376,6 +3399,16 @@ export const messagesEn: MessageCatalogue = {
     "Auto-renew enabled: the listing will be extended when it expires, up to three times.",
   "sellerworkspace.autoRenew.disabledToast": "Auto-renew disabled.",
   "sellerworkspace.autoRenew.error": "The setting was not saved. Try again.",
+  "sellerworkspace.removal.deleted": "The draft was deleted.",
+  "sellerworkspace.removal.archived":
+    "The listing is no longer online. It stays in your archived listings with its messages and orders.",
+  "sellerworkspace.removal.error": "The listing could not be removed.",
+  "sellerworkspace.removal.confirmDraft":
+    "This draft will be permanently deleted.",
+  "sellerworkspace.removal.confirmPublished":
+    "The listing will be taken off the site. It stays in your archived listings with its messages and orders.",
+  "sellerworkspace.removal.confirmAction": "Take off the site",
+  "sellerworkspace.removal.confirmDelete": "Delete",
   "sellerworkspace.scheduled.badge": "Scheduled for {date}",
   "sellerworkspace.away.title": "Away mode",
   "sellerworkspace.away.description":
@@ -3496,6 +3529,10 @@ export const messagesEn: MessageCatalogue = {
   "support.helpCenterPage.notreEquipeDeSupportClient":
     "Use the help centre or open a request about your orders, listings and questions. Response times depend on the displayed support hours.",
   "support.supportRequestDetailPage.retourAMesDemandes2": "Back to my requests",
+  "support.supportRequestDetailPage.notFoundDescription":
+    "This case does not exist or is not available from your account.",
+  "support.supportRequestDetailPage.loadErrorDescription":
+    "The case could not be loaded. Try again in a moment.",
   "support.supportRequestDetailPage.ouvrirUneNouvelleDemande":
     "open a new request",
   "support.supportRequestDetailPage.repondreANotreEquipe": "Reply to our team",
@@ -3951,6 +3988,16 @@ export const messagesEn: MessageCatalogue = {
   "employment.nav.candidate": "Candidate area",
   "employment.nav.recruiter": "Recruiter area",
   "employment.search.eyebrow": "Shongre Jobs",
+  "employment.candidateOnboarding.title": "Create your candidate space",
+  "employment.candidateOnboarding.description":
+    "It brings together your profile, your CVs and your applications. Your profile is only visible to the recruiters you apply to, and you can complete it later.",
+  "employment.candidateOnboarding.action": "Create my candidate space",
+  "employment.candidateOnboarding.error":
+    "The candidate space could not be created.",
+  "employment.candidateOnboarding.applyTitle":
+    "Create your candidate space to apply",
+  "employment.candidateOnboarding.applyDescription":
+    "To apply to “{title}”, open your candidate space and add a CV. You will then come back to this job.",
   "employment.search.title": "A job that fits your plans",
   "employment.search.subtitle":
     "Applications, standard alerts and eligible conversations remain free for candidates.",

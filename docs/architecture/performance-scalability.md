@@ -99,8 +99,11 @@ after publication/activation, and serves a same-market last valid value only
 inside the configured five-minute stale-if-error window. It never caches
 quotes, entitlements, eligibility, subscriptions, permissions, or balances.
 
-Redis is the canonical BullMQ transport and cross-replica realtime fan-out. It
-is not an authoritative business store and is not yet a general response cache.
+Redis is the canonical BullMQ transport and cross-replica realtime fan-out,
+and holds the per-subject API request budget (`ApiRateLimiter`, an atomic
+fixed-window script), so throttling costs no PostgreSQL write per request.
+Credential endpoints keep their own database-backed limits. It is not an
+authoritative business store and is not yet a general response cache.
 Introduce shared response/catalog caching only after at least two API replicas
 show repeated origin/database work that the CDN and request coalescing cannot
 absorb, or measured invalidation cannot meet the SLO. Cache keys must begin with
@@ -114,12 +117,14 @@ and real-estate data resolve through the same lazy service registry as their
 clients. In API mode, generic listing discovery uses the canonical GET search
 contract and listing detail consumes the public seller projection already
 embedded in `PublicListing`; it neither imports a demo seller nor performs an
-N+1 seller fetch. Seller-profile, collection, and sitemap inventory still have
-frontend-repository dependencies because the public API does not yet expose a
-slug-safe seller projection or cursor-based sitemap feed. That remaining gap is
-a production indexing release blocker: add those contracts, migrate every
-consumer, then remove the repository imports before enabling large-scale
-indexing. Do not substitute unbounded per-record API calls.
+N+1 seller fetch. Seller pages read the seller by slug and the seller's shelf
+through the seller-scoped search contract. Sitemaps page the market through
+the cursor-based `GET /discovery/sitemap-listings` feed and take each seller
+from the profile embedded in its listings; only professionals are re-read, for
+their storefront slug, with the bounded `serverFanOutConcurrency`. Server
+renders forward the visitor's edge identity so the API rate-limits each
+visitor rather than the Web server's address. Do not substitute unbounded
+per-record API calls.
 
 ## Database path and query evidence
 

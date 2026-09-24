@@ -169,6 +169,8 @@ export default function SearchScreen() {
         .catch((reason) => {
           if (currentRequest === requestId.current) {
             setItems([]);
+            // The previous query's cursor must not page this one.
+            setNextCursor(undefined);
             setResultsMarketCode(activeMarket.code);
             setDidYouMean("");
             setError(
@@ -226,7 +228,14 @@ export default function SearchScreen() {
       })
       .then((results) => {
         if (currentRequest !== requestId.current) return;
-        setItems((current) => [...current, ...results.items]);
+        // A listing re-sorted between pages must not appear twice.
+        setItems((current) => {
+          const seen = new Set(current.map((item) => item.id));
+          return [
+            ...current,
+            ...results.items.filter((item) => !seen.has(item.id)),
+          ];
+        });
         setNextCursor(results.pageInfo.nextCursor);
         setPageError("");
       })

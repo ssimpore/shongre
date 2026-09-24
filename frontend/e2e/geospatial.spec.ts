@@ -83,7 +83,11 @@ test.describe("map loading", () => {
     page,
   }) => {
     const mapRequests = recordMapRequests(page);
-    await page.setViewportSize({ width: 390, height: 844 });
+    // The slot starts loading one viewport-height before it scrolls into view
+    // (`DeferUntilVisible`'s 100% root margin). A phone-width, shorter window
+    // keeps the map well outside that prefetch band however the copy above it
+    // wraps, instead of depending on the page being a few pixels longer.
+    await page.setViewportSize({ width: 390, height: 640 });
     await usePersona(page, "guest");
     await page.goto(`/annonce/${DEMO_LISTING_ID}`, { waitUntil: "load" });
     await waitForStableLayout(page);
@@ -91,6 +95,13 @@ test.describe("map loading", () => {
 
     const slot = page.getByTestId("listing-location-map-slot");
     await expect(slot).toBeAttached();
+    const slotTop = await slot.evaluate(
+      (element) => element.getBoundingClientRect().top,
+    );
+    expect(
+      slotTop,
+      "the map slot must start outside the prefetch band for this check",
+    ).toBeGreaterThan(2 * 640);
     expect(mapRequests).toEqual([]);
 
     await slot.scrollIntoViewIfNeeded();

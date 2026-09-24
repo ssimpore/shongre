@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { httpClient } from "./http-client";
+import { httpClient, registerServerRequestHeaders } from "./http-client";
 
 const captureOperationalFailure = vi.hoisted(() => vi.fn());
 
@@ -152,5 +152,32 @@ describe("session-aware HTTP retries", () => {
     expect(
       transport.mock.calls.filter(([url]) => url.endsWith("/auth/refresh")),
     ).toHaveLength(1);
+  });
+});
+
+describe("server-rendered requests", () => {
+  afterEach(() => registerServerRequestHeaders(async () => ({})));
+
+  it("carries the visitor's edge identity supplied by the server module", async () => {
+    // Without it every anonymous render reaches the API from the Web server's
+    // own address and all visitors share one rate-limit bucket.
+    registerServerRequestHeaders(async () => ({
+      "cf-connecting-ip": "203.0.113.7",
+    }));
+    transport.mockResolvedValueOnce(Response.json({ ok: true }));
+    await httpClient.get("/markets");
+    const headers = transport.mock.calls[0][1].headers as Headers;
+    expect(headers.get("cf-connecting-ip")).toBe("203.0.113.7");
+    expect(headers.get("x-shongre-market")).toBe("FR");
+  });
+
+  it("lets the caller's explicit headers win over forwarded ones", async () => {
+    registerServerRequestHeaders(async () => ({
+      "x-shongre-market": "BE",
+    }));
+    transport.mockResolvedValueOnce(Response.json({ ok: true }));
+    await httpClient.get("/markets", { headers: { "X-Shongre-Market": "CH" } });
+    const headers = transport.mock.calls[0][1].headers as Headers;
+    expect(headers.get("x-shongre-market")).toBe("CH");
   });
 });

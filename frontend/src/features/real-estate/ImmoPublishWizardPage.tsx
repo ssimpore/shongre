@@ -119,6 +119,8 @@ const ImmoPublicationEditor: React.FC<{ accountId: string }> = ({
   const [loadError, setLoadError] = useState(false);
   const [retry, setRetry] = useState(0);
   const [saving, setSaving] = useState(false);
+  // Shown instead of "saved": a failed autosave must not look like a success.
+  const [saveFailed, setSaveFailed] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [publishedId, setPublishedId] = useState<string>();
@@ -202,6 +204,9 @@ const ImmoPublicationEditor: React.FC<{ accountId: string }> = ({
           validationIssues: [],
           updatedAt: new Date().toISOString(),
         });
+        setSaveFailed(false);
+      } catch {
+        setSaveFailed(true);
       } finally {
         setSaving(false);
       }
@@ -559,9 +564,16 @@ const ImmoPublicationEditor: React.FC<{ accountId: string }> = ({
               Publier un bien
             </h1>
           </div>
-          <p className="flex items-center gap-2 text-xs text-text-muted">
+          <p
+            role="status"
+            className={`flex items-center gap-2 text-xs ${saveFailed ? "text-danger" : "text-text-muted"}`}
+          >
             <Save className="h-icon-md w-icon-md" />
-            {saving ? "Enregistrement…" : "Brouillon enregistré"}
+            {saving
+              ? "Enregistrement…"
+              : saveFailed
+                ? t("publishing.autosaveFailed")
+                : "Brouillon enregistré"}
           </p>
         </div>
       </div>

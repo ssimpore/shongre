@@ -1,3 +1,4 @@
+import { formatMoney } from "@shongre/shared";
 import {
   Conversation,
   ConversationPage,
@@ -183,15 +184,20 @@ export class MessagingService {
         message: "La devise de cette annonce est indisponible.",
       });
     }
-    const amountLabel = (input.amountMinor / 100).toFixed(2);
+    // Minor units follow the currency's exponent: XOF has none, so a fixed
+    // division by 100 would announce a 5 000 F CFA offer as 50.
+    const offerMoney = {
+      amountMinor: input.amountMinor,
+      currency: listing.currency,
+    };
     const saved = await this.messagingRepo.createMarketplaceOffer({
       conversationId: input.conversationId,
       actorId: input.senderId,
       amountMinor: input.amountMinor,
       currency: listing.currency,
       messageText: input.parentOfferId
-        ? `Contre-offre de ${amountLabel} ${listing.currency}.`
-        : `Offre de prix proposée : ${amountLabel} ${listing.currency}.`,
+        ? `Contre-offre de ${formatMoney(offerMoney, "fr-FR")}.`
+        : `Offre de prix proposée : ${formatMoney(offerMoney, "fr-FR")}.`,
       expiresAt: new Date(Date.now() + OFFER_LIFETIME_MS).toISOString(),
       parentOfferId: input.parentOfferId,
     });

@@ -112,6 +112,10 @@ export interface AppConfig {
   authenticatedApiRateLimit: number;
   apiRateLimitWindowSeconds: number;
   apiRateLimitLockSeconds: number;
+  loginAddressFailureLimit: number;
+  registrationAddressLimit: number;
+  authEmailAddressLimit: number;
+  authEmailRecipientLimit: number;
   trustedIpCountryHeader: string | null;
   corsOrigin: string;
   supabaseUrl: string;
@@ -1140,6 +1144,26 @@ const candidateConfig: AppConfig = {
   apiRateLimitLockSeconds: positiveInteger(
     "API_RATE_LIMIT_LOCK_SECONDS",
     SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits.lockSeconds,
+  ),
+  loginAddressFailureLimit: positiveInteger(
+    "AUTH_LOGIN_ADDRESS_FAILURE_LIMIT",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits
+      .loginAddressFailuresPerWindow,
+  ),
+  registrationAddressLimit: positiveInteger(
+    "AUTH_REGISTRATION_ADDRESS_LIMIT",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits
+      .registrationsPerAddressPerWindow,
+  ),
+  authEmailAddressLimit: positiveInteger(
+    "AUTH_EMAIL_ADDRESS_LIMIT",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits
+      .authEmailsPerAddressPerWindow,
+  ),
+  authEmailRecipientLimit: positiveInteger(
+    "AUTH_EMAIL_RECIPIENT_LIMIT",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits
+      .authEmailsPerRecipientPerWindow,
   ),
   trustedIpCountryHeader: envFlag("SHONGRE_TRUST_IP_COUNTRY_HEADER")
     ? optionalHeaderName("SHONGRE_IP_COUNTRY_HEADER")

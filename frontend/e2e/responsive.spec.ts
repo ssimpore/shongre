@@ -138,27 +138,39 @@ test.describe("open dropdowns stay on screen", () => {
         name: /préférences régionales/i,
       });
       await expect(dialog).toBeVisible();
-      const optionGroups = dialog.getByRole("radiogroup");
-      const optionGroupContract = await optionGroups.evaluateAll((groups) =>
-        groups.map((group) => ({
-          label: group.getAttribute("aria-label"),
-          columns: getComputedStyle(group)
-            .gridTemplateColumns.split(/\s+/)
-            .filter(Boolean).length,
-        })),
-      );
-      expect(optionGroupContract).toEqual([
-        { label: "Marché / Pays", columns: 1 },
-        { label: "Langue de l'interface", columns: 1 },
-        { label: "Devise d'affichage", columns: 1 },
+      // Each preference is one full-width selector (the shared DropdownMenu),
+      // replacing the inline radio grids of the earlier design.
+      const selectors = dialog.locator('[aria-haspopup="listbox"]');
+      await expect(selectors).toHaveCount(3);
+      expect(
+        await selectors.evaluateAll((triggers) =>
+          triggers.map((trigger) => trigger.getAttribute("aria-label")),
+        ),
+      ).toEqual([
+        "Marché / Pays",
+        "Langue de l'interface",
+        "Devise d'affichage",
       ]);
-      const languageGroup = dialog.getByRole("radiogroup", {
+      // French is the only shipped locale: the language list offers just it.
+      await dialog
+        .getByRole("button", { name: "Langue de l'interface" })
+        .click();
+      const languages = page.getByRole("listbox", {
         name: "Langue de l'interface",
       });
-      await expect(languageGroup.getByRole("radio")).toHaveCount(1);
+      await expect(languages.getByRole("option")).toHaveCount(1);
       await expect(
-        languageGroup.getByRole("radio", { name: /^Français\b/ }),
+        languages.getByRole("option", { name: /^Français\b/ }),
       ).toBeVisible();
+      // The open list is an overlay too: it must stay on screen.
+      const listBounds = await languages.boundingBox();
+      expect(listBounds, "language list should be open").not.toBeNull();
+      const viewportWidthForList = await page.evaluate(() => window.innerWidth);
+      expect(listBounds!.x).toBeGreaterThanOrEqual(-1);
+      expect(listBounds!.x + listBounds!.width).toBeLessThanOrEqual(
+        viewportWidthForList + 1,
+      );
+      await page.keyboard.press("Escape");
       await expect(dialog.getByText("Bientôt", { exact: true })).toHaveCount(0);
       const bounds = await dialog.boundingBox();
       const viewportWidth = await page.evaluate(() => window.innerWidth);

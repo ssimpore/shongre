@@ -63,6 +63,7 @@ GoogleService-Info.plist
 service-account*.json
 
 # Playwright artefacts
+.playwright-mcp/
 frontend/test-results/
 frontend/playwright-report/
 frontend/blob-report/

@@ -5,6 +5,7 @@ import {
   BulkListingImportTemplate,
   BulkListingImportRow,
   ListingPriceEstimate,
+  ListingRemovalOutcome,
   ListingsServiceContract,
   ParseBulkListingImportInput,
   PublishBulkListingsInput,
@@ -456,11 +457,11 @@ export class HttpListingsService implements ListingsServiceContract {
     return mapBackendListing(listing);
   }
 
-  async deleteListing(id: string): Promise<boolean> {
-    await apiOperation<void, "deleteListingsById">("deleteListingsById", {
+  async deleteListing(id: string): Promise<ListingRemovalOutcome> {
+    const result = await apiOperation("deleteListingsById", {
       path: { id: id },
     });
-    return true;
+    return result.outcome;
   }
 
   async setFavorite(

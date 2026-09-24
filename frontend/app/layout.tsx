@@ -107,6 +107,7 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const requestLocale =
     requestHeaders.get("x-shongre-market-locale") || DEFAULT_LOCALE;
+  const nonce = requestHeaders.get("x-shongre-csp-nonce") || undefined;
   const runtimeConfig = serializePublicRuntimeConfig(
     createPublicRuntimeConfig(),
   );
@@ -115,6 +116,7 @@ export default async function RootLayout({
       <body>
         <script
           id="shongre-runtime-config"
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `window.__SHONGRE_RUNTIME_CONFIG__=${runtimeConfig};`,
           }}

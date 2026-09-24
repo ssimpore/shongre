@@ -147,7 +147,10 @@ export class HttpEmploymentService implements EmploymentServiceContract {
       { headers: { "X-Shongre-Market": marketCode } },
     );
   }
-  saveCandidateProfile(profile: CandidateProfile) {
+  saveCandidateProfile(
+    profile:
+      CandidateProfile | Pick<CandidateProfile, "marketCode" | "visibility">,
+  ) {
     return apiOperation<CandidateProfile, "putEmploymentCandidateProfile">(
       "putEmploymentCandidateProfile",
       { body: profile },

@@ -29,7 +29,9 @@ validation. The transport forces the Web client identity, strips bearer and
 untrusted forwarding headers, never follows redirects, and returns private
 no-store responses. Edge IP headers are forwarded only with
 `SHONGRE_TRUST_PROXY_IP=true` behind the controlled edge. SSR and native still
-call the central API directly. Provider callbacks remain at the backend;
+call the central API directly; server rendering forwards the same edge identity
+headers for the visitor being rendered, so anonymous renders are rate-limited
+per visitor rather than sharing the Web server's address. Provider callbacks remain at the backend;
 social sign-in remains disabled pending its separate end-to-end certification.
 
 `make test-web-api-transport` runs rendered login, host-only cookies, refresh,
@@ -298,6 +300,21 @@ secure cookies and exact CORS/OAuth origins.
 
 Do not put secrets in `NEXT_PUBLIC_*`, `VITE_*`, Expo public variables, logs,
 redirect query strings, analytics events or screenshots.
+
+Credential endpoints are outside the general per-request API budget and carry
+their own limits. Each account is limited per email and network address (10
+sign-in attempts per 15 minutes, 5 registrations per hour); each address is
+also limited across every account it targets, so spraying one password over
+many emails or creating accounts by varying the email is bounded:
+`AUTH_LOGIN_ADDRESS_FAILURE_LIMIT` failed sign-ins per 15 minutes (successful
+sign-ins never spend it, so a shared network is not locked out by its own
+members) and `AUTH_REGISTRATION_ADDRESS_LIMIT` registrations per hour.
+Password-reset and verification emails are also bounded per address across
+all recipients (`AUTH_EMAIL_ADDRESS_LIMIT`) and per recipient across all
+addresses (`AUTH_EMAIL_RECIPIENT_LIMIT`), per hour; the recipient budget and
+every reset throttle answer the same generic "accepted" so they reveal
+nothing about another person's requests. Lapsed limiter rows are purged hourly
+by the `auth_rate_limit_retention` worker job.
 
 ## Rollout and rollback
 

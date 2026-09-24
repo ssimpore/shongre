@@ -35,6 +35,10 @@ export interface SellerPublicRouteData {
   seller: PublicSellerProfile;
   listings: Listing[];
   reviews: ReviewItem[];
+  /** Continues the seller's shelf past the first page, when there is more. */
+  listingsNextCursor?: string;
+  /** The seller's published listings in this market, beyond the loaded page. */
+  listingsTotal?: number;
 }
 
 interface JobPublicRouteData {

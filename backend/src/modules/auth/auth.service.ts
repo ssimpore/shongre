@@ -12,6 +12,7 @@ import {
 import { IKYCProvider, providers } from "../../integrations/providers/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { config } from "../../app/config/index.js";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 import {
   assertPasswordAcceptable,
   WeakPasswordError,
@@ -125,6 +126,23 @@ function invalidCredentials(): AppError {
   });
 }
 
+/**
+ * The per-account limits key on email plus address, so one address could still
+ * try a password against every account (spraying) or register without bound by
+ * varying the email. These keys bound the address itself.
+ */
+function addressLimitKey(purpose: string, ipPrefix?: string | null): string {
+  return sha256(`${purpose}:${ipPrefix || "unknown"}`);
+}
+
+function tooManyAttempts(retryAfterSeconds: number, message: string): AppError {
+  return new AppError({
+    code: "RATE_LIMITED",
+    message,
+    details: { retryAfterSeconds },
+  });
+}
+
 export class AuthService {
   private readonly passwordIdentity: PasswordIdentityProvider;
 
@@ -163,8 +181,10 @@ export class AuthService {
     // The token is authentic, but authority comes from the account's current
     // state, not from claims minted possibly hours ago. A user suspended after
     // their token was issued must lose access immediately.
-    if (claims.sid && !(await this.sessions.isActive(claims.sid, claims.sub)))
-      return GUEST_PRINCIPAL;
+    const session = claims.sid
+      ? await this.sessions.resolveActiveSession(claims.sid, claims.sub)
+      : null;
+    if (claims.sid && !session) return GUEST_PRINCIPAL;
 
     const user = await this.userRepo.findById(claims.sub);
     if (!user) return GUEST_PRINCIPAL;
@@ -173,12 +193,9 @@ export class AuthService {
       return GUEST_PRINCIPAL;
     }
 
-    if (claims.sid) await this.sessions.touch(claims.sid);
-
-    const [mfaVerified, recentlyAuthenticated] = await Promise.all([
-      this.sessions.isMfaVerified(claims.sid),
-      this.sessions.hasRecentAuthentication(claims.sid),
-    ]);
+    await session?.touch();
+    const mfaVerified = session?.mfaVerified ?? false;
+    const recentlyAuthenticated = session?.recentlyAuthenticated ?? false;
     return {
       userId: user.id,
       email: user.email,
@@ -345,6 +362,25 @@ export class AuthService {
       throw invalidCredentials();
     }
 
+    // Only failures spend the address budget, so a shared network signing in
+    // legitimately is never locked out by its own successful logins.
+    const addressKey = addressLimitKey("login-address", metadata.ipPrefix);
+    const addressLock = await this.authRepo.peekRateLimit(
+      addressKey,
+      "login_address",
+    );
+    if (!addressLock.allowed) {
+      await this.authRepo.recordSecurityEvent({
+        eventType: "rate_limit_tripped",
+        failureReason: "login_address",
+        ipPrefix: metadata.ipPrefix,
+      });
+      throw tooManyAttempts(
+        addressLock.retryAfterSeconds,
+        "Trop de tentatives. Réessayez dans quelques minutes.",
+      );
+    }
+
     const limitKey = sha256(`${email}:${metadata.ipPrefix || "unknown"}`);
     const rateLimit = await this.authRepo.consumeRateLimit(
       limitKey,
@@ -359,11 +395,10 @@ export class AuthService {
         failureReason: "login",
         ipPrefix: metadata.ipPrefix,
       });
-      throw new AppError({
-        code: "RATE_LIMITED",
-        message: "Trop de tentatives. Réessayez dans quelques minutes.",
-        details: { retryAfterSeconds: rateLimit.retryAfterSeconds },
-      });
+      throw tooManyAttempts(
+        rateLimit.retryAfterSeconds,
+        "Trop de tentatives. Réessayez dans quelques minutes.",
+      );
     }
 
     const user = await this.userRepo.findByEmail(email);
@@ -380,6 +415,16 @@ export class AuthService {
         failureReason: "invalid_credentials",
         ipPrefix: metadata.ipPrefix,
       });
+      const lockSeconds =
+        SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits
+          .loginAddressWindowSeconds;
+      await this.authRepo.consumeRateLimit(
+        addressKey,
+        "login_address",
+        config.loginAddressFailureLimit,
+        lockSeconds,
+        lockSeconds,
+      );
       throw invalidCredentials();
     }
 
@@ -699,24 +744,41 @@ export class AuthService {
       });
     }
 
-    const registrationLimit = await this.authRepo.consumeRateLimit(
-      sha256(`${email}:${metadata.ipPrefix || "unknown"}`),
-      "registration",
-      5,
-      3600,
-      3600,
-    );
-    if (!registrationLimit.allowed) {
-      await this.authRepo.recordSecurityEvent({
-        eventType: "rate_limit_tripped",
-        failureReason: "registration",
-        ipPrefix: metadata.ipPrefix,
-      });
-      throw new AppError({
-        code: "RATE_LIMITED",
-        message: "Trop de tentatives. Réessayez plus tard.",
-        details: { retryAfterSeconds: registrationLimit.retryAfterSeconds },
-      });
+    const registrationWindowSeconds =
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits
+        .registrationAddressWindowSeconds;
+    for (const [keyHash, action, limit, windowSeconds] of [
+      [
+        sha256(`${email}:${metadata.ipPrefix || "unknown"}`),
+        "registration",
+        5,
+        3600,
+      ],
+      [
+        addressLimitKey("registration-address", metadata.ipPrefix),
+        "registration_address",
+        config.registrationAddressLimit,
+        registrationWindowSeconds,
+      ],
+    ] as const) {
+      const decision = await this.authRepo.consumeRateLimit(
+        keyHash,
+        action,
+        limit,
+        windowSeconds,
+        windowSeconds,
+      );
+      if (!decision.allowed) {
+        await this.authRepo.recordSecurityEvent({
+          eventType: "rate_limit_tripped",
+          failureReason: action,
+          ipPrefix: metadata.ipPrefix,
+        });
+        throw tooManyAttempts(
+          decision.retryAfterSeconds,
+          "Trop de tentatives. Réessayez plus tard.",
+        );
+      }
     }
 
     const existing = await this.userRepo.findByEmail(email);
@@ -1016,6 +1078,44 @@ export class AuthService {
     return true;
   }
 
+  /**
+   * Budgets for an unauthenticated request that emails someone: the caller's
+   * address across every recipient, then the recipient across every address.
+   * `address` is about the caller and may be reported; `recipient` is silent,
+   * so a throttle cannot reveal that someone else asked for an email.
+   */
+  private async authEmailBudget(
+    normalizedEmail: string,
+    metadata: AuthRequestMetadata,
+    purpose: "verify_email" | "password_reset",
+  ): Promise<"allowed" | { address: number } | "recipient"> {
+    const windowSeconds =
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits.authEmailWindowSeconds;
+    const address = await this.authRepo.consumeRateLimit(
+      addressLimitKey("auth-email-address", metadata.ipPrefix),
+      "auth_email_address",
+      config.authEmailAddressLimit,
+      windowSeconds,
+      windowSeconds,
+    );
+    if (!address.allowed) {
+      await this.authRepo.recordSecurityEvent({
+        eventType: "rate_limit_tripped",
+        failureReason: `${purpose}_address`,
+        ipPrefix: metadata.ipPrefix,
+      });
+      return { address: address.retryAfterSeconds };
+    }
+    const recipient = await this.authRepo.consumeRateLimit(
+      sha256(`auth-email-recipient:${normalizedEmail}`),
+      `${purpose}_recipient`,
+      config.authEmailRecipientLimit,
+      windowSeconds,
+      windowSeconds,
+    );
+    return recipient.allowed ? "allowed" : "recipient";
+  }
+
   async sendEmailVerification(
     email: string,
     metadata: AuthRequestMetadata = {},
@@ -1037,6 +1137,18 @@ export class AuthService {
           message: "Veuillez patienter avant de renvoyer un email.",
           details: { retryAfterSeconds: decision.retryAfterSeconds },
         });
+      const budget = await this.authEmailBudget(
+        normalized,
+        metadata,
+        "verify_email",
+      );
+      if (typeof budget === "object")
+        throw new AppError({
+          code: "RATE_LIMITED",
+          message: "Veuillez patienter avant de renvoyer un email.",
+          details: { retryAfterSeconds: budget.address },
+        });
+      if (budget === "recipient") return { accepted: true };
     }
     const user = await this.userRepo.findByEmail(normalized);
     if (!user || user.isEmailVerified) return { accepted: true };
@@ -1081,6 +1193,13 @@ export class AuthService {
       // reset for an address.
       return { accepted: true };
     }
+    // Same rule for the cross-recipient and cross-address budgets: a reset
+    // request never reveals anything, throttled or not.
+    if (
+      (await this.authEmailBudget(normalized, metadata, "password_reset")) !==
+      "allowed"
+    )
+      return { accepted: true };
     const user = await this.userRepo.findByEmail(normalized);
     if (!user || user.status !== "active") return { accepted: true };
     const rawToken = await this.createActionToken(

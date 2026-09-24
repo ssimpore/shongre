@@ -6,6 +6,7 @@ import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Skeleton } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -28,13 +29,29 @@ export const NotificationPreferencesPage: React.FC = () => {
     useState<NotificationPreferences | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    services.notifications.getPreferences().then((prefs) => {
-      setPreferences(prefs);
-      setIsLoading(false);
-    });
-  }, [currentUser?.id]);
+    let active = true;
+    setIsLoading(true);
+    setLoadError(false);
+    services.notifications
+      .getPreferences()
+      .then((prefs) => {
+        if (active) setPreferences(prefs);
+      })
+      .catch(() => {
+        // Without this the skeleton spun forever on a failed request.
+        if (active) setLoadError(true);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [currentUser?.id, attempt]);
 
   const handleToggle = (
     categoryKey: keyof Omit<NotificationPreferences, "userId" | "updatedAt">,
@@ -70,10 +87,32 @@ export const NotificationPreferencesPage: React.FC = () => {
       toast.success(
         "Vos préférences de notifications ont été enregistrées avec succès.",
       );
+    } catch (error) {
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : t("common.error"),
+      );
     } finally {
       setIsSaving(false);
     }
   };
+
+  if (loadError) {
+    return (
+      <StatePanel
+        variant="error"
+        headingLevel={1}
+        title={t("common.error")}
+        description={t("common.loadErrorDescription")}
+        action={
+          <Button onClick={() => setAttempt((value) => value + 1)}>
+            {t("common.retry")}
+          </Button>
+        }
+      />
+    );
+  }
 
   if (isLoading || !preferences) {
     // Structural skeleton mirroring the loaded layout (page header + one row per

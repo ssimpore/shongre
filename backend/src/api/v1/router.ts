@@ -68,7 +68,10 @@ import {
   cacheInvalidationTags,
   writeJsonResponse,
 } from "../../infrastructure/http/public-response-policy.js";
-import { logger } from "../../infrastructure/logging/logger.js";
+import {
+  errorDiagnostics,
+  logger,
+} from "../../infrastructure/logging/logger.js";
 import { authService } from "../../modules/auth/auth.service.js";
 import { ZodError } from "zod";
 import { captureServerException } from "../../infrastructure/observability/sentry.js";
@@ -470,17 +473,25 @@ export class ApiV1Router implements RouteRegistrar {
     const statusCode = isAppError ? normalizedError.statusCode : 500;
 
     if (!isAppError) {
-      // Unexpected failures are logged in full but never returned: provider
-      // errors and stack traces routinely carry connection strings and ids.
+      // Unexpected failures are logged with their diagnostics but never
+      // returned: provider errors and stack traces routinely carry connection
+      // strings and ids. The logger redacts configured secrets and tokens.
       logger.error("http_operation_failed", {
         method,
         operation: pathname,
-        errorName: normalizedError?.name || "Error",
+        ...errorDiagnostics(normalizedError, { includeStack: true }),
       });
-      captureServerException(normalizedError, {
-        requestId: String(res.getHeader("X-Request-Id") || ""),
-        operation: `${method} ${pathname}`,
-      });
+    }
+    if (!isAppError || statusCode >= 500) {
+      // A server-side AppError (an unavailable database or provider) is an
+      // incident too; report the cause it wraps, not the generic envelope.
+      captureServerException(
+        (isAppError && normalizedError.originalError) || normalizedError,
+        {
+          requestId: String(res.getHeader("X-Request-Id") || ""),
+          operation: `${method} ${pathname}`,
+        },
+      );
     }
 
     const payload = (

@@ -124,6 +124,8 @@ const AutoPublicationEditor: React.FC<{ accountId: string }> = ({
   const [registration, setRegistration] = useState("");
   const [saving, setSaving] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<string>();
+  // Shown instead of "saved": a failed autosave must not look like a success.
+  const [saveFailed, setSaveFailed] = useState(false);
   const [hasSavedProgress, setHasSavedProgress] = useState(false);
   const [isPreparationVisible, setIsPreparationVisible] = useState(true);
   const [hasEnteredWizard, setHasEnteredWizard] = useState(false);
@@ -196,6 +198,9 @@ const AutoPublicationEditor: React.FC<{ accountId: string }> = ({
           updatedAt: new Date().toISOString(),
         });
         setLastSavedAt(new Date().toISOString());
+        setSaveFailed(false);
+      } catch {
+        setSaveFailed(true);
       } finally {
         setSaving(false);
       }
@@ -325,6 +330,12 @@ const AutoPublicationEditor: React.FC<{ accountId: string }> = ({
           "Une correspondance possible sera vérifiée pendant la modération.",
         );
       else toast.success("Aucun doublon actif détecté.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : t("common.error"),
+      );
     } finally {
       setCheckingDuplicate(false);
     }
@@ -1473,9 +1484,18 @@ const AutoPublicationEditor: React.FC<{ accountId: string }> = ({
               </p>
             </div>
             <div className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-              <p className="flex items-center gap-2 text-xs font-bold">
-                <Cloud className="h-icon-sm w-icon-sm text-success" />{" "}
-                {saving ? "Enregistrement…" : "Progression sauvegardée"}
+              <p
+                role="status"
+                className="flex items-center gap-2 text-xs font-bold"
+              >
+                <Cloud
+                  className={`h-icon-sm w-icon-sm ${saveFailed ? "text-danger" : "text-success"}`}
+                />{" "}
+                {saving
+                  ? "Enregistrement…"
+                  : saveFailed
+                    ? t("publishing.autosaveFailed")
+                    : "Progression sauvegardée"}
               </p>
               <p className="mt-2 text-micro leading-relaxed text-text-muted">
                 Les champs non sensibles survivent à une interruption. Le VIN et

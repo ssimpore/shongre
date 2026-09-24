@@ -12,6 +12,7 @@ import {
 import { randomOAuthValue, sha256 } from "./oauth-provider.client.js";
 import type { PlatformRole } from "../../shared/auth/rbac.js";
 import { canonicalAccessContext } from "@shongre/contracts/access-control";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 
 export interface AuthRequestMetadata {
   ipPrefix?: string | null;
@@ -35,6 +36,33 @@ export interface SessionView {
   lastUsedAt: string | null;
   expiresAt: string;
   isCurrent: boolean;
+}
+
+export interface ActiveSessionState {
+  mfaVerified: boolean;
+  recentlyAuthenticated: boolean;
+  /** Records activity, at most once per activity interval. */
+  touch(): Promise<void>;
+}
+
+function sessionIsActive(
+  session: AuthSessionRecord | null,
+  userId: string,
+): session is AuthSessionRecord {
+  return Boolean(
+    session &&
+    session.userId === userId &&
+    !session.revokedAt &&
+    Date.parse(session.expiresAt) > Date.now(),
+  );
+}
+
+function sessionRecentlyAuthenticated(session: AuthSessionRecord): boolean {
+  return (
+    Boolean(session.lastReauthenticatedAt) &&
+    Date.now() - Date.parse(session.lastReauthenticatedAt!) <=
+      config.authRecentAuthenticationSeconds * 1000
+  );
 }
 
 function unauthenticated(): AppError {
@@ -150,13 +178,35 @@ export class SessionService {
   }
 
   async isActive(sessionId: string, userId: string): Promise<boolean> {
-    const session = await this.repository.findSessionById(sessionId);
-    return Boolean(
-      session &&
-      session.userId === userId &&
-      !session.revokedAt &&
-      Date.parse(session.expiresAt) > Date.now(),
+    return sessionIsActive(
+      await this.repository.findSessionById(sessionId),
+      userId,
     );
+  }
+
+  /**
+   * Everything a request needs to know about its session, from one read.
+   * Resolving a principal used to fetch the same row three times and write
+   * `last_used_at` on every call.
+   */
+  async resolveActiveSession(
+    sessionId: string,
+    userId: string,
+  ): Promise<ActiveSessionState | null> {
+    const session = await this.repository.findSessionById(sessionId);
+    if (!sessionIsActive(session, userId)) return null;
+    const lastUsedAt = session.lastUsedAt ? Date.parse(session.lastUsedAt) : 0;
+    return {
+      mfaVerified: Boolean(session.mfaVerifiedAt),
+      recentlyAuthenticated: sessionRecentlyAuthenticated(session),
+      touch: async () => {
+        if (
+          Date.now() - lastUsedAt >=
+          SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.sessions.activityWriteIntervalMs
+        )
+          await this.repository.touchSession(sessionId);
+      },
+    };
   }
 
   async hasRecentAuthentication(
@@ -164,11 +214,8 @@ export class SessionService {
   ): Promise<boolean> {
     if (!sessionId) return false;
     const session = await this.repository.findSessionById(sessionId);
-    if (!session || session.revokedAt || !session.lastReauthenticatedAt)
-      return false;
-    return (
-      Date.now() - Date.parse(session.lastReauthenticatedAt) <=
-      config.authRecentAuthenticationSeconds * 1000
+    return Boolean(
+      session && !session.revokedAt && sessionRecentlyAuthenticated(session),
     );
   }
 
@@ -184,10 +231,6 @@ export class SessionService {
 
   async markMfaVerified(sessionId: string): Promise<void> {
     await this.repository.markSessionMfaVerified(sessionId);
-  }
-
-  async touch(sessionId: string): Promise<void> {
-    await this.repository.touchSession(sessionId);
   }
 
   async list(

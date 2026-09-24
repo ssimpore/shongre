@@ -153,14 +153,18 @@ function ListingDecisionDetails({
 
 function ListingCapabilityStrip({
   capabilities,
+  singleRow = false,
 }: {
   capabilities: readonly ListingNonVerificationCapability[];
+  /* The hero card has a fixed height and a reserved footer for the carousel
+     controls; wrapped badges pushed its location line under them. */
+  singleRow?: boolean;
 }) {
   if (!capabilities.length) return null;
   return (
     <span
       data-listing-card-capabilities="true"
-      className="flex min-w-0 flex-wrap items-center gap-1"
+      className={`flex min-w-0 items-center gap-1 ${singleRow ? "flex-nowrap overflow-hidden" : "flex-wrap"}`}
     >
       {capabilities.map((capability) => (
         <Badge
@@ -171,9 +175,9 @@ function ListingCapabilityStrip({
           title={capability.label}
           aria-label={capability.label}
           icon={<SemanticIcon name={capability.icon} size="xs" />}
-          className="max-w-full rounded-control"
+          className={`max-w-full rounded-control ${singleRow ? "min-w-0 shrink" : ""}`}
         >
-          <span className="truncate">{capability.label}</span>
+          <span className="min-w-0 truncate">{capability.label}</span>
         </Badge>
       ))}
     </span>
@@ -520,7 +524,10 @@ export function ListingCard({
         ) : null}
 
         {horizontal && capabilityBadges.length > 0 ? (
-          <ListingCapabilityStrip capabilities={capabilityBadges} />
+          <ListingCapabilityStrip
+            capabilities={capabilityBadges}
+            singleRow={isHero}
+          />
         ) : null}
 
         {isHero ? (

@@ -1,5 +1,6 @@
 import "server-only";
 import type { MarketContext } from "@shongre/contracts";
+import type { Listing } from "../../types";
 import { taxonomySlugsForListing } from "../../domains/taxonomy/taxonomy.seo";
 import type { PublicRouteDataResolution } from "./public-route-data";
 import { listServerPublicSitemapData } from "./server-public-route-data";
@@ -93,6 +94,21 @@ function resolveEntry(
   );
 }
 
+function groupListings(
+  listings: readonly Listing[],
+  keysFor: (listing: Listing) => readonly string[],
+): Map<string, Listing[]> {
+  const groups = new Map<string, Listing[]>();
+  for (const listing of listings) {
+    for (const key of new Set(keysFor(listing))) {
+      const group = groups.get(key);
+      if (group) group.push(listing);
+      else groups.set(key, [listing]);
+    }
+  }
+  return groups;
+}
+
 function uniqueEntries(entries: Array<SitemapEntry | null>): SitemapEntry[] {
   return Array.from(
     new Map(
@@ -164,13 +180,18 @@ export async function buildMarketSitemapGroups(
     );
   }
 
-  const categoryEntries = Array.from(
-    new Set(activeListings.flatMap(taxonomySlugsForListing)),
-  ).map((slug) => {
-    const listings = activeListings.filter((listing) =>
-      taxonomySlugsForListing(listing).includes(slug),
-    );
-    return resolveEntry(
+  // One pass per index: a market can hold tens of thousands of listings, so
+  // filtering the whole inventory once per category or seller is quadratic.
+  const listingsByCategorySlug = groupListings(
+    activeListings,
+    taxonomySlugsForListing,
+  );
+  const listingsBySeller = groupListings(activeListings, (listing) => [
+    listing.sellerId,
+  ]);
+
+  const categoryEntries = [...listingsByCategorySlug].map(([slug, listings]) =>
+    resolveEntry(
       context,
       `/categorie/${encodeURIComponent(slug)}`,
       {
@@ -187,8 +208,8 @@ export async function buildMarketSitemapGroups(
         },
       },
       latestDate(listings.map(listingLastModified)),
-    );
-  });
+    ),
+  );
 
   const listingEntries = activeListings.map((listing) => {
     const entry = resolveEntry(
@@ -214,9 +235,7 @@ export async function buildMarketSitemapGroups(
   });
 
   const professionalEntries = sellers.map((seller) => {
-    const listings = activeListings.filter(
-      (listing) => listing.sellerId === seller.id,
-    );
+    const listings = listingsBySeller.get(seller.id) ?? [];
     const professional =
       seller.sellerType === "pro" || seller.accountType === "professional";
     return resolveEntry(

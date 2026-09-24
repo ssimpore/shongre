@@ -97,11 +97,13 @@ test.describe("API-owned country recommendation", () => {
       name: "Préférences régionales",
     });
     await expect(selector).toBeVisible();
+    await selector.getByRole("button", { name: "Marché / Pays" }).click();
+    const markets = page.getByRole("listbox", { name: "Marché / Pays" });
     await expect(
-      selector.getByRole("radio", { name: /Sénégal/ }),
+      markets.getByRole("option", { name: /Sénégal/ }),
     ).toBeVisible();
     await expect(
-      selector.getByRole("radio", { name: /Burkina Faso/ }),
+      markets.getByRole("option", { name: /Burkina Faso/ }),
     ).toBeVisible();
   });
 });

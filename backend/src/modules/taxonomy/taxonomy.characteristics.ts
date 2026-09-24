@@ -18,10 +18,13 @@ function formatValue(
   options: readonly Option[],
   locale: string,
   timeZone: string,
+  currency: string | undefined,
 ): string {
   if (Array.isArray(value)) {
     return value
-      .map((item) => formatValue(item, definition, options, locale, timeZone))
+      .map((item) =>
+        formatValue(item, definition, options, locale, timeZone, currency),
+      )
       .filter(Boolean)
       .join(", ");
   }
@@ -51,6 +54,25 @@ function formatValue(
   if (matched) return localized(matched.labels, locale);
   if (["select", "multiselect", "radio"].includes(definition.dataType))
     return "";
+  // A money attribute is an amount in the listing's currency, as the seller
+  // entered it. Its declared unit is a storage code, and cards showed it
+  // verbatim ("65 currency_minor") until this formatted the amount instead.
+  if (definition.dataType === "money") {
+    // Imported and older records carry the amount as text ("65").
+    const amount =
+      typeof value === "number"
+        ? value
+        : typeof value === "string" && value.trim() !== ""
+          ? Number(value.replace(",", "."))
+          : Number.NaN;
+    if (!Number.isFinite(amount) || !currency)
+      return typeof value === "string" ? value.trim() : "";
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+    }).format(amount);
+  }
   if (typeof value === "number") {
     const number = new Intl.NumberFormat(locale, {
       useGrouping: definition.dataType !== "year",
@@ -238,6 +260,13 @@ export function projectListingCharacteristics(
     string,
     { id: string; label: string; items: Array<Group["items"][number]> }
   >();
+  const declaredCurrency =
+    typeof input.attributes.currency === "string" &&
+    /^[A-Z]{3}$/.test(input.attributes.currency)
+      ? input.attributes.currency
+      : undefined;
+  const listingCurrency =
+    declaredCurrency ?? getCountryConfig(input.marketCode)?.currency;
   for (const binding of common) {
     const definition = definitions.get(binding.attributeId)!;
     const group = groups.get(binding.groupId)!;
@@ -258,6 +287,7 @@ export function projectListingCharacteristics(
         input.locale,
         // An event is read in its market's time, not the server's.
         getCountryConfig(input.marketCode)?.timezone ?? "UTC",
+        listingCurrency,
       );
     const cardProjection =
       input.surface === "card"

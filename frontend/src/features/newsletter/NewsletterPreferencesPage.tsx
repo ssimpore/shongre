@@ -9,6 +9,8 @@ import { newsletterService } from "../../domains/newsletter/newsletter.service";
 import { newsletterTopicsService } from "../../domains/newsletter/newsletter.topics";
 import { newsletterCapabilitiesService } from "../../domains/newsletter/newsletter.capabilities";
 import { services } from "../../api/client/service-registry";
+import { AppError } from "../../api/errors/app-error";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
 import type { MarketingSubscriptionView } from "@shongre/contracts";
 import { NewsletterTopicSelector } from "./components/NewsletterTopicSelector";
 import { Skeleton } from "../../design-system";
@@ -34,6 +36,9 @@ export const NewsletterPreferencesPage: React.FC = () => {
   const [selectedTopics, setSelectedTopics] = useState<NewsletterTopic[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  // The market has no newsletter programme: a fact about the market, not an
+  // error to toast or a subscription to offer.
+  const [programUnavailable, setProgramUnavailable] = useState(false);
 
   const capabilities = newsletterCapabilitiesService.resolve({
     viewer: currentUser,
@@ -43,6 +48,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
     const fetchSub = async () => {
       if (!currentUser) return;
       setLoading(true);
+      setProgramUnavailable(false);
       try {
         const sub = await services.marketing.getAccountSubscription({
           userId: currentUser.id,
@@ -58,6 +64,14 @@ export const NewsletterPreferencesPage: React.FC = () => {
             newsletterTopicsService.getDefaultTopics(capabilities.isPro),
           );
         }
+      } catch (err: any) {
+        if (err instanceof AppError && err.code === "NOT_FOUND")
+          setProgramUnavailable(true);
+        else
+          toast.error(
+            err?.message || t("newsletter.newsletterPreferencesPage.loadError"),
+            t("common.error"),
+          );
       } finally {
         setLoading(false);
       }
@@ -124,8 +138,9 @@ export const NewsletterPreferencesPage: React.FC = () => {
     }
   };
 
+  // Also the first subscription: a member without one subscribes here, with
+  // the topics shown on the page.
   const handleResubscribe = async () => {
-    if (!subscription) return;
     setIsSaving(true);
     try {
       if (!currentUser) return;
@@ -137,10 +152,15 @@ export const NewsletterPreferencesPage: React.FC = () => {
         topics: selectedTopics,
         consentGiven: true,
       });
+      const firstSubscription = !subscription;
       setSubscription(updated);
       toast.success(
-        "Votre réabonnement à la newsletter a été confirmé.",
-        "Abonnement réactivé",
+        firstSubscription
+          ? t("newsletter.newsletterPreferencesPage.subscribedToast")
+          : "Votre réabonnement à la newsletter a été confirmé.",
+        firstSubscription
+          ? t("newsletter.newsletterPreferencesPage.subscribedToastTitle")
+          : "Abonnement réactivé",
       );
     } catch (err: any) {
       toast.error(err.message || "Erreur lors du réabonnement.", "Erreur");
@@ -159,15 +179,24 @@ export const NewsletterPreferencesPage: React.FC = () => {
   }
 
   const isSubscribed = subscription?.status === "SUBSCRIBED";
-  const statusInfo = newsletterService.getStatusInfo(
-    subscription?.status === "SUBSCRIBED"
-      ? "subscribed"
-      : subscription?.status === "PENDING"
-        ? "pending_confirmation"
-        : subscription?.status === "SUPPRESSED"
-          ? "suppressed"
-          : "unsubscribed",
-  );
+  // A member who never subscribed is not "unsubscribed": nothing was ended.
+  const statusInfo = subscription
+    ? newsletterService.getStatusInfo(
+        subscription.status === "SUBSCRIBED"
+          ? "subscribed"
+          : subscription.status === "PENDING"
+            ? "pending_confirmation"
+            : subscription.status === "SUPPRESSED"
+              ? "suppressed"
+              : "unsubscribed",
+      )
+    : {
+        label: t("newsletter.newsletterPreferencesPage.notSubscribed"),
+        variant: "neutral" as const,
+        description: t(
+          "newsletter.newsletterPreferencesPage.notSubscribedDescription",
+        ),
+      };
 
   return (
     <div className="space-y-6">
@@ -185,95 +214,113 @@ export const NewsletterPreferencesPage: React.FC = () => {
         </p>
       </div>
 
-      {/* 2. Subscription Status Banner */}
-      <div className="bg-bg-surface border border-border-base rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div
-            className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
-              isSubscribed
-                ? "bg-success-surface text-success"
-                : "bg-surface-muted text-text-tertiary"
-            }`}
-          >
-            <Mail className="w-icon-lg h-icon-lg" />
-          </div>
+      {programUnavailable ? (
+        <StatePanel
+          variant="notFound"
+          title={t("newsletter.newsletterPreferencesPage.programUnavailable")}
+          description={t(
+            "newsletter.newsletterPreferencesPage.programUnavailableDescription",
+          )}
+        />
+      ) : (
+        <>
+          {/* 2. Subscription Status Banner */}
+          <div className="bg-bg-surface border border-border-base rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div
+                className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
+                  isSubscribed
+                    ? "bg-success-surface text-success"
+                    : "bg-surface-muted text-text-tertiary"
+                }`}
+              >
+                <Mail className="w-icon-lg h-icon-lg" />
+              </div>
 
-          {/* `min-w-0` on both the column and the address, plus a wrap on the
+              {/* `min-w-0` on both the column and the address, plus a wrap on the
               row: an email is one unbreakable token, so beside a `nowrap` badge
               it pushed the page 56px wider than a 320px screen. */}
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="min-w-0 max-w-full truncate text-sm font-bold text-text-main">
-                {currentUser?.email}
-              </span>
-              <Badge variant={statusInfo.variant} size="sm">
-                {statusInfo.label}
-              </Badge>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <span className="min-w-0 max-w-full truncate text-sm font-bold text-text-main">
+                    {currentUser?.email}
+                  </span>
+                  <Badge variant={statusInfo.variant} size="sm">
+                    {statusInfo.label}
+                  </Badge>
+                </div>
+                <p className="text-xs text-text-tertiary mt-0.5">
+                  {statusInfo.description}
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-text-tertiary mt-0.5">
-              {statusInfo.description}
-            </p>
-          </div>
-        </div>
 
-        {isSubscribed ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleUnsubscribe}
-            disabled={isSaving}
-            className="text-text-supporting hover:text-text-main shrink-0 font-semibold"
-          >
-            {t("newsletter.newsletterPreferencesPage.seDesabonner")}
-          </Button>
-        ) : (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleResubscribe}
-            disabled={isSaving}
-            className="shrink-0 font-semibold"
-          >
-            {t("newsletter.newsletterPreferencesPage.seReabonner")}
-          </Button>
-        )}
-      </div>
-
-      {/* 3. Topics Customization */}
-      <div className="bg-bg-surface border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
-        <div>
-          <h2 className="text-base font-bold text-text-main">
-            {t("newsletter.newsletterPreferencesPage.vosThematiquesFavorites")}
-          </h2>
-          <p className="text-xs text-text-tertiary mt-0.5">
-            {t(
-              "newsletter.newsletterPreferencesPage.cochezLesThematiquesQuiVous",
+            {isSubscribed ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUnsubscribe}
+                disabled={isSaving}
+                className="text-text-supporting hover:text-text-main shrink-0 font-semibold"
+              >
+                {t("newsletter.newsletterPreferencesPage.seDesabonner")}
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleResubscribe}
+                disabled={isSaving}
+                className="shrink-0 font-semibold"
+              >
+                {subscription
+                  ? t("newsletter.newsletterPreferencesPage.seReabonner")
+                  : t("newsletter.newsletterPreferencesPage.sAbonner")}
+              </Button>
             )}
-          </p>
-        </div>
+          </div>
 
-        <NewsletterTopicSelector
-          topics={capabilities.availableTopics}
-          selectedTopicIds={selectedTopics}
-          onChange={setSelectedTopics}
-          disabled={!isSubscribed}
-        />
+          {/* 3. Topics Customization */}
+          <div className="bg-bg-surface border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+            <div>
+              <h2 className="text-base font-bold text-text-main">
+                {t(
+                  "newsletter.newsletterPreferencesPage.vosThematiquesFavorites",
+                )}
+              </h2>
+              <p className="text-xs text-text-tertiary mt-0.5">
+                {t(
+                  "newsletter.newsletterPreferencesPage.cochezLesThematiquesQuiVous",
+                )}
+              </p>
+            </div>
 
-        <div className="pt-4 border-t border-border-subtle flex justify-end">
-          <Button
-            variant="primary"
-            size="md"
-            onClick={handleSave}
-            disabled={isSaving || !isSubscribed}
-            className="font-semibold flex items-center gap-2"
-          >
-            <Save className="w-icon-md h-icon-md" />
-            <span>
-              {isSaving ? "Enregistrement..." : "Enregistrer mes préférences"}
-            </span>
-          </Button>
-        </div>
-      </div>
+            <NewsletterTopicSelector
+              topics={capabilities.availableTopics}
+              selectedTopicIds={selectedTopics}
+              onChange={setSelectedTopics}
+              disabled={!isSubscribed}
+            />
+
+            <div className="pt-4 border-t border-border-subtle flex justify-end">
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleSave}
+                disabled={isSaving || !isSubscribed}
+                className="font-semibold flex items-center gap-2"
+              >
+                <Save className="w-icon-md h-icon-md" />
+                <span>
+                  {isSaving
+                    ? "Enregistrement..."
+                    : "Enregistrer mes préférences"}
+                </span>
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* 4. Transactional Communication Isolation Notice */}
       <div className="p-4 bg-surface-soft border border-border-base rounded-2xl flex items-start gap-3 text-xs text-text-supporting">

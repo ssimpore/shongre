@@ -390,3 +390,44 @@ describe("date characteristics", () => {
     expect(english?.value).toBe("Oct 3, 2026, 6:30 PM");
   });
 });
+
+describe("money characteristics", () => {
+  const service = {
+    categoryId: "services.local_services.home_repairs",
+    sellerType: "professional" as const,
+    marketCode: "FR",
+    locale: "fr-FR",
+  };
+
+  it("shows an amount in the listing's currency, never the storage unit", () => {
+    const facts = projectListingCharacteristics({
+      ...service,
+      attributes: { hourly_rate: 65, currency: "EUR" },
+    }).groups.flatMap((group) => group.items);
+    const rate = facts.find((item) => item.code === "hourly_rate");
+    expect(rate?.value).toBe("65 €");
+    expect(JSON.stringify(facts)).not.toContain("currency_minor");
+  });
+
+  it("formats an amount stored as text and keeps unparseable text as written", () => {
+    const facts = projectListingCharacteristics({
+      ...service,
+      attributes: { hourly_rate: "65", currency: "EUR" },
+    }).groups.flatMap((group) => group.items);
+    expect(facts.find((item) => item.code === "hourly_rate")?.value).toBe(
+      "65\u00a0€",
+    );
+  });
+
+  it("falls back to the market currency and keeps cents that were entered", () => {
+    const facts = projectListingCharacteristics({
+      ...service,
+      marketCode: "CH",
+      locale: "fr-CH",
+      attributes: { hourly_rate: 72.5 },
+    }).groups.flatMap((group) => group.items);
+    expect(facts.find((item) => item.code === "hourly_rate")?.value).toMatch(
+      /72[.,]50\s?CHF|CHF\s?72[.,]50/,
+    );
+  });
+});

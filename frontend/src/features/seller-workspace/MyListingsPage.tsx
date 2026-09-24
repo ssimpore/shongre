@@ -22,6 +22,7 @@ import { Badge } from "../../design-system/primitives/Badge";
 import { Image } from "../../design-system/primitives/Image";
 import { Tabs, TabPanel, EmptyState, Skeleton } from "../../design-system";
 import { Modal } from "../../design-system/primitives/Modal";
+import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
 import { DataTable } from "../../design-system/primitives/DataTable";
 import { BulkImportModal } from "./components/BulkImportModal";
 import { SellerAwayPanel } from "./components/SellerAwayPanel";
@@ -114,6 +115,8 @@ export const MyListingsPage: React.FC = () => {
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const [activatingBoostId, setActivatingBoostId] = useState<string>();
+  const [pendingRemoval, setPendingRemoval] = useState<Listing | null>(null);
+  const [removing, setRemoving] = useState(false);
   const promotionSequence = useRef(0);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [myListings, setMyListings] = useState<Listing[]>([]);
@@ -192,16 +195,24 @@ export const MyListingsPage: React.FC = () => {
   };
 
   const handleDeleteListing = async (listingId: string) => {
+    setRemoving(true);
     try {
-      await services.listings.deleteListing(listingId);
-      toast.info("L'annonce a été supprimée.");
+      const outcome = await services.listings.deleteListing(listingId);
+      toast.info(
+        outcome === "deleted"
+          ? t("sellerworkspace.removal.deleted")
+          : t("sellerworkspace.removal.archived"),
+      );
       await fetchListings();
     } catch (error) {
       toast.error(
         error instanceof Error
           ? error.message
-          : "L’annonce n’a pas pu être supprimée.",
+          : t("sellerworkspace.removal.error"),
       );
+    } finally {
+      setRemoving(false);
+      setPendingRemoval(null);
     }
   };
 
@@ -438,15 +449,19 @@ export const MyListingsPage: React.FC = () => {
         </>
       )}
 
-      <button
-        type="button"
-        onClick={() => handleDeleteListing(listing.id)}
-        className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-control text-text-muted motion-interactive hover:bg-danger-surface hover:text-danger"
-        title={t("sellerworkspace.myListingsPage.supprimerLAnnonce")}
-        aria-label={t("sellerworkspace.myListingsPage.supprimerLAnnonce")}
-      >
-        <Trash2 className="h-icon-md w-icon-md" aria-hidden="true" />
-      </button>
+      {/* Archived is already removed; a reserved listing cannot be removed
+          while its transaction is open, and the API would refuse it. */}
+      {listing.status !== "archived" && listing.status !== "reserved" && (
+        <button
+          type="button"
+          onClick={() => setPendingRemoval(listing)}
+          className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-control text-text-muted motion-interactive hover:bg-danger-surface hover:text-danger"
+          title={t("sellerworkspace.myListingsPage.supprimerLAnnonce")}
+          aria-label={t("sellerworkspace.myListingsPage.supprimerLAnnonce")}
+        >
+          <Trash2 className="h-icon-md w-icon-md" aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 
@@ -770,6 +785,29 @@ export const MyListingsPage: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(pendingRemoval)}
+        onClose={() => {
+          if (!removing) setPendingRemoval(null);
+        }}
+        onConfirm={() => {
+          if (pendingRemoval) void handleDeleteListing(pendingRemoval.id);
+        }}
+        title={t("sellerworkspace.myListingsPage.supprimerLAnnonce")}
+        message={
+          pendingRemoval?.status === "draft"
+            ? t("sellerworkspace.removal.confirmDraft")
+            : t("sellerworkspace.removal.confirmPublished")
+        }
+        confirmText={
+          pendingRemoval?.status === "draft"
+            ? t("sellerworkspace.removal.confirmDelete")
+            : t("sellerworkspace.removal.confirmAction")
+        }
+        variant="danger"
+        isLoading={removing}
+      />
 
       {/* Bulk CSV Import Modal */}
       {isBulkImportOpen && currentUser && (

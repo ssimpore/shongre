@@ -1453,10 +1453,41 @@ export class ListingsService {
     return updates;
   }
 
-  async deleteListing(id: string): Promise<boolean> {
-    const success = await this.listingRepo.delete(id);
-    logger.info("Listing deleted", { listingId: id });
-    return success;
+  /**
+   * Removes a seller's listing from the marketplace.
+   *
+   * Only a never-published draft is deleted. Anything that has been public
+   * carries history other people and the ledger rely on — conversations,
+   * orders, UGC reports, paid placements — and several of those tables
+   * cascade from the listing, so a hard delete would erase moderation
+   * evidence and financial records (or fail on the ones that restrict it).
+   * Such a listing is archived: it leaves every public surface and its
+   * history is kept.
+   */
+  async deleteListing(
+    id: string,
+  ): Promise<{ outcome: "deleted" | "archived" }> {
+    const listing = await this.listingRepo.findById(id);
+    if (!listing)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Annonce introuvable.",
+      });
+    if (listing.status === "draft") {
+      await this.listingRepo.delete(id);
+      logger.info("listing_removed", { listingId: id, outcome: "deleted" });
+      return { outcome: "deleted" };
+    }
+    if (listing.status === "reserved")
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Une transaction est en cours sur cette annonce : elle ne peut pas être retirée avant sa conclusion ou son annulation.",
+      });
+    if (listing.status !== "archived")
+      await this.listingRepo.update(id, { status: "archived" });
+    logger.info("listing_removed", { listingId: id, outcome: "archived" });
+    return { outcome: "archived" };
   }
 
   async markListingSold(id: string): Promise<PublicListing> {

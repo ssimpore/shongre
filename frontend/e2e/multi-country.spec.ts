@@ -180,8 +180,10 @@ test.describe("multi-country public routing", () => {
     const preferences = page.getByRole("dialog", {
       name: "Préférences régionales",
     });
-    await preferences
-      .getByRole("radio", { name: new RegExp(alternative.name) })
+    await preferences.getByRole("button", { name: "Marché / Pays" }).click();
+    await page
+      .getByRole("listbox", { name: "Marché / Pays" })
+      .getByRole("option", { name: new RegExp(alternative.name) })
       .click();
     await expect(page).toHaveURL(
       new RegExp(`${alternative.basePath}(?:\\?|$)`),

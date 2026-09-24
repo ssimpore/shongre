@@ -199,7 +199,11 @@ function requestMatchesEtag(req: IncomingMessage, etag: string): boolean {
     .some((value) => value === "*" || value === etag);
 }
 
-function entityTagPayload(operationId: string, result: unknown): string {
+function entityTagPayload(
+  operationId: string,
+  result: unknown,
+  serialized: string,
+): string {
   if (
     operationId === "getListingsSearch" &&
     result &&
@@ -222,7 +226,7 @@ function entityTagPayload(operationId: string, result: unknown): string {
         : pageInfo;
     return JSON.stringify({ ...stableResult, pageInfo: stablePageInfo });
   }
-  return JSON.stringify(result ?? null);
+  return serialized;
 }
 
 export async function writeJsonResponse(input: {
@@ -240,11 +244,20 @@ export async function writeJsonResponse(input: {
   const acceptsGzip = String(input.req.headers["accept-encoding"] || "")
     .split(",")
     .some((value) => value.trim().split(";")[0] === "gzip");
-  const encodedPayload: string | Buffer =
+  const compress =
     acceptsGzip &&
-    Buffer.byteLength(payload) >= config.performance.compressionMinimumBytes
+    Buffer.byteLength(payload) >= config.performance.compressionMinimumBytes;
+  // Compression is deferred until a body is actually sent, so a validator
+  // hit (304) on a large reference payload costs no gzip pass.
+  const sendBody = async () => {
+    const encodedPayload: string | Buffer = compress
       ? await gzipAsync(payload)
       : payload;
+    input.res.setHeader("Content-Length", Buffer.byteLength(encodedPayload));
+    if (compress) input.res.setHeader("Content-Encoding", "gzip");
+    input.res.writeHead(input.statusCode);
+    input.res.end(encodedPayload);
+  };
   const policy = resolvePublicResponseCachePolicy({
     method: input.method,
     operationId: input.operationId,
@@ -253,20 +266,16 @@ export async function writeJsonResponse(input: {
   });
 
   input.res.setHeader("Content-Type", "application/json");
-  input.res.setHeader("Content-Length", Buffer.byteLength(encodedPayload));
-  if (Buffer.isBuffer(encodedPayload))
-    input.res.setHeader("Content-Encoding", "gzip");
   mergeVary(input.res, ["Accept-Encoding"]);
   if (!policy || input.statusCode < 200 || input.statusCode >= 300) {
     input.res.setHeader("Cache-Control", "private, no-store, max-age=0");
-    input.res.writeHead(input.statusCode);
-    input.res.end(encodedPayload);
+    await sendBody();
     return;
   }
 
   const etag = `"${createHash("sha256")
-    .update(Buffer.isBuffer(encodedPayload) ? "gzip:" : "identity:")
-    .update(entityTagPayload(input.operationId, input.result))
+    .update(compress ? "gzip:" : "identity:")
+    .update(entityTagPayload(input.operationId, input.result, payload))
     .digest("base64url")}"`;
   input.res.setHeader("ETag", etag);
   mergeVary(input.res, ["Origin", "X-Shongre-Market", "Accept-Language"]);
@@ -289,6 +298,5 @@ export async function writeJsonResponse(input: {
     input.res.end();
     return;
   }
-  input.res.writeHead(input.statusCode);
-  input.res.end(encodedPayload);
+  await sendBody();
 }

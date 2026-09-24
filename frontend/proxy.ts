@@ -62,7 +62,28 @@ function mapOrigins(): string[] {
   return [...origins];
 }
 
-function contentSecurityPolicy(environment: EnvironmentConfig): string {
+/**
+ * A fresh value for every rendered document. Next reads it back from the
+ * forwarded request's policy and stamps it on its framework and flight
+ * scripts; the root layout stamps the runtime-configuration script.
+ */
+function scriptNonce(): string {
+  return btoa(
+    String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))),
+  );
+}
+
+/**
+ * Inline script runs only with the document's nonce. `'strict-dynamic'` hands
+ * that trust to the scripts those load — route chunks, Stripe, the consented
+ * analytics loaders — so CSP3 browsers ignore the host list, which remains the
+ * allowance for browsers without `'strict-dynamic'`. A response that renders
+ * no document carries no nonce and permits no inline script at all.
+ */
+function contentSecurityPolicy(
+  environment: EnvironmentConfig,
+  nonce?: string,
+): string {
   const localDevelopment =
     isLocal(environment.environment) || isTest(environment.environment);
   const connectSources = [
@@ -84,7 +105,11 @@ function contentSecurityPolicy(environment: EnvironmentConfig): string {
      */
     ...mapOrigins(),
   ];
-  const scriptSources = ["'self'", "'unsafe-inline'", "https://js.stripe.com"];
+  const scriptSources = [
+    "'self'",
+    ...(nonce ? [`'nonce-${nonce}'`, "'strict-dynamic'"] : []),
+    "https://js.stripe.com",
+  ];
   const imageSources = ["'self'", "blob:", "data:", "https:"];
   const configuredAnalyticsOrigins = [
     process.env.NEXT_PUBLIC_POSTHOG_HOST,
@@ -139,11 +164,9 @@ function contentSecurityPolicy(environment: EnvironmentConfig): string {
 function applyRuntimeHeaders(
   response: NextResponse,
   environment: EnvironmentConfig,
+  policy = contentSecurityPolicy(environment),
 ): NextResponse {
-  response.headers.set(
-    "Content-Security-Policy",
-    contentSecurityPolicy(environment),
-  );
+  response.headers.set("Content-Security-Policy", policy);
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
@@ -161,6 +184,23 @@ function applyRuntimeHeaders(
     response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
   }
   return response;
+}
+
+/**
+ * Forwards the request to rendering with the policy its document must satisfy.
+ * Both headers are always overwritten, so a client cannot choose the nonce.
+ */
+function renderDocument(
+  requestHeaders: Headers,
+  environment: EnvironmentConfig,
+): NextResponse {
+  const nonce = scriptNonce();
+  const policy = contentSecurityPolicy(environment, nonce);
+  requestHeaders.set("content-security-policy", policy);
+  requestHeaders.set("x-shongre-csp-nonce", nonce);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set("Vary", "Host");
+  return applyRuntimeHeaders(response, environment, policy);
 }
 
 /**
@@ -311,12 +351,9 @@ export async function proxy(request: NextRequest) {
     requestHeaders.set("x-shongre-market-code", "FR");
     requestHeaders.set("x-shongre-market-locale", "fr-FR");
     requestHeaders.set("x-shongre-market-currency", "EUR");
-    const response = NextResponse.next({
-      request: { headers: requestHeaders },
-    });
-    response.headers.set("Vary", "Host");
+    const response = renderDocument(requestHeaders, environment);
     response.headers.set("x-shongre-application", applicationId);
-    return applyRuntimeHeaders(response, environment);
+    return response;
   }
   const allowLocalE2EHost = process.env.SHONGRE_E2E_ALLOW_LOCAL_HOSTS === "1";
   const hostLevelPath = isHostLevelPath(request.nextUrl.pathname);
@@ -487,10 +524,9 @@ export async function proxy(request: NextRequest) {
     requestHeaders.delete("x-shongre-market-currency");
   }
 
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
-  response.headers.set("Vary", "Host");
+  const response = renderDocument(requestHeaders, environment);
   response.headers.set("x-shongre-market", context.countryCode || "GLOBAL");
-  return applyRuntimeHeaders(response, environment);
+  return response;
 }
 
 export const config = {

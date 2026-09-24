@@ -12,6 +12,8 @@ Le backend place les règles dans `EmploymentService`, les accès dans `Employme
 
 La migration `00017_employment_vertical.sql` ajoute les employeurs, branches, profils, vérifications, membres, offres, lieux, salaires, compétences, candidatures, réponses de présélection, CV/documents, pipelines, affectations, notes, entretiens, événements, favoris, alertes, consentements, politiques de conservation, imports, synchronisations, abonnements, droits, signalements et audits.
 
+Un membre sans profil candidat reçoit `404` de `GET /employment/candidate/workspace` : c’est l’état d’accueil, pas une panne. L’espace candidat Web propose alors de le créer (`PUT /employment/candidate/profile` avec le marché et la visibilité `applications_only`, le service complétant identité et horodatage), et la page de candidature renvoie vers cette création au lieu d’une impasse.
+
 Les offres publiques ne contiennent jamais de CV, document, réponse de présélection ou note recruteur. Les documents utilisent un chemin de stockage privé. Les politiques RLS séparent candidat, organisation, branche et administration. Les notes recruteur n’ont aucune politique de lecture candidat. Une candidature active est unique par candidat et par offre. Les synchronisations sont uniques par organisation, source et identifiant externe.
 
 ## Publication, recherche et classement

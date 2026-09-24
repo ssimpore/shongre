@@ -1,3 +1,4 @@
+import { gunzipSync } from "node:zlib";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { createBackendApplication } from "../../src/app/server/index.js";
@@ -67,6 +68,50 @@ describe("composed domain HTTP pipeline", () => {
       specification.body.paths["/favorites"].get.operationId,
     );
     expect(documentation.body).not.toContain("<script");
+  });
+  it("serves the specification compressed to clients that accept gzip", async () => {
+    // ~1.8 MB outside the API rate limiter: it must not be re-serialized and
+    // sent uncompressed on every request.
+    const response = await app
+      .getHttpAdapter()
+      .getInstance()
+      .inject({
+        url: "/api/openapi.json",
+        headers: { "accept-encoding": "gzip" },
+      });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["content-encoding"]).toBe("gzip");
+    expect(String(response.headers.vary)).toContain("Accept-Encoding");
+    expect(
+      JSON.parse(gunzipSync(response.rawPayload).toString("utf8")).openapi,
+    ).toBe("3.1.0");
+  });
+  it("revalidates a reference payload without sending or compressing a body", async () => {
+    const inject = (headers: Record<string, string>) =>
+      app
+        .getHttpAdapter()
+        .getInstance()
+        .inject({
+          url: "/api/v1/taxonomy/v1/tree",
+          headers: {
+            "accept-encoding": "gzip",
+            "x-shongre-market": "FR",
+            ...headers,
+          },
+        });
+    const first = await inject({});
+    expect(first.statusCode).toBe(200);
+    expect(first.headers["content-encoding"]).toBe("gzip");
+    const etag = String(first.headers.etag);
+    expect(etag).toMatch(/^"/);
+    // Stable across identical requests, so a reader's cache can revalidate.
+    expect((await inject({})).headers.etag).toBe(etag);
+
+    const revalidated = await inject({ "if-none-match": etag });
+    expect(revalidated.statusCode).toBe(304);
+    expect(revalidated.rawPayload.byteLength).toBe(0);
+    expect(revalidated.headers["content-encoding"]).toBeUndefined();
+    expect(revalidated.headers.etag).toBe(etag);
   });
   it("serves the developer console to browsers and a descriptor to clients", async () => {
     const page = await request("/", { headers: { accept: "text/html" } });

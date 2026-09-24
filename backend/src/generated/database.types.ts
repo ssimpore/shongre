@@ -35357,6 +35357,10 @@ export type Database = {
         Args: { p_limit?: number; p_retention_days?: number };
         Returns: number;
       };
+      purge_expired_auth_rate_limits: {
+        Args: { p_limit: number };
+        Returns: number;
+      };
       purge_processed_provider_webhooks: {
         Args: { p_before: string; p_limit?: number };
         Returns: number;

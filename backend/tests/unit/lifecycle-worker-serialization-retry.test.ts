@@ -16,6 +16,10 @@ vi.mock("../../src/infrastructure/logging/logger.js", () => ({
     info: mocks.info,
     error: mocks.error,
   },
+  errorDiagnostics: (error: { code?: string; message?: string }) => ({
+    errorCode: error?.code,
+    errorMessage: error?.message,
+  }),
 }));
 
 vi.mock("../../src/modules/notifications/notifications.service.js", () => ({
@@ -81,18 +85,40 @@ describe("lifecycle listing serialization retry", () => {
     expect(mocks.dispatchNotification.mock.calls[0]?.[6]).toBe("FR");
   });
 
-  it("does not retry a non-serialization database error", async () => {
+  it("fails the pass on a non-serialization database error without retrying it", async () => {
     const permanentError = { code: "23514", message: "invalid row" };
     const { client } = mockArchiveMutation([
       { data: null, error: permanentError },
     ]);
 
+    // The scheduled runtime owns retries and alerting, so the failure must
+    // reach it instead of reading as "no expired listings".
     await expect(
       new LifecycleWorker().runExpiredListingsCleanup(),
-    ).resolves.toBe(0);
+    ).rejects.toMatchObject({ code: "NETWORK_ERROR", statusCode: 503 });
     expect(client.from).toHaveBeenCalledOnce();
     expect(mocks.error).toHaveBeenCalledWith(
-      "Lifecycle Worker error: invalid row",
+      "Database repository operation failed",
+      expect.objectContaining({
+        operation: "lifecycle.archiveExpiredListings",
+        errorCode: "23514",
+      }),
+    );
+    expect(mocks.dispatchNotification).not.toHaveBeenCalled();
+  });
+
+  it("keeps the pass successful when one expiry notice cannot be sent", async () => {
+    mockArchiveMutation([{ data: [archivedRow], error: null }]);
+    mocks.dispatchNotification.mockRejectedValueOnce(
+      new Error("notification store unavailable"),
+    );
+
+    await expect(
+      new LifecycleWorker().runExpiredListingsCleanup(),
+    ).resolves.toBe(1);
+    expect(mocks.error).toHaveBeenCalledWith(
+      "lifecycle_expiry_notification_failed",
+      expect.objectContaining({ listingId: "listing-1" }),
     );
   });
 });

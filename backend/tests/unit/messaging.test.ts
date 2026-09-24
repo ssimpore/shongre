@@ -130,6 +130,8 @@ describe("MessagingService", () => {
       offerCurrency: "EUR",
       offerStatus: "pending",
     });
+    // The announcement follows the currency's exponent and French format.
+    expect(offer.text).toBe("Offre de prix proposée : 225,00\u00a0€.");
     await expect(
       service.respondToOffer({
         offerId: offer.id,

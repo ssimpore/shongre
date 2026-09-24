@@ -154,3 +154,62 @@ test("uses one wizard progress system, native intent radios, and remembers the p
     ),
   ).toEqual([]);
 });
+
+test("runs only the scripts its per-document CSP nonce admits", async ({
+  page,
+  request,
+}) => {
+  const scriptSource = (policy: string) =>
+    policy
+      .split(";")
+      .map((directive) => directive.trim())
+      .find((directive) => directive.startsWith("script-src ")) || "";
+  const documents = await Promise.all(
+    ["/", "/"].map(async (path) => {
+      const response = await request.get(path);
+      expect(response.status()).toBe(200);
+      const scriptSrc = scriptSource(
+        response.headers()["content-security-policy"] || "",
+      );
+      const nonce = scriptSrc.match(/'nonce-([A-Za-z0-9+/=]+)'/)?.[1] || "";
+      return { html: await response.text(), nonce, scriptSrc };
+    }),
+  );
+  for (const { html, nonce, scriptSrc } of documents) {
+    expect(nonce).not.toBe("");
+    expect(scriptSrc).toContain("'strict-dynamic'");
+    expect(scriptSrc).not.toContain("'unsafe-inline'");
+    // JSON-LD is a data block the browser never executes; everything else
+    // must carry this document's nonce.
+    const executable = [...html.matchAll(/<script\b[^>]*>/g)]
+      .map(([tag]) => tag)
+      .filter((tag) => !tag.includes('type="application/ld+json"'));
+    expect(executable.length).toBeGreaterThan(0);
+    for (const tag of executable) expect(tag).toContain(`nonce="${nonce}"`);
+  }
+  expect(documents[0].nonce).not.toBe(documents[1].nonce);
+
+  await page.addInitScript(() => {
+    const violations: string[] = [];
+    (window as unknown as { __cspViolations: string[] }).__cspViolations =
+      violations;
+    document.addEventListener("securitypolicyviolation", (event) =>
+      violations.push(`${event.violatedDirective} ${event.blockedURI}`),
+    );
+  });
+  for (const path of ["/", testListingPath("list-112"), "/recherche"]) {
+    await page.goto(path, { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+    await expect(page.locator("html")).toHaveAttribute(
+      "data-app-hydrated",
+      "true",
+    );
+    expect(
+      await page.evaluate(
+        () =>
+          (window as unknown as { __cspViolations: string[] }).__cspViolations,
+      ),
+      path,
+    ).toEqual([]);
+  }
+});

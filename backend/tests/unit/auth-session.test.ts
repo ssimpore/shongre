@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { DemoAuthRepository } from "../../src/infrastructure/database/repositories/auth.repository.js";
 import { SessionService } from "../../src/modules/auth/session.service.js";
 import type { UserProfile } from "../../src/shared/types/index.js";
@@ -92,4 +92,38 @@ describe("server-side session lifecycle", () => {
       ).rejects.toMatchObject({ code: "UNAUTHENTICATED" });
     },
   );
+
+  it("resolves a request's session facts from one read and records activity at most once per interval", async () => {
+    const repository = new DemoAuthRepository();
+    const sessions = new SessionService(repository);
+    const created = await sessions.create(user, "password", {});
+    const reads = vi.spyOn(repository, "findSessionById");
+    const writes = vi.spyOn(repository, "touchSession");
+
+    const state = await sessions.resolveActiveSession(
+      created.sessionId,
+      user.id,
+    );
+    expect(state).toMatchObject({ mfaVerified: false });
+    expect(reads).toHaveBeenCalledTimes(1);
+
+    await state!.touch();
+    expect(writes).toHaveBeenCalledTimes(1);
+    // The next request inside the interval reads the fresh `last_used_at`
+    // and does not write again.
+    await (await sessions.resolveActiveSession(
+      created.sessionId,
+      user.id,
+    ))!.touch();
+    expect(writes).toHaveBeenCalledTimes(1);
+
+    // Someone else's session, or a revoked one, resolves to nothing.
+    await expect(
+      sessions.resolveActiveSession(created.sessionId, "another-user"),
+    ).resolves.toBeNull();
+    await repository.revokeSession(created.sessionId, "logout");
+    await expect(
+      sessions.resolveActiveSession(created.sessionId, user.id),
+    ).resolves.toBeNull();
+  });
 });

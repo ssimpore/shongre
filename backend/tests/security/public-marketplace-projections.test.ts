@@ -225,6 +225,46 @@ describe("public marketplace projections", () => {
     ).rejects.toMatchObject({ code: "CONFLICT" });
   });
 
+  it("deletes only a never-published draft and archives anything with public history", async () => {
+    const repository = new DemoListingRepository({
+      draft: listing("draft"),
+      published: listing("published"),
+      sold: listing("sold"),
+      reserved: listing("reserved"),
+    });
+    const service = new ListingsService(repository, new DemoAIProvider());
+
+    await expect(service.deleteListing("listing-draft")).resolves.toEqual({
+      outcome: "deleted",
+    });
+    await expect(repository.findById("listing-draft")).resolves.toBeNull();
+
+    // Conversations, orders, reports and paid placements hang off a public
+    // listing; removing it must keep them, so it leaves the marketplace
+    // as an archive rather than a cascade.
+    for (const id of ["listing-published", "listing-sold"]) {
+      await expect(service.deleteListing(id)).resolves.toEqual({
+        outcome: "archived",
+      });
+      await expect(repository.findById(id)).resolves.toMatchObject({
+        status: "archived",
+      });
+    }
+    await expect(service.deleteListing("listing-published")).resolves.toEqual({
+      outcome: "archived",
+    });
+
+    await expect(
+      service.deleteListing("listing-reserved"),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    await expect(
+      repository.findById("listing-reserved"),
+    ).resolves.toMatchObject({ status: "reserved" });
+    await expect(service.deleteListing("missing")).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+  });
+
   it("omits an unavailable favorite id when no public card can be returned", async () => {
     const visible = { ...listing(), id: "listing-visible" };
     const laterArchived = { ...listing(), id: "listing-later-archived" };

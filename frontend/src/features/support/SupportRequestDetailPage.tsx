@@ -9,6 +9,8 @@ import { Textarea } from "../../design-system/primitives/FormField";
 import type { SupportCase, SupportCaseNote } from "@shongre/contracts/support";
 import { supportService } from "../../domains/support/support.service";
 import { services } from "../../api/client/service-registry";
+import { AppError } from "../../api/errors/app-error";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { formatDate } from "../../utilities/formatters";
 import { Skeleton } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -30,23 +32,42 @@ export const SupportRequestDetailPage: React.FC = () => {
   const [request, setRequest] = useState<SupportCase | null>(null);
   const [notes, setNotes] = useState<SupportCaseNote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailure, setLoadFailure] = useState<"missing" | "error" | null>(
+    null,
+  );
+  const [attempt, setAttempt] = useState(0);
   const [replyText, setReplyText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    let active = true;
     const fetchDetail = async () => {
       if (!id) return;
       setLoading(true);
+      setLoadFailure(null);
       try {
         const found = await services.support.getCase(id);
+        if (!active) return;
         setRequest(found.case);
         setNotes(found.notes);
+      } catch (cause) {
+        // An absent case and a failed request are different answers: only
+        // the second is worth retrying.
+        if (active)
+          setLoadFailure(
+            cause instanceof AppError && cause.code === "NOT_FOUND"
+              ? "missing"
+              : "error",
+          );
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
-    fetchDetail();
-  }, [id]);
+    void fetchDetail();
+    return () => {
+      active = false;
+    };
+  }, [id, attempt]);
 
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,20 +106,35 @@ export const SupportRequestDetailPage: React.FC = () => {
     );
   }
 
+  if (loadFailure === "error") {
+    return (
+      <StatePanel
+        variant="error"
+        headingLevel={1}
+        title={t("common.error")}
+        description={t("support.supportRequestDetailPage.loadErrorDescription")}
+        action={
+          <Button onClick={() => setAttempt((value) => value + 1)}>
+            {t("common.retry")}
+          </Button>
+        }
+      />
+    );
+  }
+
   if (!request) {
     return (
-      <div className="bg-bg-surface border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
-        <h3 className="text-base font-bold text-text-main">
-          Dossier d'assistance introuvable
-        </h3>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/compte/support")}
-        >
-          {t("support.supportRequestDetailPage.retourAMesDemandes2")}
-        </Button>
-      </div>
+      <StatePanel
+        variant="notFound"
+        headingLevel={1}
+        title="Dossier d'assistance introuvable"
+        description={t("support.supportRequestDetailPage.notFoundDescription")}
+        action={
+          <Button variant="outline" onClick={() => navigate("/compte/support")}>
+            {t("support.supportRequestDetailPage.retourAMesDemandes2")}
+          </Button>
+        }
+      />
     );
   }
 

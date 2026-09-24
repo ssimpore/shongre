@@ -231,6 +231,10 @@ export interface IAuthRepository {
     lockSeconds: number,
   ): Promise<RateLimitDecision>;
   clearRateLimit(keyHash: string, action: string): Promise<void>;
+  /** Reads a limiter's lock without spending an attempt. */
+  peekRateLimit(keyHash: string, action: string): Promise<RateLimitDecision>;
+  /** Deletes limiter rows whose window and lock have both lapsed. */
+  purgeExpiredRateLimits(limit: number): Promise<number>;
   recordSecurityEvent(input: SecurityEventInput): Promise<void>;
   getMfaCredential(userId: string): Promise<MfaCredentialRecord | null>;
   saveMfaCredential(value: MfaCredentialRecord): Promise<void>;
@@ -707,6 +711,33 @@ export class DemoAuthRepository implements IAuthRepository {
 
   async clearRateLimit(keyHash: string, action: string): Promise<void> {
     this.rateLimits.delete(`${action}:${keyHash}`);
+  }
+
+  async peekRateLimit(
+    keyHash: string,
+    action: string,
+  ): Promise<RateLimitDecision> {
+    const current = this.rateLimits.get(`${action}:${keyHash}`);
+    const now = Date.now();
+    return current && current.lockedUntil > now
+      ? {
+          allowed: false,
+          retryAfterSeconds: Math.ceil((current.lockedUntil - now) / 1000),
+        }
+      : { allowed: true, retryAfterSeconds: 0 };
+  }
+
+  async purgeExpiredRateLimits(limit: number): Promise<number> {
+    const now = Date.now();
+    let purged = 0;
+    for (const [key, entry] of this.rateLimits) {
+      if (purged >= limit) break;
+      if (entry.resetAt <= now && entry.lockedUntil <= now) {
+        this.rateLimits.delete(key);
+        purged += 1;
+      }
+    }
+    return purged;
   }
 
   async recordSecurityEvent(input: SecurityEventInput): Promise<void> {
@@ -1310,6 +1341,34 @@ class PostgresAuthRepository implements IAuthRepository {
       .eq("key_hash", keyHash)
       .eq("action", action);
     if (error) throw new Error(`rate limit reset failed: ${error.message}`);
+  }
+
+  async peekRateLimit(
+    keyHash: string,
+    action: string,
+  ): Promise<RateLimitDecision> {
+    const { data, error } = await this.client()
+      .from("auth_rate_limits")
+      .select("locked_until")
+      .eq("key_hash", keyHash)
+      .eq("action", action)
+      .maybeSingle();
+    if (error) throw new Error(`rate limit read failed: ${error.message}`);
+    const lockedForMs = data?.locked_until
+      ? new Date(data.locked_until).getTime() - Date.now()
+      : 0;
+    return lockedForMs > 0
+      ? { allowed: false, retryAfterSeconds: Math.ceil(lockedForMs / 1000) }
+      : { allowed: true, retryAfterSeconds: 0 };
+  }
+
+  async purgeExpiredRateLimits(limit: number): Promise<number> {
+    const { data, error } = await this.client().rpc(
+      "purge_expired_auth_rate_limits",
+      { p_limit: limit },
+    );
+    if (error) throw new Error(`rate limit retention failed: ${error.message}`);
+    return Number(data || 0);
   }
 
   async recordSecurityEvent(input: SecurityEventInput): Promise<void> {

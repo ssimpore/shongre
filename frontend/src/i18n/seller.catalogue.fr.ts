@@ -86,6 +86,16 @@ export const sellerCatalogueFr = {
     "Bon retour ! {count} annonces sont de nouveau en ligne.",
   "sellerworkspace.away.error":
     "Le mode absence n’a pas été enregistré. Réessayez.",
+  "sellerworkspace.removal.deleted": "Le brouillon a été supprimé.",
+  "sellerworkspace.removal.archived":
+    "L’annonce n’est plus en ligne. Elle reste dans vos annonces archivées avec ses messages et ses commandes.",
+  "sellerworkspace.removal.error": "L’annonce n’a pas pu être retirée.",
+  "sellerworkspace.removal.confirmDraft":
+    "Ce brouillon sera supprimé définitivement.",
+  "sellerworkspace.removal.confirmPublished":
+    "L’annonce sera retirée du site. Elle restera dans vos annonces archivées avec ses messages et ses commandes.",
+  "sellerworkspace.removal.confirmAction": "Retirer du site",
+  "sellerworkspace.removal.confirmDelete": "Supprimer",
 } as const;
 
 export type SellerMessageKey = keyof typeof sellerCatalogueFr;

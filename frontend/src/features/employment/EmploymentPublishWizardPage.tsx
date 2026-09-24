@@ -407,6 +407,15 @@ const EmploymentPublicationEditor: React.FC<{ accountId: string }> = ({
           (await services.employment.checkDuplicateDraft(draftId))
             .duplicateCandidateIds,
         );
+      } catch (error) {
+        // Stay on the step and say why, instead of an unhandled rejection
+        // that left the button doing nothing.
+        toast.error(
+          error instanceof Error && error.message
+            ? error.message
+            : t("common.error"),
+        );
+        return;
       } finally {
         setSaving(false);
       }

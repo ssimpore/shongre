@@ -10,6 +10,8 @@ import { Inject, OnApplicationShutdown } from "@nestjs/common";
 import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 import type { Server, WebSocket } from "ws";
 import { authService } from "../../modules/auth/auth.service.js";
+import { config } from "../../app/config/index.js";
+import { verifyToken } from "../../shared/auth/tokens.js";
 import { messagingService } from "../../modules/messaging/messaging.service.js";
 import { assertConversationParticipant } from "../../modules/messaging/api/access-policy.js";
 import {
@@ -21,10 +23,16 @@ import { RealtimePubSub, type RealtimeEnvelope } from "./realtime-pub-sub.js";
 
 interface ConnectionState {
   principal?: Principal;
+  /** When the access token that authenticated this socket stops being valid. */
+  expiresAtMs?: number;
   subscriptions: Set<string>;
 }
 
-@WebSocketGateway({ path: "/realtime" })
+@WebSocketGateway({
+  path: "/realtime",
+  maxPayload:
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.realtime.maximumInboundMessageBytes,
+})
 export class RealtimeGateway
   implements
     OnGatewayInit,
@@ -94,6 +102,8 @@ export class RealtimeGateway
     const state = this.states.get(client);
     if (!state) return;
     state.principal = principal;
+    // resolvePrincipal accepted the token, so its claims verify.
+    state.expiresAtMs = verifyToken(token!, config.jwtSecret).exp * 1_000;
     const timer = this.authenticationTimers.get(client);
     if (timer) clearTimeout(timer);
     this.authenticationTimers.delete(client);
@@ -172,14 +182,23 @@ export class RealtimeGateway
   }
 
   private broadcast(envelope: RealtimeEnvelope): void {
+    const now = Date.now();
     for (const client of this.server.clients) {
       const state = this.states.get(client);
       if (
-        client.readyState === client.OPEN &&
-        state?.subscriptions.has(envelope.channelName)
-      ) {
-        this.send(client, envelope.event, envelope.payload);
+        client.readyState !== client.OPEN ||
+        !state?.subscriptions.has(envelope.channelName)
+      )
+        continue;
+      // Authorization was decided at subscribe time with a short-lived token.
+      // Once it expires the socket must re-authenticate, which re-checks the
+      // session, so a logout or revocation stops private events within one
+      // token lifetime instead of never.
+      if (!state.expiresAtMs || state.expiresAtMs <= now) {
+        client.close(4401, "Authentication expired");
+        continue;
       }
+      this.send(client, envelope.event, envelope.payload);
     }
   }
 

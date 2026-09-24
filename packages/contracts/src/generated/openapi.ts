@@ -5475,7 +5475,10 @@ export interface paths {
         /** PUT /listings/:id */
         readonly put: operations["putListingsById"];
         readonly post?: never;
-        /** DELETE /listings/:id */
+        /**
+         * Remove an owned listing
+         * @description Hard-deletes a listing that was never published. A listing with a public history (conversations, orders, reports, paid placements) is archived instead: it leaves the marketplace and its history is kept. A reserved listing cannot be removed while its transaction is open.
+         */
         readonly delete: operations["deleteListingsById"];
         readonly options?: never;
         readonly head?: never;
@@ -11651,6 +11654,15 @@ export interface components {
         readonly ListingPromotionSource: "purchase" | "subscription_credit" | "admin_grant";
         /** @enum {string} */
         readonly ListingPromotionType: "urgent_badge" | "search_bump" | "featured" | "top_placement" | "sponsored_search" | "homepage_spotlight" | "category_spotlight" | "local_spotlight" | "seller_spotlight";
+        readonly ListingRemovalResult: {
+            /**
+             * @description `deleted` for a never-published draft; `archived` when the listing had a public history that must be preserved.
+             * @enum {string}
+             */
+            readonly outcome: "deleted" | "archived";
+            /** @constant */
+            readonly success: true;
+        };
         readonly ListingTaxonomyProjection: {
             readonly brandLabels?: components["schemas"]["TaxonomyV1LocalizedLabels"];
             readonly cardCharacteristics?: readonly components["schemas"]["TaxonomyLocalizedCharacteristic"][];
@@ -26720,7 +26732,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["ListingRemovalResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

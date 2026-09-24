@@ -15,6 +15,8 @@ import {
   Skeleton,
   Textarea,
 } from "../../design-system";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { MODERATION_CONSTRAINTS } from "@shongre/contracts";
 
@@ -40,6 +42,7 @@ export const ModerationAppealsPage: React.FC = () => {
     canonicalPath: "/compte/recours",
     noIndex: true,
   });
+  const { t } = useTranslation();
   const toast = useToast();
   const { currentLocale } = useMarketLocation();
   const [cases, setCases] = useState<OwnModerationCase[]>([]);
@@ -49,10 +52,12 @@ export const ModerationAppealsPage: React.FC = () => {
   );
   const [reason, setReason] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const load = useCallback(async () => {
     setIsLoading(true);
+    setLoadError(false);
     try {
       const [ownCases, ownAppeals] = await Promise.all([
         services.moderation.listOwnCases(),
@@ -60,6 +65,9 @@ export const ModerationAppealsPage: React.FC = () => {
       ]);
       setCases(ownCases);
       setAppeals(ownAppeals);
+    } catch {
+      // "No decisions" would hide a decision the member is entitled to contest.
+      setLoadError(true);
     } finally {
       setIsLoading(false);
     }
@@ -88,6 +96,12 @@ export const ModerationAppealsPage: React.FC = () => {
         "Votre recours a été transmis pour un réexamen indépendant.",
       );
       await load();
+    } catch (error) {
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : t("common.error"),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -115,6 +129,15 @@ export const ModerationAppealsPage: React.FC = () => {
             <Skeleton key={item} className="h-32 w-full rounded-2xl" />
           ))}
         </div>
+      ) : loadError ? (
+        <StatePanel
+          variant="error"
+          title={t("common.error")}
+          description={t("common.loadErrorDescription")}
+          action={
+            <Button onClick={() => void load()}>{t("common.retry")}</Button>
+          }
+        />
       ) : cases.length === 0 ? (
         <div className="rounded-2xl border border-border-base bg-bg-surface p-8 text-center">
           <ShieldAlert className="mx-auto h-8 w-8 text-text-inverse-subtle" />

@@ -9,6 +9,8 @@ export const PAGE_SIZES = {
   notificationCenter: 100,
   notificationPreview: 8,
   marketplaceSearch: 24,
+  /** A seller's shelf, paged by cursor; the search contract's maximum. */
+  sellerCatalog: 50,
   verticalSearch: 20,
   similarListings: 5,
   similarVerticalListings: 4,

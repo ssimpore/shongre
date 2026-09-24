@@ -133,7 +133,15 @@ test.describe("design-token runtime contracts @serial", () => {
     const contract = await page.evaluate(() => {
       const root = getComputedStyle(document.documentElement);
       const grid = document.querySelector<HTMLElement>(".listing-grid");
-      const card = grid?.querySelector<HTMLElement>("article");
+      // The footprint contract is the photo card's: a listing without a photo
+      // deliberately uses the compact neutral media well instead.
+      const card =
+        [
+          ...(grid?.querySelectorAll<HTMLElement>(
+            "article.listing-card-standard",
+          ) ?? []),
+        ].find((candidate) => candidate.querySelector("img")) ??
+        grid?.querySelector<HTMLElement>("article");
       const gridStyle = grid ? getComputedStyle(grid) : null;
       const cardStyle = card ? getComputedStyle(card) : null;
       const cards = grid
@@ -192,7 +200,10 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(contract.rowLeftInset).not.toBeNull();
     expect(contract.rowRightInset).not.toBeNull();
     expect(contract.rowLeftInset).toBeCloseTo(0, 0);
-    expect(contract.rowRightInset).toBeGreaterThan(
+    // Result widths are quantized to whole card rows, so a full first row
+    // fills the grid exactly (right inset 0); a sparse one leaves space on the
+    // right. Either way nothing is centred or pushed from the left.
+    expect(contract.rowRightInset).toBeGreaterThanOrEqual(
       contract.rowLeftInset ?? Number.POSITIVE_INFINITY,
     );
     for (const gap of contract.firstRowGaps) {

@@ -21,7 +21,12 @@ import { projectListingForSearchCard } from "../../domains/listing/listing-searc
 import { projectHomepageExperienceForDocument } from "../../domains/homepage/homepage-document.projection";
 import { selectHeroListings } from "../../features/home/hero-selection";
 import { fetchPublicSitemapListingPage } from "../../api/adapters/http/http-sitemap.service";
+import { registerServerRequestHeaders } from "../../api/adapters/http/http-client";
+import { serverEdgeIdentityHeaders } from "../api/server-edge-identity";
+import { mapWithConcurrency } from "../../utilities/concurrency";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 
+registerServerRequestHeaders(serverEdgeIdentityHeaders);
 const serverServices = createServiceRegistry();
 const listingsService = serverServices.listings;
 const searchService = serverServices.search;
@@ -32,6 +37,8 @@ const realEstateService = serverServices.realEstate;
 const PUBLIC_SEARCH_PAGE_LIMIT = 50;
 const SITEMAP_API_PAGE_LIMIT = 500;
 const SITEMAP_MAX_API_PAGES = 2_000;
+const SERVER_FAN_OUT_CONCURRENCY =
+  SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.frontend.serverFanOutConcurrency;
 
 interface ServerListingCollection {
   listings: Listing[];
@@ -159,11 +166,17 @@ async function resolveSeller(
   if (!seller) {
     return { status: "not_found", data: null, resourceType: "seller" };
   }
+  // Seller-scoped by the API, as the client page reads it: filtering a market
+  // page by seller showed only the listings that happened to land on it.
   const [listingResult, reviews] = await Promise.all([
-    serverServices.listings.getListings({ marketCode: countryCode }),
+    serverServices.listings.searchListings({
+      marketCode: countryCode,
+      sellerId: seller.id,
+      limit: PAGE_SIZES.sellerCatalog,
+    }),
     serverServices.reviews.getUserReviews(seller.id),
   ]);
-  const listings = listingResult.listings.filter(
+  const listings = listingResult.items.filter(
     (listing) =>
       listing.sellerId === seller.id &&
       listing.status === "active" &&
@@ -177,11 +190,15 @@ async function resolveSeller(
   ) {
     return { status: "not_found", data: null, resourceType: "seller" };
   }
+  const nextCursor = listingResult.pageInfo?.nextCursor;
   const data: SellerPublicRouteData = {
     kind: "seller",
     seller,
     listings,
     reviews,
+    ...(nextCursor
+      ? { listingsNextCursor: nextCursor, listingsTotal: listingResult.total }
+      : {}),
   };
   return { status: "found", data };
 }
@@ -562,6 +579,34 @@ async function resolveGuarded(
 
 export const resolveServerPublicRouteData = cache(resolveGuarded);
 
+/**
+ * Every sitemap listing already carries its seller's public profile, which is
+ * all an individual's `/profil` entry needs. Only a professional's storefront
+ * (its canonical `/boutique` slug) lives outside that projection, so only
+ * professionals are re-read — with bounded concurrency, never one request per
+ * seller at once.
+ */
+async function resolveSitemapSellers(
+  listings: readonly Listing[],
+): Promise<PublicSellerProfile[]> {
+  const embedded = new Map<string, PublicSellerProfile>();
+  for (const listing of listings) {
+    const seller = listing.sellerProfile;
+    if (seller && !embedded.has(seller.id)) embedded.set(seller.id, seller);
+  }
+  const profiles = [...embedded.values()];
+  return (
+    await mapWithConcurrency(
+      profiles,
+      SERVER_FAN_OUT_CONCURRENCY,
+      async (seller) =>
+        seller.accountType === "professional"
+          ? serverServices.users.getPublicProfile(seller.id)
+          : seller,
+    )
+  ).filter((seller): seller is PublicSellerProfile => seller !== null);
+}
+
 export async function listServerPublicSitemapData(countryCode: string) {
   const inventory = await getAllServerSitemapListings(countryCode);
   const activeListings = inventory.filter(
@@ -569,16 +614,7 @@ export async function listServerPublicSitemapData(countryCode: string) {
       listing.status === "active" &&
       listingIsPublishedInMarket(listing, countryCode),
   );
-  const sellerIds = Array.from(
-    new Set(activeListings.map((listing) => listing.sellerId)),
-  );
-  const sellers = (
-    await Promise.all(
-      sellerIds.map((sellerId) =>
-        serverServices.users.getPublicProfile(sellerId),
-      ),
-    )
-  ).filter((seller): seller is PublicSellerProfile => seller !== null);
+  const sellers = await resolveSitemapSellers(activeListings);
 
   const employmentResult =
     countryCode === "FR"
@@ -593,10 +629,10 @@ export async function listServerPublicSitemapData(countryCode: string) {
   const [employmentCatalog, jobs] = employmentResult
     ? await Promise.all([
         employmentService.getCatalog(countryCode),
-        Promise.all(
-          employmentResult.items.map((job) =>
-            employmentService.getJob(job.slug, countryCode),
-          ),
+        mapWithConcurrency(
+          employmentResult.items,
+          SERVER_FAN_OUT_CONCURRENCY,
+          (job) => employmentService.getJob(job.slug, countryCode),
         ),
       ])
     : [null, []];

@@ -354,11 +354,13 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   integration; the existing domain `api/*.routes.ts` registrars remain the
   canonical operation owners. Do not move their handlers into a giant Nest
   controller or reintroduce domain logic into the composition root.
-- Redis is the BullMQ execution transport and realtime fan-out boundary.
-  PostgreSQL domain outboxes/inboxes, leases, attempts, and idempotency remain
-  authoritative; queue jobs are schema-versioned wake/schedule messages and
-  must never contain secrets or replace atomic domain persistence. API and
-  worker reuse process-scoped connections and shut them down gracefully.
+- Redis is the BullMQ execution transport, the realtime fan-out boundary and
+  the shared per-subject API request budget; credential endpoints keep their
+  database-backed limits. PostgreSQL domain outboxes/inboxes, leases, attempts,
+  and idempotency remain authoritative; queue jobs are schema-versioned
+  wake/schedule messages and must never contain secrets or replace atomic
+  domain persistence. API and worker reuse process-scoped connections and shut
+  them down gracefully.
 - `backend/` is a domain-oriented TypeScript/Node modular monolith. HTTP
   registration belongs in the owning `backend/src/modules/*/api/` directory;
   `backend/src/api/v1/router.ts` composes those registrations and owns only the
@@ -792,7 +794,10 @@ France-only happy path is insufficient for market-sensitive work.
 - A listing is stored once and may have explicit market publications. The shared
   record alone does not prove availability. Backend services own lifecycle
   transitions across draft, review, published, reserved, sold, expired,
-  suspended, rejected, removed, and archived states.
+  suspended, rejected, removed, and archived states. A seller may hard-delete
+  only a never-published draft; removing anything that has been public
+  archives it, because conversations, orders, reports and paid placements
+  reference it, and a reserved listing cannot be removed mid-transaction.
   Vertical discovery writers must persist the explicit source-market publication
   in the same transaction as their shared listing projection, preserve existing
   market moderation restrictions, and retain the canonical publisher ownership

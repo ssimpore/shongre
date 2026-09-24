@@ -169,6 +169,35 @@ function scopeDemoPlatformDashboard(
   };
 }
 
+/**
+ * The demo ledger is a fixed snapshot, but every finance period is relative to
+ * now, so the scenario is replayed as if it had just happened: each timestamp
+ * moves forward by how far the clock is past the snapshot. Without this the
+ * ledger aged out of the default 30-day window a month after it was written,
+ * and the demo dashboard and the browser suite showed an empty ledger.
+ */
+function demoReplayShiftMs(): number {
+  return Math.max(
+    0,
+    Date.now() - Date.parse(DEMO_PLATFORM_FINANCE_DASHBOARD.asOf),
+  );
+}
+
+function replayedAt(value: string, shiftMs: number): string {
+  return new Date(Date.parse(value) + shiftMs).toISOString();
+}
+
+function replayedDemoTransactions(): FinanceTransaction[] {
+  const shiftMs = demoReplayShiftMs();
+  return DEMO_FINANCE_TRANSACTIONS.map((source) => {
+    const transaction = structuredClone(source);
+    transaction.occurredAt = replayedAt(transaction.occurredAt, shiftMs);
+    if (transaction.postedAt)
+      transaction.postedAt = replayedAt(transaction.postedAt, shiftMs);
+    return transaction;
+  });
+}
+
 export class DemoFinanceRepository implements FinanceRepository {
   async getPlatformDashboard(
     scope: FinanceScope,
@@ -180,6 +209,7 @@ export class DemoFinanceRepository implements FinanceRepository {
       scope,
     );
     dashboard.scope = scope;
+    dashboard.asOf = replayedAt(dashboard.asOf, demoReplayShiftMs());
     assertPlatformFinanceInvariants(dashboard);
     return platformFinanceDashboardSchema.parse(dashboard);
   }
@@ -202,26 +232,29 @@ export class DemoFinanceRepository implements FinanceRepository {
 
   async listTransactions(filters: FinanceTransactionFilters) {
     const normalized = filters.query?.toLocaleLowerCase("fr") ?? "";
-    const items = DEMO_FINANCE_TRANSACTIONS.filter((transaction) =>
-      periodMatches(
-        transaction.occurredAt,
-        filters.periodStart,
-        filters.periodEnd,
-      ),
-    ).filter((transaction) => {
-      if (
-        filters.marketCode !== "ALL" &&
-        transaction.marketCode !== filters.marketCode
+    const items = replayedDemoTransactions()
+      .filter((transaction) =>
+        periodMatches(
+          transaction.occurredAt,
+          filters.periodStart,
+          filters.periodEnd,
+        ),
       )
-        return false;
-      if (filters.status && transaction.status !== filters.status) return false;
-      if (filters.needsReviewOnly && transaction.status !== "needs_review")
-        return false;
-      if (!normalized) return true;
-      return `${transaction.reference} ${transaction.accountLabel} ${transaction.invoiceReference ?? ""}`
-        .toLocaleLowerCase("fr")
-        .includes(normalized);
-    });
+      .filter((transaction) => {
+        if (
+          filters.marketCode !== "ALL" &&
+          transaction.marketCode !== filters.marketCode
+        )
+          return false;
+        if (filters.status && transaction.status !== filters.status)
+          return false;
+        if (filters.needsReviewOnly && transaction.status !== "needs_review")
+          return false;
+        if (!normalized) return true;
+        return `${transaction.reference} ${transaction.accountLabel} ${transaction.invoiceReference ?? ""}`
+          .toLocaleLowerCase("fr")
+          .includes(normalized);
+      });
     items.forEach(assertBalancedTransaction);
     return financeTransactionPageSchema.parse({
       items: items.slice(0, filters.limit),
@@ -230,15 +263,19 @@ export class DemoFinanceRepository implements FinanceRepository {
   }
 
   async getTransaction(transactionId: string) {
-    return structuredClone(
-      DEMO_FINANCE_TRANSACTIONS.find(
+    return (
+      replayedDemoTransactions().find(
         (transaction) => transaction.id === transactionId,
-      ) ?? null,
+      ) ?? null
     );
   }
 
   async listReconciliationCases() {
-    return structuredClone([...DEMO_RECONCILIATION_CASES]);
+    const shiftMs = demoReplayShiftMs();
+    return DEMO_RECONCILIATION_CASES.map((source) => ({
+      ...structuredClone(source),
+      openedAt: replayedAt(source.openedAt, shiftMs),
+    }));
   }
 }
 

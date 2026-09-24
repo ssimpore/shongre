@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { Badge } from "../../design-system/primitives/Badge";
 import type { SupportCase } from "@shongre/contracts/support";
 import { supportService } from "../../domains/support/support.service";
@@ -29,25 +30,36 @@ export const SupportRequestsPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [requests, setRequests] = useState<SupportCase[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   useEffect(() => {
+    let active = true;
     const fetchRequests = async () => {
       if (!currentUser) return;
       setLoading(true);
+      setLoadError(false);
       try {
         const result = await services.support.listOwnCases();
+        if (!active) return;
         setRequests(
           filterStatus === "all"
             ? result
             : result.filter((item) => item.status === filterStatus),
         );
+      } catch {
+        // A failed load must not read as "no requests".
+        if (active) setLoadError(true);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
-    fetchRequests();
-  }, [currentUser, filterStatus]);
+    void fetchRequests();
+    return () => {
+      active = false;
+    };
+  }, [currentUser, filterStatus, attempt]);
 
   const tabs = [
     { id: "all", label: "Toutes les demandes" },
@@ -108,6 +120,17 @@ export const SupportRequestsPage: React.FC = () => {
             <Skeleton key={i} className="h-20 rounded-2xl" />
           ))}
         </div>
+      ) : loadError ? (
+        <StatePanel
+          variant="error"
+          title={t("common.error")}
+          description={t("common.loadErrorDescription")}
+          action={
+            <Button onClick={() => setAttempt((value) => value + 1)}>
+              {t("common.retry")}
+            </Button>
+          }
+        />
       ) : requests.length === 0 ? (
         <div className="bg-bg-surface border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
           <div className="w-12 h-12 rounded-2xl bg-surface-muted text-text-inverse-subtle flex items-center justify-center mx-auto">

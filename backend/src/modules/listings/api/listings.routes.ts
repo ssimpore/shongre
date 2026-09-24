@@ -646,8 +646,8 @@ export function registerListingsRoutes(routes: RouteRegistrar): void {
     permission("listing.delete.own"),
     async ({ principal, params }) => {
       await assertListingOwnership(principal, params.id);
-      const success = await listingsService.deleteListing(params.id);
-      return { success };
+      const { outcome } = await listingsService.deleteListing(params.id);
+      return { success: true, outcome };
     },
   );
   routes.addRoute(

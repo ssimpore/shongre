@@ -13,6 +13,8 @@ import type {
 } from "@shongre/contracts/employment";
 import { EMPLOYMENT_TEXT_LIMITS } from "@shongre/contracts/employment";
 import { services } from "../../api/client/service-registry";
+import { AppError } from "../../api/errors/app-error";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
@@ -28,6 +30,7 @@ import {
 import { usePageMeta } from "../../hooks/usePageMeta";
 
 export const EmploymentApplyPage: React.FC = () => {
+  const { t } = useTranslation();
   const { slug = "" } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
@@ -43,6 +46,7 @@ export const EmploymentApplyPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string>();
+  const [needsProfile, setNeedsProfile] = useState(false);
 
   usePageMeta({
     title: job ? `Postuler – ${job.title}` : "Postuler à une offre",
@@ -57,12 +61,26 @@ export const EmploymentApplyPage: React.FC = () => {
     setJob(null);
     setWorkspace(null);
     setError(undefined);
+    setNeedsProfile(false);
     Promise.all([
       services.employment.getJob(slug, activeMarket.code),
-      services.employment.getCandidateWorkspace(activeMarket.code),
+      services.employment
+        .getCandidateWorkspace(activeMarket.code)
+        .catch((cause: unknown) => {
+          // No candidate space yet: the member is sent to create one rather
+          // than told the application is impossible.
+          if (cause instanceof AppError && cause.code === "NOT_FOUND")
+            return null;
+          throw cause;
+        }),
     ])
       .then(([nextJob, nextWorkspace]) => {
         if (!active) return;
+        if (!nextWorkspace) {
+          setJob(nextJob);
+          setNeedsProfile(true);
+          return;
+        }
         setJob(nextJob);
         setWorkspace(nextWorkspace);
         setCvId(
@@ -130,11 +148,30 @@ export const EmploymentApplyPage: React.FC = () => {
     }
   };
 
+  if (needsProfile)
+    return (
+      <Container className="py-10">
+        <StatePanel
+          variant="restricted"
+          headingLevel={1}
+          title={t("employment.candidateOnboarding.applyTitle")}
+          description={t("employment.candidateOnboarding.applyDescription", {
+            title: job?.title ?? "",
+          })}
+          action={
+            <Button onClick={() => navigate("/compte/emploi")}>
+              {t("employment.candidateOnboarding.action")}
+            </Button>
+          }
+        />
+      </Container>
+    );
   if (error)
     return (
       <Container className="py-10">
         <StatePanel
           variant="error"
+          headingLevel={1}
           title="Impossible de postuler"
           description={error}
           action={

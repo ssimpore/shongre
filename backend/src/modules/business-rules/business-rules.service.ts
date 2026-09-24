@@ -1,3 +1,4 @@
+import { formatMoney } from "@shongre/shared";
 import { createHash, randomUUID } from "node:crypto";
 import { getCountryConfig, type MarketContext } from "@shongre/contracts";
 import { themeColors } from "@shongre/design-tokens";
@@ -1792,10 +1793,7 @@ export class BusinessRulesService {
       });
     }
     const format = (amountMinor: number) =>
-      new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: invoice.total.currency,
-      }).format(amountMinor / 100);
+      formatMoney({ amountMinor, currency: invoice.total.currency }, "fr-FR");
     const escape = (value: string) =>
       value
         .replaceAll("&", "&amp;")

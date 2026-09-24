@@ -9,6 +9,21 @@ import { currentBrowserMarketCode } from "../../../domains/market/market-routing
 import { telemetryService } from "../../../services/telemetry.service";
 import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 
+type ServerRequestHeaders = () => Promise<Readonly<Record<string, string>>>;
+
+/**
+ * Server rendering calls the API directly rather than through the browser
+ * relay, so a server-only module supplies the per-request headers the relay
+ * would have forwarded. Client bundles never register one.
+ */
+let serverRequestHeaders: ServerRequestHeaders | null = null;
+
+export function registerServerRequestHeaders(
+  provider: ServerRequestHeaders,
+): void {
+  serverRequestHeaders = provider;
+}
+
 interface HttpRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
   timeoutMs?: number;
@@ -102,6 +117,10 @@ class HttpClient {
         : {}),
       ...(marketCode ? { "X-Shongre-Market": marketCode } : {}),
     });
+    if (typeof window === "undefined" && serverRequestHeaders) {
+      for (const [name, value] of Object.entries(await serverRequestHeaders()))
+        defaultHeaders.set(name, value);
+    }
     new Headers(headers).forEach((value, key) =>
       defaultHeaders.set(key, value),
     );

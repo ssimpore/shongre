@@ -27,6 +27,8 @@ import type {
   JobPostingCard,
 } from "@shongre/contracts/employment";
 import { services } from "../../api/client/service-registry";
+import { AppError } from "../../api/errors/app-error";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -75,6 +77,7 @@ const profileRecordText = (records: Array<Record<string, unknown>>) =>
     .join("\n");
 
 export const EmploymentCandidateWorkspacePage: React.FC = () => {
+  const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale } = useMarketLocation();
@@ -89,6 +92,10 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
   const [talentConsent, setTalentConsent] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  /* A member who has never opened the candidate space has no profile yet:
+     that is onboarding, not a failure to retry. */
+  const [needsProfile, setNeedsProfile] = useState(false);
+  const [creatingProfile, setCreatingProfile] = useState(false);
   const [deletionArmed, setDeletionArmed] = useState(false);
   const [privacyAction, setPrivacyAction] = useState<"export" | "delete">();
 
@@ -103,6 +110,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
   const load = useCallback(async () => {
     const requestId = ++loadRequestId.current;
     setError(undefined);
+    setNeedsProfile(false);
     setWorkspace(null);
     setCatalog(null);
     setJobs({});
@@ -130,14 +138,38 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
       }
     } catch (cause) {
       if (requestId === loadRequestId.current) {
-        setError(
-          cause instanceof Error
-            ? cause.message
-            : "Espace candidat indisponible.",
-        );
+        if (cause instanceof AppError && cause.code === "NOT_FOUND")
+          setNeedsProfile(true);
+        else
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "Espace candidat indisponible.",
+          );
       }
     }
   }, [activeMarket.code]);
+
+  const createProfile = async () => {
+    setCreatingProfile(true);
+    try {
+      // The API completes identity and timestamps; the member fills in the
+      // rest from the workspace that opens next.
+      await services.employment.saveCandidateProfile({
+        marketCode: activeMarket.code,
+        visibility: "applications_only",
+      });
+      await load();
+    } catch (cause) {
+      toast.error(
+        cause instanceof Error
+          ? cause.message
+          : t("employment.candidateOnboarding.error"),
+      );
+    } finally {
+      setCreatingProfile(false);
+    }
+  };
 
   const toggleProfileId = (
     field: "skillIds" | "desiredProfessionIds" | "desiredContractTypeIds",
@@ -367,10 +399,33 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
     [profileDraft, workspace?.cvs.length],
   );
 
+  if (needsProfile)
+    return (
+      <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-6">
+        <p className="text-xs font-bold uppercase tracking-wide text-primary">
+          {t("employment.search.eyebrow")}
+        </p>
+        <h1 className="mt-1 text-2xl font-bold text-text-main">
+          {t("employment.candidateOnboarding.title")}
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm text-text-secondary">
+          {t("employment.candidateOnboarding.description")}
+        </p>
+        <Button
+          className="mt-4"
+          onClick={createProfile}
+          isLoading={creatingProfile}
+          disabled={creatingProfile}
+        >
+          {t("employment.candidateOnboarding.action")}
+        </Button>
+      </section>
+    );
   if (error)
     return (
       <StatePanel
         variant="error"
+        headingLevel={1}
         title="Espace candidat indisponible"
         description={error}
         action={<Button onClick={load}>Réessayer</Button>}

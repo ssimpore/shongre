@@ -15,6 +15,7 @@ import { services } from "../../api/client/service-registry";
 import { useNotifications } from "../../app/providers/NotificationContext";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { NotificationItemCard } from "./components/NotificationItemCard";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -40,6 +41,7 @@ export const NotificationsPage: React.FC = () => {
   const [selectedFilter, setSelectedFilter] =
     useState<NotificationFilterTab>("all");
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState(false);
 
   // Load complete notification list
   const loadNotifications = async () => {
@@ -49,9 +51,13 @@ export const NotificationsPage: React.FC = () => {
       setIsLoading(false);
       return;
     }
+    setLoadError(false);
     try {
       const items = await services.notifications.getUserNotifications();
       setNotifications(items.slice(0, PAGE_SIZES.notificationCenter));
+    } catch {
+      // A failed load must not read as "no notifications".
+      setLoadError(true);
     } finally {
       setIsLoading(false);
     }
@@ -183,6 +189,17 @@ export const NotificationsPage: React.FC = () => {
             </div>
           ))}
         </div>
+      ) : loadError ? (
+        <StatePanel
+          variant="error"
+          title={t("common.error")}
+          description={t("common.loadErrorDescription")}
+          action={
+            <Button onClick={() => void loadNotifications()}>
+              {t("common.retry")}
+            </Button>
+          }
+        />
       ) : groupedNotifications.length === 0 ? (
         <div className="bg-bg-surface rounded-3xl border border-border-base p-12 text-center space-y-3 shadow-xs">
           <div className="w-14 h-14 rounded-3xl bg-surface-muted text-text-inverse-subtle mx-auto flex items-center justify-center">

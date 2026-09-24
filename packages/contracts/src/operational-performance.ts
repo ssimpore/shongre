@@ -121,6 +121,15 @@ export const SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS = {
   realtime: {
     authenticationTimeoutMs: 5_000,
     maximumSubscriptionsPerConnection: 50,
+    // Inbound frames are small JSON commands (authenticate, subscribe); the
+    // socket library's own default would buffer 100 MiB from a stranger.
+    maximumInboundMessageBytes: 16_384,
+  },
+  sessions: {
+    // `last_used_at` is shown as "last active" in the session list; writing it
+    // on every authenticated request cost a database write per call for a
+    // value nobody reads at better than minute resolution.
+    activityWriteIntervalMs: 300_000,
   },
   presence: {
     heartbeatIntervalMs: 25_000,
@@ -136,6 +145,9 @@ export const SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS = {
     queryGcTimeMs: 900_000,
     queryRetryCount: 1,
     apiRequestTimeoutMs: 15_000,
+    // Upper bound on concurrent API calls one server render or sitemap build
+    // may fan out, so a large catalogue never becomes a request burst.
+    serverFanOutConcurrency: 8,
   },
   http: {
     requestTimeoutMs: 30_000,
@@ -161,6 +173,19 @@ export const SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS = {
     authenticatedRequestsPerWindow: 600,
     windowSeconds: 60,
     lockSeconds: 60,
+    // Credential endpoints sit outside the request budget above. These bound
+    // one network address across every account it targets: failed sign-ins
+    // (password spraying) and new registrations (bulk account creation).
+    loginAddressFailuresPerWindow: 30,
+    loginAddressWindowSeconds: 900,
+    registrationsPerAddressPerWindow: 20,
+    registrationAddressWindowSeconds: 3_600,
+    // Password-reset and verification emails: one address across all
+    // recipients (inbox flooding, sender reputation), and one recipient
+    // across all addresses.
+    authEmailsPerAddressPerWindow: 20,
+    authEmailsPerRecipientPerWindow: 5,
+    authEmailWindowSeconds: 3_600,
   },
   publicCache: {
     cacheKeyVersion: "v1",

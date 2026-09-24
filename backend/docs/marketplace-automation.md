@@ -24,6 +24,12 @@ runtime fallback.
   `resume_returned_sellers` resumes sellers whose date has passed. Only
   publications paused _by away mode_ are resumed; a moderation pause stays.
   `public_profiles` exposes `away_until` and `away_message`.
+- **Removal.** `DELETE /listings/{id}` hard-deletes only a never-published
+  draft (`outcome: "deleted"`). A listing that has been public is archived
+  instead (`outcome: "archived"`): it leaves every public read, and its
+  conversations, orders, UGC reports and paid placements — several of which
+  cascade from or restrict the listing row — are kept. A reserved listing
+  answers 409 until its transaction concludes or is cancelled.
 
 ## Assistive AI (`00145_price_comparables_and_message_safety.sql`)
 

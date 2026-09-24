@@ -3,7 +3,10 @@ import {
   type IListingRepository,
   type IMarketRepository,
 } from "../../infrastructure/database/repositories/index.js";
-import { logger } from "../../infrastructure/logging/logger.js";
+import {
+  errorDiagnostics,
+  logger,
+} from "../../infrastructure/logging/logger.js";
 
 /**
  * Rebuilds each active market's search vocabulary (migration 00142), which
@@ -27,14 +30,16 @@ export class SearchVocabularyWorker {
     );
     let refreshedMarkets = 0;
     let terms = 0;
+    const failedMarkets: string[] = [];
     for (const market of markets) {
       try {
         terms += await this.listings.refreshSearchVocabulary(market.code);
         refreshedMarkets += 1;
       } catch (error) {
+        failedMarkets.push(market.code);
         logger.error("search_vocabulary_refresh_failed", {
           marketCode: market.code,
-          error: error instanceof Error ? error.message : "unknown",
+          ...errorDiagnostics(error),
         });
       }
     }
@@ -42,6 +47,13 @@ export class SearchVocabularyWorker {
       refreshedMarkets,
       terms,
     });
+    // Every market was attempted; the run still fails so the scheduled
+    // runtime retries it and alerts instead of recording a stale vocabulary
+    // as a success.
+    if (failedMarkets.length)
+      throw new Error(
+        `Search vocabulary refresh failed for ${failedMarkets.join(", ")}.`,
+      );
     return { refreshedMarkets, terms };
   }
 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { DemoFinanceRepository } from "../../src/infrastructure/database/repositories/finance.repository.js";
 import { FinanceService } from "../../src/modules/finance/finance.service.js";
 
@@ -86,4 +86,27 @@ describe("FinanceService", () => {
       deniedService.getOrganizationDashboard("employee_without_finance", "FR"),
     ).rejects.toMatchObject({ code: "FORBIDDEN", statusCode: 403 });
   });
+
+  it("replays the demo ledger relative to now so it never ages out of a period", async () => {
+    // A year after the fixture's snapshot the 30-day view still has the
+    // scenario, with every timestamp inside the window.
+    vi.useFakeTimers({
+      toFake: ["Date"],
+      now: new Date("2027-08-22T21:45:00.000Z"),
+    });
+    const page = await service.listTransactions({
+      period: "30d",
+      marketCode: "ALL",
+      currency: "EUR",
+      needsReviewOnly: true,
+    });
+    expect(page.items.map((item) => item.reference)).toEqual([
+      "TX-20260822-1821",
+    ]);
+    expect(page.items[0].occurredAt.startsWith("2027-08-22")).toBe(true);
+  });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });

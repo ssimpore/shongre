@@ -27,6 +27,7 @@ import { TransactionDetailModal } from "../transactions/components/TransactionDe
 import { Modal } from "../../design-system/primitives/Modal";
 import { useDialogBehavior } from "../../design-system/primitives/useDialogBehavior";
 import { Button } from "../../design-system/primitives/Button";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -60,6 +61,7 @@ export const MessagingPage: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState<InboxFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   // Modals & Popovers
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false);
@@ -86,6 +88,7 @@ export const MessagingPage: React.FC = () => {
       return;
     }
     setIsLoading(true);
+    setLoadError(false);
     try {
       const [rawList, blocked] = await Promise.all([
         services.messaging.getUserConversations(),
@@ -140,6 +143,9 @@ export const MessagingPage: React.FC = () => {
       if (!activeConvId && previews.length > 0 && window.innerWidth >= 768) {
         setActiveConvId(previews[0].id);
       }
+    } catch {
+      // A failed load must not read as an empty inbox.
+      setLoadError(true);
     } finally {
       setIsLoading(false);
     }
@@ -377,7 +383,8 @@ export const MessagingPage: React.FC = () => {
 
   // Distinct from "filtered to nothing": the filters and search are still useful
   // in that case, so they stay on screen and the list shows its own no-match copy.
-  const hasNoConversations = !isLoading && conversations.length === 0;
+  const hasNoConversations =
+    !isLoading && !loadError && conversations.length === 0;
 
   const activeListingContext: ListingConversationContext | null =
     useMemo(() => {
@@ -414,7 +421,21 @@ export const MessagingPage: React.FC = () => {
           conversation trouvée" beside a pane saying "choisissez une conversation
           dans la liste de gauche", i.e. an instruction to pick from an empty
           list. One panel, one message, one way forward. */}
-      {hasNoConversations ? (
+      {loadError && !isLoading ? (
+        <div className="flex-1 flex items-center justify-center p-8">
+          <StatePanel
+            variant="error"
+            headingLevel={1}
+            title={t("common.error")}
+            description={t("common.loadErrorDescription")}
+            action={
+              <Button onClick={() => void loadConversations()}>
+                {t("common.retry")}
+              </Button>
+            }
+          />
+        </div>
+      ) : hasNoConversations ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center p-8 gap-4">
           {/* The visible H1 lives in `ConversationList`, which this branch does
               not render — so an inbox with nothing in it produced a route with

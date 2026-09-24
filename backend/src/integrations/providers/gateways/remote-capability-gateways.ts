@@ -75,12 +75,22 @@ async function runtimeConnection(
 }
 
 async function fetchJson(url: string, init: RequestInit) {
-  const response = await fetch(url, {
-    ...init,
-    signal: AbortSignal.timeout(
-      config.performance.providerGatewayRequestTimeoutMs,
-    ),
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      // Provider APIs answer in place. Following a redirect would carry the
+      // credential to an address nobody validated — a tenant-configured base
+      // URL that passed the public-network check could bounce the request
+      // into the private network.
+      redirect: "error",
+      signal: AbortSignal.timeout(
+        config.performance.providerGatewayRequestTimeoutMs,
+      ),
+    });
+  } catch {
+    providerFailure();
+  }
   const text = await response.text();
   let body: any = null;
   try {

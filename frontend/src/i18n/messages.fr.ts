@@ -91,6 +91,10 @@ export const messagesFr = {
   "common.loading": "Chargement…",
   "common.home": "Accueil",
   "common.retry": "Réessayer",
+  "common.loadErrorDescription":
+    "Ce contenu n’a pas pu être chargé. Vérifiez votre connexion puis réessayez.",
+  "publishing.autosaveFailed":
+    "Brouillon non enregistré : nouvelle tentative à la prochaine modification.",
   "common.cancel": "Annuler",
   "common.save": "Enregistrer",
   "common.confirm": "Confirmer",
@@ -219,6 +223,11 @@ export const messagesFr = {
   "verticals.education.organizationTitle": "Organisme — Shongre Éducation",
   "verticals.education.unavailable": "Shongre Éducation est indisponible",
   "verticals.education.workspaceUnavailable": "Espace Éducation indisponible",
+  "verticals.education.workspaceLoadError":
+    "L’espace Éducation n’a pas pu être chargé. Réessayez dans un instant.",
+  "verticals.education.tutorOnboardingTitle": "Créez votre profil professeur",
+  "verticals.education.tutorOnboardingDescription":
+    "Présentez vos matières, vos tarifs et vos disponibilités pour recevoir des demandes d’élèves dans cet espace.",
   "verticals.education.filters": "Filtres Éducation",
   "verticals.education.organizationWorkspace": "Organisme Éducation",
   "verticals.education.openWorkspace": "Ouvrir mon espace Éducation",
@@ -2232,6 +2241,20 @@ export const messagesFr = {
     "Gérez vos abonnements aux sélections hebdomadaires, bons plans et actualités Shongre.",
   "newsletter.newsletterPreferencesPage.seDesabonner": "Se désabonner",
   "newsletter.newsletterPreferencesPage.seReabonner": "Se réabonner",
+  "newsletter.newsletterPreferencesPage.sAbonner": "S’abonner",
+  "newsletter.newsletterPreferencesPage.programUnavailable":
+    "Newsletter indisponible sur ce marché",
+  "newsletter.newsletterPreferencesPage.programUnavailableDescription":
+    "La newsletter Shongre n’est pas encore proposée sur ce marché. Il n’y a rien à configurer pour le moment.",
+  "newsletter.newsletterPreferencesPage.notSubscribed": "Non abonné",
+  "newsletter.newsletterPreferencesPage.notSubscribedDescription":
+    "Abonnez-vous pour recevoir nos sélections et bons plans selon vos thématiques.",
+  "newsletter.newsletterPreferencesPage.loadError":
+    "Impossible de charger vos préférences.",
+  "newsletter.newsletterPreferencesPage.subscribedToast":
+    "Votre abonnement à la newsletter est enregistré.",
+  "newsletter.newsletterPreferencesPage.subscribedToastTitle":
+    "Abonnement enregistré",
   "newsletter.newsletterPreferencesPage.cochezLesThematiquesQuiVous":
     "Cochez les thématiques qui vous intéressent pour personnaliser vos prochaines éditions.",
   "newsletter.newsletterPreferencesPage.communicationsObligatoiresDeService":
@@ -2809,6 +2832,10 @@ export const messagesFr = {
   // --- support.supportRequestDetailPage ---
   "support.supportRequestDetailPage.retourAMesDemandes2":
     "Retour à mes demandes",
+  "support.supportRequestDetailPage.notFoundDescription":
+    "Ce dossier n’existe pas ou n’est pas accessible depuis votre compte.",
+  "support.supportRequestDetailPage.loadErrorDescription":
+    "Le dossier n’a pas pu être chargé. Réessayez dans un instant.",
   "support.supportRequestDetailPage.ouvrirUneNouvelleDemande":
     "ouvrir une nouvelle demande",
   "support.supportRequestDetailPage.repondreANotreEquipe":
@@ -3229,6 +3256,16 @@ export const messagesFr = {
   "employment.nav.candidate": "Espace candidat",
   "employment.nav.recruiter": "Espace recruteur",
   "employment.search.eyebrow": "Shongre Emploi",
+  "employment.candidateOnboarding.title": "Créez votre espace candidat",
+  "employment.candidateOnboarding.description":
+    "Il réunit votre profil, vos CV et le suivi de vos candidatures. Votre profil reste visible uniquement des recruteurs auxquels vous postulez, et vous pouvez le compléter ensuite.",
+  "employment.candidateOnboarding.action": "Créer mon espace candidat",
+  "employment.candidateOnboarding.error":
+    "L’espace candidat n’a pas pu être créé.",
+  "employment.candidateOnboarding.applyTitle":
+    "Créez votre espace candidat pour postuler",
+  "employment.candidateOnboarding.applyDescription":
+    "Pour postuler à « {title} », ouvrez votre espace candidat et ajoutez un CV. Vous reviendrez ensuite sur cette offre.",
   "employment.search.title": "Un emploi qui correspond à votre projet",
   "employment.search.subtitle":
     "Les candidatures, alertes standards et échanges éligibles restent gratuits pour les candidats.",

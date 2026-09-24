@@ -25,6 +25,7 @@ import { timingSafeEqual } from "crypto";
 import { buildApiUrl, config } from "../config/index.js";
 import { metrics } from "../../infrastructure/observability/metrics.js";
 import { bootstrapApp } from "../bootstrap/index.js";
+import { installProcessFaultHandlers } from "../bootstrap/process-faults.js";
 import { apiV1Router, type ParsedRequestBody } from "../../api/v1/router.js";
 import { requestContext } from "../../infrastructure/observability/request-context.js";
 import { AppError } from "../../shared/errors/app-error.js";
@@ -33,18 +34,27 @@ import {
   renderApiDocumentation,
 } from "../../infrastructure/http/openapi-documentation.js";
 import { developerConsolePage } from "../../infrastructure/http/developer-console.js";
-import { logger } from "../../infrastructure/logging/logger.js";
+import {
+  errorDiagnostics,
+  logger,
+} from "../../infrastructure/logging/logger.js";
 import { QueueModule } from "../../infrastructure/queue/queue.module.js";
 import { RedisHealthService } from "../../infrastructure/queue/redis-health.service.js";
 import { RealtimeModule } from "../../infrastructure/realtime/realtime.module.js";
+import {
+  ApiRateLimiter,
+  apiRateLimiter,
+} from "../../infrastructure/security/api-rate-limiter.js";
 
 const gzipAsync = promisify(gzip);
 
 /**
- * The origin serves exactly two HTML documents and both are constant for the
- * life of the process, so each one is compressed once.
+ * The origin's documents are constant for the life of the process, so each
+ * one is compressed once.
  */
 const compressedDocuments = new Map<string, Buffer>();
+const HTML_CONTENT_TYPE = "text/html; charset=utf-8";
+let serializedOpenApiDocument: Promise<string> | null = null;
 
 async function compressDocument(html: string): Promise<Buffer> {
   const cached = compressedDocuments.get(html);
@@ -55,21 +65,23 @@ async function compressDocument(html: string): Promise<Buffer> {
 }
 
 /**
- * Serves an origin-owned HTML document with the API's negotiated gzip encoding.
+ * Serves an origin-owned constant document (the developer console, the API
+ * reference or the OpenAPI contract) with the API's negotiated gzip encoding.
  */
-async function writeHtmlDocument(
+async function writeConstantDocument(
   req: IncomingMessage,
   res: ServerResponse,
-  html: string,
+  document: string,
+  contentType: string,
 ): Promise<void> {
   const acceptsGzip = String(req.headers["accept-encoding"] || "")
     .split(",")
     .some((value) => value.trim().split(";")[0] === "gzip");
   const payload: string | Buffer =
     acceptsGzip &&
-    Buffer.byteLength(html) >= config.performance.compressionMinimumBytes
-      ? await compressDocument(html)
-      : html;
+    Buffer.byteLength(document) >= config.performance.compressionMinimumBytes
+      ? await compressDocument(document)
+      : document;
   const vary = new Set(
     String(res.getHeader("Vary") || "")
       .split(",")
@@ -77,7 +89,7 @@ async function writeHtmlDocument(
       .filter(Boolean),
   ).add("Accept-Encoding");
   const headers: Record<string, string | number> = {
-    "Content-Type": "text/html; charset=utf-8",
+    "Content-Type": contentType,
     "Content-Length": Buffer.byteLength(payload),
     Vary: [...vary].join(", "),
   };
@@ -281,19 +293,38 @@ export async function handleHttpRequest(
     const acceptHeader = req.headers.accept || "";
 
     if (req.method === "GET" && req.url === "/api/openapi.json") {
-      res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify(await openApiDocument()));
+      // The contract is ~1.8 MB and outside the API rate limiter, so it is
+      // serialized and compressed once rather than on every request.
+      serializedOpenApiDocument ||= openApiDocument().then((document) =>
+        JSON.stringify(document),
+      );
+      await writeConstantDocument(
+        req,
+        res,
+        await serializedOpenApiDocument,
+        "application/json; charset=utf-8",
+      );
       return;
     }
     if (req.method === "GET" && req.url === "/api/docs") {
-      await writeHtmlDocument(req, res, await renderApiDocumentation());
+      await writeConstantDocument(
+        req,
+        res,
+        await renderApiDocumentation(),
+        HTML_CONTENT_TYPE,
+      );
       return;
     }
 
     // Developer console for browsers, service descriptor for everything else.
     if (req.url === "/") {
       if (acceptHeader.includes("text/html")) {
-        await writeHtmlDocument(req, res, await developerConsolePage());
+        await writeConstantDocument(
+          req,
+          res,
+          await developerConsolePage(),
+          HTML_CONTENT_TYPE,
+        );
         return;
       }
       res.writeHead(200, { "Content-Type": "application/json" });
@@ -408,7 +439,7 @@ export async function handleHttpRequest(
           error.code === "ERR_INVALID_URL";
         if (!invalidUrl)
           logger.error("http_dispatch_failed", {
-            errorName: error instanceof Error ? error.name : "UnknownError",
+            ...errorDiagnostics(error, { includeStack: true }),
             operationId: context.operationId,
             requestId,
           });
@@ -472,6 +503,8 @@ class HttpTransportController {
 @Module({
   imports: [QueueModule, RealtimeModule],
   controllers: [HttpTransportController],
+  // Registered so its Redis connection closes with the application.
+  providers: [{ provide: ApiRateLimiter, useValue: apiRateLimiter }],
 })
 class BackendApplicationModule {}
 
@@ -516,14 +549,24 @@ export async function createBackendApplication(): Promise<NestFastifyApplication
 }
 
 export async function startServer() {
+  installProcessFaultHandlers("api");
   await bootstrapApp();
   const app = await createBackendApplication();
   await app.listen(config.port, config.host);
   const server = app.getHttpServer();
 
-  {
+  logger.info("server_listening", {
+    host: config.host,
+    port: config.port,
+    apiPrefix: config.apiPrefix,
+    version: config.version,
+    release: config.release,
+  });
+  // The coloured banner is for a developer's terminal; hosted log drains
+  // parse one JSON document per line.
+  if (config.environment.environment === "local") {
     console.log(
-      `\n  \x1b[32m\x1b[1mSHONGRE BACKEND v1.0.0\x1b[0m \x1b[2mready on port ${config.port}\x1b[0m\n`,
+      `\n  \x1b[32m\x1b[1mSHONGRE BACKEND v${config.version}\x1b[0m \x1b[2mready on port ${config.port}\x1b[0m\n`,
     );
     console.log(
       `  \x1b[32m➜\x1b[0m  \x1b[1mLocal:\x1b[0m   \x1b[36mhttp://${config.host}:${config.port}/\x1b[0m`,

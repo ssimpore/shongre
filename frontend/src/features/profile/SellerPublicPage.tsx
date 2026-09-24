@@ -1,4 +1,5 @@
 import { routes } from "../../configuration/routes";
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { isProSeller } from "../../domains/user/user.domain";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import React, { useState, useEffect } from "react";
@@ -70,6 +71,15 @@ export const SellerPublicPage: React.FC = () => {
     initialData?.reviews ?? [],
   );
   const [isLoading, setIsLoading] = useState(!initialData);
+  const [listingsCursor, setListingsCursor] = useState(
+    initialData?.listingsNextCursor,
+  );
+  // Known only when the shelf is paged; otherwise the loaded list is all.
+  const [listingsTotal, setListingsTotal] = useState(
+    initialData?.listingsTotal,
+  );
+  const [loadingMoreListings, setLoadingMoreListings] = useState(false);
+  const [moreListingsError, setMoreListingsError] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportedReview, setReportedReview] = useState<ReviewItem | null>(null);
   const [reviewsLoading, setReviewsLoading] = useState(true);
@@ -145,8 +155,13 @@ export const SellerPublicPage: React.FC = () => {
           const result = await services.listings.searchListings({
             marketCode: activeMarket.code,
             sellerId: foundSeller.id,
+            limit: PAGE_SIZES.sellerCatalog,
           });
           setListings(result.items);
+          setListingsCursor(result.pageInfo?.nextCursor);
+          setListingsTotal(
+            result.pageInfo?.nextCursor ? result.total : undefined,
+          );
         } else {
           setSeller(null);
         }
@@ -159,6 +174,35 @@ export const SellerPublicPage: React.FC = () => {
 
     fetchProfileData();
   }, [activeMarket.code, activeSlug, initialData]);
+
+  /* The shelf pages by cursor: a seller with more listings than one page
+     showed only the first, and the catalogue's facet counts described that
+     page rather than the seller. */
+  const loadMoreListings = async () => {
+    if (!seller || !listingsCursor || loadingMoreListings) return;
+    setLoadingMoreListings(true);
+    setMoreListingsError(false);
+    try {
+      const result = await services.listings.searchListings({
+        marketCode: activeMarket.code,
+        sellerId: seller.id,
+        limit: PAGE_SIZES.sellerCatalog,
+        cursor: listingsCursor,
+      });
+      setListings((current) => {
+        const seen = new Set(current.map((listing) => listing.id));
+        return [
+          ...current,
+          ...result.items.filter((listing) => !seen.has(listing.id)),
+        ];
+      });
+      setListingsCursor(result.pageInfo?.nextCursor);
+    } catch {
+      setMoreListingsError(true);
+    } finally {
+      setLoadingMoreListings(false);
+    }
+  };
 
   const handleContactClick = () => {
     if (!seller) return;
@@ -268,9 +312,8 @@ export const SellerPublicPage: React.FC = () => {
 
   const isOwnProfile = currentUser?.id === seller.id;
   const isPro = isProSeller(seller);
-  const activeListingsCount = listings.filter(
-    (l) => l.status === "active",
-  ).length;
+  const activeListingsCount =
+    listingsTotal ?? listings.filter((l) => l.status === "active").length;
   // A storefront is published under its business name; a person's profile
   // under theirs. The API sets `storeName` only for the former.
   const displayName = seller.storeName ?? seller.name;
@@ -347,11 +390,32 @@ export const SellerPublicPage: React.FC = () => {
         {/* 4. Tab Content */}
         <TabPanel tab={activeTab} idPrefix="seller">
           {activeTab === "catalog" && (
-            <SellerCatalog
-              listings={listings}
-              seller={seller}
-              isOwnProfile={isOwnProfile}
-            />
+            <>
+              <SellerCatalog
+                listings={listings}
+                seller={seller}
+                isOwnProfile={isOwnProfile}
+              />
+              {listingsCursor ? (
+                <div className="mt-6 flex flex-col items-center gap-2">
+                  {moreListingsError ? (
+                    <p role="alert" className="text-sm text-danger">
+                      {t("search.searchPage.loadError")}
+                    </p>
+                  ) : null}
+                  <Button
+                    variant="outline"
+                    onClick={loadMoreListings}
+                    isLoading={loadingMoreListings}
+                    disabled={loadingMoreListings}
+                  >
+                    {moreListingsError
+                      ? t("common.retry")
+                      : t("listings.discovery.seeMoreFromSeller")}
+                  </Button>
+                </div>
+              ) : null}
+            </>
           )}
 
           {activeTab === "reviews" &&

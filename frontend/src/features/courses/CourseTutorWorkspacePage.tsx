@@ -22,6 +22,7 @@ import type {
 } from "@shongre/contracts/courses";
 import { ProBadge, VerificationBadge, VerifiedIcon } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
+import { AppError } from "../../api/errors/app-error";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
@@ -51,7 +52,10 @@ export const CourseTutorWorkspacePage: React.FC = () => {
   const { formatDate, formatMoney, formatNumber } = useRegionalFormatters();
   const [workspace, setWorkspace] = useState<TutorWorkspace | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
+  /* "missing" is a member without a tutor profile — onboarding, not an
+     outage — and "error" a load that failed and can be retried. */
+  const [failure, setFailure] = useState<"missing" | "error" | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [activeLeadTab, setActiveLeadTab] = useState<"new" | "history">("new");
 
   usePageMeta({
@@ -63,12 +67,30 @@ export const CourseTutorWorkspacePage: React.FC = () => {
   });
 
   useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    setFailure(null);
     services.courses
       .getCurrentTutorWorkspace(activeMarket.code)
-      .then(setWorkspace)
-      .catch(() => setError(true))
-      .finally(() => setIsLoading(false));
-  }, [activeMarket.code]);
+      .then((next) => {
+        if (active) setWorkspace(next);
+      })
+      .catch((reason: unknown) => {
+        if (!active) return;
+        setWorkspace(null);
+        setFailure(
+          reason instanceof AppError && reason.code === "NOT_FOUND"
+            ? "missing"
+            : "error",
+        );
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, attempt]);
 
   const visibleLeads = useMemo(() => {
     if (!workspace) return [];
@@ -119,11 +141,29 @@ export const CourseTutorWorkspacePage: React.FC = () => {
     return <Skeleton className="h-168 w-full rounded-card" />;
   }
 
-  if (error || !workspace) {
+  if (failure === "error" || (!workspace && failure !== "missing")) {
     return (
       <StatePanel
+        variant="error"
+        headingLevel={1}
         title={t("verticals.education.workspaceUnavailable")}
-        description="Ce compte n’a pas de profil professeur accessible ou le service est momentanément indisponible."
+        description={t("verticals.education.workspaceLoadError")}
+        action={
+          <Button onClick={() => setAttempt((value) => value + 1)}>
+            {t("common.retry")}
+          </Button>
+        }
+      />
+    );
+  }
+
+  if (!workspace) {
+    return (
+      <StatePanel
+        variant="notFound"
+        headingLevel={1}
+        title={t("verticals.education.tutorOnboardingTitle")}
+        description={t("verticals.education.tutorOnboardingDescription")}
         action={
           <Button to="/deposer/education">Créer mon profil professeur</Button>
         }

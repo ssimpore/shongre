@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import WebSocket from "ws";
 import { createBackendApplication } from "../../src/app/server/index.js";
@@ -153,6 +153,57 @@ describe("authenticated realtime WebSocket gateway", () => {
     );
     await reauthenticated;
     reconnected.close();
+  });
+
+  it("stops delivering to a socket whose access token has expired", async () => {
+    const buyer = await connect(websocketUrl);
+    const authenticated = nextEvent(buyer, "authenticated");
+    buyer.send(
+      JSON.stringify({ event: "authenticate", data: { token: buyerToken } }),
+    );
+    await authenticated;
+    const subscribed = nextEvent(buyer, "subscribed");
+    buyer.send(
+      JSON.stringify({
+        event: "subscribe",
+        data: { channel: "conversation", resourceId: "conv_1" },
+      }),
+    );
+    await subscribed;
+
+    const closed = new Promise<number>((resolve) => {
+      buyer.once("close", (code) => resolve(code));
+    });
+    let delivered = false;
+    buyer.on("message", (raw) => {
+      if (JSON.parse(raw.toString()).event === "new_message") delivered = true;
+    });
+    // A day later the token is long expired; a revoked session must not keep
+    // receiving a private conversation just because the socket stayed open.
+    const realNow = Date.now();
+    const clock = vi.spyOn(Date, "now").mockReturnValue(realNow + 86_400_000);
+    try {
+      await realtimePubSub.publish({
+        schemaVersion: 1,
+        channelName: "conversation:conv_1",
+        event: "new_message",
+        payload: { id: "after-expiry" },
+      });
+      expect(await closed).toBe(4401);
+    } finally {
+      clock.mockRestore();
+    }
+    expect(delivered).toBe(false);
+  });
+
+  it("closes a connection that sends an oversized frame", async () => {
+    const socket = await connect(websocketUrl);
+    const closed = new Promise<number>((resolve) => {
+      socket.once("close", (code) => resolve(code));
+    });
+    socket.send("x".repeat(64 * 1_024));
+    // 1009: message too big, before any authentication was attempted.
+    expect(await closed).toBe(1009);
   });
 
   it("rejects invalid authentication without accepting subscriptions", async () => {

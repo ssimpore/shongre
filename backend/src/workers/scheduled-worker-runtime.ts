@@ -6,6 +6,7 @@ import { scheduledJobCoordinator } from "../infrastructure/queue/scheduled-job-c
 import { metrics } from "../infrastructure/observability/metrics.js";
 import { storageService } from "../infrastructure/storage/storage-service.js";
 import { providerDataDeletionWorker } from "./auth/provider-data-deletion-worker.js";
+import { authRateLimitRetentionWorker } from "./auth/auth-rate-limit-retention-worker.js";
 import { revenueRecognitionWorker } from "./finance/revenue-recognition-worker.js";
 import { lifecycleWorker } from "./lifecycle/lifecycle-worker.js";
 import { commercialConfigurationWorker } from "./monetization/commercial-configuration-worker.js";
@@ -221,6 +222,12 @@ const jobs: ScheduledJob[] = [
     group: "lifecycle",
     intervalSeconds: 86_400,
     run: () => providerWebhookWorker.purge(),
+  },
+  {
+    name: "auth_rate_limit_retention",
+    group: "lifecycle",
+    intervalSeconds: 3_600,
+    run: () => authRateLimitRetentionWorker.run(),
   },
   {
     name: "listing_lifecycle",
