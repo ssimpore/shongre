@@ -10,6 +10,7 @@ import { requireMarketCode } from "../../../shared/market/market-code.js";
 import { databaseFailure } from "./repository-error.js";
 import {
   getCurrencyMinorUnitDigits,
+  majorToMinorAmount,
   minorToMajorAmount,
   normalizeSearchText,
   SEARCH_VOCABULARY_STOPWORDS,
@@ -1229,7 +1230,7 @@ export class DemoListingRepository implements IListingRepository {
     };
     const minorOf = (listing: Listing) =>
       listing.marketPublications?.find((p) => p.isPrimary)?.priceMinor ??
-      Math.round(listing.price * 100);
+      majorToMinorAmount(listing.price, listing.currency);
     const sold = Array.from(this.listings.values()).filter(
       (listing) =>
         listing.status === "sold" && inMarket(listing) && minorOf(listing) > 0,
@@ -2563,6 +2564,15 @@ export class PostgresListingRepository implements IListingRepository {
     const { error } = await retryDatabaseSerializationFailure(() =>
       supabase.from("listings").delete().eq("id", id),
     );
+    // 23503: a report, paid placement or other retained record still names
+    // the listing, and the schema refuses to erase it (00153).
+    if (error?.code === "23503")
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Cette annonce conserve un historique et ne peut être supprimée.",
+        originalError: error,
+      });
     if (error) databaseFailure("listings.delete", error);
     return !error;
   }

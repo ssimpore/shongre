@@ -6,6 +6,7 @@ import {
 import { DemoUserRepository } from "../../src/infrastructure/database/repositories/user.repository.js";
 import { DemoAIProvider } from "../../src/integrations/providers/ai.provider.js";
 import { ListingsService } from "../../src/modules/listings/listings.service.js";
+import { AppError } from "../../src/shared/errors/app-error.js";
 import { UsersService } from "../../src/modules/users/users.service.js";
 import type { Listing, UserProfile } from "../../src/shared/types/index.js";
 
@@ -262,6 +263,23 @@ describe("public marketplace projections", () => {
     ).resolves.toMatchObject({ status: "reserved" });
     await expect(service.deleteListing("missing")).rejects.toMatchObject({
       code: "NOT_FOUND",
+    });
+  });
+
+  it("archives a draft the schema refuses to delete because evidence names it", async () => {
+    const repository = new DemoListingRepository({ draft: listing("draft") });
+    // What the PostgreSQL repository reports when a report or paid placement
+    // still references the row (00153).
+    repository.delete = async () => {
+      throw new AppError({ code: "CONFLICT", message: "retained" });
+    };
+    const service = new ListingsService(repository, new DemoAIProvider());
+
+    await expect(service.deleteListing("listing-draft")).resolves.toEqual({
+      outcome: "archived",
+    });
+    await expect(repository.findById("listing-draft")).resolves.toMatchObject({
+      status: "archived",
     });
   });
 

@@ -1,3 +1,4 @@
+import { majorToMinorAmount } from "@shongre/shared";
 import type { PublicationDraftState } from "../../../domains/publication/publication.types";
 
 /** Publication-only projection, loaded lazily by the publish flow. */
@@ -23,7 +24,7 @@ export function publicationPayload(draft: PublicationDraftState) {
       title: draft.title,
       description: draft.description,
       images: draft.photos.map((photo) => photo.url),
-      price: Math.round(draft.pricing.amount * 100),
+      price: majorToMinorAmount(draft.pricing.amount, draft.pricing.currency),
       currency: draft.pricing.currency,
       location_country: draft.location.countryCode,
       location_postcode: draft.location.postalCode,

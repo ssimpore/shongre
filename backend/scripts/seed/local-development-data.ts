@@ -10,6 +10,7 @@ import type { PropertyPrivate } from "@shongre/contracts/real-estate";
 import { taxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.runtime.js";
 import type { TaxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.v1.service.js";
 import { createDefaultHomepageConfiguration } from "@shongre/contracts/homepage";
+import { getCountryConfig } from "@shongre/contracts/market-country";
 import { DEMO_SOLUTION_CATALOG } from "@shongre/contracts/solutions-demo";
 import {
   EMPLOYMENT_DEMO_JOBS,
@@ -2356,6 +2357,58 @@ async function seedSolutions(): Promise<number> {
   return created;
 }
 
+/**
+ * France's public newsletter runs in a platform-owned workspace that is
+ * designated explicitly (00154), never in whichever tenant opened the
+ * marketing tools first. The organisation is owned by the local Staff owner,
+ * who is not a member of it, so no session resolves it as its own tenant.
+ * An existing workspace or designation is left as the developer changed it.
+ */
+async function seedPublicNewsletterProgram(): Promise<void> {
+  const client = getSupabaseAdminClient() as any;
+  const operatorId = profileId("user_super_admin_alex");
+  const platformId = organizationId("platform_shongre");
+  const france = getCountryConfig("FR")!;
+  const organization = await client.from("organizations").upsert({
+    id: platformId,
+    owner_id: operatorId,
+    legal_name: "Shongre (plateforme locale)",
+    trade_name: "Shongre",
+    registered_address: "Adresse synthétique — Paris",
+    city: "Paris",
+    postal_code: "75002",
+    country: france.code,
+    is_verified: true,
+    status: "active",
+    professional_vertical: "generic",
+  });
+  if (organization.error) throw organization.error;
+  const workspaceId = localSeedUuid("marketing-workspace", "newsletter_fr");
+  const workspace = await client.from("marketing_workspaces").upsert(
+    {
+      id: workspaceId,
+      tenant_id: platformId,
+      name: "Newsletter Shongre",
+      market_code: france.code,
+      default_locale: france.defaultLocale,
+      timezone: france.timezone,
+      double_opt_in: true,
+      settings: { isDefault: true },
+    },
+    { onConflict: "id", ignoreDuplicates: true },
+  );
+  if (workspace.error) throw workspace.error;
+  const program = await client.from("marketing_public_programs").upsert(
+    {
+      market_code: france.code,
+      workspace_id: workspaceId,
+      designated_by: operatorId,
+    },
+    { onConflict: "market_code", ignoreDuplicates: true },
+  );
+  if (program.error) throw program.error;
+}
+
 async function seedTrendingCache(): Promise<number> {
   const response = await trendingService.getSection(
     { marketCode: "FR", locale: "fr-FR", limit: 4 },
@@ -2410,6 +2463,7 @@ export async function seedLocalDevelopmentData(): Promise<LocalDevelopmentSeedSu
   await seedMarketplaceAccountScenario(media.demoMediaUrls);
   await seedDeliveryScenario();
   await seedSolutions();
+  await seedPublicNewsletterProgram();
   const trendingTopics = await seedTrendingCache();
   await ensureLocalHomepageConfiguration();
 

@@ -43,11 +43,11 @@ const submission = {
 };
 
 function setup(orders: Record<string, OrderRecord> = {}) {
-  const reviews = new DemoReviewRepository();
   const orderRepository = new DemoOrderRepository({
     [completedOrder.id]: completedOrder,
     ...orders,
   });
+  const reviews = new DemoReviewRepository([], orderRepository);
   const users = new DemoUserRepository();
   const listings = new DemoListingRepository();
   return {
@@ -158,7 +158,7 @@ describe("review reminders", () => {
       id: "stale-order",
       completedAt: "2026-08-01T12:00:00Z",
     };
-    const { reviews, orders, users, listings, service } = setup({
+    const { reviews, users, listings, service } = setup({
       [tooRecent.id]: tooRecent,
       [tooOld.id]: tooOld,
     });
@@ -167,10 +167,11 @@ describe("review reminders", () => {
       .spyOn(notificationsService, "dispatchNotification")
       .mockResolvedValue({} as never);
     try {
-      const worker = new ReviewReminderWorker(orders, reviews, users, listings);
+      const worker = new ReviewReminderWorker(reviews, users, listings);
+      // The buyer already reviewed, so only the seller is due at all.
       await expect(worker.run(now)).resolves.toEqual({
         reminded: 1,
-        skipped: 1,
+        skipped: 0,
       });
       expect(dispatch).toHaveBeenCalledTimes(1);
       expect(dispatch.mock.calls[0]?.[0]).toBe("user_camille");
@@ -179,12 +180,51 @@ describe("review reminders", () => {
         "/compte/achats?transactionId=review-order",
       );
       expect(dispatch.mock.calls[0]?.[5]).toBe("reviews");
-      // A second pass finds the reminder already recorded.
+      // A second pass has nobody left to remind: the reminded participant
+      // and the one who reviewed are no longer due.
       await expect(worker.run(now)).resolves.toEqual({
         reminded: 0,
-        skipped: 2,
+        skipped: 0,
       });
       expect(dispatch).toHaveBeenCalledTimes(1);
+    } finally {
+      dispatch.mockRestore();
+    }
+  });
+
+  it("reaches newer exchanges once older ones are handled", async () => {
+    /* The worker used to read the oldest completed orders in its window and
+       re-inspect them every run, so once a batch worth had been reminded the
+       exchanges after them were never reached. */
+    const later = Array.from({ length: 3 }, (_, index) => ({
+      ...completedOrder,
+      id: `later-order-${index}`,
+      completedAt: `2026-09-0${index + 2}T12:00:00Z`,
+    }));
+    const { reviews, users, listings } = setup(
+      Object.fromEntries(later.map((order) => [order.id, order])),
+    );
+    const dispatch = vi
+      .spyOn(notificationsService, "dispatchNotification")
+      .mockResolvedValue({} as never);
+    try {
+      // One pair per batch and one batch per run: each run must still move on.
+      const worker = new ReviewReminderWorker(
+        reviews,
+        users,
+        listings,
+        3,
+        14,
+        1,
+        1,
+      );
+      for (let run = 0; run < 8; run += 1) await worker.run(now);
+      expect(dispatch).toHaveBeenCalledTimes(8);
+      expect(new Set(dispatch.mock.calls.map((call) => call[4])).size).toBe(4);
+      await expect(worker.run(now)).resolves.toEqual({
+        reminded: 0,
+        skipped: 0,
+      });
     } finally {
       dispatch.mockRestore();
     }

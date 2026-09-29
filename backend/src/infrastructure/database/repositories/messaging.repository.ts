@@ -8,6 +8,7 @@ import {
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { randomUUID } from "node:crypto";
 import { databaseFailure } from "./repository-error.js";
+import { minorToMajorAmount } from "@shongre/shared";
 import { AppError } from "../../../shared/errors/app-error.js";
 
 interface MessagePageOptions {
@@ -314,7 +315,7 @@ export class DemoMessagingRepository implements IMessagingRepository {
       senderId: input.actorId,
       text: input.messageText,
       isOffer: true,
-      offerPrice: input.amountMinor / 100,
+      offerPrice: minorToMajorAmount(input.amountMinor, input.currency),
       offerAmountMinor: input.amountMinor,
       offerCurrency: input.currency,
       offerStatus: "pending",

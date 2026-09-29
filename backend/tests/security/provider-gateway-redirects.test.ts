@@ -31,6 +31,7 @@ vi.mock("../../src/integrations/providers/safe-provider-url.js", () => ({
   // The configured host passes the public-network check; what it redirects
   // to is the part this suite is about.
   assertSafeProviderUrl: async (url: string) => new URL(url),
+  publicNetworkDispatcher: { guarded: "public-network" },
 }));
 
 import { RemoteGenerativeAiGateway } from "../../src/integrations/providers/gateways/remote-capability-gateways.js";
@@ -66,5 +67,10 @@ describe("provider gateway transport", () => {
     ).rejects.toMatchObject({ code: "NETWORK_ERROR", statusCode: 503 });
     expect(transport).toHaveBeenCalledTimes(1);
     expect(transport.mock.calls[0]?.[1]?.redirect).toBe("error");
+    // The connection re-resolves through the public-only lookup, so the
+    // vetted base URL cannot be rebound to a private address either.
+    expect(
+      (transport.mock.calls[0]?.[1] as { dispatcher?: unknown })?.dispatcher,
+    ).toEqual({ guarded: "public-network" });
   });
 });

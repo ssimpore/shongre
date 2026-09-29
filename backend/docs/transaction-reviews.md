@@ -54,10 +54,14 @@ interactions are read back in the public projection (`reply`,
 `helpfulCount`, `viewerMarkedHelpful`).
 
 Completed orders stamp `orders.completed_at`; the hourly `review_reminders`
-worker asks each participant who has not reviewed yet, once per order, 48
-hours after completion (`order_review_reminders` records the send). The
-reminder is a notification, not an email campaign, and honours the recipient's
-notification preferences like every other notification.
+worker asks each participant who has not reviewed yet, once per order, between
+three and fourteen days after completion. It reads only participants still
+owed a reminder (`list_due_review_reminders`, migration 00152) and claims each
+in `order_review_reminders` before notifying, so a handled participant leaves
+the next read and every run reaches newer exchanges rather than re-inspecting
+the oldest ones. The reminder is a notification, not an email campaign, and
+honours the recipient's notification preferences like every other
+notification.
 
 The obsolete profile-report repository writer is removed. Existing admin
 read/resolution methods for previously stored demo reports remain intentionally

@@ -8,6 +8,11 @@ import {
 } from "node:crypto";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import {
+  formatMoney,
+  majorToMinorAmount,
+  minorToMajorAmount,
+} from "@shongre/shared";
+import {
   orderReturnDecisionSchema,
   orderReturnRequestSchema,
   orderReturnShipmentSchema,
@@ -36,6 +41,7 @@ import { calculateOrderTotal } from "../../shared/money/escrow.js";
 import { toPublicListing } from "../../shared/public-projections.js";
 import { listingLocationPolicy } from "../geo/geo.runtime.js";
 import type {
+  CountryMarketDefinition,
   DeliveryType,
   Listing,
   Transaction,
@@ -50,10 +56,24 @@ import {
   type DigitalProductsService,
 } from "../digital-products/digital-products.service.js";
 
-const DEFAULT_HOME_DELIVERY_MINOR =
-  BASELINE_MONETIZATION_CATALOG.products.find(
-    (product) => product.id === "delivery.home",
-  )?.prices[0]?.amount.amountMinor || 0;
+/**
+ * The catalogue's reference delivery price. It is a price in its own currency,
+ * so it prices only a listing in that currency; elsewhere a listing that names
+ * no delivery cost of its own cannot be shipped rather than be charged a
+ * foreign amount as if the currencies were at par.
+ */
+const DEFAULT_HOME_DELIVERY_PRICE = BASELINE_MONETIZATION_CATALOG.products.find(
+  (product) => product.id === "delivery.home",
+)?.prices[0]?.amount;
+
+/** An order's authoritative minor amount, or its legacy major field converted. */
+function orderAmountMinor(
+  amountMinor: number | undefined,
+  amount: number,
+  currency: string,
+): number {
+  return amountMinor ?? majorToMinorAmount(amount, currency);
+}
 const HANDOVER_CODE_TTL_MS = 30 * 60 * 1_000;
 const CHECKOUT_RECONCILIATION_AGE_MS = 15 * 60 * 1_000;
 const CHECKOUT_WITHOUT_REFERENCE_EXPIRY_MS = 26 * 60 * 60 * 1_000;
@@ -235,20 +255,17 @@ export class OrdersService {
       });
     }
 
-    const shippingFeeMinor =
-      isDigital || input.deliveryMethod === "hand_delivery"
-        ? 0
-        : listing.shippingCost !== undefined
-          ? Math.max(0, Math.round(listing.shippingCost * 100))
-          : DEFAULT_HOME_DELIVERY_MINOR;
     return this.createCheckoutOrder({
       listing,
       buyerId: input.buyerId,
       transactionType: "DIRECT_PURCHASE",
-      itemAmountMinor: Math.round(listing.price * 100),
+      itemAmountMinor: majorToMinorAmount(listing.price, listing.currency),
       remainingBalanceMinor: 0,
       deliveryMethod: input.deliveryMethod,
-      shippingFeeMinor,
+      shippingFeeMinor: this.requireShippingFeeMinor(
+        listing,
+        input.deliveryMethod,
+      ),
       shippingAddress: input.shippingAddress,
       idempotencyKey: input.idempotencyKey,
     });
@@ -287,21 +304,11 @@ export class OrdersService {
           "Ce mode de livraison n’est pas disponible pour cette annonce.",
       });
     }
-    const shippingFeeMinor =
-      isDigital || input.deliveryMethod === "hand_delivery"
-        ? 0
-        : listing.shippingCost !== undefined
-          ? Math.max(0, Math.round(listing.shippingCost * 100))
-          : DEFAULT_HOME_DELIVERY_MINOR;
-    const breakdown = calculateOrderTotal({
-      itemAmount: listing.price,
-      shippingFee: shippingFeeMinor / 100,
-      marketCode: market.code,
-      ruleOverride: {
-        protectionFeeRate: market.protectionFeeRate,
-        protectionFixedFee: market.protectionFixedFee,
-      },
-    });
+    const breakdown = this.priceListing(
+      listing,
+      market,
+      this.requireShippingFeeMinor(listing, input.deliveryMethod),
+    );
     return {
       listingId: listing.id,
       deliveryMethod: input.deliveryMethod,
@@ -352,16 +359,11 @@ export class OrdersService {
       ? "digital"
       : this.cheapestQuotableDelivery(listing, market, input.deliveryMethod);
 
-    const shippingFeeMinor = this.shippingFeeMinorFor(listing, deliveryMethod);
-    const breakdown = calculateOrderTotal({
-      itemAmount: listing.price,
-      shippingFee: shippingFeeMinor / 100,
-      marketCode: market.code,
-      ruleOverride: {
-        protectionFeeRate: market.protectionFeeRate,
-        protectionFixedFee: market.protectionFixedFee,
-      },
-    });
+    const breakdown = this.priceListing(
+      listing,
+      market,
+      this.requireShippingFeeMinor(listing, deliveryMethod),
+    );
     return {
       listingId: listing.id,
       deliveryMethod,
@@ -373,17 +375,69 @@ export class OrdersService {
     };
   }
 
-  /** Hand delivery and digital fulfilment carry no delivery fee. */
+  /**
+   * The whole price at checkout, in the listing's currency. A quote in another
+   * currency than the market's would disclose a total checkout then refuses.
+   */
+  private priceListing(
+    listing: Listing,
+    market: CountryMarketDefinition,
+    shippingFeeMinor: number,
+  ) {
+    if (listing.currency !== market.currency) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "La devise de l’annonce ne correspond pas au marché actif.",
+      });
+    }
+    return calculateOrderTotal({
+      itemAmountMinor: majorToMinorAmount(listing.price, listing.currency),
+      shippingFeeMinor,
+      currency: market.currency,
+      marketCode: market.code,
+      ruleOverride: {
+        protectionFeeRate: market.protectionFeeRate,
+        protectionFixedFeeMinor: majorToMinorAmount(
+          market.protectionFixedFee,
+          market.currency,
+        ),
+      },
+    });
+  }
+
+  /**
+   * Hand delivery and digital fulfilment carry no delivery fee. `null` when
+   * the listing names no cost and the reference price is in another currency.
+   */
   private shippingFeeMinorFor(
     listing: Listing,
     deliveryMethod: DeliveryType,
-  ): number {
+  ): number | null {
     if (deliveryMethod === "hand_delivery" || deliveryMethod === "digital") {
       return 0;
     }
-    return listing.shippingCost !== undefined
-      ? Math.max(0, Math.round(listing.shippingCost * 100))
-      : DEFAULT_HOME_DELIVERY_MINOR;
+    if (listing.shippingCost !== undefined)
+      return Math.max(
+        0,
+        majorToMinorAmount(listing.shippingCost, listing.currency),
+      );
+    return DEFAULT_HOME_DELIVERY_PRICE?.currency === listing.currency
+      ? DEFAULT_HOME_DELIVERY_PRICE.amountMinor
+      : null;
+  }
+
+  private requireShippingFeeMinor(
+    listing: Listing,
+    deliveryMethod: DeliveryType,
+  ): number {
+    const fee = this.shippingFeeMinorFor(listing, deliveryMethod);
+    if (fee === null)
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Ce mode de livraison n’est pas disponible pour cette annonce.",
+      });
+    return fee;
   }
 
   /**
@@ -401,14 +455,16 @@ export class OrdersService {
     market: { allowedDeliveryMethods: DeliveryType[] },
     requested?: DeliveryType,
   ): DeliveryType {
-    const allowed = listing.allowedDelivery.filter((method) =>
-      market.allowedDeliveryMethods.includes(method),
+    const allowed = listing.allowedDelivery.filter(
+      (method) =>
+        market.allowedDeliveryMethods.includes(method) &&
+        this.shippingFeeMinorFor(listing, method) !== null,
     );
     if (requested && allowed.includes(requested)) return requested;
     if (allowed.length === 0) return "hand_delivery";
     return allowed.reduce((cheapest, candidate) =>
-      this.shippingFeeMinorFor(listing, candidate) <
-      this.shippingFeeMinorFor(listing, cheapest)
+      this.shippingFeeMinorFor(listing, candidate)! <
+      this.shippingFeeMinorFor(listing, cheapest)!
         ? candidate
         : cheapest,
     );
@@ -436,7 +492,10 @@ export class OrdersService {
       });
     }
     const market = await this.markets.getEffective(listing.marketCode);
-    const listingAmountMinor = Math.max(0, Math.round(listing.price * 100));
+    const listingAmountMinor = Math.max(
+      0,
+      majorToMinorAmount(listing.price, listing.currency),
+    );
     const calculatedDeposit = Math.round(
       (listingAmountMinor * market.reservationDepositRateBps) / 10_000,
     );
@@ -770,8 +829,11 @@ export class OrdersService {
           "Cette commande ne peut pas être remboursée dans son état actuel.",
       });
     }
-    const fullBaseMinor =
-      order.itemAmountMinor ?? Math.round(order.itemAmount * 100);
+    const fullBaseMinor = orderAmountMinor(
+      order.itemAmountMinor,
+      order.itemAmount,
+      order.currency,
+    );
     const alreadyRefundedBaseMinor = order.refundedBaseTotalMinor ?? 0;
     const remainingBaseMinor = Math.max(
       0,
@@ -788,12 +850,15 @@ export class OrdersService {
         message:
           remainingBaseMinor === 0
             ? "Cette commande est déjà intégralement remboursée."
-            : `Le montant remboursable restant est de ${remainingBaseMinor} centièmes.`,
+            : `Le montant remboursable restant est de ${formatMoney({ amountMinor: remainingBaseMinor, currency: order.currency }, "fr-FR")}.`,
       });
     }
     const isFullRefund = refundBaseMinor === remainingBaseMinor;
-    const totalChargedMinor =
-      order.totalChargedMinor ?? Math.round(order.totalCharged * 100);
+    const totalChargedMinor = orderAmountMinor(
+      order.totalChargedMinor,
+      order.totalCharged,
+      order.currency,
+    );
     /*
      * A refund that closes out the order returns everything the buyer paid
      * and has not already been given back — fees included. Netting off the
@@ -1018,8 +1083,11 @@ export class OrdersService {
         message: "Cette commande n’accepte pas de retour dans son état actuel.",
       });
     }
-    const fullBaseMinor =
-      order.itemAmountMinor ?? Math.round(order.itemAmount * 100);
+    const fullBaseMinor = orderAmountMinor(
+      order.itemAmountMinor,
+      order.itemAmount,
+      order.currency,
+    );
     const remainingBaseMinor =
       fullBaseMinor - (order.refundedBaseTotalMinor ?? 0);
     if (remainingBaseMinor <= 0) {
@@ -1187,8 +1255,11 @@ export class OrdersService {
     const refund = await this.refundOrder(order.id, {
       refundBaseMinor: Math.min(
         record.requestedBaseMinor,
-        (order.itemAmountMinor ?? Math.round(order.itemAmount * 100)) -
-          (order.refundedBaseTotalMinor ?? 0),
+        orderAmountMinor(
+          order.itemAmountMinor,
+          order.itemAmount,
+          order.currency,
+        ) - (order.refundedBaseTotalMinor ?? 0),
       ),
       idempotencyKey: `return:${returnId}`,
       reason: `return:${record.reason}`,
@@ -1553,8 +1624,11 @@ export class OrdersService {
         commissionReversal = await this.commissions.reverse(
           order.commissionCalculationId,
           {
-            refundBaseMinor:
-              order.itemAmountMinor ?? Math.round(order.itemAmount * 100),
+            refundBaseMinor: orderAmountMinor(
+              order.itemAmountMinor,
+              order.itemAmount,
+              order.currency,
+            ),
             idempotencyKey: `chargeback:${disputeId}:commission`,
           },
         );
@@ -1579,8 +1653,11 @@ export class OrdersService {
         transactionId: disputeId,
         amountMinor:
           updates.chargebackAmountMinor ??
-          order.totalChargedMinor ??
-          Math.round(order.totalCharged * 100),
+          orderAmountMinor(
+            order.totalChargedMinor,
+            order.totalCharged,
+            order.currency,
+          ),
         currency: order.currency,
       });
     }
@@ -1639,12 +1716,16 @@ export class OrdersService {
       });
     }
     const breakdown = calculateOrderTotal({
-      itemAmount: input.itemAmountMinor / 100,
-      shippingFee: input.shippingFeeMinor / 100,
+      itemAmountMinor: input.itemAmountMinor,
+      shippingFeeMinor: input.shippingFeeMinor,
+      currency: market.currency,
       marketCode: market.code,
       ruleOverride: {
         protectionFeeRate: market.protectionFeeRate,
-        protectionFixedFee: market.protectionFixedFee,
+        protectionFixedFeeMinor: majorToMinorAmount(
+          market.protectionFixedFee,
+          market.currency,
+        ),
       },
     });
     const existing =
@@ -1743,7 +1824,7 @@ export class OrdersService {
           : undefined,
       remainingBalance:
         input.transactionType === "RESERVATION"
-          ? input.remainingBalanceMinor / 100
+          ? minorToMajorAmount(input.remainingBalanceMinor, market.currency)
           : undefined,
       deliveryMethod: input.deliveryMethod,
       fulfillmentModel: input.listing.fulfillmentModel || "PHYSICAL",
@@ -1818,8 +1899,11 @@ export class OrdersService {
       paymentIntentId?: string;
     },
   ): Promise<OrderRecord> {
-    const expectedMinor =
-      order.totalChargedMinor ?? Math.round(order.totalCharged * 100);
+    const expectedMinor = orderAmountMinor(
+      order.totalChargedMinor,
+      order.totalCharged,
+      order.currency,
+    );
     if (
       checkout.amountTotalMinor !== expectedMinor ||
       checkout.currency?.toUpperCase() !== order.currency.toUpperCase() ||
@@ -1918,8 +2002,11 @@ export class OrdersService {
         listingTitle: listing.title,
         marketCode,
         currency: order.currency,
-        totalAmountMinor:
-          order.totalChargedMinor ?? Math.round(order.totalCharged * 100),
+        totalAmountMinor: orderAmountMinor(
+          order.totalChargedMinor,
+          order.totalCharged,
+          order.currency,
+        ),
         destinationAccountId: order.destinationAccountId,
         idempotencyKey,
       });

@@ -25,6 +25,19 @@ Marketing events
 
 There is no newsletter-specific credential store, provider catalogue, AI client, email client, or health subsystem. Credentials remain encrypted behind the shared Provider Platform. Production adapters fail closed when a live provider capability is unavailable; demo adapters are asynchronous, deterministic, and make no external calls.
 
+## Public newsletter programme
+
+The public Shongre newsletter of a market is the workspace named for that market in `marketing_public_programs` (migration 00154), never whichever workspace exists there. Every professional tenant is provisioned a workspace when it first opens the marketing tools, so resolving "the market's workspace" handed Shongre's public signups — and their consent evidence — to the first customer that did. Public signup, confirmation, preferences and unsubscription resolve the designation only; a market without one answers `404` ("programme unavailable"), and the Web page shows that state instead of a signup form.
+
+A designation names a workspace in the same market (composite foreign key) and is readable by the backend only. Nothing was backfilled: in each environment an operator designates the platform-owned workspace per market through the protected database workflow, for example:
+
+```sql
+INSERT INTO public.marketing_public_programs (market_code, workspace_id, designated_by)
+VALUES ('FR', '<platform workspace id>', '<operator profile id>');
+```
+
+The local seed creates a synthetic platform organisation, its France workspace and that designation, and leaves an existing workspace or designation as a developer changed it.
+
 ## Consent and suppression
 
 `communication_consents` is an append-only purpose/channel ledger. Marketing consent, transactional messages, CRM correspondence, security, and system delivery are distinct purposes. Withdrawing marketing consent adds an active `marketing_suppressions` record and changes the profile lifecycle; it does not disable transactional or security messages.

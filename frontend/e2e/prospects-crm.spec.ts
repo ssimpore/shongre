@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Route } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
@@ -96,6 +96,35 @@ test.describe("Shongre Prospects CRM", () => {
     await expect(
       page.getByRole("heading", { name: "Listes d’entreprises" }),
     ).toBeVisible();
+  });
+
+  test("says when the universal search could not reach part of the CRM", async ({
+    page,
+  }) => {
+    // A search that failed must never read as "nothing matches".
+    const failContacts = (route: Route) =>
+      route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: { code: "NETWORK_ERROR", statusCode: 503, message: "—" },
+        }),
+      });
+    await page.route(/\/api\/v1\/crm\/contacts\?.*query=/, failContacts);
+    await page.goto("/app", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    await page
+      .getByRole("combobox", { name: "Recherche universelle CRM" })
+      .fill("atelier");
+    const notice = page
+      .getByRole("alert")
+      .filter({ hasText: "Une partie du CRM n’a pas répondu" });
+    await expect(notice).toBeVisible();
+
+    await page.unroute(/\/api\/v1\/crm\/contacts\?.*query=/, failContacts);
+    await page.getByRole("button", { name: "Relancer la recherche" }).click();
+    await expect(notice).toBeHidden();
   });
 
   test("keeps configuration routes permission-aware", async ({ page }) => {

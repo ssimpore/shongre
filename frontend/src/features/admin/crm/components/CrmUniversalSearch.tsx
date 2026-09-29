@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, Building2, User, TrendingUp, X } from "lucide-react";
 import { services } from "../../../../api/client/service-registry";
 import { Badge } from "../../../../design-system/primitives/Badge";
+import { Button } from "../../../../design-system/primitives/Button";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { useCrmSurface } from "../../../crm/CrmSurfaceContext";
 import { adminCatalogueFr } from "../../../../i18n/admin.catalogue.fr";
@@ -34,6 +35,10 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  // How many of the three sources failed to answer. A failed search is never
+  // shown as "no match": the reader is told, and can run it again.
+  const [failure, setFailure] = useState<"none" | "partial" | "all">("none");
+  const [attempt, setAttempt] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const resultsId = useId();
 
@@ -63,37 +68,48 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       setIsLoading(true);
       setHasSearched(false);
       try {
-        const [accountPage, contactPage, opportunityPage] = await Promise.all([
+        const settled = await Promise.allSettled([
           services.crm.listAccounts({ query, limit: 4 }),
           services.crm.listContacts({ query, limit: 4 }),
           services.crm.listOpportunities({ query, limit: 4 }),
-        ]);
+        ] as const);
+        const [accounts, contacts, opportunities] = settled;
+        const failed = settled.filter(
+          (outcome) => outcome.status === "rejected",
+        ).length;
         const hits: UniversalSearchResult[] = [
-          ...accountPage.items.map((account) => ({
-            type: "company" as const,
-            id: account.id,
-            title: account.name,
-            subtitle: `${account.industry ?? "Entreprise"} • ${account.city ?? account.marketCode}`,
-            badgeText: account.lifecycle,
-            badgeVariant:
-              account.lifecycle === "customer"
-                ? ("success" as const)
-                : ("primary" as const),
-            linkTo: crmPaths.company(account.id),
-          })),
-          ...contactPage.items.map((contact) => ({
-            type: "contact" as const,
-            id: contact.id,
-            title: contact.fullName,
-            subtitle: `${contact.email ?? "Sans email"} • ${contact.jobTitle ?? "Contact"}`,
-            badgeText: contact.lifecycle,
-            badgeVariant:
-              contact.lifecycle === "customer"
-                ? ("success" as const)
-                : ("deal" as const),
-            linkTo: crmPaths.contact(contact.id),
-          })),
-          ...opportunityPage.items.map((opportunity) => ({
+          ...(accounts.status === "fulfilled" ? accounts.value.items : []).map(
+            (account) => ({
+              type: "company" as const,
+              id: account.id,
+              title: account.name,
+              subtitle: `${account.industry ?? "Entreprise"} • ${account.city ?? account.marketCode}`,
+              badgeText: account.lifecycle,
+              badgeVariant:
+                account.lifecycle === "customer"
+                  ? ("success" as const)
+                  : ("primary" as const),
+              linkTo: crmPaths.company(account.id),
+            }),
+          ),
+          ...(contacts.status === "fulfilled" ? contacts.value.items : []).map(
+            (contact) => ({
+              type: "contact" as const,
+              id: contact.id,
+              title: contact.fullName,
+              subtitle: `${contact.email ?? "Sans email"} • ${contact.jobTitle ?? "Contact"}`,
+              badgeText: contact.lifecycle,
+              badgeVariant:
+                contact.lifecycle === "customer"
+                  ? ("success" as const)
+                  : ("deal" as const),
+              linkTo: crmPaths.contact(contact.id),
+            }),
+          ),
+          ...(opportunities.status === "fulfilled"
+            ? opportunities.value.items
+            : []
+          ).map((opportunity) => ({
             type: "opportunity" as const,
             id: opportunity.id,
             title: opportunity.name,
@@ -108,6 +124,9 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
         ];
         if (cancelled) return;
         setResults(hits);
+        setFailure(
+          failed === 0 ? "none" : failed === settled.length ? "all" : "partial",
+        );
         setIsOpen(true);
       } finally {
         if (!cancelled) {
@@ -121,7 +140,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [crmPaths, query]);
+  }, [attempt, crmPaths, query]);
 
   const handleSelect = (item: UniversalSearchResult) => {
     setIsOpen(false);
@@ -204,10 +223,33 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
                 })}
           </div>
 
+          {!isLoading && hasSearched && failure !== "none" && (
+            <div
+              role="alert"
+              className="flex items-center justify-between gap-3 border-b border-border-soft px-4 py-3 text-xs text-text-main"
+            >
+              <span>
+                {t(
+                  failure === "all"
+                    ? "admin.crmUniversalSearch.failed"
+                    : "admin.crmUniversalSearch.partial",
+                )}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAttempt((current) => current + 1)}
+              >
+                {t("admin.crmUniversalSearch.retry")}
+              </Button>
+            </div>
+          )}
           {!isLoading && hasSearched && results.length === 0 ? (
-            <p className="px-4 py-5 text-center text-xs text-text-tertiary">
-              {t("admin.crmUniversalSearch.noResults")}
-            </p>
+            failure === "all" ? null : (
+              <p className="px-4 py-5 text-center text-xs text-text-tertiary">
+                {t("admin.crmUniversalSearch.noResults")}
+              </p>
+            )
           ) : (
             <ul
               className="divide-y divide-border-soft"

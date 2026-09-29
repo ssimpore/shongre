@@ -9,9 +9,13 @@ import type {
   NormalizedEmailDeliveryEvent,
   ProviderInvocationContext,
 } from "@shongre/contracts/provider-gateways";
+import { SHONGRE_PROVIDER_REGISTRY } from "@shongre/contracts/provider-platform";
 import { getSupabaseAdminClient } from "../../../infrastructure/supabase/supabase-client.js";
 import { AppError } from "../../../shared/errors/app-error.js";
-import { assertSafeProviderUrl } from "../safe-provider-url.js";
+import {
+  assertSafeProviderUrl,
+  publicNetworkDispatcher,
+} from "../safe-provider-url.js";
 import { config } from "../../../app/config/index.js";
 
 interface RuntimeConnection {
@@ -84,10 +88,13 @@ async function fetchJson(url: string, init: RequestInit) {
       // URL that passed the public-network check could bounce the request
       // into the private network.
       redirect: "error",
+      // The name is resolved again for the connection; only public answers
+      // are dialled, so the endpoint check cannot be rebound past.
+      dispatcher: publicNetworkDispatcher,
       signal: AbortSignal.timeout(
         config.performance.providerGatewayRequestTimeoutMs,
       ),
-    });
+    } as RequestInit);
   } catch {
     providerFailure();
   }
@@ -484,12 +491,17 @@ export class RemoteGenerativeAiGateway implements AiGateway {
     request: AiGenerationRequest,
   ): Promise<AiGenerationResult> {
     const connection = await runtimeConnection(context);
+    // A connection names its model; otherwise the provider catalogue's default
+    // applies. An endpoint with neither is refused rather than sent a guess.
     const model = String(
       connection.configuration.model ||
-        (connection.providerId === "anthropic"
-          ? "claude-sonnet-4-5"
-          : "gpt-5-mini"),
+        SHONGRE_PROVIDER_REGISTRY.find(
+          (provider) => provider.id === connection.providerId,
+        )?.defaultModel ||
+        "",
     );
+    if (!model)
+      providerFailure("Le modèle de ce fournisseur IA n’est pas configuré.");
     let endpoint: string;
     let headers: Record<string, string> = {
       "Content-Type": "application/json",

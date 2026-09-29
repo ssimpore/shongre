@@ -8,8 +8,9 @@ async function runBenchmark() {
   const startEscrow = performance.now();
   for (let i = 0; i < iterations; i++) {
     calculateOrderTotal({
-      itemAmount: 150 + (i % 100),
-      shippingFee: 5,
+      itemAmountMinor: 15_000 + (i % 100) * 100,
+      shippingFeeMinor: 500,
+      currency: "EUR",
       marketCode: "FR",
     });
   }

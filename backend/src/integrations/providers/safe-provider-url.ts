@@ -1,5 +1,7 @@
+import { lookup as resolveHost, type LookupAddress } from "node:dns";
 import { lookup } from "node:dns/promises";
-import { isIP } from "node:net";
+import { isIP, type LookupFunction } from "node:net";
+import { Agent } from "undici";
 import { AppError } from "../../shared/errors/app-error.js";
 
 export interface ProviderUrlPolicy {
@@ -56,6 +58,60 @@ export function isPublicProviderAddress(address: string): boolean {
   }
   return false;
 }
+
+type HostResolver = (
+  hostname: string,
+  callback: (
+    error: NodeJS.ErrnoException | null,
+    addresses: LookupAddress[],
+  ) => void,
+) => void;
+
+const systemResolver: HostResolver = (hostname, callback) =>
+  resolveHost(hostname, { all: true, verbatim: true }, callback);
+
+/**
+ * The name lookup a provider connection dials with. `assertSafeProviderUrl`
+ * resolves the host once to vet it, but the socket used to resolve it again,
+ * so a name could answer the check with a public address and the connection
+ * with a private one (DNS rebinding). Here the addresses vetted are the
+ * addresses connected to.
+ */
+export function publicOnlyLookup(
+  resolver: HostResolver = systemResolver,
+): LookupFunction {
+  return (hostname, options, callback) =>
+    resolver(hostname, (error, addresses) => {
+      if (error) return callback(error, "");
+      if (
+        !addresses.length ||
+        addresses.some(({ address }) => !isPublicProviderAddress(address))
+      ) {
+        const refusal: NodeJS.ErrnoException = new Error(
+          "The provider host resolved to a non-public address.",
+        );
+        refusal.code = "ERR_PROVIDER_ADDRESS_NOT_PUBLIC";
+        return callback(refusal, "");
+      }
+      const usable = options.family
+        ? addresses.filter(({ family }) => family === options.family)
+        : addresses;
+      if (!usable.length) {
+        const missing: NodeJS.ErrnoException = new Error(
+          "The provider host has no address in the requested family.",
+        );
+        missing.code = "ENOTFOUND";
+        return callback(missing, "");
+      }
+      if (options.all) return callback(null, usable);
+      return callback(null, usable[0].address, usable[0].family);
+    });
+}
+
+/** Every outbound request to a provider-controlled host goes through this. */
+export const publicNetworkDispatcher = new Agent({
+  connect: { lookup: publicOnlyLookup() },
+});
 
 function unsafe(message: string): never {
   throw new AppError({
@@ -135,7 +191,13 @@ export async function safeProviderFetch(
   remainingRedirects = 2,
 ): Promise<Response> {
   const safeUrl = await assertSafeProviderUrl(rawUrl, policy);
-  const response = await fetch(safeUrl, { ...init, redirect: "manual" });
+  const response = await fetch(safeUrl, {
+    ...init,
+    redirect: "manual",
+    ...(policy.allowPrivateNetwork
+      ? {}
+      : { dispatcher: publicNetworkDispatcher }),
+  } as RequestInit);
   if (response.status >= 300 && response.status < 400) {
     if (remainingRedirects <= 0) {
       throw new AppError({

@@ -11,6 +11,7 @@ import {
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
+import { formatMoney } from "@shongre/shared/money";
 import { Screen } from "@/components/Screen";
 import { StatePanel } from "@/components/StatePanel";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -76,11 +77,8 @@ export default function BillingScreen() {
       ),
     [catalog, subscription?.productId],
   );
-  const formatMoney = (amountMinor: number, currency: string) =>
-    new Intl.NumberFormat(activeMarket.defaultLocale, {
-      style: "currency",
-      currency,
-    }).format(amountMinor / 100);
+  const formatAmount = (amountMinor: number, currency: string) =>
+    formatMoney({ amountMinor, currency }, activeMarket.defaultLocale);
   const formatDate = (value: string) =>
     new Intl.DateTimeFormat(activeMarket.defaultLocale, {
       dateStyle: "long",
@@ -176,7 +174,7 @@ export default function BillingScreen() {
                   </Text>
                 </View>
                 <Text style={styles.rowValue}>
-                  {formatMoney(
+                  {formatAmount(
                     invoice.total.amountMinor,
                     invoice.total.currency,
                   )}

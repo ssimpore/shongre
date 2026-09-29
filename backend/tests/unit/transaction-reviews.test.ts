@@ -40,10 +40,10 @@ const input = {
 };
 
 function setup(patch: Partial<OrderRecord> = {}) {
-  const reviews = new DemoReviewRepository();
   const orders = new DemoOrderRepository({
     [completedOrder.id]: { ...completedOrder, ...patch },
   });
+  const reviews = new DemoReviewRepository([], orders);
   return {
     reviews,
     orders,

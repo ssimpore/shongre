@@ -1167,7 +1167,7 @@ export const messagesEn: MessageCatalogue = {
   "messaging.conversationList.aucuneConversationTrouvee":
     "No conversation found",
   "messaging.makeOfferModal.faireUneOffreDePrix": "Make an offer",
-  "messaging.makeOfferModal.montantDeVotreOffre": "Your offer (€)",
+  "messaging.makeOfferModal.montantDeVotreOffre": "Your offer ({currency})",
   "messaging.messageComposer.ecrivezVotreMessageEntreePour":
     "Write your message…",
   "messaging.messageComposer.keyboardHint":

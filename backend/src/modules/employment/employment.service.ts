@@ -1,5 +1,6 @@
 import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import { randomUUID } from "node:crypto";
+import { majorToMinorAmount } from "@shongre/shared";
 import type {
   CandidateDataExport,
   CandidateProfile,
@@ -82,9 +83,9 @@ const splitPublicationValues = (value: unknown) =>
     .split(/[,\n]/)
     .map((entry) => entry.trim())
     .filter(Boolean);
-const parseMoneyMinor = (value: unknown) => {
+const parseMoneyMinor = (value: unknown, currency: string) => {
   const amount = Number(String(value || "0").replace(",", "."));
-  return Number.isFinite(amount) ? Math.round(amount * 100) : 0;
+  return Number.isFinite(amount) ? majorToMinorAmount(amount, currency) : 0;
 };
 
 export class EmploymentService {
@@ -517,12 +518,18 @@ export class EmploymentService {
         publishSalary && salaryFrequencyId
           ? {
               minimum: {
-                amountMinor: parseMoneyMinor(raw.salaryMinimum),
+                amountMinor: parseMoneyMinor(
+                  raw.salaryMinimum,
+                  catalog.config.currency,
+                ),
                 currency: catalog.config.currency,
               },
               maximum: readString(raw, "salaryMaximum")
                 ? {
-                    amountMinor: parseMoneyMinor(raw.salaryMaximum),
+                    amountMinor: parseMoneyMinor(
+                      raw.salaryMaximum,
+                      catalog.config.currency,
+                    ),
                     currency: catalog.config.currency,
                   }
                 : undefined,

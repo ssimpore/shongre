@@ -236,19 +236,20 @@ export function createRepositoryContainer(
 
   const listings = new DemoListingRepository();
   const users = new DemoUserRepository(undefined, listings);
+  const orders = new DemoOrderRepository();
   return {
     users,
     listings,
     markets: new DemoMarketRepository(),
     currencies: new DemoCurrencyRepository(),
     taxonomy: new PostgresTaxonomyRepository(),
-    orders: new DemoOrderRepository(),
+    orders,
     verification: new DemoVerificationRepository(),
     compliance: new DemoComplianceRepository(),
     messaging: new DemoMessagingRepository(),
     notifications: new DemoNotificationRepository(),
     watchSubscriptions: new DemoWatchSubscriptionRepository(),
-    reviews: new DemoReviewRepository(),
+    reviews: new DemoReviewRepository([], orders),
     admin: new DemoAdminRepository(),
     workspace: new DemoWorkspaceRepository(),
     trending: new DemoTrendingRepository(),

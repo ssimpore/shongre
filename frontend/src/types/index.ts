@@ -584,6 +584,8 @@ export interface Conversation {
   listingId: string;
   listingTitle: string;
   listingPrice: number;
+  /** ISO currency of `listingPrice`, and of every offer in the conversation. */
+  listingCurrency?: string;
   listingPhotoUrl: string;
   listingStatus: ListingStatus;
   buyerId: string;

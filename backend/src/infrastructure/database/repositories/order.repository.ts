@@ -6,6 +6,7 @@ import {
   UserProfile,
 } from "../../../shared/types/index.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { majorToMinorAmount } from "@shongre/shared";
 import { AppError } from "../../../shared/errors/app-error.js";
 import { databaseFailure } from "./repository-error.js";
 
@@ -127,11 +128,6 @@ export interface IOrderRepository {
    * the window, oldest first. The review reminder worker decides per
    * participant whether a reminder is still owed.
    */
-  listCompletedBetween(
-    notBeforeIso: string,
-    notAfterIso: string,
-    limit: number,
-  ): Promise<OrderRecord[]>;
   create(order: OrderRecord): Promise<OrderRecord>;
   update(id: string, updates: Partial<OrderRecord>): Promise<OrderRecord>;
   recordHandoverPinFailure(id: string): Promise<OrderRecord>;
@@ -302,11 +298,12 @@ export class DemoOrderRepository implements IOrderRepository {
       .map((order) => ({ ...order }));
   }
 
-  async listCompletedBetween(
-    notBeforeIso: string,
-    notAfterIso: string,
-    limit: number,
-  ): Promise<OrderRecord[]> {
+  /**
+   * Completed exchanges within the window, oldest first. The demo review
+   * store reads it to answer which participants are owed a reminder, which
+   * PostgreSQL answers in one query.
+   */
+  completedBetween(notBeforeIso: string, notAfterIso: string): OrderRecord[] {
     return Array.from(this.orders.values())
       .filter(
         (order) =>
@@ -316,10 +313,11 @@ export class DemoOrderRepository implements IOrderRepository {
           order.completedAt! >= notBeforeIso &&
           order.completedAt! <= notAfterIso,
       )
-      .sort((left, right) =>
-        left.completedAt!.localeCompare(right.completedAt!),
+      .sort(
+        (left, right) =>
+          left.completedAt!.localeCompare(right.completedAt!) ||
+          left.id.localeCompare(right.id),
       )
-      .slice(0, Math.max(0, limit))
       .map((order) => ({ ...order }));
   }
 
@@ -521,6 +519,13 @@ export class DemoOrderRepository implements IOrderRepository {
 
 export class PostgresOrderRepository implements IOrderRepository {
   private mapRowToOrder(row: any): OrderRecord {
+    const currency = String(row.currency).toUpperCase();
+    // Rows written before the minor columns existed carry only the major
+    // amount, which converts through the order currency's own exponent.
+    const minor = (stored: unknown, major: unknown) =>
+      stored !== null && stored !== undefined
+        ? Number(stored)
+        : majorToMinorAmount(Number(major || 0), currency);
     return {
       id: row.id,
       orderNumber: row.order_number,
@@ -530,29 +535,19 @@ export class PostgresOrderRepository implements IOrderRepository {
       sellerId: row.seller_id,
       status: row.status,
       itemAmount: Number(row.item_amount),
-      itemAmountMinor: Number(
-        row.item_amount_minor ?? Math.round(Number(row.item_amount) * 100),
-      ),
+      itemAmountMinor: minor(row.item_amount_minor, row.item_amount),
       protectionFee: Number(row.protection_fee || 0),
-      protectionFeeMinor: Number(
-        row.protection_fee_minor ??
-          Math.round(Number(row.protection_fee || 0) * 100),
-      ),
+      protectionFeeMinor: minor(row.protection_fee_minor, row.protection_fee),
       shippingFee: Number(row.shipping_fee || 0),
-      shippingFeeMinor: Number(
-        row.shipping_fee_minor ??
-          Math.round(Number(row.shipping_fee || 0) * 100),
-      ),
+      shippingFeeMinor: minor(row.shipping_fee_minor, row.shipping_fee),
       totalCharged: Number(row.total_charged),
-      totalChargedMinor: Number(
-        row.total_charged_minor ?? Math.round(Number(row.total_charged) * 100),
-      ),
+      totalChargedMinor: minor(row.total_charged_minor, row.total_charged),
       escrowSecuredAmount: Number(row.escrow_secured_amount),
-      escrowSecuredAmountMinor: Number(
-        row.escrow_secured_amount_minor ??
-          Math.round(Number(row.escrow_secured_amount) * 100),
+      escrowSecuredAmountMinor: minor(
+        row.escrow_secured_amount_minor,
+        row.escrow_secured_amount,
       ),
-      currency: String(row.currency).toUpperCase(),
+      currency,
       commissionCalculationId: row.commission_calculation_id || undefined,
       platformCommissionMinor:
         row.platform_commission_minor === null ||
@@ -728,32 +723,6 @@ export class PostgresOrderRepository implements IOrderRepository {
       return data.map((row: any) => this.mapRowToOrder(row));
     } catch (error) {
       databaseFailure("orders.listUnsettledCheckouts", error);
-    }
-  }
-
-  async listCompletedBetween(
-    notBeforeIso: string,
-    notAfterIso: string,
-    limit: number,
-  ): Promise<OrderRecord[]> {
-    try {
-      const supabase = getSupabaseAdminClient();
-      const { data, error } = await supabase
-        .from("orders")
-        .select("*")
-        .eq("status", "completed")
-        .gte("completed_at", notBeforeIso)
-        .lte("completed_at", notAfterIso)
-        .order("completed_at", { ascending: true })
-        .limit(Math.min(Math.max(limit, 1), 500));
-      if (error || !data) {
-        databaseFailure("orders.listCompletedBetween", error);
-      }
-      return data
-        .map((row: any) => this.mapRowToOrder(row))
-        .filter((order) => order.buyerId !== order.sellerId);
-    } catch (error) {
-      databaseFailure("orders.listCompletedBetween", error);
     }
   }
 

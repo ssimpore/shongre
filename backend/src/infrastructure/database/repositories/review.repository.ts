@@ -3,6 +3,7 @@ import type { Database } from "../../../generated/database.types.js";
 import { AppError } from "../../../shared/errors/app-error.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
+import { DemoOrderRepository } from "./order.repository.js";
 
 /** A stored review: the public projection plus the facts the service decides on. */
 export type ReviewRecord = ReviewItem & {
@@ -10,6 +11,15 @@ export type ReviewRecord = ReviewItem & {
   /** Set by moderation; a removed review is invisible and uncounted. */
   removedAt?: string;
 };
+
+/** A participant of a completed exchange who is still owed a review reminder. */
+export interface DueReviewReminder {
+  orderId: string;
+  listingId: string;
+  recipientId: string;
+  counterpartId: string;
+  recipientRole: "buyer" | "seller";
+}
 
 export interface IReviewRepository {
   /**
@@ -47,6 +57,16 @@ export interface IReviewRepository {
    * second worker from sending it again.
    */
   claimReminder(input: { orderId: string; userId: string }): Promise<boolean>;
+  /**
+   * Participants of exchanges completed within the window who have neither
+   * been reminded nor written a review of that exchange — buyer before
+   * seller, oldest exchange first. A claimed reminder leaves the list.
+   */
+  listDueReminders(input: {
+    notBeforeIso: string;
+    notAfterIso: string;
+    limit: number;
+  }): Promise<DueReviewReminder[]>;
 }
 
 const publicReview = (
@@ -74,7 +94,10 @@ export class DemoReviewRepository implements IReviewRepository {
   private reviews = new Map<string, ReviewItem | ReviewRecord>();
   private helpfulVotes = new Map<string, Set<string>>();
   private reminders = new Set<string>();
-  constructor(initialReviews: ReviewItem[] = []) {
+  constructor(
+    initialReviews: ReviewItem[] = [],
+    private readonly orders: DemoOrderRepository = new DemoOrderRepository(),
+  ) {
     this.reset(initialReviews);
   }
   reset(initialReviews: ReviewItem[] = []) {
@@ -199,6 +222,36 @@ export class DemoReviewRepository implements IReviewRepository {
     if (this.reminders.has(key)) return false;
     this.reminders.add(key);
     return true;
+  }
+  async listDueReminders(input: {
+    notBeforeIso: string;
+    notAfterIso: string;
+    limit: number;
+  }): Promise<DueReviewReminder[]> {
+    const due: DueReviewReminder[] = [];
+    for (const order of this.orders.completedBetween(
+      input.notBeforeIso,
+      input.notAfterIso,
+    )) {
+      for (const [recipientRole, recipientId, counterpartId] of [
+        ["buyer", order.buyerId, order.sellerId],
+        ["seller", order.sellerId, order.buyerId],
+      ] as const) {
+        if (
+          this.reminders.has(`${order.id}:${recipientId}`) ||
+          (await this.getOrderReview(order.id, recipientId))
+        )
+          continue;
+        due.push({
+          orderId: order.id,
+          listingId: order.listingId,
+          recipientId,
+          counterpartId,
+          recipientRole,
+        });
+      }
+    }
+    return due.slice(0, Math.max(1, Math.min(input.limit, 500)));
   }
 }
 
@@ -410,5 +463,27 @@ export class PostgresReviewRepository implements IReviewRepository {
       .select("order_id");
     if (error) databaseFailure("reviews.claimReminder", error);
     return (data || []).length > 0;
+  }
+  async listDueReminders(input: {
+    notBeforeIso: string;
+    notAfterIso: string;
+    limit: number;
+  }): Promise<DueReviewReminder[]> {
+    const { data, error } = await getSupabaseAdminClient().rpc(
+      "list_due_review_reminders",
+      {
+        p_not_before: input.notBeforeIso,
+        p_not_after: input.notAfterIso,
+        p_limit: input.limit,
+      },
+    );
+    if (error) databaseFailure("reviews.listDueReminders", error);
+    return (data || []).map((row) => ({
+      orderId: row.order_id,
+      listingId: row.listing_id,
+      recipientId: row.recipient_id,
+      counterpartId: row.counterpart_id,
+      recipientRole: row.recipient_role === "seller" ? "seller" : "buyer",
+    }));
   }
 }

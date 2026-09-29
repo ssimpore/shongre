@@ -4,6 +4,7 @@
  * inbox filtering, and unread aggregations.
  */
 
+import { majorToMinorAmount } from "@shongre/shared";
 import {
   TimelineItem,
   ConversationPreview,
@@ -186,8 +187,8 @@ class MessagingService {
       offerId: msg.offerId || (msg.type === "offer" ? msg.id : undefined),
       offerAmountMinor:
         msg.offerAmountMinor ??
-        (msg.offerAmount !== undefined
-          ? Math.round(msg.offerAmount * 100)
+        (msg.offerAmount !== undefined && msg.offerCurrency
+          ? majorToMinorAmount(msg.offerAmount, msg.offerCurrency)
           : undefined),
       offerCurrency: msg.offerCurrency,
       offerStatus: msg.offerStatus,

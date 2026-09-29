@@ -1456,13 +1456,12 @@ export class ListingsService {
   /**
    * Removes a seller's listing from the marketplace.
    *
-   * Only a never-published draft is deleted. Anything that has been public
-   * carries history other people and the ledger rely on — conversations,
-   * orders, UGC reports, paid placements — and several of those tables
-   * cascade from the listing, so a hard delete would erase moderation
-   * evidence and financial records (or fail on the ones that restrict it).
+   * Only a draft is deleted. Anything that has been public carries history
+   * other people and the ledger rely on — conversations, orders, UGC reports,
+   * paid placements — which the schema refuses to erase with the listing.
    * Such a listing is archived: it leaves every public surface and its
-   * history is kept.
+   * history is kept. A draft that nonetheless carries such a record is
+   * archived the same way.
    */
   async deleteListing(
     id: string,
@@ -1474,9 +1473,14 @@ export class ListingsService {
         message: "Annonce introuvable.",
       });
     if (listing.status === "draft") {
-      await this.listingRepo.delete(id);
-      logger.info("listing_removed", { listingId: id, outcome: "deleted" });
-      return { outcome: "deleted" };
+      try {
+        await this.listingRepo.delete(id);
+        logger.info("listing_removed", { listingId: id, outcome: "deleted" });
+        return { outcome: "deleted" };
+      } catch (error) {
+        if (!(error instanceof AppError && error.code === "CONFLICT"))
+          throw error;
+      }
     }
     if (listing.status === "reserved")
       throw new AppError({

@@ -130,10 +130,13 @@ class ListingActionsResolver {
     const contactLed = Boolean(
       taxonomyPrimaryCta && taxonomyPrimaryCta !== "contact_seller",
     );
+    // An offer is an amount in the listing's currency, so a price without
+    // one cannot be negotiated.
     const canMakeOffer = !!(
       !contactLed &&
       listing.isNegotiable &&
       listing.price > 0 &&
+      listing.currency &&
       !listing.isFreeDonation
     );
 

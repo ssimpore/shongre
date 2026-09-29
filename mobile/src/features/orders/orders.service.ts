@@ -1,3 +1,4 @@
+import { majorToMinorAmount } from "@shongre/shared/money";
 import { apiOperation } from "@/api/generated-api-operation";
 
 /** One exchange as its participant sees it: enough for a history row. */
@@ -41,6 +42,7 @@ function mapOrder(
   order: BackendOrder,
   role: "buyer" | "seller",
 ): MobileOrderSummary {
+  const currency = order.currency || "EUR";
   return {
     id: order.id,
     orderNumber: order.orderNumber,
@@ -54,8 +56,9 @@ function mapOrder(
     role,
     status: order.status,
     totalMinor:
-      order.totalChargedMinor ?? Math.round((order.totalCharged ?? 0) * 100),
-    currency: order.currency || "EUR",
+      order.totalChargedMinor ??
+      majorToMinorAmount(order.totalCharged ?? 0, currency),
+    currency,
     createdAt: order.createdAt,
   };
 }

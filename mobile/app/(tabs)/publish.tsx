@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
+import { majorToMinorAmount } from "@shongre/shared/money";
 import { useRouter } from "expo-router";
 import {
   publicationInputSchema,
@@ -843,6 +844,10 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
       return;
     }
     const numericPrice = Number(price.replace(",", "."));
+    // The market currency's own exponent: a franc CFA has no centimes.
+    const priceMinor = Number.isFinite(numericPrice)
+      ? majorToMinorAmount(numericPrice, activeMarket.currency)
+      : Number.NaN;
     const acceptedAttributeIds = new Set(
       resolvedSchema?.attributes.map((field) => field.definition.id) ?? [],
     );
@@ -853,7 +858,7 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
       title,
       description,
       images,
-      price: Math.round(numericPrice * 100),
+      price: priceMinor,
       price_type: listingIntent === "DONATE" ? "free" : "fixed",
       currency: activeMarket.currency,
       seller_type: sellerType,
@@ -984,7 +989,7 @@ function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
     const parsed = publicationInputSchema.safeParse({
       title,
       description,
-      amountMinor: Math.round(numericPrice * 100),
+      amountMinor: priceMinor,
       currency: activeMarket.currency,
       categoryId: activeCategoryId,
       listingTypeId: activeListingTypeId,

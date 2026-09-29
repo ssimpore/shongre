@@ -36,7 +36,12 @@ export interface MessagingServiceContract {
     input: CreateOrGetConversationInput,
   ): Promise<Conversation>;
   sendMessage(input: SendMessageInput): Promise<Message>;
-  makeOffer(conversationId: string, amount: number): Promise<Message>;
+  /** `amount` is in major units of the listing's `currency`. */
+  makeOffer(
+    conversationId: string,
+    amount: number,
+    currency: string,
+  ): Promise<Message>;
   respondToOffer(offerId: string, accept: boolean): Promise<Message>;
   withdrawOffer(offerId: string): Promise<Message>;
   schedulePickup(

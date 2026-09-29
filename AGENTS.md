@@ -452,7 +452,9 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   A market default must be enabled and explicitly supported; missing, invalid,
   or stale rates fail closed rather than implying parity. Currency preferences
   remain separate from market and locale, and backend test rates remain
-  deterministic.
+  deterministic. Major/minor conversion uses the currency's own exponent
+  through the `@shongre/shared` money helpers, never a fixed factor of 100:
+  XOF has no minor unit.
 - Separate public media from private message, payment, and verification
   documents. Storage keys are not proof of ownership; private uploads require
   authenticated, authorized, documented flows and malware/quarantine controls
@@ -472,6 +474,11 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   account/resource enumeration, token leakage, PII in URLs/logs/analytics,
   insecure local storage, SSRF, and secret exposure. Clients are never an
   authorization boundary.
+- Web documents run only nonce-bearing scripts: `frontend/proxy.ts` mints a
+  per-request nonce into `script-src` with `'strict-dynamic'` and forwards the
+  policy so Next.js stamps its own scripts. Never add `'unsafe-inline'` to
+  `script-src` or an executable inline script without the request's nonce;
+  JSON-LD data blocks are not executed and need none.
 - Privileged keys and provider credentials belong only in protected backend or
   deployment secret stores. Secret values must never be committed, logged,
   embedded in images, returned through APIs, placed in GitHub variables, or
@@ -798,6 +805,8 @@ France-only happy path is insufficient for market-sensitive work.
   only a never-published draft; removing anything that has been public
   archives it, because conversations, orders, reports and paid placements
   reference it, and a reserved listing cannot be removed mid-transaction.
+  Those references restrict deletion in the schema rather than cascading, so
+  evidence is never erased with its listing.
   Vertical discovery writers must persist the explicit source-market publication
   in the same transaction as their shared listing projection, preserve existing
   market moderation restrictions, and retain the canonical publisher ownership
@@ -1243,14 +1252,20 @@ France-only happy path is insufficient for market-sensitive work.
 - Provider credentials are encrypted server secrets or opaque secret-manager
   references. Only safe status/hints may cross the credential boundary. Protect
   provider network calls against SSRF and fail closed when capability or
-  credentials are incomplete.
+  credentials are incomplete. Calls to provider-controlled hosts follow no
+  redirect and dial through `publicNetworkDispatcher`, whose connect-time
+  lookup refuses non-public addresses so a vetted name cannot be rebound.
 - AI uses the shared `AiGateway`, delivery uses `EmailDeliveryGateway`, and
   mailbox operations use `MailboxGateway`. Domain code must not call individual
-  vendor APIs directly.
+  vendor APIs directly. A connection's configured model wins; otherwise the
+  provider catalogue's `defaultModel` applies, and gateways never hard-code one.
 - Marketing consent is purpose-specific and append-only. Global marketing
   unsubscribe suppresses marketing but must not block transactional/security
   mail. Public confirm/preference/unsubscribe actions use hashed, expiring,
   non-guessable tokens; double opt-in stays pending until confirmation.
+  A market's public newsletter is only the workspace designated for it in
+  `marketing_public_programs`; without a designation the programme is
+  unavailable, never routed to a tenant workspace in that market.
 - Campaign and journey delivery must recheck consent, suppression,
   do-not-contact, frequency caps, entitlements, and provider policy immediately
   before delivery. Audience snapshots, recipient idempotency, waits, retries,

@@ -139,6 +139,16 @@ create a vendor-specific duplicate adapter.
    event ID uniqueness, async processing, bounded retries and dead-letter state.
 8. Provider state is reconciled for financial and other critical operations;
    webhooks are signals, not the sole source of truth.
+9. Outbound calls to a provider-controlled host never follow a redirect and
+   dial through `publicNetworkDispatcher`
+   (`backend/src/integrations/providers/safe-provider-url.ts`). Its lookup
+   resolves the host again for the connection and refuses any non-public
+   answer, so a name that passed `assertSafeProviderUrl` cannot be rebound to
+   a private address between the check and the connection.
+10. An AI connection names its model in its configuration; otherwise the
+    provider catalogue's `defaultModel` applies. A provider without one — an
+    OpenAI-compatible endpoint — must name its model, and a call without one is
+    refused rather than sent a guessed model.
 
 ## Graceful degradation
 

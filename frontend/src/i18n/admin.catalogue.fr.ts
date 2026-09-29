@@ -329,6 +329,11 @@ export const adminCatalogueFr = {
   "admin.crmUniversalSearch.noResults":
     "Aucun contact, entreprise ou opportunité ne correspond à cette recherche.",
   "admin.crmUniversalSearch.resultsList": "Résultats de la recherche CRM",
+  "admin.crmUniversalSearch.failed":
+    "La recherche CRM n’a pas pu aboutir. Aucun résultat n’est affiché.",
+  "admin.crmUniversalSearch.partial":
+    "Une partie du CRM n’a pas répondu : ces résultats peuvent être incomplets.",
+  "admin.crmUniversalSearch.retry": "Relancer la recherche",
 
   // --- admin.crmCompaniesPage ---
   "admin.crmCompaniesPage.rechercherUneEntrepriseDomaineSecteur":

@@ -86,8 +86,9 @@ test.describe("database-mode journeys", () => {
     const suggestions = await browserApi(page, "/listings/suggestions?q=vel");
     expect(suggestions.status, JSON.stringify(suggestions.body)).toBe(200);
     const items = suggestions.body.items as Array<Record<string, unknown>>;
-    expect(items.some((item) => item.kind === "term" && item.query === "vélo"))
-      .toBe(true);
+    expect(
+      items.some((item) => item.kind === "term" && item.query === "vélo"),
+    ).toBe(true);
   });
 
   test("offers the nearest known spelling when a search finds nothing", async ({
@@ -98,7 +99,10 @@ test.describe("database-mode journeys", () => {
     });
     expect(response?.status()).toBe(200);
     const didYouMean = page.locator("[data-search-did-you-mean]");
-    await expect(didYouMean).toHaveAttribute("data-search-did-you-mean", "iphone");
+    await expect(didYouMean).toHaveAttribute(
+      "data-search-did-you-mean",
+      "iphone",
+    );
     await didYouMean.getByRole("button").click();
     await expect(page).toHaveURL(/query=iphone/);
     await expect(page.locator("[data-search-did-you-mean]")).toHaveCount(0);
@@ -120,7 +124,9 @@ test.describe("database-mode journeys", () => {
       body: { comment: answer },
     });
     expect(replied.status, JSON.stringify(replied.body)).toBe(200);
-    expect((replied.body.reply as Record<string, unknown>).comment).toBe(answer);
+    expect((replied.body.reply as Record<string, unknown>).comment).toBe(
+      answer,
+    );
     // The recipient cannot rate their own exchange.
     const ownVote = await browserApi(page, `/reviews/${review.id}/helpful`, {
       method: "PUT",
@@ -135,7 +141,10 @@ test.describe("database-mode journeys", () => {
       body: { helpful: true },
     });
     expect(voted.status, JSON.stringify(voted.body)).toBe(200);
-    expect(voted.body).toMatchObject({ helpfulCount: 1, viewerMarkedHelpful: true });
+    expect(voted.body).toMatchObject({
+      helpfulCount: 1,
+      viewerMarkedHelpful: true,
+    });
     const asReader = await browserApi(page, `/reviews/user/${atelier}`);
     expect(
       (asReader.body as unknown as Array<Record<string, unknown>>)[0],
@@ -144,9 +153,9 @@ test.describe("database-mode journeys", () => {
       waitUntil: "load",
     });
     expect(response?.status()).toBe(200);
-    await expect(page.locator(`[data-review-reply="${review.id}"]`)).toContainText(
-      answer,
-    );
+    await expect(
+      page.locator(`[data-review-reply="${review.id}"]`),
+    ).toContainText(answer);
     await expect(
       page.locator(`[data-review-helpful="${review.id}"]`),
     ).toHaveAttribute("aria-pressed", "true");
@@ -157,13 +166,47 @@ test.describe("database-mode journeys", () => {
     });
     expect(unvoted.body).toMatchObject({ helpfulCount: 0 });
   });
-
 });
 
 /*
  * These journeys change what every other test can see (an absent seller hides
  * her listings), so they run in the serial phase, alone, after the rest.
  */
+test.describe("database-mode public newsletter @serial", () => {
+  test("subscribes into the designated programme and refuses a market without one", async ({
+    page,
+  }) => {
+    await useEstablishedConsent(page);
+    await usePersona(page, "guest");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    // A fixed address: a rerun meets the pending profile it left, so the
+    // journey does not grow the table.
+    const subscription = (marketCode: string) =>
+      browserApi(page, "/marketing/public/subscriptions", {
+        method: "POST",
+        market: marketCode,
+        body: {
+          email: "newsletter-journey@example.test",
+          marketCode,
+          source: "NEWSLETTER_PAGE",
+          consentGiven: true,
+        },
+      });
+
+    const france = await subscription("FR");
+    expect(france.status, JSON.stringify(france.body)).toBeLessThan(300);
+    expect(france.body.accepted).toBe(true);
+    // No workspace is designated for Belgium, so no tenant receives the
+    // address — least of all one that merely opened the marketing tools. The
+    // request is made from the Belgian origin the market is served on.
+    await page.goto(new URL("/be/", process.env.PUBLIC_INTL_URL!).href, {
+      waitUntil: "domcontentloaded",
+    });
+    const belgium = await subscription("BE");
+    expect(belgium.status, JSON.stringify(belgium.body)).toBe(404);
+  });
+});
+
 test.describe("database-mode seller automation @serial", () => {
   test.describe.configure({ mode: "serial" });
 

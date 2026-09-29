@@ -541,8 +541,10 @@ export class MarketingService {
       consentVersion: MARKETING_CONSENT_VERSION,
       confirmedAt: new Date().toISOString(),
     });
+    // Journeys belong to the tenant that owns the subscriber: the event is the
+    // public programme's only when this confirmation came from it.
     const context = await this.repository.resolvePublicContext(updated.country);
-    if (context)
+    if (context?.tenantId === token.tenantId)
       await this.emitJourneyEvent(
         context,
         "SUBSCRIBER_CONFIRMED",

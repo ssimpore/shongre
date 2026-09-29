@@ -55,6 +55,11 @@ export interface ProviderOperationalDefinition {
   runtimeOwner: string;
   requiredEnvironmentVariables: readonly string[];
   optionalEnvironmentVariables?: readonly string[];
+  /**
+   * The model an AI connection uses when its own configuration names none.
+   * A provider without one requires every connection to name its model.
+   */
+  defaultModel?: string;
   healthCheckKind: ProviderHealthCheckKind;
   webhookSupport: "NONE" | "IMPLEMENTED" | "REQUIRED_MISSING";
   supportedMarkets: readonly string[];
@@ -641,32 +646,38 @@ export const SHONGRE_PROVIDER_REGISTRY: readonly ProviderOperationalDefinition[]
       ],
       blockers: [],
     },
-    implementedGateway(
-      "openai",
-      "OpenAI",
-      "AI",
-      [
-        "ai.listing_assistance",
-        "ai.safety_audit",
-        "ai.prospect_research",
-        "ai.marketing_drafting",
-      ],
-      "P3",
-      "https://platform.openai.com/docs",
-    ),
-    implementedGateway(
-      "anthropic",
-      "Anthropic Claude",
-      "AI",
-      [
-        "ai.crm_drafting",
-        "ai.crm_summary",
-        "ai.crm_enrichment",
-        "ai.marketing_drafting",
-      ],
-      "P2",
-      "https://docs.anthropic.com/",
-    ),
+    {
+      ...implementedGateway(
+        "openai",
+        "OpenAI",
+        "AI",
+        [
+          "ai.listing_assistance",
+          "ai.safety_audit",
+          "ai.prospect_research",
+          "ai.marketing_drafting",
+        ],
+        "P3",
+        "https://platform.openai.com/docs",
+      ),
+      defaultModel: "gpt-5-mini",
+    },
+    {
+      ...implementedGateway(
+        "anthropic",
+        "Anthropic Claude",
+        "AI",
+        [
+          "ai.crm_drafting",
+          "ai.crm_summary",
+          "ai.crm_enrichment",
+          "ai.marketing_drafting",
+        ],
+        "P2",
+        "https://docs.anthropic.com/",
+      ),
+      defaultModel: "claude-sonnet-5",
+    },
     implementedGateway(
       "openai_compatible",
       "OpenAI-compatible endpoint",

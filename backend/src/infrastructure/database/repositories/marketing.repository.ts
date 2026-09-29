@@ -107,6 +107,11 @@ export interface MarketingConsentRecord {
 export interface IMarketingRepository {
   resolveTenantId(userId: string): Promise<string | null>;
   resolveTenantContext(userId: string): Promise<MarketingTenantContext | null>;
+  /**
+   * The workspace designated to run the market's public Shongre newsletter
+   * (00154), or null when none is: a public signup never lands in a tenant
+   * workspace merely because it exists in that market.
+   */
   resolvePublicContext(
     marketCode: string,
   ): Promise<MarketingTenantContext | null>;
@@ -1090,13 +1095,12 @@ export class PostgresMarketingRepository implements IMarketingRepository {
     const rows: any[] = await this.query(
       "marketing.getPublicWorkspace",
       this.client
-        .from("marketing_workspaces")
-        .select("*")
+        .from("marketing_public_programs")
+        .select("workspace:marketing_workspaces(*)")
         .eq("market_code", marketCode)
-        .order("created_at")
         .limit(1),
     );
-    const row = rows[0];
+    const row = rows[0]?.workspace;
     return row
       ? {
           tenantId: row.tenant_id,

@@ -78,7 +78,9 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
               )}
             </div>
             <div className="text-xs font-bold text-text-main">
-              {formatPrice(listingContext.listingPrice)}
+              {formatPrice(listingContext.listingPrice, {
+                sourceCurrency: listingContext.listingCurrency,
+              })}
             </div>
           </div>
         </div>

@@ -1276,7 +1276,8 @@ export const messagesFr = {
 
   // --- messaging.makeOfferModal ---
   "messaging.makeOfferModal.faireUneOffreDePrix": "Faire une offre de prix",
-  "messaging.makeOfferModal.montantDeVotreOffre": "Montant de votre offre (€)",
+  "messaging.makeOfferModal.montantDeVotreOffre":
+    "Montant de votre offre ({currency})",
 
   // --- messaging.messageComposer ---
   "messaging.messageComposer.ecrivezVotreMessageEntreePour":

@@ -13,6 +13,7 @@ import type {
 } from "@shongre/contracts/delivery";
 import { DELIVERY_PARTICIPANT_TRANSITIONS } from "@shongre/contracts/delivery";
 import { deterministicUuid } from "@shongre/shared/deterministic-id";
+import { formatMoney } from "@shongre/shared/money";
 import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
 import { StatePanel } from "@/components/StatePanel";
@@ -57,10 +58,7 @@ function RequestSummary({ request }: { request: DeliveryPublicRequest }) {
         <Text style={styles.cardTitle}>{request.title}</Text>
         {request.budget ? (
           <Text style={styles.price}>
-            {(request.budget.amountMinor / 100).toLocaleString("fr-FR", {
-              style: "currency",
-              currency: request.budget.currency,
-            })}
+            {formatMoney(request.budget, "fr-FR")}
           </Text>
         ) : null}
       </View>

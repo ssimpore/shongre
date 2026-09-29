@@ -213,7 +213,10 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   {listingContext && (
                     <div className="text-micro font-semibold text-text-main truncate mb-1">
                       {listingContext.listingTitle} (
-                      {formatPrice(listingContext.listingPrice)})
+                      {formatPrice(listingContext.listingPrice, {
+                        sourceCurrency: listingContext.listingCurrency,
+                      })}
+                      )
                     </div>
                   )}
 

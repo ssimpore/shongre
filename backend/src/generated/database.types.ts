@@ -21492,6 +21492,56 @@ export type Database = {
           },
         ];
       };
+      marketing_public_programs: {
+        Row: {
+          designated_at: string;
+          designated_by: string | null;
+          market_code: string;
+          workspace_id: string;
+        };
+        Insert: {
+          designated_at?: string;
+          designated_by?: string | null;
+          market_code: string;
+          workspace_id: string;
+        };
+        Update: {
+          designated_at?: string;
+          designated_by?: string | null;
+          market_code?: string;
+          workspace_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "marketing_public_programs_designated_by_fkey";
+            columns: ["designated_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "marketing_public_programs_designated_by_fkey";
+            columns: ["designated_by"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "marketing_public_programs_market_code_fkey";
+            columns: ["market_code"];
+            isOneToOne: true;
+            referencedRelation: "markets";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "marketing_public_programs_workspace_id_market_code_fkey";
+            columns: ["workspace_id", "market_code"];
+            isOneToOne: false;
+            referencedRelation: "marketing_workspaces";
+            referencedColumns: ["id", "market_code"];
+          },
+        ];
+      };
       marketing_segments: {
         Row: {
           created_at: string;
@@ -35009,6 +35059,17 @@ export type Database = {
           p_request_id: string;
         };
         Returns: string;
+      };
+      list_due_review_reminders: {
+        Args: { p_limit: number; p_not_after: string; p_not_before: string };
+        Returns: {
+          completed_at: string;
+          counterpart_id: string;
+          listing_id: string;
+          order_id: string;
+          recipient_id: string;
+          recipient_role: string;
+        }[];
       };
       list_favorite_auto_vehicle_ids: {
         Args: { p_market_code: string; p_user_id: string };

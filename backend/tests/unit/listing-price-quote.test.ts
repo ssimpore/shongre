@@ -121,6 +121,69 @@ describe("quoteListingPrice", () => {
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
+  it("prices a non-euro market in its own currency's minor unit", async () => {
+    const quote = await serviceWith(
+      listing({
+        price: 100,
+        currency: "CHF",
+        marketCode: "CH",
+        shippingCost: 12.5,
+      }),
+    ).quoteListingPrice({
+      listingId: "list-quote",
+      deliveryMethod: "home_delivery",
+    });
+
+    expect(quote.currency).toBe("CHF");
+    expect(quote.itemAmountMinor).toBe(10_000);
+    expect(quote.shippingFeeMinor).toBe(1_250);
+    // 3.5 % of CHF 100 plus the CHF 1 fixed fee.
+    expect(quote.protectionFeeMinor).toBe(450);
+  });
+
+  it("never charges the euro reference delivery price in another currency", async () => {
+    /* The catalogue's reference price is euros. A franc listing that names no
+       delivery cost cannot be shipped rather than be charged 6.90 as if the
+       currencies were at par. */
+    const service = serviceWith(
+      listing({
+        price: 100,
+        currency: "CHF",
+        marketCode: "CH",
+        shippingCost: undefined,
+      }),
+    );
+
+    const publicQuote = await service.quoteListingPrice({
+      listingId: "list-quote",
+      deliveryMethod: "home_delivery",
+    });
+    expect(publicQuote.deliveryMethod).toBe("hand_delivery");
+    await expect(
+      service.quoteDirectPurchase({
+        listingId: "list-quote",
+        buyerId: "user_thomas",
+        deliveryMethod: "home_delivery",
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+
+    const euroQuote = await serviceWith(
+      listing({ shippingCost: undefined }),
+    ).quoteListingPrice({
+      listingId: "list-quote",
+      deliveryMethod: "home_delivery",
+    });
+    expect(euroQuote.shippingFeeMinor).toBe(690);
+  });
+
+  it("refuses to quote a listing priced in another currency than its market", async () => {
+    await expect(
+      serviceWith(
+        listing({ currency: "EUR", marketCode: "CH" }),
+      ).quoteListingPrice({ listingId: "list-quote" }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
   it("agrees with the authenticated checkout quote on the same method", async () => {
     /* One authority for an amount the buyer will be charged. If these ever
        diverge, the page is disclosing a price checkout will not honour. */

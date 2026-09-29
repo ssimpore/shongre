@@ -122,6 +122,7 @@ export const MessagingPage: React.FC = () => {
             listingId: c.listingId,
             listingTitle: c.listingTitle,
             listingPrice: c.listingPrice,
+            listingCurrency: c.listingCurrency,
             listingPhotoUrl: c.listingPhotoUrl,
             listingStatus: c.listingStatus,
             sellerId: c.sellerId,
@@ -305,9 +306,13 @@ export const MessagingPage: React.FC = () => {
     loadConversations();
   };
 
-  const handleSendOffer = async (amount: number) => {
+  const handleSendOffer = async (amount: number, currency: string) => {
     if (!activeConvId || !currentUser) return;
-    const offer = await services.messaging.makeOffer(activeConvId, amount);
+    const offer = await services.messaging.makeOffer(
+      activeConvId,
+      amount,
+      currency,
+    );
     const timelineOffer = messagingService.mapMessageToTimelineItem(offer);
     setTimelineItems((previous) =>
       previous.some((item) => item.id === offer.id)
@@ -315,7 +320,9 @@ export const MessagingPage: React.FC = () => {
         : [...previous, timelineOffer],
     );
     toast.success(
-      t("messaging.messagingPage.offerSent", { price: formatPrice(amount) }),
+      t("messaging.messagingPage.offerSent", {
+        price: formatPrice(amount, { sourceCurrency: currency }),
+      }),
     );
     loadConversations();
   };
@@ -394,6 +401,7 @@ export const MessagingPage: React.FC = () => {
         listingId: activeRawConv.listingId,
         listingTitle: activeRawConv.listingTitle,
         listingPrice: activeRawConv.listingPrice,
+        listingCurrency: activeRawConv.listingCurrency,
         listingPhotoUrl: activeRawConv.listingPhotoUrl,
         listingStatus: activeRawConv.listingStatus,
         sellerId: activeRawConv.sellerId,
@@ -586,11 +594,12 @@ export const MessagingPage: React.FC = () => {
       )}
 
       {/* 2. Make Offer Modal */}
-      {isOfferModalOpen && activeListingContext && (
+      {isOfferModalOpen && activeListingContext?.listingCurrency && (
         <MakeOfferModal
           isOpen={isOfferModalOpen}
           onClose={() => setIsOfferModalOpen(false)}
           currentPrice={activeListingContext.listingPrice}
+          currency={activeListingContext.listingCurrency}
           onSendOffer={handleSendOffer}
         />
       )}

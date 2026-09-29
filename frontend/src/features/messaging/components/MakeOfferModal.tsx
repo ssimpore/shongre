@@ -11,13 +11,16 @@ interface MakeOfferModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentPrice: number;
-  onSendOffer: (amount: number) => Promise<void>;
+  /** ISO currency the listing is priced in; the offer is made in it too. */
+  currency: string;
+  onSendOffer: (amount: number, currency: string) => Promise<void>;
 }
 
 export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
   isOpen,
   onClose,
   currentPrice,
+  currency,
   onSendOffer,
 }) => {
   const { t } = useTranslation();
@@ -39,7 +42,7 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      await onSendOffer(val);
+      await onSendOffer(val, currency);
       onClose();
     } finally {
       setIsSubmitting(false);
@@ -52,12 +55,14 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
       onClose={onClose}
       title={t("messaging.makeOfferModal.faireUneOffreDePrix")}
       description={t("messaging.makeOfferModal.displayedPriceDescription", {
-        price: formatPrice(currentPrice),
+        price: formatPrice(currentPrice, { sourceCurrency: currency }),
       })}
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         <FormField
-          label={t("messaging.makeOfferModal.montantDeVotreOffre")}
+          label={t("messaging.makeOfferModal.montantDeVotreOffre", {
+            currency,
+          })}
           required
         >
           <Input
@@ -86,7 +91,8 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
                 onClick={() => setOfferAmount(calculated.toString())}
                 className="flex-1 py-1.5 px-2 bg-surface-muted hover:bg-surface-disabled text-text-emphasis rounded-lg font-semibold text-micro transition-colors"
               >
-                -{discount}% ({formatPrice(calculated)})
+                -{discount}% (
+                {formatPrice(calculated, { sourceCurrency: currency })})
               </button>
             );
           })}

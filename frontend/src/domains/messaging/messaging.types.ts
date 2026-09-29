@@ -58,6 +58,7 @@ export interface ListingConversationContext {
   listingId: string;
   listingTitle: string;
   listingPrice: number;
+  listingCurrency?: string;
   listingPhotoUrl?: string;
   listingStatus: ListingStatus;
   categorySlug?: string;

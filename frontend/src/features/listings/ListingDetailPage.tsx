@@ -970,7 +970,7 @@ export const ListingDetailPage: React.FC = () => {
 
   const handleSendOffer = async () => {
     if (
-      !listing ||
+      !listing?.currency ||
       !currentUser ||
       !actions.canMakeOffer ||
       isReadOnlyStaff ||
@@ -990,7 +990,7 @@ export const ListingDetailPage: React.FC = () => {
         initialMessage: `Proposition d'offre de prix : ${formatPrice(numPrice, { sourceCurrency: listing.currency })} (Prix initial : ${formatPrice(listing.price, { sourceCurrency: listing.currency })})`,
       });
 
-      await services.messaging.makeOffer(conv.id, numPrice);
+      await services.messaging.makeOffer(conv.id, numPrice, listing.currency);
 
       setIsOfferModalOpen(false);
       setOfferPrice("");

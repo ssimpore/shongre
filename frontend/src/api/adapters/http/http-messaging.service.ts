@@ -3,6 +3,7 @@ import {
   MessagingServiceContract,
   SendMessageInput,
 } from "../../contracts/messaging.contract";
+import { majorToMinorAmount } from "@shongre/shared";
 import { apiOperation } from "./generated-api-operation";
 import type {
   Conversation,
@@ -28,6 +29,7 @@ interface BackendConversation {
   listing?: {
     title?: string;
     price?: number;
+    currency?: string;
     status?: string;
     images?: string[];
   };
@@ -90,8 +92,8 @@ const mapMessage = (message: BackendMessage): Message => ({
   offerId: message.offerId || (message.isOffer ? message.id : undefined),
   offerAmountMinor:
     message.offerAmountMinor ??
-    (message.offerPrice !== undefined
-      ? Math.round(message.offerPrice * 100)
+    (message.offerPrice !== undefined && message.offerCurrency
+      ? majorToMinorAmount(message.offerPrice, message.offerCurrency)
       : undefined),
   offerCurrency: message.offerCurrency,
   offerStatus: message.offerStatus,
@@ -108,6 +110,7 @@ const mapConversation = (conversation: BackendConversation): Conversation => ({
   listingId: conversation.listingId,
   listingTitle: conversation.listing?.title || "Annonce",
   listingPrice: Number(conversation.listing?.price || 0),
+  listingCurrency: conversation.listing?.currency,
   listingPhotoUrl: conversation.listing?.images?.[0] || "",
   listingStatus: mapListingStatus(conversation.listing?.status),
   buyerId: conversation.buyerId,
@@ -208,13 +211,17 @@ export class HttpMessagingService implements MessagingServiceContract {
     return mapMessage(message);
   }
 
-  async makeOffer(conversationId: string, amount: number): Promise<Message> {
+  async makeOffer(
+    conversationId: string,
+    amount: number,
+    currency: string,
+  ): Promise<Message> {
     const message = await apiOperation<BackendMessage, "postMessagingOffer">(
       "postMessagingOffer",
       {
         body: {
           conversationId,
-          amountMinor: Math.round(amount * 100),
+          amountMinor: majorToMinorAmount(amount, currency),
         },
       },
     );
