@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # Build from the repository root. Environment-specific public values are
 # injected by the Next.js server at runtime; this image is promotion-safe.
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS workspace
+FROM node:26-alpine@sha256:0b36e8c136b94cd4fcf02188228e76c31ad5872eef3fec8cbd2eee500cfd9e80 AS workspace
 
 WORKDIR /app
 
@@ -43,7 +43,7 @@ RUN --mount=type=secret,id=sentry_auth_token \
     VCS_REF="$VCS_REF" sh ./scripts/upload-sentry-sourcemaps.sh \
       /app/frontend/.next /run/secrets/sentry_frontend_project
 
-FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runner
+FROM node:26-alpine@sha256:0b36e8c136b94cd4fcf02188228e76c31ad5872eef3fec8cbd2eee500cfd9e80 AS runner
 
 ARG BUILD_DATE=""
 ARG VCS_REF=""
