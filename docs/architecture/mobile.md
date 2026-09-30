@@ -68,6 +68,21 @@ handover and disputes on an order, and the vertical workflows (Auto, Immo,
 Emploi, Éducation) beyond their listings, which search and categories already
 surface.
 
+Order rows distinguish the transaction workflow from the listing. The explicit
+Web action opens the configured market origin's `/compte/achats` destination
+with `transactionId`; Web restores the selected participant order after its own
+authentication. Native never transfers credentials in that URL or implies that
+a payment or dispute has completed. Individual registration also exposes the
+market-configured terms and privacy destinations before account creation.
+
+Native search keeps query, category/scope, city, sorting and price bounds in
+route parameters. These criteria go through the generated listing-search
+operation on the first and subsequent pages. Saved-search alerts include city
+in both the filter and deterministic identity; sorting does not change which
+listings qualify for an alert. Location/radius discovery and broader vertical
+filter parity require a separate task study and the existing geospatial/privacy
+contract; manual city entry does not request device location.
+
 ## Concurrent requests and session rotation
 
 The central transport uses the shared request deadline for both headers and
@@ -77,6 +92,12 @@ session generation synchronously; SecureStore writes are serialized, and an
 older refresh cannot overwrite or delete the newer account’s credentials.
 Responses and retries from an obsolete generation are rejected. Transient
 refresh failures retain the current session for an explicit retry.
+
+Orders, alerts and the message list also own their rendered results by account,
+market and request generation. Guest or changed-context results are hidden
+immediately; failed loads expose retry without showing a previous context's
+rows. Alert mutations and saved-search feedback reject obsolete completion
+results, complementing the transport's session guard.
 
 Favorite operations now use the generated callable OpenAPI client; native
 transport still owns bearer credentials and the exact requested market.

@@ -326,6 +326,7 @@ export const CoursesSearchPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryVersion, setRetryVersion] = useState(0);
   const {
     filtersExpanded: isFilterOpen,
     activeFilterSection,
@@ -428,15 +429,20 @@ export const CoursesSearchPage: React.FC = () => {
   useEffect(() => {
     setIsLoading(true);
     setError(null);
+    let active = true;
     services.courses
       .searchTutors(query)
       .then((result) => {
+        if (!active) return;
         setItems(result.items);
         setTotal(result.total);
       })
-      .catch(() => setError("La recherche de professeurs a échoué."))
-      .finally(() => setIsLoading(false));
-  }, [query]);
+      .catch(() => active && setError("La recherche de professeurs a échoué."))
+      .finally(() => active && setIsLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [query, retryVersion]);
 
   const updateParam = (key: string, value?: string) => {
     setParams((current) => {
@@ -747,19 +753,29 @@ export const CoursesSearchPage: React.FC = () => {
               <div className="h-full w-full animate-pulse rounded-card bg-surface-muted" />
             </div>
           ) : isLoading ? (
-            <div aria-label="Chargement des professeurs" aria-busy="true">
-              <ListingGrid variant={viewMode === "list" ? "list" : "grid"}>
-                {[0, 1, 2].map((index) => (
-                  <ListingCardSkeleton key={index} />
-                ))}
-              </ListingGrid>
+            <div role="status">
+              <span className="sr-only">
+                {t("courses.search.loadingTutors")}
+              </span>
+              <div aria-hidden="true">
+                <ListingGrid variant={viewMode === "list" ? "list" : "grid"}>
+                  {[0, 1, 2].map((index) => (
+                    <ListingCardSkeleton key={index} />
+                  ))}
+                </ListingGrid>
+              </div>
             </div>
           ) : error ? (
             <StatePanel
               title="Recherche indisponible"
               description={error}
               action={
-                <Button onClick={() => setParams(params)}>Réessayer</Button>
+                <Button
+                  onClick={() => setRetryVersion((version) => version + 1)}
+                  disabled={isLoading}
+                >
+                  {t("common.retry")}
+                </Button>
               }
             />
           ) : items.length === 0 ? (

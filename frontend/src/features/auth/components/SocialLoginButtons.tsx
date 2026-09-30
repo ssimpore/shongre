@@ -105,11 +105,16 @@ export function SocialLoginButtons({
     };
   }, [attempt]);
 
+  const availableProviders = PROVIDERS.filter(
+    (provider) => availability?.[provider.id],
+  );
   const status = availabilityFailed
     ? t("auth.social.availabilityFailed")
     : availability === null
       ? t("auth.social.checking")
-      : null;
+      : availableProviders.length === 0
+        ? t("auth.social.emailOnly")
+        : null;
 
   const start = async (provider: SocialAuthProvider) => {
     if (disabled || starting.current || availability?.[provider] !== true)
@@ -142,16 +147,18 @@ export function SocialLoginButtons({
         className="space-y-3"
       >
         <p className="text-center text-sm font-semibold text-text-main">
-          {t("auth.social.heading")}
+          {availableProviders.length > 0
+            ? t("auth.social.heading")
+            : t("auth.social.emailHeading")}
         </p>
-        <div className="grid grid-cols-3 gap-2">
-          {PROVIDERS.map((provider) => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {availableProviders.map((provider) => (
             <Button
               key={provider.id}
               type="button"
               variant="outline"
               size="compact"
-              className="w-full gap-1 px-1 py-0 text-micro sm:gap-1.5 sm:px-2 sm:text-xs"
+              className="w-full text-xs"
               aria-label={t(`auth.social.${provider.id}`)}
               leftIcon={provider.icon}
               isLoading={pending === provider.id}
@@ -203,13 +210,15 @@ export function SocialLoginButtons({
           </p>
         ) : null}
       </div>
-      <div className="flex items-center gap-3" aria-hidden="true">
-        <span className="h-px flex-1 bg-border-subtle" />
-        <span className="text-xs text-text-supporting">
-          {t("auth.social.email")}
-        </span>
-        <span className="h-px flex-1 bg-border-subtle" />
-      </div>
+      {availableProviders.length > 0 && (
+        <div className="flex items-center gap-3" aria-hidden="true">
+          <span className="h-px flex-1 bg-border-subtle" />
+          <span className="text-xs text-text-supporting">
+            {t("auth.social.email")}
+          </span>
+          <span className="h-px flex-1 bg-border-subtle" />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { Stack, useFocusEffect } from "expo-router";
+import { Stack, useFocusEffect, useRouter } from "expo-router";
 import type {
   WatchChannels,
   WatchFrequency,
@@ -39,37 +39,69 @@ const typeLabel = {
 } as const;
 
 export default function MobileAlertsScreen() {
+  const router = useRouter();
   const { user } = useAuth();
   const { activeMarket } = useMarket();
   const [items, setItems] = useState<WatchSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const scopeKey = `${user?.id ?? "anonymous"}:${activeMarket.code}`;
+  const currentScope = useRef(scopeKey);
+  const generation = useRef(0);
+  useLayoutEffect(() => {
+    currentScope.current = scopeKey;
+    generation.current += 1;
+  }, [scopeKey]);
+  const [resultScope, setResultScope] = useState("");
+  const ownsResult = Boolean(user) && resultScope === scopeKey;
+  const busy = Boolean(user) && (!ownsResult || loading);
+  const visibleError = ownsResult ? error : "";
 
   const load = useCallback(async () => {
+    const request = ++generation.current;
+    const requestScope = scopeKey;
+    const current = () =>
+      request === generation.current && requestScope === currentScope.current;
+    setItems([]);
+    setResultScope("");
+    setError("");
     if (!user) {
       setLoading(false);
+      setResultScope(requestScope);
       return;
     }
     setLoading(true);
     setError("");
     try {
-      setItems(
-        await watchSubscriptionsService.list(user.id, activeMarket.code),
+      const next = await watchSubscriptionsService.list(
+        user.id,
+        activeMarket.code,
       );
+      if (!current()) return;
+      setItems(next);
+      setResultScope(requestScope);
     } catch (reason) {
+      if (!current()) return;
+      setResultScope(requestScope);
       setError(
         reason instanceof Error ? reason.message : "Alertes indisponibles.",
       );
     } finally {
-      setLoading(false);
+      if (current()) setLoading(false);
     }
-  }, [activeMarket.code, user]);
+  }, [activeMarket.code, scopeKey, user]);
 
   useFocusEffect(
     useCallback(() => {
       void load();
+      return () => {
+        generation.current += 1;
+      };
     }, [load]),
   );
+
+  const mutationInFlight = useRef(false);
+  const [mutating, setMutating] = useState(false);
 
   const update = async (
     item: WatchSubscription,
@@ -79,7 +111,14 @@ export default function MobileAlertsScreen() {
       status?: "active" | "paused";
     },
   ) => {
-    if (!user) return;
+    if (!user || !ownsResult || mutationInFlight.current) return;
+    const requestScope = scopeKey;
+    const request = generation.current;
+    const current = () =>
+      request === generation.current && requestScope === currentScope.current;
+    mutationInFlight.current = true;
+    setMutating(true);
+    setError("");
     try {
       const next = await watchSubscriptionsService.update(
         user.id,
@@ -87,13 +126,52 @@ export default function MobileAlertsScreen() {
         item.id,
         input,
       );
+      if (!current()) return;
       setItems((current) =>
         current.map((entry) => (entry.id === item.id ? next : entry)),
       );
     } catch (reason) {
+      if (!current()) return;
       setError(
         reason instanceof Error ? reason.message : "Mise à jour impossible.",
       );
+    } finally {
+      mutationInFlight.current = false;
+      setMutating(false);
+    }
+  };
+
+  const remove = async (item: WatchSubscription) => {
+    if (!user || !ownsResult || mutationInFlight.current) return;
+    const requestScope = scopeKey;
+    const request = generation.current;
+    mutationInFlight.current = true;
+    setMutating(true);
+    setError("");
+    try {
+      await watchSubscriptionsService.remove(
+        user.id,
+        activeMarket.code,
+        item.id,
+      );
+      if (
+        requestScope !== currentScope.current ||
+        request !== generation.current
+      )
+        return;
+      setItems((current) => current.filter((entry) => entry.id !== item.id));
+    } catch (reason) {
+      if (
+        requestScope !== currentScope.current ||
+        request !== generation.current
+      )
+        return;
+      setError(
+        reason instanceof Error ? reason.message : "Suppression impossible.",
+      );
+    } finally {
+      mutationInFlight.current = false;
+      setMutating(false);
     }
   };
 
@@ -114,10 +192,10 @@ export default function MobileAlertsScreen() {
     <View style={styles.safe}>
       <Stack.Screen options={{ title: "Mes alertes" }} />
       <FlatList
-        data={items}
+        data={ownsResult && !busy ? items : []}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.content}
-        accessibilityState={{ busy: loading }}
+        accessibilityState={{ busy }}
         ListHeaderComponent={
           <View style={styles.header}>
             <Text accessibilityRole="header" style={styles.heading}>
@@ -127,9 +205,9 @@ export default function MobileAlertsScreen() {
               Réglages pour {activeMarket.name}. Chaque alerte reste liée à ce
               marché.
             </Text>
-            {error ? (
+            {visibleError ? (
               <Text accessibilityRole="alert" style={styles.error}>
-                {error}
+                {visibleError}
               </Text>
             ) : null}
           </View>
@@ -143,6 +221,7 @@ export default function MobileAlertsScreen() {
             </Text>
             <View style={styles.actions}>
               <Button
+                disabled={mutating}
                 label="Changer la fréquence"
                 size="sm"
                 variant="secondary"
@@ -157,6 +236,7 @@ export default function MobileAlertsScreen() {
                 }
               />
               <Button
+                disabled={mutating}
                 label={item.status === "active" ? "Suspendre" : "Réactiver"}
                 size="sm"
                 variant="ghost"
@@ -177,6 +257,7 @@ export default function MobileAlertsScreen() {
                       : "Notification push"}
                 </Text>
                 <Switch
+                  disabled={mutating}
                   value={item.channels[channel]}
                   onValueChange={(value) => toggleChannel(item, channel, value)}
                   accessibilityLabel={`Canal ${channel}`}
@@ -187,41 +268,34 @@ export default function MobileAlertsScreen() {
               label="Supprimer l’alerte"
               size="sm"
               variant="danger"
-              onPress={() =>
-                user &&
-                void watchSubscriptionsService
-                  .remove(user.id, activeMarket.code, item.id)
-                  .then(() =>
-                    setItems((current) =>
-                      current.filter((entry) => entry.id !== item.id),
-                    ),
-                  )
-                  .catch((reason) =>
-                    setError(
-                      reason instanceof Error
-                        ? reason.message
-                        : "Suppression impossible.",
-                    ),
-                  )
-              }
+              disabled={mutating}
+              onPress={() => void remove(item)}
             />
           </View>
         )}
         ListEmptyComponent={
-          loading ? (
+          !user ? (
+            <StatePanel
+              title="Connexion requise"
+              message="Connectez-vous pour gérer vos alertes."
+              actionLabel="Se connecter"
+              onAction={() => router.push("/auth/login")}
+            />
+          ) : busy ? (
             <View style={styles.loading}>
               <ActivityIndicator color={colors.primary} />
               <Text style={styles.muted}>Chargement…</Text>
             </View>
           ) : (
             <StatePanel
-              title={error ? "Alertes indisponibles" : "Aucune alerte"}
+              title={visibleError ? "Alertes indisponibles" : "Aucune alerte"}
               message={
-                error || "Créez une alerte depuis une recherche ou une annonce."
+                visibleError ||
+                "Créez une alerte depuis une recherche ou une annonce."
               }
-              tone={error ? "error" : "neutral"}
-              actionLabel={error ? "Réessayer" : undefined}
-              onAction={error ? () => void load() : undefined}
+              tone={visibleError ? "error" : "neutral"}
+              actionLabel={visibleError ? "Réessayer" : undefined}
+              onAction={visibleError ? () => void load() : undefined}
             />
           )
         }

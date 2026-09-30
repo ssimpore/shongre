@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -35,43 +35,71 @@ export default function MessagesScreen() {
   const [items, setItems] = useState<MobileConversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const scopeKey = `${user?.id ?? "anonymous"}:${activeMarket.code}`;
+  const currentScope = useRef(scopeKey);
+  const generation = useRef(0);
+  useLayoutEffect(() => {
+    currentScope.current = scopeKey;
+    generation.current += 1;
+  }, [scopeKey]);
+  const [resultScope, setResultScope] = useState("");
+  const ownsResult = Boolean(user) && resultScope === scopeKey;
+  const busy = Boolean(user) && (!ownsResult || loading);
+  const visibleError = ownsResult ? error : "";
+
   const presence = useConversationPresence(
-    items.map((item) => item.id),
+    ownsResult ? items.map((item) => item.id) : [],
     activeMarket.code,
   );
 
   const load = useCallback(async () => {
+    const request = ++generation.current;
+    const requestScope = scopeKey;
+    const current = () =>
+      request === generation.current && requestScope === currentScope.current;
+    setItems([]);
+    setResultScope("");
+    setError("");
     if (!user) {
       setLoading(false);
+      setResultScope(requestScope);
       return;
     }
     setLoading(true);
     setError("");
     try {
-      setItems(await messagingService.list(user.id, activeMarket.code));
+      const next = await messagingService.list(user.id, activeMarket.code);
+      if (!current()) return;
+      setItems(next);
+      setResultScope(requestScope);
     } catch (reason) {
+      if (!current()) return;
+      setResultScope(requestScope);
       setItems([]);
       setError(
         reason instanceof Error ? reason.message : "Messagerie indisponible.",
       );
     } finally {
-      setLoading(false);
+      if (current()) setLoading(false);
     }
-  }, [activeMarket.code, user]);
+  }, [activeMarket.code, scopeKey, user]);
 
   useFocusEffect(
     useCallback(() => {
       void load();
+      return () => {
+        generation.current += 1;
+      };
     }, [load]),
   );
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <FlatList
-        data={items}
+        data={ownsResult && !busy ? items : []}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.content}
-        accessibilityState={{ busy: loading }}
+        accessibilityState={{ busy }}
         ListHeaderComponent={
           <View style={styles.header}>
             <Text accessibilityRole="header" style={styles.heading}>
@@ -126,7 +154,7 @@ export default function MessagesScreen() {
           </Pressable>
         )}
         ListEmptyComponent={
-          loading ? (
+          busy ? (
             <View style={styles.loading} accessibilityLiveRegion="polite">
               <ActivityIndicator color={colors.primary} />
               <Text style={styles.muted}>Chargement des conversations…</Text>
@@ -140,19 +168,21 @@ export default function MessagesScreen() {
             />
           ) : (
             <StatePanel
-              title={error ? "Messagerie indisponible" : "Aucune conversation"}
+              title={
+                visibleError ? "Messagerie indisponible" : "Aucune conversation"
+              }
               message={
-                error ||
+                visibleError ||
                 "Contactez un vendeur depuis une annonce pour démarrer une conversation."
               }
-              tone={error ? "error" : "neutral"}
-              actionLabel={error ? "Réessayer" : undefined}
-              onAction={error ? () => void load() : undefined}
+              tone={visibleError ? "error" : "neutral"}
+              actionLabel={visibleError ? "Réessayer" : undefined}
+              onAction={visibleError ? () => void load() : undefined}
             />
           )
         }
         ListFooterComponent={
-          items.length > 0 ? (
+          ownsResult && items.length > 0 ? (
             <Text style={styles.safety}>
               Ne partagez jamais vos coordonnées bancaires dans la messagerie.
             </Text>

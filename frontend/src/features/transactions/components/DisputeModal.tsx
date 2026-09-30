@@ -1,3 +1,4 @@
+import { transactionCatalogueFr } from "../../../i18n/transaction.catalogue.fr";
 import React, { useState } from "react";
 import { Select } from "../../../design-system";
 import { AlertTriangle } from "lucide-react";
@@ -22,7 +23,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
   transaction,
   onSuccess,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(transactionCatalogueFr);
   const [reason, setReason] = useState(TRANSACTION_CONFIG.disputeReasons[0].id);
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

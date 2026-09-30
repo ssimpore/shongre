@@ -439,6 +439,7 @@ export const AutoSearchPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [retryVersion, setRetryVersion] = useState(0);
   const {
     filtersExpanded: filterOpen,
     activeFilterSection,
@@ -641,7 +642,7 @@ export const AutoSearchPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [query]);
+  }, [query, retryVersion]);
 
   const toggleCompare = (vehicle: VehiclePublic) => {
     setCompared((current) => {
@@ -896,7 +897,12 @@ export const AutoSearchPage: React.FC = () => {
               title="Recherche Auto indisponible"
               description="Réessayez dans quelques instants."
               action={
-                <Button onClick={() => setParams(params)}>Réessayer</Button>
+                <Button
+                  onClick={() => setRetryVersion((version) => version + 1)}
+                  disabled={loading}
+                >
+                  {t("common.retry")}
+                </Button>
               }
             />
           ) : vehicles.length === 0 ? (

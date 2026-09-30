@@ -55,25 +55,22 @@ export const useTranslation = (
 ): I18nContextValue => {
   const context = useContext(I18nContext);
   const locale = context?.locale ?? DEFAULT_LOCALE;
-
-  if (supplementalCatalogue) {
-    return {
-      locale,
-      t: (key: MessageKey, options?: TranslateOptions) =>
-        translateWithSupplementalCatalogue(
-          supplementalCatalogue,
-          key,
-          locale,
-          options,
-        ),
-    };
-  }
-
-  if (context) return context;
-
-  return {
-    locale,
-    t: (key: MessageKey, options?: TranslateOptions) =>
-      translate(key, locale, options),
-  };
+  const translateFromContext = context?.t;
+  // Loaders depend on this function. Editing a local field must not change
+  // its identity and reload the server draft over the unsaved value.
+  const t = useCallback(
+    (key: MessageKey, options?: TranslateOptions) =>
+      supplementalCatalogue
+        ? translateWithSupplementalCatalogue(
+            supplementalCatalogue,
+            key,
+            locale,
+            options,
+          )
+        : translateFromContext
+          ? translateFromContext(key, options)
+          : translate(key, locale, options),
+    [locale, supplementalCatalogue, translateFromContext],
+  );
+  return useMemo(() => ({ locale, t }), [locale, t]);
 };

@@ -1,3 +1,4 @@
+import { transactionCatalogueFr } from "./transaction.catalogue.fr";
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -64,6 +65,7 @@ describe("message catalogue split", () => {
       ["delivery", deliveryCatalogueFr],
       ["digital", digitalMessagesFr],
       ["seller", sellerCatalogueFr],
+      ["transaction", transactionCatalogueFr],
     ] as const) {
       for (const key of Object.keys(catalogue)) {
         const previous = seen.get(key);
@@ -95,6 +97,17 @@ describe("message catalogue split", () => {
       offenders,
       `these render seller copy but never load the catalogue, so the raw key would ship:\n${offenders.join("\n")}`,
     ).toEqual([]);
+  });
+
+  it("loads transaction copy only with consumers that render it", () => {
+    expect(
+      Object.keys(messagesFr).some((key) => key.startsWith("transactions.")),
+    ).toBe(false);
+    for (const file of sourceFiles("src")) {
+      const source = readFileSync(file, "utf8");
+      if (/\bt\(\s*["'`]transactions\./.test(source))
+        expect(source, file).toContain("transactionCatalogueFr");
+    }
   });
 
   it("never renders an admin key without loading the admin catalogue", () => {

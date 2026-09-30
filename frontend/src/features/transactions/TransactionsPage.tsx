@@ -1,3 +1,4 @@
+import { transactionCatalogueFr } from "../../i18n/transaction.catalogue.fr";
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -32,8 +33,13 @@ type TabMode = "purchases" | "sales";
 type StatusFilter =
   "all" | "pending" | "in_progress" | "completed" | "disputed";
 
+const transactionsCatalogueFr = {
+  ...digitalMessagesFr,
+  ...transactionCatalogueFr,
+};
+
 export const TransactionsPage: React.FC = () => {
-  const { t } = useTranslation(digitalMessagesFr);
+  const { t } = useTranslation(transactionsCatalogueFr);
   const { t: tCommon } = useTranslation();
   const { formatPrice } = useMarketLocation();
   usePageMeta({

@@ -132,6 +132,28 @@ export default function RegisterScreen() {
         En créant un compte, vous acceptez les conditions d’utilisation et la
         politique de confidentialité de Shongre.
       </Text>
+      <Button
+        label="Lire les conditions d’utilisation"
+        variant="ghost"
+        accessibilityRole="link"
+        onPress={() =>
+          void Linking.openURL(marketLinks.termsUrl).catch(() =>
+            setError("Impossible d’ouvrir les conditions. Réessayez."),
+          )
+        }
+      />
+      <Button
+        label="Lire la politique de confidentialité"
+        variant="ghost"
+        accessibilityRole="link"
+        onPress={() =>
+          void Linking.openURL(marketLinks.privacyUrl).catch(() =>
+            setError(
+              "Impossible d’ouvrir la politique de confidentialité. Réessayez.",
+            ),
+          )
+        }
+      />
       <Button label="Créer mon compte" onPress={submit} loading={loading} />
       <Button
         label="Compte professionnel ? Continuer sur le Web"

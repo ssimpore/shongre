@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   HelpCircle,
@@ -35,6 +35,7 @@ import { supportService } from "../../domains/support/support.service";
 import { services } from "../../api/client/service-registry";
 import type { SupportCaseCategory } from "@shongre/contracts/support";
 import { SupportContextCard } from "./components/SupportContextCard";
+import { routes } from "../../configuration/routes";
 import { useStaticPageSeo } from "../../hooks/useStaticPageSeo";
 import { useTranslation } from "../../i18n/I18nProvider";
 
@@ -62,6 +63,7 @@ export const ContactPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] =
     useState<SupportCategory | null>(null);
   const [selectedReasonId, setSelectedReasonId] = useState<string>("");
+  const categoryChosen = useRef(false);
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [requesterName, setRequesterName] = useState(currentUser?.name || "");
@@ -89,42 +91,63 @@ export const ContactPage: React.FC = () => {
 
     if (catParam && SUPPORT_CATEGORIES.some((c) => c.id === catParam)) {
       setSelectedCategory(catParam);
+      const reason = searchParams.get("reason");
+      if (reason && supportCategoriesService.getReason(catParam, reason))
+        setSelectedReasonId(reason);
     }
 
-    if (txId) {
-      void services.orders.getOrderById(txId).then((foundTx) => {
-        if (!active || !foundTx) return;
-        setContext({
-          type: "transaction",
-          transactionId: foundTx.id,
-          orderNumber: foundTx.code,
-          listingId: foundTx.listingId,
-          listingTitle: foundTx.listingTitle,
-          listingPhotoUrl:
-            foundTx.listingCoverImageUrl || foundTx.listingPhotoUrl,
-          amount: foundTx.amount,
-          currency: foundTx.currency,
+    if (txId && isAuthenticated) {
+      void services.orders
+        .getOrderById(txId)
+        .then((foundTx) => {
+          if (!active || !foundTx) return;
+          setContext({
+            type: "transaction",
+            transactionId: foundTx.id,
+            orderNumber: foundTx.code,
+            listingId: foundTx.listingId,
+            listingTitle: foundTx.listingTitle,
+            listingPhotoUrl:
+              foundTx.listingCoverImageUrl || foundTx.listingPhotoUrl,
+            amount: foundTx.amount,
+            currency: foundTx.currency,
+          });
+          if (!catParam && !categoryChosen.current)
+            setSelectedCategory("purchase");
+        })
+        .catch(() => {
+          if (active)
+            setErrors({
+              context: t("support.contact.contextUnavailable"),
+            });
         });
-        setSelectedCategory("purchase");
-      });
     } else if (listingId) {
-      void services.listings.getListingById(listingId).then((foundListing) => {
-        if (!active || !foundListing) return;
-        setContext({
-          type: "listing",
-          listingId: foundListing.id,
-          listingTitle: foundListing.title,
-          listingPhotoUrl: foundListing.photos?.[0]?.url,
-          price: foundListing.price,
-          sellerId: foundListing.sellerId,
+      void services.listings
+        .getListingById(listingId)
+        .then((foundListing) => {
+          if (!active || !foundListing) return;
+          setContext({
+            type: "listing",
+            listingId: foundListing.id,
+            listingTitle: foundListing.title,
+            listingPhotoUrl: foundListing.photos?.[0]?.url,
+            price: foundListing.price,
+            sellerId: foundListing.sellerId,
+          });
+          if (!catParam && !categoryChosen.current)
+            setSelectedCategory("listing");
+        })
+        .catch(() => {
+          if (active)
+            setErrors({
+              context: t("support.contact.listingUnavailable"),
+            });
         });
-        setSelectedCategory("listing");
-      });
     }
     return () => {
       active = false;
     };
-  }, [searchParams]);
+  }, [isAuthenticated, searchParams, t]);
 
   // Sync user info if auth changes
   useEffect(() => {
@@ -149,10 +172,19 @@ export const ContactPage: React.FC = () => {
     }
   }, [currentReasonDef]);
 
+  const returnParams = new URLSearchParams();
+  for (const key of ["listingId", "txId"]) {
+    const value = searchParams.get(key);
+    if (value) returnParams.set(key, value);
+  }
+  if (selectedCategory) returnParams.set("category", selectedCategory);
+  if (selectedReasonId) returnParams.set("reason", selectedReasonId);
+  const authReturnTo = `/contact?${returnParams.toString()}`;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated) {
-      navigate("/connexion?returnTo=%2Fcontact");
+      navigate(routes.auth.login(authReturnTo));
       return;
     }
     if (!selectedCategory) {
@@ -284,30 +316,43 @@ export const ContactPage: React.FC = () => {
       </div>
 
       {/* 2. Step 1: Category Selector */}
-      <div className="space-y-3">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-text-emphasis">
+      <fieldset
+        aria-describedby={
+          errors.category ? "support-category-error" : undefined
+        }
+        className="space-y-3"
+      >
+        <legend className="block text-xs font-semibold uppercase tracking-wider text-text-emphasis">
           {t("support.contactPage.1QuelEstLeSujet")}
           <span className="text-danger">*</span>
-        </label>
+        </legend>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {capabilities.availableCategories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
 
             return (
-              <button
+              <label
                 key={cat.id}
-                type="button"
-                onClick={() => {
-                  setSelectedCategory(cat.id);
-                  setSelectedReasonId("");
-                }}
-                className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
+                className={`p-4 rounded-2xl border text-left transition-all focus-within:ring-2 focus-within:ring-primary-ring flex flex-col justify-between cursor-pointer ${
                   isSelected
                     ? "border-primary bg-primary-surface-soft text-text-main ring-2 ring-primary-ring shadow-xs"
                     : "border-border-base bg-bg-surface text-text-strong hover:border-border-strong hover:bg-surface-soft"
                 }`}
               >
+                <input
+                  type="radio"
+                  name="support-category"
+                  value={cat.id}
+                  checked={isSelected}
+                  aria-label={cat.label}
+                  className="sr-only"
+                  onChange={() => {
+                    categoryChosen.current = true;
+                    setSelectedCategory(cat.id);
+                    setSelectedReasonId("");
+                  }}
+                />
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${
                     isSelected
@@ -328,38 +373,53 @@ export const ContactPage: React.FC = () => {
                     {cat.description}
                   </p>
                 </div>
-              </button>
+              </label>
             );
           })}
         </div>
         {errors.category && (
-          <p className="text-xs font-bold text-danger">{errors.category}</p>
+          <p
+            id="support-category-error"
+            className="text-xs font-bold text-danger"
+          >
+            {errors.category}
+          </p>
         )}
-      </div>
+      </fieldset>
 
       {/* 3. Step 2: Reason Selector & Handoffs */}
       {currentCategoryDef && (
-        <div className="space-y-4 pt-2 animate-fadeIn">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-text-emphasis">
+        <fieldset
+          aria-describedby={errors.reason ? "support-reason-error" : undefined}
+          className="space-y-4 pt-2 animate-fadeIn"
+        >
+          <legend className="block text-xs font-semibold uppercase tracking-wider text-text-emphasis">
             {t("support.contactPage.2PrecisezVotreSituation")}
             <span className="text-danger">*</span>
-          </label>
+          </legend>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {currentCategoryDef.reasons.map((r) => {
               const isSelected = selectedReasonId === r.id;
 
               return (
-                <button
+                <label
                   key={r.id}
-                  type="button"
-                  onClick={() => setSelectedReasonId(r.id)}
-                  className={`p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 cursor-pointer ${
+                  className={`p-3.5 rounded-2xl border text-left transition-all focus-within:ring-2 focus-within:ring-primary-ring flex items-center justify-between gap-3 cursor-pointer ${
                     isSelected
                       ? "border-primary bg-primary-surface-soft text-text-main font-semibold ring-1 ring-primary-ring-strong"
                       : "border-border-base bg-bg-surface text-text-emphasis hover:bg-surface-soft"
                   }`}
                 >
+                  <input
+                    type="radio"
+                    name="support-reason"
+                    value={r.id}
+                    checked={isSelected}
+                    aria-label={r.label}
+                    className="sr-only"
+                    onChange={() => setSelectedReasonId(r.id)}
+                  />
                   <span className="text-xs leading-snug">{r.label}</span>
                   <div
                     className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
@@ -372,12 +432,17 @@ export const ContactPage: React.FC = () => {
                       <div className="w-1.5 h-1.5 rounded-full bg-bg-surface" />
                     )}
                   </div>
-                </button>
+                </label>
               );
             })}
           </div>
           {errors.reason && (
-            <p className="text-xs font-bold text-danger">{errors.reason}</p>
+            <p
+              id="support-reason-error"
+              className="text-xs font-bold text-danger"
+            >
+              {errors.reason}
+            </p>
           )}
 
           {/* Handoff Banners */}
@@ -435,11 +500,30 @@ export const ContactPage: React.FC = () => {
                 </span>
               </div>
             )}
-        </div>
+        </fieldset>
       )}
 
+      {errors.context && (
+        <p role="status" className="text-xs text-text-supporting">
+          {errors.context}
+        </p>
+      )}
+      {selectedCategory && selectedReasonId && !isAuthenticated && (
+        <div className="rounded-2xl border border-border-base bg-bg-surface p-6 space-y-3">
+          <h2 className="font-bold text-text-main">
+            {t("support.contact.signInFirst")}
+          </h2>
+          <p className="text-sm text-text-supporting">
+            {t("support.contact.safeContinuation")}
+          </p>
+          <Button to={routes.auth.login(authReturnTo)}>Se connecter</Button>
+          <Button variant="outline" to={routes.auth.register(authReturnTo)}>
+            Créer un compte
+          </Button>
+        </div>
+      )}
       {/* 4. Step 3: Adaptive Contact Form */}
-      {selectedCategory && selectedReasonId && (
+      {selectedCategory && selectedReasonId && isAuthenticated && (
         <form
           onSubmit={handleSubmit}
           className="bg-bg-surface border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 animate-fadeIn"
@@ -454,27 +538,6 @@ export const ContactPage: React.FC = () => {
               context={context}
               onRemove={() => setContext(undefined)}
             />
-          )}
-
-          {/* Support cases are account-owned so their history cannot leak
-              between visitors sharing the same device. */}
-          {!isAuthenticated && (
-            <div className="rounded-2xl border border-primary-border bg-primary-surface-soft p-4 text-xs text-text-emphasis">
-              <p className="font-bold text-text-main">
-                Connectez-vous pour créer et suivre une demande.
-              </p>
-              <p className="mt-1">
-                Votre dossier restera rattaché à votre compte et visible
-                uniquement par vous et l’équipe d’assistance autorisée.
-              </p>
-              <Button
-                to="/connexion?returnTo=%2Fcontact"
-                size="sm"
-                className="mt-3"
-              >
-                Se connecter
-              </Button>
-            </div>
           )}
 
           {/* Subject Field */}

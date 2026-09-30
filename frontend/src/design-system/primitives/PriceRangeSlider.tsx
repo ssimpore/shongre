@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { parseMajorAmountInput } from "@shongre/shared/money";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { FormField, Input } from "./FormField";
 
 /**
  * The scale is a list of stops, not a linear span.
@@ -78,81 +80,126 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
    * render waited on that round trip. Local state keeps the drag at pointer
    * speed; the caller hears one value, when the user lets go.
    */
-  const [draft, setDraft] = useState(() => ({
-    low: indexForValue(stops, min, FIRST_STOP_INDEX),
-    high:
-      max === undefined
-        ? lastStopIndex
-        : indexForValue(stops, max, lastStopIndex),
-  }));
+  const [draft, setDraft] = useState<{ min?: number; max?: number }>({
+    min,
+    max,
+  });
+  const draftRef = useRef(draft);
+  const committed = useRef(draft);
+  const dirty = useRef(false);
+  const numericDirty = useRef(false);
+  const [minimumInput, setMinimumInput] = useState(
+    min?.toLocaleString(currentLocale, {
+      useGrouping: false,
+      maximumFractionDigits: 20,
+    }) ?? "",
+  );
+  const [maximumInput, setMaximumInput] = useState(
+    max?.toLocaleString(currentLocale, {
+      useGrouping: false,
+      maximumFractionDigits: 20,
+    }) ?? "",
+  );
+  const [inputError, setInputError] = useState("");
 
   // Resync when the range changes from outside — clearing filters, back/forward.
   useEffect(() => {
-    setDraft({
-      low: indexForValue(stops, min, FIRST_STOP_INDEX),
-      high:
-        max === undefined
-          ? lastStopIndex
-          : indexForValue(stops, max, lastStopIndex),
-    });
-  }, [lastStopIndex, max, min, stops]);
+    const next = { min, max };
+    draftRef.current = next;
+    committed.current = next;
+    dirty.current = false;
+    numericDirty.current = false;
+    setDraft(next);
+    setMinimumInput(
+      min?.toLocaleString(currentLocale, {
+        useGrouping: false,
+        maximumFractionDigits: 20,
+      }) ?? "",
+    );
+    setMaximumInput(
+      max?.toLocaleString(currentLocale, {
+        useGrouping: false,
+        maximumFractionDigits: 20,
+      }) ?? "",
+    );
+    setInputError("");
+  }, [currentLocale, max, min]);
 
-  const lowIndex = draft.low;
-  const highIndex = draft.high;
+  const lowIndex = indexForValue(stops, draft.min, FIRST_STOP_INDEX);
+  const highIndex = indexForValue(stops, draft.max, lastStopIndex);
 
   const format = (value: number) =>
-    `${value.toLocaleString(currentLocale)} ${resolvedCurrencySymbol}`;
+    `${value.toLocaleString(currentLocale, { maximumFractionDigits: 20 })} ${resolvedCurrencySymbol}`;
 
-  const label = useMemo(() => {
-    if (lowIndex === FIRST_STOP_INDEX && highIndex === lastStopIndex)
-      return t("ui.priceRangeSlider.allPrices");
-    if (lowIndex === FIRST_STOP_INDEX)
-      return t("ui.priceRangeSlider.upTo", {
-        price: format(stops[highIndex]),
-      });
-    if (highIndex === lastStopIndex)
-      return t("ui.priceRangeSlider.from", {
-        price: format(stops[lowIndex]),
-      });
-    return `${format(stops[lowIndex])} – ${format(stops[highIndex])}`;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    currentLocale,
-    highIndex,
-    lastStopIndex,
-    lowIndex,
-    resolvedCurrencySymbol,
-    stops,
-    t,
-  ]);
+  const label =
+    draft.min === undefined && draft.max === undefined
+      ? t("ui.priceRangeSlider.allPrices")
+      : draft.min === undefined
+        ? t("ui.priceRangeSlider.upTo", { price: format(draft.max!) })
+        : draft.max === undefined
+          ? t("ui.priceRangeSlider.from", { price: format(draft.min) })
+          : `${format(draft.min)} – ${format(draft.max)}`;
 
-  const report = (low: number, high: number) => {
-    onChange({
-      min: low === FIRST_STOP_INDEX ? undefined : stops[low],
-      max: high === lastStopIndex ? undefined : stops[high],
-    });
+  const change = (next: { min?: number; max?: number }) => {
+    draftRef.current = next;
+    numericDirty.current = false;
+    dirty.current =
+      next.min !== committed.current.min || next.max !== committed.current.max;
+    setDraft(next);
+    setMinimumInput(
+      next.min?.toLocaleString(currentLocale, {
+        useGrouping: false,
+        maximumFractionDigits: 20,
+      }) ?? "",
+    );
+    setMaximumInput(
+      next.max?.toLocaleString(currentLocale, {
+        useGrouping: false,
+        maximumFractionDigits: 20,
+      }) ?? "",
+    );
+    setInputError("");
   };
 
-  /** Applies a new range immediately — used by "Réinitialiser", which has no release. */
-  const commit = (low: number, high: number) => {
-    setDraft({ low, high });
-    report(low, high);
+  /** Report each completed edit once, even when release is followed by blur. */
+  const release = () => {
+    if (!dirty.current) return;
+    dirty.current = false;
+    committed.current = draftRef.current;
+    onChange(draftRef.current);
   };
-
-  /** Pushes the current draft up. Wired to every way a control can be released. */
-  const release = () => report(draft.low, draft.high);
-
-  // Handles cannot cross: each one stops one stop short of the other.
+  const commitInputs = () => {
+    if (!numericDirty.current) return;
+    const nextMin = parseMajorAmountInput(minimumInput, currentLocale);
+    const nextMax = parseMajorAmountInput(maximumInput, currentLocale);
+    if (
+      (nextMin !== undefined && !Number.isFinite(nextMin)) ||
+      (nextMax !== undefined && !Number.isFinite(nextMax)) ||
+      (nextMin !== undefined && nextMax !== undefined && nextMin > nextMax)
+    ) {
+      setInputError(t("ui.priceRangeSlider.invalidRange"));
+      return;
+    }
+    change({ min: nextMin, max: nextMax });
+    release();
+  };
+  const cancel = () => change(committed.current);
   const handleLow = (raw: number) =>
-    setDraft((d) => ({
-      ...d,
-      low: Math.min(raw, d.high - STOP_INDEX_STEP),
-    }));
+    change({
+      ...draftRef.current,
+      min:
+        raw === FIRST_STOP_INDEX
+          ? undefined
+          : Math.min(stops[raw], draftRef.current.max ?? Infinity),
+    });
   const handleHigh = (raw: number) =>
-    setDraft((d) => ({
-      ...d,
-      high: Math.max(raw, d.low + STOP_INDEX_STEP),
-    }));
+    change({
+      ...draftRef.current,
+      max:
+        raw === lastStopIndex
+          ? undefined
+          : Math.max(stops[raw], draftRef.current.min ?? 0),
+    });
 
   const thumb =
     "pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 w-full appearance-none bg-transparent " +
@@ -172,15 +219,63 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
         <span className="text-xs font-bold text-text-main tabular-nums">
           {label}
         </span>
-        {(lowIndex !== FIRST_STOP_INDEX || highIndex !== lastStopIndex) && (
+        {(draft.min !== undefined || draft.max !== undefined) && (
           <button
             type="button"
-            onClick={() => commit(FIRST_STOP_INDEX, lastStopIndex)}
+            onClick={() => {
+              change({ min: undefined, max: undefined });
+              release();
+            }}
             className="text-micro font-semibold text-text-muted hover:text-primary transition-colors cursor-pointer shrink-0"
           >
             {t("ui.priceRangeSlider.reinitialiser")}
           </button>
         )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <FormField
+          label={t("ui.priceRangeSlider.minimumPrice")}
+          error={inputError}
+        >
+          <Input
+            inputMode="decimal"
+            value={minimumInput}
+            onChange={(event) => {
+              numericDirty.current = true;
+              setMinimumInput(event.target.value);
+            }}
+            onBlur={commitInputs}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                commitInputs();
+              }
+              if (event.key === "Escape") cancel();
+            }}
+          />
+        </FormField>
+        <FormField
+          label={t("ui.priceRangeSlider.maximumPrice")}
+          error={inputError}
+        >
+          <Input
+            inputMode="decimal"
+            value={maximumInput}
+            onChange={(event) => {
+              numericDirty.current = true;
+              setMaximumInput(event.target.value);
+            }}
+            onBlur={commitInputs}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                commitInputs();
+              }
+              if (event.key === "Escape") cancel();
+            }}
+          />
+        </FormField>
       </div>
 
       <div className="relative h-8">
@@ -195,13 +290,13 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
           onChange={(e) => handleLow(Number(e.target.value))}
           onPointerUp={release}
           onTouchEnd={release}
-          onKeyUp={release}
+          onKeyUp={(event) => (event.key === "Escape" ? cancel() : release())}
           onBlur={release}
           aria-label={t("ui.priceRangeSlider.minimumPrice")}
           aria-valuetext={
-            lowIndex === FIRST_STOP_INDEX
+            draft.min === undefined
               ? t("ui.priceRangeSlider.noMinimum")
-              : format(stops[lowIndex])
+              : format(draft.min)
           }
           className={thumb}
         />
@@ -214,13 +309,13 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
           onChange={(e) => handleHigh(Number(e.target.value))}
           onPointerUp={release}
           onTouchEnd={release}
-          onKeyUp={release}
+          onKeyUp={(event) => (event.key === "Escape" ? cancel() : release())}
           onBlur={release}
           aria-label={t("ui.priceRangeSlider.maximumPrice")}
           aria-valuetext={
-            highIndex === lastStopIndex
+            draft.max === undefined
               ? t("ui.priceRangeSlider.noMaximum")
-              : format(stops[highIndex])
+              : format(draft.max)
           }
           className={thumb}
         />

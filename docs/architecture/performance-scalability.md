@@ -281,6 +281,25 @@ refresh/invalidation contract.
 
 ## Verification and rollout
 
+Public-shell copy follows the existing supplemental-catalogue boundary:
+transaction-only messages load with transaction screens and checkout/dispute
+consumers, alongside the existing Staff, seller, delivery and digital splits.
+Keep translation callbacks stable for an unchanged locale and catalogue so
+effects do not reload editor drafts on local changes.
+
+The shared Web image wrapper leaves server-rendered images visible before
+hydration. Consumers reserve their geometry and choose responsive sizes and
+true above-fold priority; JavaScript handles error/fallback presentation without
+owning the initial image reveal. Owned homepage artwork uses Next.js
+`getImageProps` inside the existing media-conditioned picture, so the framework
+serves responsive derivatives only above the visible breakpoint. The original
+asset and the no-download mobile fallback remain intact. This follows the
+[framework's art-direction API](https://nextjs.org/docs/app/api-reference/components/image#art-direction)
+and does not enable optimization of remote private resources.
+This does not establish that a storage/CDN
+transformer is configured or that field LCP meets its SLO. Use the existing
+image-transform and consented Vitals evidence for those separate claims.
+
 Run:
 
 ```bash

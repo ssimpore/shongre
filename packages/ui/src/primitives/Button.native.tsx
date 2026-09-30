@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { interaction } from "@shongre/design-tokens";
 import {
   ActivityIndicator,
@@ -9,6 +9,7 @@ import {
   type AccessibilityState,
   type StyleProp,
   type ViewStyle,
+  type View,
 } from "react-native";
 import {
   nativeBorders,
@@ -20,7 +21,10 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 
+import { useReducedMotion } from "../hooks/useReducedMotion.native";
+
 export interface ButtonProps {
+  ref?: Ref<View>;
   children?: ReactNode;
   label?: string;
   onPress: () => void;
@@ -41,6 +45,7 @@ export interface ButtonProps {
 }
 
 export function Button({
+  ref,
   children,
   label,
   onPress,
@@ -59,6 +64,7 @@ export function Button({
   fullWidth,
   style,
 }: ButtonProps) {
+  const reducedMotion = useReducedMotion();
   const busy = Boolean(loading || isLoading);
   const unavailable = Boolean(disabled || busy);
   const visibleLabel = children ?? label;
@@ -72,6 +78,7 @@ export function Button({
 
   return (
     <Pressable
+      ref={ref}
       accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel ?? labelText}
       accessibilityHint={accessibilityHint}
@@ -89,7 +96,11 @@ export function Button({
         fullWidth && styles.fullWidth,
         pressed &&
           !unavailable &&
-          (variant === "primary" ? styles.primaryPressed : styles.pressed),
+          (variant === "primary" && !reducedMotion
+            ? styles.primaryPressed
+            : variant === "primary"
+              ? styles.stillPressed
+              : styles.pressed),
         unavailable && variant !== "primary" && styles.disabled,
         unavailable && variant === "primary" && styles.primaryDisabled,
         style,
@@ -146,6 +157,7 @@ const styles = StyleSheet.create({
   },
   fullWidth: { width: nativeSizing.full },
   small: { paddingHorizontal: nativeSpacing.md },
+  stillPressed: { borderColor: nativeColors.border.strong },
   pressed: { opacity: nativeOpacity.pressed },
   primaryPressed: { transform: [{ scale: interaction.pressScale }] },
   disabled: { opacity: nativeOpacity.disabled },

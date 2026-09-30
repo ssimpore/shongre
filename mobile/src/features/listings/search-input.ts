@@ -1,3 +1,4 @@
+import { parseMajorAmountInput } from "@shongre/shared/money";
 import { deterministicUuid } from "@shongre/shared/deterministic-id";
 
 export function mobileSavedSearchTargetId(input: {
@@ -5,6 +6,7 @@ export function mobileSavedSearchTargetId(input: {
   query: string;
   locale: string;
   categoryId?: string;
+  city?: string;
   minPriceMinor?: number;
   maxPriceMinor?: number;
 }): string {
@@ -14,6 +16,9 @@ export function mobileSavedSearchTargetId(input: {
       marketCode: input.marketCode,
       query: input.query.trim().toLocaleLowerCase(input.locale),
       categoryId: input.categoryId ?? null,
+      ...(input.city?.trim()
+        ? { city: input.city.trim().toLocaleLowerCase(input.locale) }
+        : {}),
       minPriceMinor: input.minPriceMinor ?? null,
       maxPriceMinor: input.maxPriceMinor ?? null,
     }),
@@ -30,13 +35,10 @@ export interface MobileSearchPriceRange {
 export function parseMobileSearchPriceRange(
   minimumInput: string,
   maximumInput: string,
+  locale = "fr-FR",
 ): MobileSearchPriceRange {
-  const minimum = minimumInput.trim()
-    ? Number(minimumInput.replace(",", "."))
-    : undefined;
-  const maximum = maximumInput.trim()
-    ? Number(maximumInput.replace(",", "."))
-    : undefined;
+  const minimum = parseMajorAmountInput(minimumInput, locale);
+  const maximum = parseMajorAmountInput(maximumInput, locale);
   const minimumInvalid =
     minimum !== undefined && (!Number.isFinite(minimum) || minimum < 0);
   const maximumInvalid =

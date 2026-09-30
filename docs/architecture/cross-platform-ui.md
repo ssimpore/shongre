@@ -43,6 +43,11 @@ Shared packages never import application folders; backend may consume
   roles and state while retaining authoritative disabled/loading state, so real
   radio and toggle consumers do not have to bypass the primitive. Native form
   fields are announced as disabled only when `editable={false}` is explicit.
+  Native modals receive the caller's safe-area insets, keep their body scrollable
+  inside keyboard avoidance, place accessibility focus on their heading, and
+  accept a trigger ref for focus restoration. Native buttons and modals share
+  one OS Reduce Motion subscription; reduced mode removes spatial press
+  feedback and modal transitions while retaining a visible pressed state.
   Standard buttons use the header's 40px `control-md` minimum on Web and the
   existing coarse-pointer token floor raises it to 44px. `compact` keeps the
   same height with denser typography; `sm` is 32px for desktop toolbars and
@@ -93,7 +98,10 @@ adapters under `mobile/src/features`; they do not load local taxonomy or listing
 fixtures and do not infer authoritative search results from rendered card text.
 Publication loads the market-scoped taxonomy tree and resolved publication
 schema through `/api/v1`, while search sends query, canonical category scope,
-and price bounds to the backend. Supabase remains behind the Shongre backend;
+city, sorting and price bounds to the backend. Criteria live in Expo Router
+parameters and remain attached to pagination; selecting another search scope
+clears an incompatible explicit category. City entry uses no location permission.
+Supabase remains behind the Shongre backend;
 changing the environment's Supabase project does not change mobile UI code.
 
 ## Next.js rendering boundary
@@ -104,6 +112,12 @@ loading, and error states. `frontend/app/layout.tsx` exposes the `next/font`
 result as `--font-nunito-sans`; the generated design-token adapter owns
 `--font-family-sans` and maps Tailwind's `font-sans` to it. Components inherit
 the family and never load or declare an application font independently. The
+native adapter retains the existing Inter regular/medium/semibold/bold mapping
+loaded once by `mobile/app/_layout.tsx`. This is the intentional platform mapping
+for the current implementation, not an assertion that a brand-review study has
+been completed. Semantic sizes and weights remain token-owned; changing the
+native family requires a brand and enlarged-text comparison before replacing
+the mapping, rather than component-local font overrides. The
 loading boundary may prioritize its visible compact brand mark, while error and
 not-found boundary artwork stays lazy: Next serializes those hidden boundaries
 with successful route responses, so priority there creates unused image

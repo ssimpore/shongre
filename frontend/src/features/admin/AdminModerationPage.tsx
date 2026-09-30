@@ -11,6 +11,8 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Button } from "../../design-system/primitives/Button";
+import { Modal } from "../../design-system/primitives/Modal";
+import { routes } from "../../configuration/routes";
 import { PromptModal } from "../../design-system/primitives/PromptModal";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -32,6 +34,8 @@ export const AdminModerationPage: React.FC = () => {
   const { can } = useAuth();
   const toast = useToast();
   const canReviewReports = can("report.review");
+  const canReviewCases = can("moderation.review");
+  const canTakeAction = can("moderation.action");
   usePageMeta({
     title: t("meta.adminModeration.title"),
     description: t("meta.adminModeration.description"),
@@ -47,8 +51,47 @@ export const AdminModerationPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [reportDecision, setReportDecision] = useState<{
     reportId: string;
+    targetLabel: string;
     action: "dismiss" | "remove_listing" | "remove_review";
   } | null>(null);
+  const [inspection, setInspection] = useState<AdminReportSummary | null>(null);
+  const [inspectionItem, setInspectionItem] = useState<{
+    id: string;
+    title: string;
+    description: string;
+  } | null>(null);
+  const [inspectionLoading, setInspectionLoading] = useState(false);
+  const [inspectionUnavailable, setInspectionUnavailable] = useState(false);
+  useEffect(() => {
+    let active = true;
+    setInspectionItem(null);
+    setInspectionUnavailable(false);
+    if (!inspection || inspection.targetType !== "listing") {
+      setInspectionLoading(false);
+      return;
+    }
+    setInspectionLoading(true);
+    void services.listings
+      .getListingById(inspection.targetId)
+      .then((item) => {
+        if (!active) return;
+        setInspectionItem(
+          item
+            ? { id: item.id, title: item.title, description: item.description }
+            : null,
+        );
+        setInspectionUnavailable(!item);
+      })
+      .catch(() => {
+        if (active) setInspectionUnavailable(true);
+      })
+      .finally(() => {
+        if (active) setInspectionLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [inspection]);
   const [appealDecision, setAppealDecision] = useState<{
     appealId: string;
     decision: AppealDecision;
@@ -63,8 +106,8 @@ export const AdminModerationPage: React.FC = () => {
     try {
       const [nextReports, nextCases, nextAppeals] = await Promise.all([
         services.admin.getPendingReports(),
-        services.moderation.listCases(),
-        services.moderation.listAppeals(),
+        canReviewCases ? services.moderation.listCases() : [],
+        canReviewCases ? services.moderation.listAppeals() : [],
       ]);
       setReports(nextReports);
       setCases(nextCases);
@@ -79,7 +122,7 @@ export const AdminModerationPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [canReviewReports]);
+  }, [canReviewCases, canReviewReports]);
 
   useEffect(() => {
     void load();
@@ -165,18 +208,20 @@ export const AdminModerationPage: React.FC = () => {
           <ShieldAlert className="h-icon-md w-icon-md" />
           Signalements ({reports.length})
         </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("appeals")}
-          className={`flex items-center gap-2 border-b-2 pb-3 ${
-            activeTab === "appeals"
-              ? "border-primary text-primary"
-              : "border-transparent text-text-tertiary"
-          }`}
-        >
-          <Scale className="h-icon-md w-icon-md" />
-          Dossiers et recours ({appeals.length})
-        </button>
+        {canReviewCases && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("appeals")}
+            className={`flex items-center gap-2 border-b-2 pb-3 ${
+              activeTab === "appeals"
+                ? "border-primary text-primary"
+                : "border-transparent text-text-tertiary"
+            }`}
+          >
+            <Scale className="h-icon-md w-icon-md" />
+            Dossiers et recours ({appeals.length})
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -232,22 +277,31 @@ export const AdminModerationPage: React.FC = () => {
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => setInspection(report)}
+                    >
+                      {t("admin.moderation.inspect")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() =>
                         setReportDecision({
                           reportId: report.id,
+                          targetLabel: `${REPORT_TARGET_LABELS[report.targetType]} ${report.targetId}`,
                           action: "dismiss",
                         })
                       }
                     >
                       Classer sans suite
                     </Button>
-                    {report.targetType === "listing" && (
+                    {canTakeAction && report.targetType === "listing" && (
                       <Button
                         size="sm"
                         variant="danger"
                         onClick={() =>
                           setReportDecision({
                             reportId: report.id,
+                            targetLabel: `${REPORT_TARGET_LABELS[report.targetType]} ${report.targetId}`,
                             action: "remove_listing",
                           })
                         }
@@ -255,13 +309,14 @@ export const AdminModerationPage: React.FC = () => {
                         Retirer l’annonce
                       </Button>
                     )}
-                    {report.targetType === "review" && (
+                    {canTakeAction && report.targetType === "review" && (
                       <Button
                         size="sm"
                         variant="danger"
                         onClick={() =>
                           setReportDecision({
                             reportId: report.id,
+                            targetLabel: `${REPORT_TARGET_LABELS[report.targetType]} ${report.targetId}`,
                             action: "remove_review",
                           })
                         }
@@ -338,7 +393,7 @@ export const AdminModerationPage: React.FC = () => {
                       <p className="text-xs text-text-secondary">
                         {appeal.reason}
                       </p>
-                      {pending ? (
+                      {pending && canTakeAction ? (
                         <div className="flex flex-wrap gap-2">
                           {(["upheld", "overturned", "rejected"] as const).map(
                             (decision) => (
@@ -370,11 +425,65 @@ export const AdminModerationPage: React.FC = () => {
         </div>
       )}
 
+      <Modal
+        isOpen={inspection !== null}
+        onClose={() => setInspection(null)}
+        title={t("admin.moderation.inspect")}
+      >
+        {inspection && (
+          <div className="space-y-4">
+            <p className="text-sm font-semibold">
+              {REPORT_TARGET_LABELS[inspection.targetType]}{" "}
+              {inspection.targetId}
+            </p>
+            <p className="text-sm text-text-secondary">
+              {t("admin.moderation.inspectionReason", {
+                reason: inspection.reason,
+                name: inspection.reporterName,
+              })}
+            </p>
+            {inspectionLoading ? (
+              <p role="status">{t("admin.moderation.loadingListing")}</p>
+            ) : inspectionItem ? (
+              <>
+                <h3 className="font-bold text-text-main">
+                  {inspectionItem.title}
+                </h3>
+                <p className="whitespace-pre-wrap text-sm text-text-secondary">
+                  {inspectionItem.description}
+                </p>
+                <Button
+                  to={routes.listing.detail(inspectionItem.id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  variant="outline"
+                >
+                  {t("admin.moderation.fullListing")}
+                </Button>
+              </>
+            ) : (
+              <p role="status" className="text-sm text-text-secondary">
+                {inspectionUnavailable
+                  ? t("admin.moderation.listingUnavailable")
+                  : t("admin.moderation.contentUnavailable")}
+              </p>
+            )}
+            <Button onClick={() => setInspection(null)}>
+              {t("admin.moderation.returnToQueue")}
+            </Button>
+          </div>
+        )}
+      </Modal>
       <PromptModal
         isOpen={reportDecision !== null}
         onClose={() => setReportDecision(null)}
         onSubmit={(reason) => void resolveReport(reason)}
-        title="Motiver la décision"
+        title={t(
+          reportDecision?.action === "dismiss"
+            ? "admin.moderation.dismissTarget"
+            : "admin.moderation.removeTarget",
+          { target: reportDecision?.targetLabel ?? "" },
+        )}
         label="Motif d’audit"
         multiline
         minLength={MODERATION_CONSTRAINTS.appealReviewReasonMinLength}

@@ -389,6 +389,7 @@ export const ImmoSearchPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>();
+  const [retryVersion, setRetryVersion] = useState(0);
   const [selectedId, setSelectedId] = useState<string>();
   const {
     filtersExpanded: mobileFilters,
@@ -512,7 +513,7 @@ export const ImmoSearchPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [query, currentUser?.id]);
+  }, [query, currentUser?.id, retryVersion]);
 
   const setParam = (key: string, value?: string) => {
     setParams(
@@ -810,7 +811,12 @@ export const ImmoSearchPage: React.FC = () => {
             title="Recherche indisponible"
             description={error}
             action={
-              <Button onClick={() => setParams(params)}>Réessayer</Button>
+              <Button
+                onClick={() => setRetryVersion((version) => version + 1)}
+                disabled={loading}
+              >
+                {t("common.retry")}
+              </Button>
             }
           />
         ) : null}

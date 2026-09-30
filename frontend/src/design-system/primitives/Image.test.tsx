@@ -26,6 +26,9 @@ describe("Image", () => {
     );
 
     expect(html).toContain('src="https://images.example.test/employer.png"');
+    // The image must paint from the server document, including when JS is delayed.
+    expect(html).not.toContain("opacity-0");
+    expect(html).toContain('loading="lazy"');
     expect(html).not.toContain('src="/images/categories/emploi.jpg"');
   });
 

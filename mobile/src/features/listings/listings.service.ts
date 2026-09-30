@@ -30,6 +30,8 @@ export interface MobileListingSearchInput {
   minPrice?: number;
   maxPrice?: number;
   cursor?: string;
+  city?: string;
+  sortBy?: BackendListingSearchRequest["sortBy"];
 }
 
 export function mobileSearchCategoryId(
@@ -47,6 +49,7 @@ export function mobileSearchCategoryId(
 export interface MobileListingSearchResult {
   items: ListingCardView[];
   total: number;
+  totalRelation: "exact" | "lower_bound";
   pageInfo: { hasNextPage: boolean; nextCursor?: string };
   /** The API's nearest known spelling, offered only when nothing matched. */
   didYouMean?: string;
@@ -242,6 +245,8 @@ export class HttpListingsService implements ListingsService {
       ...(input.minPrice !== undefined ? { minPrice: input.minPrice } : {}),
       ...(input.maxPrice !== undefined ? { maxPrice: input.maxPrice } : {}),
       ...(input.cursor ? { cursor: input.cursor } : {}),
+      ...(input.city?.trim() ? { city: input.city.trim() } : {}),
+      ...(input.sortBy ? { sortBy: input.sortBy } : {}),
     };
     const response = await apiOperation(
       "postListingsSearch",
@@ -251,6 +256,7 @@ export class HttpListingsService implements ListingsService {
     return {
       items: response.items.map(mapBackendListing),
       total: response.total,
+      totalRelation: response.totalRelation,
       pageInfo: response.pageInfo,
       ...(response.didYouMean ? { didYouMean: response.didYouMean } : {}),
     };

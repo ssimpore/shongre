@@ -20,14 +20,20 @@ const unavailable = {
 const returnTo = "/compte/annonces";
 const query = `?redirect=${encodeURIComponent(returnTo)}`;
 
-async function expectProviderButtons(page: Page, enabled: boolean) {
+async function expectProviderButtons(
+  page: Page,
+  enabled: boolean,
+  hidden = false,
+) {
   for (const name of providerNames) {
     const button = page.getByRole("button", {
       name: `Continuer avec ${name}`,
       exact: true,
     });
-    await expect(button).toBeVisible();
-    if (enabled) await expect(button).toBeEnabled();
+    if (enabled) {
+      await expect(button).toBeVisible();
+      await expect(button).toBeEnabled();
+    } else if (hidden) await expect(button).toHaveCount(0);
     else await expect(button).toBeDisabled();
   }
 }
@@ -107,7 +113,7 @@ test.describe("social authentication and account security", () => {
     expect(submitted).toMatchObject({ returnTo: "/" });
   });
 
-  test("@serial unavailable providers stay visible on mobile sign-in and registration forms", async ({
+  test("@serial unavailable providers explain email sign-in on mobile forms", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -120,12 +126,12 @@ test.describe("social authentication and account security", () => {
       "/inscription/professionnel",
     ]) {
       await page.goto(`${path}${query}`, { waitUntil: "domcontentloaded" });
-      await expectProviderButtons(page, false);
+      await expectProviderButtons(page, false, true);
       await expect(
         page
           .getByRole("group", { name: "Connexion ou inscription" })
           .getByRole("status"),
-      ).toHaveCount(0);
+      ).toContainText("connexion par email");
       const legalNotice = page.locator("[data-auth-legal-notice]");
       await expect(legalNotice).toContainText(
         "En continuant, vous acceptez nos",
@@ -152,7 +158,7 @@ test.describe("social authentication and account security", () => {
       route.fulfill({ json: unavailable }),
     );
     await page.goto(`/connexion${query}`, { waitUntil: "domcontentloaded" });
-    await expectProviderButtons(page, false);
+    await expectProviderButtons(page, false, true);
     await page.getByLabel("Adresse email").fill(accounts.user_thomas.email);
     await page
       .locator("#login-password")
@@ -188,7 +194,7 @@ test.describe("social authentication and account security", () => {
       );
     });
     await page.goto(`/connexion${query}`, { waitUntil: "domcontentloaded" });
-    await expectProviderButtons(page, false);
+    await expectProviderButtons(page, false, true);
     await expect(
       page.getByRole("status").filter({ hasText: "Vérification des modes" }),
     ).toBeVisible();
@@ -203,10 +209,10 @@ test.describe("social authentication and account security", () => {
     ).toBeEnabled();
     await expect(
       page.getByRole("button", { name: "Continuer avec Apple" }),
-    ).toBeDisabled();
+    ).toHaveCount(0);
     await expect(
       page.getByRole("button", { name: "Continuer avec Facebook" }),
-    ).toBeDisabled();
+    ).toHaveCount(0);
     await expect(
       page
         .getByRole("group", { name: "Connexion ou inscription" })

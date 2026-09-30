@@ -1,4 +1,5 @@
 import React from "react";
+import { getImageProps } from "next/image";
 import {
   LockKeyhole,
   Search,
@@ -15,6 +16,14 @@ import { useTranslation } from "../../../i18n/I18nProvider";
 import { HeroBoostedScroll } from "./HeroBoostedScroll";
 import { GlobalSearchBar } from "../../../design-system/primitives/GlobalSearchBar";
 import { homepageVisibilityClass } from "../../../domains/homepage/homepage.presentation";
+
+const { props: artwork } = getImageProps({
+  src: "/images/home-marketplace-hero.webp",
+  alt: "",
+  width: 2056,
+  height: 765,
+  sizes: "100vw",
+});
 
 export const HomeHeroSection: React.FC<{
   section: HomepageSectionView;
@@ -58,17 +67,13 @@ export const HomeHeroSection: React.FC<{
           data-home-hero-surface="true"
           className="relative isolate overflow-hidden rounded-listing-card border border-border-base bg-bg-surface shadow-sm"
         >
-          {/* Below `sm` the gradient covers the whole surface, so the artwork
-              is invisible there — yet as the largest painted element it was
-              the phone's LCP, 163 KB at high priority behind a 95% overlay
-              (7.7 s on a throttled 4G phone). The source only matches from
-              `sm`; the fallback is an empty pixel, so a phone downloads
-              nothing and its LCP is the headline. */}
+          {/* Request responsive framework-optimized artwork only where visible.
+              The empty fallback avoids transferring it below `sm`. */}
           <picture>
             <source
               media="(min-width: 640px)"
-              srcSet="/images/home-marketplace-hero.webp"
-              type="image/webp"
+              srcSet={artwork.srcSet}
+              sizes={artwork.sizes}
             />
             <img
               src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"

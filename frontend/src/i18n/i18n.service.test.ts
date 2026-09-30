@@ -1,3 +1,4 @@
+import { transactionCatalogueFr } from "./transaction.catalogue.fr";
 import { describe, it, expect } from "vitest";
 import {
   translate,
@@ -18,7 +19,7 @@ import { sellerCatalogueFr } from "./seller.catalogue.fr";
 import { SHIPPED_LOCALES } from "./locale";
 
 const UNSHIPPED_CATALOGUE_MISSING_KEY_BUDGETS: Record<string, number> = {
-  "en-US": 731,
+  "en-US": 0,
 };
 
 describe("resolveLocale", () => {
@@ -177,6 +178,7 @@ describe("catalogue integrity", () => {
       ...Object.keys(deliveryCatalogueFr),
       ...Object.keys(adminCatalogueFr),
       ...Object.keys(sellerCatalogueFr),
+      ...Object.keys(transactionCatalogueFr),
     ]);
     const orphans = Object.keys(messagesEn).filter(
       (key) => !sourceKeys.has(key),
@@ -219,6 +221,7 @@ describe("catalogue integrity", () => {
       ...deliveryCatalogueFr,
       ...adminCatalogueFr,
       ...sellerCatalogueFr,
+      ...transactionCatalogueFr,
     };
     expect(catalogueCoverageFor(messagesEn, everyShippedKey)).toBeGreaterThan(
       0,

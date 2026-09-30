@@ -44,13 +44,10 @@ export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
  * renders the neutral placeholder, while applying the project's standard
  * `loading="lazy"` / `referrerPolicy` defaults.
  *
- * It also owns the two things every consumer would otherwise have to remember:
- *
- * 1. **Responsive sources.** Pass `sizes` and the CDN ladder is derived from
- *    `src`, so a 270px card stops downloading an 800px photo.
- * 2. **The arrival.** Media fades up over the reserved box instead of popping
- *    in. `duration-fast` is below the reduced-motion threshold the global
- *    stylesheet already neutralises, so it stays honest for that preference.
+ * Pass `sizes` and the responsive CDN ladder is derived from `src`, so a
+ * 270px card stops downloading an 800px photo.
+ * Server-rendered media stays visible without waiting for hydration. The
+ * consumer reserves its geometry; the browser paints the image when it loads.
  *
  * No wrapper element is introduced on purpose: consumers position this `<img>`
  * directly inside an aspect-ratio box, and an extra div would break that.
@@ -74,7 +71,6 @@ export const Image: React.FC<ImageProps> = ({
   const ownedSrc =
     typeof src === "string" ? resolveOwnedPublicMediaUrl(src) : src;
   const [hasFailed, setHasFailed] = useState(false);
-  const [hasArrived, setHasArrived] = useState(false);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
 
   // A new src deserves a fresh attempt rather than inheriting the failed state.
@@ -83,7 +79,6 @@ export const Image: React.FC<ImageProps> = ({
   // every image and is especially visible while filtering search results.
   useEffect(() => {
     setHasFailed(false);
-    setHasArrived(false);
     setIsUsingFallback(false);
   }, [fallbackSrc, ownedSrc]);
 
@@ -124,20 +119,11 @@ export const Image: React.FC<ImageProps> = ({
       fetchPriority={priority ? "high" : undefined}
       decoding={decoding}
       referrerPolicy={referrerPolicy}
-      className={`${className} transition-opacity duration-fast ${hasArrived ? "opacity-100" : "opacity-0"}`}
-      /* A cached image can finish before React attaches `onLoad`, which would
-         strand it at `opacity-0`. The ref settles that case on mount. */
-      ref={(node) => {
-        if (node?.complete) setHasArrived(true);
-      }}
-      onLoad={(e) => {
-        setHasArrived(true);
-        onLoad?.(e);
-      }}
+      className={className}
+      onLoad={onLoad}
       onError={(e) => {
         if (!isFallbackSource && fallbackSrc) {
           setIsUsingFallback(true);
-          setHasArrived(false);
         } else {
           setHasFailed(true);
         }

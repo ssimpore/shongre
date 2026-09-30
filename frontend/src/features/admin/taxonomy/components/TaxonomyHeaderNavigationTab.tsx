@@ -12,7 +12,13 @@ import {
   Save,
   Trash2,
 } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { services } from "../../../../api/client/service-registry";
 import { useMarketLocation } from "../../../../app/providers/MarketLocationProvider";
 import { Button } from "../../../../design-system/primitives/Button";
@@ -74,7 +80,9 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
   const [notice, setNotice] = useState<string | null>(null);
   const [reasonModalOpen, setReasonModalOpen] = useState(false);
 
+  const generation = useRef(0);
   const load = useCallback(async () => {
+    const request = ++generation.current;
     if (!marketContext) {
       setConfiguration(null);
       setError(t("admin.taxonomyHeader.marketRequired"));
@@ -88,6 +96,7 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
         services.taxonomy.getAdminHeaderNavigation(marketContext),
         services.taxonomy.getRootCategories(),
       ]);
+      if (request !== generation.current) return;
       setConfiguration(
         withOrderedItems(
           nextConfiguration,
@@ -101,18 +110,24 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
       );
       setNotice(null);
     } catch (caught) {
+      if (request !== generation.current) return;
       setError(
         caught instanceof Error
           ? caught.message
           : t("admin.taxonomyHeader.loadError"),
       );
     } finally {
-      setLoading(false);
+      if (request === generation.current) setLoading(false);
     }
   }, [locale, marketContext, t]);
 
   useEffect(() => {
+    setConfiguration(null);
+    setSaving(false);
     void load();
+    return () => {
+      generation.current += 1;
+    };
   }, [load]);
 
   const selectedCategoryIds = useMemo(
@@ -178,6 +193,7 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
 
   const save = async (changeReason: string) => {
     if (!configuration) return;
+    const request = generation.current;
     setSaving(true);
     setError(null);
     try {
@@ -192,16 +208,18 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
           displayOrder: item.displayOrder,
         })),
       });
+      if (request !== generation.current) return;
       setConfiguration(withOrderedItems(saved, headerNavigationItems(saved)));
       setNotice(t("admin.taxonomyHeader.saved"));
     } catch (caught) {
+      if (request !== generation.current) return;
       setError(
         caught instanceof Error
           ? caught.message
           : t("admin.taxonomyHeader.saveError"),
       );
     } finally {
-      setSaving(false);
+      if (request === generation.current) setSaving(false);
     }
   };
 

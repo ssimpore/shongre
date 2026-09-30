@@ -37,7 +37,13 @@ export const FormField: React.FC<FormFieldProps> = ({
   className = "",
 }) => {
   const generatedId = useId();
-  const controlId = htmlFor ?? `field-${generatedId}`;
+  const child = isValidElement(children)
+    ? (children as React.ReactElement<Record<string, unknown>>)
+    : null;
+  const controlId =
+    htmlFor ??
+    (child?.props.id as string | undefined) ??
+    `field-${generatedId}`;
   const hintId = `${controlId}-hint`;
   const errorId = `${controlId}-error`;
 
@@ -46,8 +52,7 @@ export const FormField: React.FC<FormFieldProps> = ({
     .join(" ");
 
   let control = children;
-  if (isValidElement(children)) {
-    const child = children as React.ReactElement<Record<string, unknown>>;
+  if (child) {
     const existingDescribedBy = child.props["aria-describedby"] as
       string | undefined;
     // `error` is a prop of our own controls only. Forwarding it to a plain DOM
@@ -57,7 +62,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       child.type === Input || child.type === Textarea || child.type === Select;
 
     control = cloneElement(child, {
-      id: (child.props.id as string | undefined) ?? controlId,
+      id: controlId,
       "aria-describedby":
         [existingDescribedBy, describedBy].filter(Boolean).join(" ") ||
         undefined,

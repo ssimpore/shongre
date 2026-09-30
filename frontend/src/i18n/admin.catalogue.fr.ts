@@ -8,6 +8,17 @@
  * same supplemental-catalogue path the delivery and digital catalogues use.
  */
 export const adminCatalogueFr = {
+  "admin.moderation.inspect": "Examiner le signalement",
+  "admin.moderation.inspectionReason": "Motif : {reason} · signalé par {name}",
+  "admin.moderation.loadingListing": "Chargement de l’annonce…",
+  "admin.moderation.fullListing": "Voir l’annonce complète (nouvel onglet)",
+  "admin.moderation.listingUnavailable":
+    "Cette annonce est masquée, supprimée ou indisponible. Son contenu public ne permet pas de l’examiner. Vérifiez les éléments autorisés du dossier avant de décider.",
+  "admin.moderation.contentUnavailable":
+    "Le contenu lié n’est pas disponible depuis cette file. Vérifiez les éléments autorisés du dossier avant de décider.",
+  "admin.moderation.returnToQueue": "Revenir à la file",
+  "admin.moderation.dismissTarget": "Classer sans suite — {target}",
+  "admin.moderation.removeTarget": "Retirer le contenu — {target}",
   "admin.solutions.order.title": "Ordre et visibilité",
   "admin.solutions.order.description":
     "Activez les solutions à présenter, puis utilisez les flèches pour définir l’ordre du catalogue public et du sélecteur Solutions. Le cycle de vie continue de contrôler la publication.",

@@ -1,3 +1,7 @@
+import {
+  majorToMinorAmount,
+  parseMajorAmountInput,
+} from "@shongre/shared/money";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Bell, BriefcaseBusiness, ShieldCheck } from "lucide-react";
@@ -17,6 +21,7 @@ import {
   DropdownMenu,
   FilterChip,
   FilterPanel,
+  FormField,
   Input,
   ListingCardSkeleton,
   ListingGrid,
@@ -102,10 +107,11 @@ const EmploymentFilters: React.FC<{
   locationSelectorId,
   onReset,
   onApply,
-  resultCount = 0,
+  resultCount,
   activeSectionId,
 }) => {
   const { currencySymbol, currentLocale } = useMarketLocation();
+  const { t } = useTranslation();
   const dictionaries = (
     kind: EmploymentCatalog["dictionaries"][number]["kind"],
   ) =>
@@ -120,7 +126,13 @@ const EmploymentFilters: React.FC<{
       footer={
         onApply ? (
           <Button fullWidth onClick={onApply}>
-            Voir {resultCount} offre{resultCount > 1 ? "s" : ""}
+            {resultCount === undefined ? (
+              t("employment.salary.applyFilters")
+            ) : (
+              <>
+                Voir {resultCount} offre{resultCount > 1 ? "s" : ""}
+              </>
+            )}
           </Button>
         ) : undefined
       }
@@ -193,22 +205,33 @@ const EmploymentFilters: React.FC<{
         />
       </div>
       <div data-filter-section="employment-salary">
-        <label
-          className="mb-2 block text-xs font-semibold text-text-main"
-          htmlFor="employment-salary"
-        >
-          Rémunération minimale annuelle
-        </label>
-        <Input
-          id="employment-salary"
-          inputMode="numeric"
-          className="w-full"
-          placeholder={`Ex. ${new Intl.NumberFormat(currentLocale).format(35_000)} ${currencySymbol}`}
-          value={params.get("salary") || ""}
-          onChange={(event) =>
-            setParam("salary", event.target.value || undefined)
+        <FormField
+          label={t("employment.salary.minimum", { currency: currencySymbol })}
+          hint={
+            dictionaries("salary_frequency").find(
+              (entry) => entry.id === params.get("salaryFrequency"),
+            )?.label || t("employment.salary.periodHint")
           }
-        />
+          error={
+            params.get("salary") &&
+            (!Number.isFinite(
+              parseMajorAmountInput(params.get("salary") || "", currentLocale),
+            ) ||
+              !params.get("salaryFrequency"))
+              ? t("employment.salary.invalid")
+              : undefined
+          }
+        >
+          <Input
+            id="employment-salary"
+            inputMode="decimal"
+            className="w-full"
+            value={params.get("salary") || ""}
+            onChange={(event) =>
+              setParam("salary", event.target.value || undefined)
+            }
+          />
+        </FormField>
       </div>
       <div>
         <span className="mb-2 block text-xs font-bold text-text-main">
@@ -258,7 +281,7 @@ const EmploymentFilters: React.FC<{
 export const EmploymentSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, isRestoring } = useAuth();
-  const { activeMarket, marketContext } = useMarketLocation();
+  const { activeMarket, marketContext, currentLocale } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -283,6 +306,7 @@ export const EmploymentSearchPage: React.FC = () => {
   );
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(false);
+  const [retryVersion, setRetryVersion] = useState(0);
   const {
     filtersExpanded: mobileFilters,
     activeFilterSection,
@@ -339,6 +363,13 @@ export const EmploymentSearchPage: React.FC = () => {
     void loadSavedJobs().catch(() => undefined);
   }, [loadSavedJobs]);
 
+  const salaryAmount = parseMajorAmountInput(
+    params.get("salary") || "",
+    currentLocale,
+  );
+  const salaryInvalid =
+    salaryAmount !== undefined &&
+    (!Number.isFinite(salaryAmount) || !params.get("salaryFrequency"));
   const query = useMemo<EmploymentSearchQuery>(
     () => ({
       marketCode: activeMarket.code,
@@ -351,9 +382,10 @@ export const EmploymentSearchPage: React.FC = () => {
       workingArrangementIds: csv(params.get("arrangement")),
       contractTypeIds: csv(params.get("contract")),
       workingTimeIds: csv(params.get("workingTime")),
-      salaryMinimumMinor: params.get("salary")
-        ? Number(params.get("salary")?.replace(/\s/g, "")) * 100
-        : undefined,
+      salaryMinimumMinor:
+        salaryAmount !== undefined && !salaryInvalid
+          ? majorToMinorAmount(salaryAmount, activeMarket.currency)
+          : undefined,
       salaryFrequencyId: params.get("salaryFrequency") || undefined,
       experienceLevelIds: csv(params.get("experience")),
       educationLevelIds: csv(params.get("education")),
@@ -371,7 +403,13 @@ export const EmploymentSearchPage: React.FC = () => {
         (params.get("sort") as EmploymentSearchQuery["sort"]) || "relevance",
       limit: PAGE_SIZES.marketplaceSearch,
     }),
-    [activeMarket.code, params],
+    [
+      activeMarket.code,
+      activeMarket.currency,
+      params,
+      salaryAmount,
+      salaryInvalid,
+    ],
   );
 
   useEffect(() => {
@@ -380,6 +418,22 @@ export const EmploymentSearchPage: React.FC = () => {
       return;
     }
     let active = true;
+    if (salaryInvalid) {
+      setLoading(false);
+      setError(false);
+      // The catalogue is still needed to correct an invalid deep-linked filter.
+      void services.employment
+        .getCatalog(query.marketCode)
+        .then((nextCatalog) => {
+          if (active) setCatalog(nextCatalog);
+        })
+        .catch(() => {
+          if (active) setError(true);
+        });
+      return () => {
+        active = false;
+      };
+    }
     setLoading(true);
     setError(false);
     Promise.all([
@@ -398,7 +452,7 @@ export const EmploymentSearchPage: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [query]);
+  }, [query, retryVersion, salaryInvalid]);
 
   useEffect(() => {
     if (!catalog || (!professionSlug && !sectorSlug && !locationSlug)) return;
@@ -618,6 +672,10 @@ export const EmploymentSearchPage: React.FC = () => {
   };
 
   const createAlert = async () => {
+    if (salaryInvalid) {
+      openFilters("employment-salary");
+      return;
+    }
     setSavingAlert(true);
     try {
       const label = [query.keywords || "Offres d’emploi", query.location]
@@ -725,7 +783,13 @@ export const EmploymentSearchPage: React.FC = () => {
           </section>
         ) : null}
         <SearchResultsToolbar
-          resultLabel={loading ? "Recherche…" : `${total} offres`}
+          resultLabel={
+            salaryInvalid
+              ? t("employment.salary.check")
+              : loading
+                ? "Recherche…"
+                : `${total} offres`
+          }
           resultDescription={
             <span className="flex items-center gap-1.5">
               <ShieldCheck
@@ -839,13 +903,29 @@ export const EmploymentSearchPage: React.FC = () => {
                   </div>
                 ))}
               </ListingGrid>
+            ) : salaryInvalid && !error ? (
+              <StatePanel
+                variant="error"
+                title={t("employment.salary.check")}
+                description={t("employment.salary.checkDescription")}
+                action={
+                  <Button onClick={() => openFilters("employment-salary")}>
+                    {t("employment.salary.correct")}
+                  </Button>
+                }
+              />
             ) : error ? (
               <StatePanel
                 variant="error"
                 title="La recherche est temporairement indisponible"
                 description="Réessayez dans quelques instants. Vos filtres sont conservés."
                 action={
-                  <Button onClick={() => setParams(params)}>Réessayer</Button>
+                  <Button
+                    onClick={() => setRetryVersion((version) => version + 1)}
+                    disabled={loading}
+                  >
+                    {t("common.retry")}
+                  </Button>
                 }
               />
             ) : items.length && viewMode === "map" ? (
@@ -948,7 +1028,7 @@ export const EmploymentSearchPage: React.FC = () => {
             updateLocation={updateLocation}
             locationSelectorId="employment-location-selector"
             onReset={resetFilters}
-            resultCount={total}
+            resultCount={salaryInvalid || loading || error ? undefined : total}
             onApply={closeFilters}
             activeSectionId={activeFilterSection}
           />

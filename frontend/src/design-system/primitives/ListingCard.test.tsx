@@ -1,6 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { Listing } from "../../types";
 import { projectGenericListingCardView } from "../../domains/listing/listing-card.generic-presentation";
+
+afterEach(() => vi.restoreAllMocks());
 
 const mockListing: Listing = {
   id: "listing-test-1",
@@ -105,6 +107,9 @@ describe("Listing Display & Card Data Presentation", () => {
   });
 
   it("carries an explicit promotion projection to every shared card consumer", () => {
+    vi.spyOn(Date, "now").mockReturnValue(
+      Date.parse("2026-09-12T12:00:00.000Z"),
+    );
     const card = projectGenericListingCardView(
       {
         ...mockListing,

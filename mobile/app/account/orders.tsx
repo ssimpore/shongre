@@ -1,13 +1,16 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { Stack, useFocusEffect, useRouter } from "expo-router";
+import { Button } from "@/components/Button";
+import { mobileEnvironment } from "@/config/environment";
 import { StatePanel } from "@/components/StatePanel";
 import { formatMoney } from "@/utils/format";
 import {
@@ -30,8 +33,8 @@ type Tab = "purchases" | "sales";
 
 /**
  * Purchases and sales, from the same participant projections the Web
- * transactions page reads. Rows lead to the listing; payment, handover and
- * disputes stay on the Web until their native flows exist.
+ * transactions page reads. Each row links to the Web order workflow and
+ * offers the listing separately.
  */
 export default function OrdersScreen() {
   const router = useRouter();
@@ -44,54 +47,75 @@ export default function OrdersScreen() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const scopeKey = `${user?.id ?? "anonymous"}:${activeMarket.code}`;
+  const currentScope = useRef(scopeKey);
+  const generation = useRef(0);
+  useLayoutEffect(() => {
+    currentScope.current = scopeKey;
+    generation.current += 1;
+  }, [scopeKey]);
+  const [resultScope, setResultScope] = useState("");
+  const ownsResult = Boolean(user) && resultScope === scopeKey;
+  const busy = Boolean(user) && (!ownsResult || loading);
+  const visibleError = ownsResult ? error : "";
 
   const load = useCallback(async () => {
+    const request = ++generation.current;
+    const requestScope = scopeKey;
+    const current = () =>
+      request === generation.current && requestScope === currentScope.current;
+    setOrders({ purchases: [], sales: [] });
+    setResultScope("");
+    setError("");
     if (!user) {
       setLoading(false);
+      setResultScope(requestScope);
       return;
     }
     setLoading(true);
     setError("");
     try {
       const [purchases, sales] = await Promise.all([
-        ordersService.purchases(),
-        ordersService.sales(),
+        ordersService.purchases(activeMarket.code),
+        ordersService.sales(activeMarket.code),
       ]);
+      if (!current()) return;
       setOrders({ purchases, sales });
+      setResultScope(requestScope);
     } catch (reason) {
+      if (!current()) return;
+      setResultScope(requestScope);
       setError(
         reason instanceof Error
           ? reason.message
           : "Vos commandes sont indisponibles.",
       );
     } finally {
-      setLoading(false);
+      if (current()) setLoading(false);
     }
-  }, [user]);
+  }, [activeMarket.code, scopeKey, user]);
 
   useFocusEffect(
     useCallback(() => {
       void load();
+      return () => {
+        generation.current += 1;
+      };
     }, [load]),
   );
 
-  const visible = orders[tab];
+  const visible = ownsResult ? orders[tab] : [];
 
   return (
     <View style={styles.safe}>
       <Stack.Screen options={{ title: "Mes commandes" }} />
       <FlatList
-        data={loading ? [] : visible}
+        data={busy ? [] : visible}
         keyExtractor={(item) => item.id}
-        accessibilityState={{ busy: loading }}
+        accessibilityState={{ busy }}
         contentContainerStyle={styles.content}
         renderItem={({ item }) => (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${item.listingTitle}, ${ORDER_STATUS_LABELS[item.status] ?? item.status}`}
-            onPress={() => router.push(`/listing/${item.listingId}` as never)}
-            style={styles.row}
-          >
+          <View style={styles.row}>
             <View style={styles.rowBody}>
               <Text style={styles.title} numberOfLines={2}>
                 {item.listingTitle}
@@ -130,13 +154,45 @@ export default function OrdersScreen() {
                 </Pressable>
               ) : null}
             </View>
-          </Pressable>
+            <Button
+              label="Gérer cette commande sur le Web"
+              accessibilityRole="link"
+              accessibilityHint="Ouvre votre dossier dans le navigateur. Une connexion peut être demandée."
+              onPress={() => {
+                const request = generation.current;
+                const url = new URL(
+                  mobileEnvironment.marketWebUrl(
+                    activeMarket,
+                    "/compte/achats",
+                  ),
+                );
+                url.searchParams.set("transactionId", item.id);
+                void Linking.openURL(url.toString()).catch(() => {
+                  if (
+                    request === generation.current &&
+                    scopeKey === currentScope.current
+                  )
+                    setError("Impossible d’ouvrir la commande. Réessayez.");
+                });
+              }}
+            />
+            <Button
+              label="Voir l’annonce"
+              variant="ghost"
+              onPress={() => router.push(`/listing/${item.listingId}` as never)}
+            />
+          </View>
         )}
         ListHeaderComponent={
           <>
             <Text accessibilityRole="header" style={styles.heading}>
               Mes commandes
             </Text>
+            {visibleError && visible.length ? (
+              <Text accessibilityRole="alert" style={styles.muted}>
+                {visibleError}
+              </Text>
+            ) : null}
             <View accessibilityRole="tablist" style={styles.tabs}>
               {(
                 [
@@ -160,7 +216,7 @@ export default function OrdersScreen() {
                       tab === value ? styles.tabTextSelected : null,
                     ]}
                   >
-                    {label} ({orders[value].length})
+                    {label} ({ownsResult ? orders[value].length : 0})
                   </Text>
                 </Pressable>
               ))}
@@ -175,7 +231,7 @@ export default function OrdersScreen() {
               actionLabel="Se connecter"
               onAction={() => router.push("/auth/login")}
             />
-          ) : loading ? (
+          ) : busy ? (
             <View style={styles.loading}>
               <ActivityIndicator color={colors.primary} />
               <Text style={styles.muted}>Chargement…</Text>
@@ -183,21 +239,21 @@ export default function OrdersScreen() {
           ) : (
             <StatePanel
               title={
-                error
+                visibleError
                   ? "Commandes indisponibles"
                   : tab === "purchases"
                     ? "Aucun achat"
                     : "Aucune vente"
               }
               message={
-                error ||
+                visibleError ||
                 (tab === "purchases"
                   ? "Vos achats sécurisés apparaîtront ici."
                   : "Vos ventes apparaîtront ici dès la première commande.")
               }
-              tone={error ? "error" : "neutral"}
-              actionLabel={error ? "Réessayer" : undefined}
-              onAction={error ? () => void load() : undefined}
+              tone={visibleError ? "error" : "neutral"}
+              actionLabel={visibleError ? "Réessayer" : undefined}
+              onAction={visibleError ? () => void load() : undefined}
             />
           )
         }
@@ -229,7 +285,6 @@ const styles = StyleSheet.create({
   tabText: { color: colors.text, fontFamily: nativeTypography.fontFamily.bold },
   tabTextSelected: { color: colors.onPrimary },
   row: {
-    flexDirection: "row",
     gap: spacing.md,
     padding: spacing.lg,
     borderRadius: radius.md,

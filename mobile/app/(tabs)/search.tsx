@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -46,19 +53,52 @@ export default function SearchScreen() {
   const params = useLocalSearchParams<{
     categoryId?: string;
     categoryLabel?: string;
+    scope?: MobileSearchScope;
+    query?: string;
+    city?: string;
+    sortBy?: string;
+    minPrice?: string;
+    maxPrice?: string;
   }>();
-  const [query, setQuery] = useState("");
-  const [scope, setScope] = useState<MobileSearchScope>("marketplace");
+  const query = typeof params.query === "string" ? params.query : "";
+  const setQuery = (value: string) => router.setParams({ query: value });
+  const scope: MobileSearchScope = [
+    "marketplace",
+    "auto",
+    "immo",
+    "emploi",
+    "education",
+  ].includes(params.scope || "")
+    ? (params.scope as MobileSearchScope)
+    : "marketplace";
+  const city = typeof params.city === "string" ? params.city : "";
+  const setCity = (value: string) => router.setParams({ city: value });
+  type Sort = "relevance" | "date_desc" | "price_asc" | "price_desc";
+  const sortBy: Sort = [
+    "relevance",
+    "date_desc",
+    "price_asc",
+    "price_desc",
+  ].includes(params.sortBy || "")
+    ? (params.sortBy as Sort)
+    : "relevance";
+  const setSortBy = (value: Sort) => router.setParams({ sortBy: value });
   // A category chosen in the browser: the filter is the route parameter, so
   // back navigation and a fresh open of the tab agree on what is filtered.
   const categoryId =
     typeof params.categoryId === "string" ? params.categoryId : "";
   const categoryLabel =
     typeof params.categoryLabel === "string" ? params.categoryLabel : "";
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [alertNotice, setAlertNotice] = useState("");
+  const minPrice = typeof params.minPrice === "string" ? params.minPrice : "";
+  const maxPrice = typeof params.maxPrice === "string" ? params.maxPrice : "";
+  const setMinPrice = (value: string) => router.setParams({ minPrice: value });
+  const setMaxPrice = (value: string) => router.setParams({ maxPrice: value });
+  const [alertResult, setAlertResult] = useState({ scope: "", notice: "" });
   const [savingAlert, setSavingAlert] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [totalRelation, setTotalRelation] = useState<"exact" | "lower_bound">(
+    "exact",
+  );
   const [items, setItems] = useState<ListingCardView[]>([]);
   const [didYouMean, setDidYouMean] = useState("");
   const [suggestions, setSuggestions] = useState<MobileSearchSuggestion[]>([]);
@@ -72,21 +112,41 @@ export default function SearchScreen() {
   const requestId = useRef(0);
   const paginationInFlight = useRef(false);
   const priceRange = useMemo(
-    () => parseMobileSearchPriceRange(minPrice, maxPrice),
-    [maxPrice, minPrice],
+    () =>
+      parseMobileSearchPriceRange(
+        minPrice,
+        maxPrice,
+        activeMarket.defaultLocale,
+      ),
+    [activeMarket.defaultLocale, maxPrice, minPrice],
   );
   const hasPriceError = Boolean(
     priceRange.minimumError || priceRange.maximumError,
   );
-  const requestKey = `${activeMarket.code}\u0000${scope}\u0000${categoryId}\u0000${query}\u0000${minPrice}\u0000${maxPrice}\u0000${retryVersion}`;
+  const requestKey = `${activeMarket.code}\u0000${scope}\u0000${categoryId}\u0000${city}\u0000${sortBy}\u0000${query}\u0000${minPrice}\u0000${maxPrice}\u0000${retryVersion}`;
   const loading = !hasPriceError && completedRequestKey !== requestKey;
   const visibleItems =
     !hasPriceError && resultsMarketCode === activeMarket.code ? items : [];
   const visibleError = loading ? "" : error;
+  const alertScope = `${user?.id || "guest"}:${requestKey}`;
+  const alertNotice =
+    alertResult.scope === alertScope ? alertResult.notice : "";
+  const setAlertNotice = (notice: string) =>
+    setAlertResult({ scope: alertScope, notice });
+  const alertGeneration = useRef(0);
+  const alertInFlight = useRef(false);
+  useLayoutEffect(() => {
+    alertGeneration.current += 1;
+    return () => {
+      alertGeneration.current += 1;
+    };
+  }, [alertScope]);
 
   const saveAlert = async () => {
     const normalizedQuery = query.trim();
-    if (!user || !normalizedQuery) return;
+    if (!user || !normalizedQuery || alertInFlight.current) return;
+    alertInFlight.current = true;
+    const generation = alertGeneration.current;
     setSavingAlert(true);
     setAlertNotice("");
     try {
@@ -110,6 +170,7 @@ export default function SearchScreen() {
           query: normalizedQuery,
           locale: activeMarket.defaultLocale,
           categoryId: alertCategoryId,
+          city: city.trim() || undefined,
           minPriceMinor,
           maxPriceMinor,
         }),
@@ -118,21 +179,25 @@ export default function SearchScreen() {
         channels: { inApp: true, email: false, push: true },
         searchFilter: {
           query: normalizedQuery,
+          ...(city.trim() ? { city: city.trim() } : {}),
           ...(alertCategoryId ? { categoryId: alertCategoryId } : {}),
           ...(minPriceMinor !== undefined ? { minPriceMinor } : {}),
           ...(maxPriceMinor !== undefined ? { maxPriceMinor } : {}),
         },
       });
-      setAlertNotice(
-        `Alerte quotidienne créée pour « ${normalizedQuery} »${alertCategoryId ? ` dans ${categoryLabel || "la catégorie sélectionnée"}` : ""}.`,
-      );
+      if (generation === alertGeneration.current)
+        setAlertNotice(
+          `Alerte quotidienne créée pour « ${normalizedQuery} »${alertCategoryId ? ` dans ${categoryLabel || "la catégorie sélectionnée"}` : ""}.`,
+        );
     } catch (reason) {
-      setAlertNotice(
-        reason instanceof Error
-          ? reason.message
-          : "Création de l’alerte impossible.",
-      );
+      if (generation === alertGeneration.current)
+        setAlertNotice(
+          reason instanceof Error
+            ? reason.message
+            : "Création de l’alerte impossible.",
+        );
     } finally {
+      alertInFlight.current = false;
       setSavingAlert(false);
     }
   };
@@ -152,6 +217,8 @@ export default function SearchScreen() {
           marketCode: activeMarket.code,
           query,
           scope,
+          city: city.trim() || undefined,
+          sortBy,
           ...(categoryId ? { categoryId } : {}),
           minPrice: priceRange.minimum,
           maxPrice: priceRange.maximum,
@@ -159,6 +226,8 @@ export default function SearchScreen() {
         .then((results) => {
           if (currentRequest === requestId.current) {
             setItems(results.items);
+            setTotal(results.total);
+            setTotalRelation(results.totalRelation);
             setResultsMarketCode(activeMarket.code);
             setNextCursor(results.pageInfo.nextCursor);
             setPageError("");
@@ -169,6 +238,7 @@ export default function SearchScreen() {
         .catch((reason) => {
           if (currentRequest === requestId.current) {
             setItems([]);
+            setTotal(0);
             // The previous query's cursor must not page this one.
             setNextCursor(undefined);
             setResultsMarketCode(activeMarket.code);
@@ -194,6 +264,8 @@ export default function SearchScreen() {
   }, [
     activeMarket.code,
     categoryId,
+    city,
+    sortBy,
     hasPriceError,
     maxPrice,
     minPrice,
@@ -221,6 +293,8 @@ export default function SearchScreen() {
         marketCode: activeMarket.code,
         query,
         scope,
+        city: city.trim() || undefined,
+        sortBy,
         ...(categoryId ? { categoryId } : {}),
         minPrice: priceRange.minimum,
         maxPrice: priceRange.maximum,
@@ -254,6 +328,8 @@ export default function SearchScreen() {
   }, [
     activeMarket.code,
     categoryId,
+    city,
+    sortBy,
     hasPriceError,
     loading,
     loadingMore,
@@ -396,7 +472,14 @@ export default function SearchScreen() {
                 <Pressable
                   accessibilityRole="radio"
                   accessibilityState={{ checked: scope === value }}
-                  onPress={() => setScope(value)}
+                  onPress={() => {
+                    router.setParams({
+                      scope: value,
+                      categoryId: "",
+                      categoryLabel: "",
+                    });
+                    setAlertNotice("");
+                  }}
                   style={[
                     styles.scope,
                     scope === value ? styles.scopeSelected : null,
@@ -406,6 +489,64 @@ export default function SearchScreen() {
                     style={[
                       styles.scopeText,
                       scope === value ? styles.scopeTextSelected : null,
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </Pressable>
+              )}
+            />
+            <FormField
+              label="Ville"
+              value={city}
+              onChangeText={setCity}
+              placeholder="Toutes les villes"
+              hint="Filtre par ville, sans accéder à votre position."
+            />
+            {city.trim() ? (
+              <View style={styles.categoryChipRow}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Retirer le filtre ville ${city.trim()}`}
+                  onPress={() => setCity("")}
+                  style={styles.categoryChip}
+                >
+                  <Text style={styles.categoryChipText}>
+                    Ville : {city.trim()} ✕
+                  </Text>
+                </Pressable>
+              </View>
+            ) : null}
+            <Text style={styles.loadingText}>Trier les résultats</Text>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              accessibilityRole="radiogroup"
+              accessibilityLabel="Tri des résultats"
+              data={
+                [
+                  ["relevance", "Pertinence"],
+                  ["date_desc", "Plus récentes"],
+                  ["price_asc", "Prix croissant"],
+                  ["price_desc", "Prix décroissant"],
+                ] as [typeof sortBy, string][]
+              }
+              keyExtractor={([value]) => value}
+              contentContainerStyle={styles.scopes}
+              renderItem={({ item: [value, label] }) => (
+                <Pressable
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: sortBy === value }}
+                  onPress={() => setSortBy(value)}
+                  style={[
+                    styles.scope,
+                    sortBy === value && styles.scopeSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.scopeText,
+                      sortBy === value && styles.scopeTextSelected,
                     ]}
                   >
                     {label}
@@ -439,6 +580,34 @@ export default function SearchScreen() {
                 />
               </View>
             </View>
+            {(categoryId ||
+              scope !== "marketplace" ||
+              city ||
+              minPrice ||
+              maxPrice ||
+              sortBy !== "relevance") && (
+              <Button
+                label="Réinitialiser les filtres"
+                variant="ghost"
+                onPress={() =>
+                  router.setParams({
+                    categoryId: "",
+                    categoryLabel: "",
+                    scope: "marketplace",
+                    city: "",
+                    minPrice: "",
+                    maxPrice: "",
+                    sortBy: "relevance",
+                  })
+                }
+              />
+            )}
+            {!loading && !hasPriceError && !visibleError && (
+              <Text accessibilityLiveRegion="polite" style={styles.loadingText}>
+                {totalRelation === "lower_bound" ? "Au moins " : ""}
+                {total} résultat{total > 1 ? "s" : ""}
+              </Text>
+            )}
             {user ? (
               <Button
                 label={savingAlert ? "Création…" : "Créer une alerte"}

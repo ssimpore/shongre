@@ -1,5 +1,34 @@
 import type { Money } from "@shongre/contracts";
 
+/** Empty input is unbounded; malformed or negative input remains invalid. */
+export function parseMajorAmountInput(
+  value: string,
+  locale: string,
+): number | undefined {
+  if (!value.trim()) return undefined;
+  const parts = new Intl.NumberFormat(locale).formatToParts(12345.6);
+  const decimal = parts.find((part) => part.type === "decimal")?.value ?? ".";
+  const group = parts.find((part) => part.type === "group")?.value;
+  let normalized = value.trim().replace(/\s/g, "");
+  if (group && !/\s/.test(group)) {
+    const [whole, fraction] = normalized.split(decimal);
+    if (fraction?.includes(group)) return NaN;
+    const groups = whole.split(group);
+    if (
+      groups.length > 1 &&
+      (groups[0].length < 1 ||
+        groups[0].length > 3 ||
+        groups.slice(1).some((part) => part.length !== 3))
+    )
+      return NaN;
+    normalized = normalized.split(group).join("");
+  }
+  normalized = normalized.replace(decimal, ".");
+  if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)) return NaN;
+  const amount = Number(normalized);
+  return Number.isFinite(amount) ? amount : NaN;
+}
+
 /** Resolve the ISO currency exponent from the runtime's CLDR data. */
 export function getCurrencyMinorUnitDigits(
   currency: string,

@@ -64,20 +64,20 @@ function mapOrder(
 }
 
 export interface OrdersService {
-  purchases(): Promise<MobileOrderSummary[]>;
-  sales(): Promise<MobileOrderSummary[]>;
+  purchases(marketCode: string): Promise<MobileOrderSummary[]>;
+  sales(marketCode: string): Promise<MobileOrderSummary[]>;
 }
 
 export class HttpOrdersService implements OrdersService {
-  async purchases(): Promise<MobileOrderSummary[]> {
-    return record(await apiOperation("getOrdersPurchases", {})).map((order) =>
-      mapOrder(order, "buyer"),
+  async purchases(marketCode: string): Promise<MobileOrderSummary[]> {
+    return record(await apiOperation("getOrdersPurchases", {}, marketCode)).map(
+      (order) => mapOrder(order, "buyer"),
     );
   }
 
-  async sales(): Promise<MobileOrderSummary[]> {
-    return record(await apiOperation("getOrdersSales", {})).map((order) =>
-      mapOrder(order, "seller"),
+  async sales(marketCode: string): Promise<MobileOrderSummary[]> {
+    return record(await apiOperation("getOrdersSales", {}, marketCode)).map(
+      (order) => mapOrder(order, "seller"),
     );
   }
 }

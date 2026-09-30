@@ -1,3 +1,4 @@
+import { transactionCatalogueFr } from "../../i18n/transaction.catalogue.fr";
 /**
  * SHONGRE DIRECT PURCHASE CHECKOUT MODAL
  * Dedicated direct purchase flow allowing immediate online purchase & payment
@@ -38,10 +39,12 @@ export interface DirectPurchaseCheckoutModalProps {
   onSuccess?: (orderId: string) => void;
 }
 
+const checkoutCatalogueFr = { ...digitalMessagesFr, ...transactionCatalogueFr };
+
 export const DirectPurchaseCheckoutModal: React.FC<
   DirectPurchaseCheckoutModalProps
 > = ({ isOpen, onClose, listing, onSuccess }) => {
-  const { t } = useTranslation(digitalMessagesFr);
+  const { t } = useTranslation(checkoutCatalogueFr);
   const { currentUser } = useAuth();
   const { activeMarket, currentCurrency, formatPrice } = useMarketLocation();
   const toast = useToast();

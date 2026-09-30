@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   MODERATION_CONSTRAINTS,
   type ListingCardView,
@@ -62,6 +63,7 @@ const REPORT_REASONS: {
 ];
 
 export default function ListingDetailScreen() {
+  const safeAreaInsets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
@@ -87,6 +89,7 @@ export default function ListingDetailScreen() {
   const [sellerWatchId, setSellerWatchId] = useState<string | null>(null);
   const [loadedEngagementKey, setLoadedEngagementKey] = useState("");
   const [engagementBusy, setEngagementBusy] = useState(false);
+  const reportTrigger = useRef<View>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] =
     useState<ReportInput["reason"]>("fraud");
@@ -624,6 +627,7 @@ export default function ListingDetailScreen() {
         </Text>
       </View>
       <Button
+        ref={reportTrigger}
         label="Signaler cette annonce"
         onPress={openReport}
         variant="ghost"
@@ -636,6 +640,8 @@ export default function ListingDetailScreen() {
         />
       ) : null}
       <Modal
+        safeAreaInsets={safeAreaInsets}
+        returnFocusRef={reportTrigger}
         isOpen={reportOpen}
         onClose={() => setReportOpen(false)}
         title="Signaler cette annonce"

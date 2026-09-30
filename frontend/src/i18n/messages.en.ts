@@ -9,6 +9,38 @@ import { MessageCatalogue } from "./messages.fr";
  * catalogue only ever declares the forms and never the rule.
  */
 export const messagesEn: MessageCatalogue = {
+  "employment.salary.minimum": "Minimum compensation ({currency})",
+  "employment.salary.periodHint":
+    "Choose a period to compare equivalent compensation amounts.",
+  "employment.salary.invalid": "Enter a valid amount and choose its period.",
+  "employment.salary.check": "Check the compensation filter",
+  "employment.salary.checkDescription":
+    "Enter a valid amount and choose the period it applies to.",
+  "employment.salary.correct": "Correct filters",
+  "employment.salary.applyFilters": "Apply filters",
+  "support.contact.contextUnavailable":
+    "The linked case is unavailable. You can continue your request.",
+  "support.contact.listingUnavailable":
+    "The linked listing is unavailable. You can continue your request.",
+  "support.contact.signInFirst": "Sign in to create and follow your request.",
+  "support.contact.safeContinuation":
+    "Your case stays linked to your account. Your topic and linked context will be preserved.",
+  "auth.social.emailOnly": "Email sign-in is available below.",
+  "auth.social.emailHeading": "Sign in with email",
+  "ui.priceRangeSlider.invalidRange":
+    "Enter valid prices with the minimum no higher than the maximum.",
+  "courses.search.loadingTutors": "Loading tutors…",
+  "admin.moderation.inspect": "Inspect report",
+  "admin.moderation.inspectionReason": "Reason: {reason} · reported by {name}",
+  "admin.moderation.loadingListing": "Loading listing…",
+  "admin.moderation.fullListing": "View full listing (new tab)",
+  "admin.moderation.listingUnavailable":
+    "This listing is hidden, deleted or unavailable. Its public content cannot be inspected. Check the authorized case evidence before deciding.",
+  "admin.moderation.contentUnavailable":
+    "The linked content is unavailable from this queue. Check the authorized case evidence before deciding.",
+  "admin.moderation.returnToQueue": "Return to queue",
+  "admin.moderation.dismissTarget": "Dismiss report — {target}",
+  "admin.moderation.removeTarget": "Remove content — {target}",
   "messaging.presence.online": "Online",
   "messaging.away.notice": "Away until {date}",
   "messaging.safety.generic":
