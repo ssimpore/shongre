@@ -806,7 +806,6 @@ export const themeMotion = {
   "motion-enter-scale": "0.95",
   "motion-press-surface-scale": "0.995",
   "motion-press-control-scale": "0.98",
-  "motion-press-icon-scale": "0.96",
   "motion-marquee-travel": "-50%",
   "motion-iteration-once": "1",
 } as const;
@@ -836,7 +835,6 @@ export const themeIconStrokeWidths = {
 export const themeInteraction = {
   focusRingWidth: "2px",
   focusRingOffset: "2px",
-  pressScale: 0.95,
   minimumTouchTarget: themeSpacing["control-touch"],
   /** Pixel tolerance used when deciding whether a rail is at an edge. */
   scrollBoundaryTolerancePx: 2,

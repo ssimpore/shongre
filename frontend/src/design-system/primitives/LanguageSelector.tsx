@@ -13,6 +13,7 @@ import { SHIPPED_LOCALES } from "../../i18n/locale";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
 } from "../utils/controlMetrics";
 import { CountryFlag } from "./CountryFlag";
 
@@ -219,12 +220,12 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   const buttonClasses =
     variant === "footer"
-      ? `flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-text-inverse-muted hover:text-text-inverse bg-surface-inverse-hover/80 hover:bg-surface-inverse-hover border border-border-inverse-subtle/80 hover:border-border-inverse-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none ${
+      ? `flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-text-inverse-muted hover:text-text-inverse bg-surface-inverse-hover/80 hover:bg-surface-inverse-hover border border-border-inverse-subtle/80 hover:border-border-inverse-muted ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none ${
           isOpen
             ? "bg-surface-inverse-hover text-text-inverse border-border-inverse-muted ring-1 ring-border-inverse-muted"
             : ""
         }`
-      : `flex h-control-md items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-text-emphasis hover:text-text-deep hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border border-transparent hover:border-border-base ${
+      : `flex h-control-md items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-text-emphasis hover:text-text-deep hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border border-transparent hover:border-border-base ${
           isOpen ? "bg-bg-subtle border-border-base text-text-deep" : ""
         }`;
 
@@ -339,14 +340,16 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               type="button"
               role="menuitem"
               onClick={handleOpenPreferences}
-              className={`w-full min-h-control-sm flex items-center justify-between px-2.5 py-2 text-xs font-semibold text-text-emphasis hover:text-text-deep hover:bg-bg-subtle rounded-control ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer text-left group`}
+              className={`w-full min-h-control-sm flex items-center justify-between px-2.5 py-2 text-xs font-semibold text-text-emphasis hover:text-text-deep hover:bg-bg-subtle rounded-control ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer text-left group`}
             >
               <div className="flex items-center gap-2">
                 <Settings2 className="w-icon-sm h-icon-sm text-primary shrink-0" />
                 <span>{t("language.preferences")}</span>
               </div>
               <div className="flex items-center text-text-muted">
-                <ChevronRight className="w-icon-xs h-icon-xs text-text-disabled group-hover:text-text-emphasis group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight
+                  className={`w-icon-xs h-icon-xs text-text-disabled group-hover:text-text-emphasis ${CONTROL_MOTION_CLASS}`}
+                />
               </div>
             </button>
           </div>

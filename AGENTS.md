@@ -924,6 +924,11 @@ France-only happy path is insufficient for market-sensitive work.
   desktop actions, navigation rows, media thumbnails, and the raised mobile
   publish action appropriate to their role.
   Allow long or enlarged labels to increase button height without clipping.
+  Standard buttons and icon actions stay stationary on hover without shadow growth.
+  Web controls reuse `CONTROL_PRESS_CLASS` for token-backed press feedback,
+  unavailable-state suppression and reduced-motion behavior; retain visible
+  keyboard focus through `CONTROL_FOCUS_CLASS`. Native button variants use the
+  same canonical control-scale token and static feedback in reduced motion.
 - Web authentication entry screens share `AuthLayout`; guest access guards
   share `AuthRequiredPrompt`. Their enclosing shell owns the header. Preserve
   the safe destination, including query and fragment, through sign-in,

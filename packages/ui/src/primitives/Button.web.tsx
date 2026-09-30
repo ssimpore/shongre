@@ -5,6 +5,7 @@ import { cn, createVariants } from "../utils/variants";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
   CONTROL_RADIUS_CLASS,
   controlMinHeightClasses,
 } from "../utils/controlMetrics";
@@ -67,7 +68,7 @@ export type ButtonProps = (
   NameableProps;
 
 /** Everything except the display utility, which is applied conditionally below. */
-const baseStyles = `min-w-0 max-w-full items-center justify-center font-medium whitespace-normal text-center ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:shadow-none disabled:hover:shadow-none disabled:hover:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:shadow-none aria-disabled:hover:shadow-none aria-disabled:hover:translate-y-0 active:translate-y-0 active:scale-press-control ${CONTROL_FOCUS_CLASS}`;
+const baseStyles = `min-w-0 max-w-full items-center justify-center font-medium whitespace-normal text-center ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:shadow-none aria-disabled:cursor-not-allowed aria-disabled:shadow-none ${CONTROL_FOCUS_CLASS}`;
 const neutralUnavailableStyles =
   "disabled:bg-bg-muted disabled:text-text-muted disabled:border-border-base disabled:hover:bg-bg-muted aria-disabled:bg-bg-muted aria-disabled:text-text-muted aria-disabled:border-border-base aria-disabled:hover:bg-bg-muted";
 const primaryUnavailableStyles =
@@ -104,7 +105,7 @@ const buttonClasses = createVariants({
       md: `text-sm ${controlMinHeightClasses.compact} font-semibold ${CONTROL_RADIUS_CLASS}`,
     },
     variant: {
-      primary: `bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary-shadow ${primaryUnavailableStyles}`,
+      primary: `bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active shadow-sm ${primaryUnavailableStyles}`,
       /* The only filled variant that had no edge. On a white card that left it with
      no boundary at all — the "Message" action on a listing read as flat text
      rather than a control, sitting next to two bordered neighbours. A 1px border
@@ -113,8 +114,8 @@ const buttonClasses = createVariants({
       secondary: `bg-bg-base text-text-main border border-border-hover hover:bg-bg-subtle hover:border-border-hover active:bg-bg-muted shadow-2xs ${neutralUnavailableStyles}`,
       outline: `border-2 border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle hover:border-border-hover active:bg-bg-muted shadow-2xs ${neutralUnavailableStyles}`,
       ghost: `bg-transparent text-text-secondary hover:text-text-main hover:bg-bg-subtle active:bg-bg-muted ${neutralUnavailableStyles}`,
-      danger: `bg-danger text-text-inverse hover:bg-danger-hover active:bg-danger-active shadow-sm hover:-translate-y-0.5 hover:shadow-md ${neutralUnavailableStyles}`,
-      pro: `bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover active:bg-surface-inverse-deep shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-border-inverse-strong/10 ${neutralUnavailableStyles}`,
+      danger: `bg-danger text-text-inverse hover:bg-danger-hover active:bg-danger-active shadow-sm ${neutralUnavailableStyles}`,
+      pro: `bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover active:bg-surface-inverse-deep shadow-sm ${neutralUnavailableStyles}`,
     },
     width: { auto: "", full: "w-full" },
   },

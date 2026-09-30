@@ -442,7 +442,8 @@
      buttons, chips, toggles and icon actions. */
   .motion-interactive {
     transition-property:
-      color, background-color, border-color, box-shadow, opacity, transform;
+      color, background-color, border-color, box-shadow, opacity, transform,
+      scale;
     transition-duration: var(--duration-fast);
     transition-timing-function: var(--ease-standard);
   }
@@ -571,9 +572,6 @@
 }
 @utility scale-press-control {
   scale: var(--motion-press-control-scale);
-}
-@utility scale-press-icon {
-  scale: var(--motion-press-icon-scale);
 }
 
 /* Native progress owns dynamic sizing without leaking inline visual styles

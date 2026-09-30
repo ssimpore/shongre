@@ -48,7 +48,13 @@ Shared packages never import application folders; backend may consume
   accept a trigger ref for focus restoration. Native buttons and modals share
   one OS Reduce Motion subscription; reduced mode removes spatial press
   feedback and modal transitions while retaining a visible pressed state.
-  Standard buttons use the header's 40px `control-md` minimum on Web and the
+  Web buttons and icon actions stay stationary on hover, using semantic colour
+  changes without lift or shadow growth. Their shared `CONTROL_PRESS_CLASS`
+  supplies the same token-backed press scale, restores unavailable controls to
+  their normal size, and suppresses scaling for reduced motion. Focus outlines
+  appear with keyboard focus rather than pointer focus. Native button variants
+  use the same canonical control-scale token and static state feedback when
+  motion is reduced. Standard buttons use the header's 40px `control-md` minimum on Web and the
   existing coarse-pointer token floor raises it to 44px. `compact` keeps the
   same height with denser typography; `sm` is 32px for desktop toolbars and
   tables, rising to 44px on touch. Native buttons use a 44px minimum at every

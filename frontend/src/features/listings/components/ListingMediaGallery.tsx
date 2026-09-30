@@ -10,6 +10,11 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { useDialogBehavior } from "../../../design-system/primitives/useDialogBehavior";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
+} from "../../../design-system/utils/controlMetrics";
 import { ListingPhoto } from "../../../types";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { getPublicRuntimeConfig } from "../../../platform/runtime-config/public-runtime-config";
@@ -198,7 +203,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 handlePrev();
               }}
               aria-label={t("listings.listingMediaGallery.photoPrecedente")}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-surface-inverse/75 hover:bg-surface-inverse text-text-inverse flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
+              className={`absolute left-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-surface-inverse/75 hover:bg-surface-inverse text-text-inverse flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} opacity-80 group-hover:opacity-100 cursor-pointer shadow-md z-raised`}
             >
               <ChevronLeft className="w-icon-lg h-icon-lg" />
             </button>
@@ -209,7 +214,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 handleNext();
               }}
               aria-label={t("listings.listingMediaGallery.photoSuivante")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-surface-inverse/75 hover:bg-surface-inverse text-text-inverse flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
+              className={`absolute right-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-surface-inverse/75 hover:bg-surface-inverse text-text-inverse flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} opacity-80 group-hover:opacity-100 cursor-pointer shadow-md z-raised`}
             >
               <ChevronRight className="w-icon-lg h-icon-lg" />
             </button>
@@ -245,7 +250,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
             type="button"
             onClick={() => setIsLightboxOpen(true)}
             aria-label={t("listings.listingMediaGallery.agrandirEnPleinEcran")}
-            className="pointer-events-auto ml-auto bg-surface-inverse/80 hover:bg-surface-inverse backdrop-blur-md text-text-inverse text-xs p-1.5 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+            className={`pointer-events-auto ml-auto bg-surface-inverse/80 hover:bg-surface-inverse backdrop-blur-md text-text-inverse text-xs p-1.5 rounded-full flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shadow-xs`}
           >
             <Maximize2 className="w-icon-md h-icon-md" />
           </button>
@@ -260,11 +265,14 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               key={idx}
               type="button"
               onClick={() => setActiveIndex(idx)}
-              aria-label={`Afficher la photo ${idx + 1} sur ${photoList.length}`}
+              aria-label={t("listings.listingMediaGallery.photoPosition", {
+                current: idx + 1,
+                total: photoList.length,
+              })}
               aria-current={safeActiveIndex === idx ? "true" : undefined}
-              className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer bg-surface-muted ${
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} shrink-0 cursor-pointer bg-surface-muted ${
                 safeActiveIndex === idx
-                  ? "border-primary ring-2 ring-primary-ring scale-95 opacity-100"
+                  ? "border-primary ring-2 ring-primary-ring opacity-100"
                   : "border-transparent opacity-60 hover:opacity-100"
               }`}
             >
@@ -302,7 +310,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               type="button"
               onClick={() => setIsLightboxOpen(false)}
               aria-label={t("listings.listingMediaGallery.fermerLePleinEcran")}
-              className="p-2 rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse transition-colors cursor-pointer"
+              className={`p-2 rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
             >
               <X className="w-icon-xl h-icon-xl" />
             </button>
@@ -324,7 +332,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   type="button"
                   onClick={handlePrev}
                   aria-label={t("listings.listingMediaGallery.photoPrecedente")}
-                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-control-md h-control-md rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center transition-colors cursor-pointer shadow-lg"
+                  className={`absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-control-md h-control-md rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shadow-lg`}
                 >
                   <ChevronLeft className="w-icon-xl h-icon-xl" />
                 </button>
@@ -332,7 +340,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   type="button"
                   onClick={handleNext}
                   aria-label={t("listings.listingMediaGallery.photoSuivante")}
-                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-control-md h-control-md rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center transition-colors cursor-pointer shadow-lg"
+                  className={`absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-control-md h-control-md rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shadow-lg`}
                 >
                   <ChevronRight className="w-icon-xl h-icon-xl" />
                 </button>
@@ -348,7 +356,12 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => setActiveIndex(idx)}
-                  className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                  aria-label={t("listings.listingMediaGallery.photoPosition", {
+                    current: idx + 1,
+                    total: photoList.length,
+                  })}
+                  aria-current={safeActiveIndex === idx ? "true" : undefined}
+                  className={`w-14 h-14 rounded-lg overflow-hidden border-2 ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} shrink-0 cursor-pointer ${
                     safeActiveIndex === idx
                       ? "border-primary ring-2 ring-primary-ring-strong"
                       : "border-transparent opacity-50 hover:opacity-90"

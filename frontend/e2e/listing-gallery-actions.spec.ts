@@ -1,20 +1,27 @@
 import { testListingPath } from "./fixtures";
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { usePersona } from "./personas";
+import { useEstablishedConsent, usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
-const seedConsentDecision = async (page: Page) => {
-  await page.addInitScript(() => {
-    window.localStorage.setItem(
-      "shongre_cookie_consent_v1",
-      JSON.stringify({
-        version: 1,
-        decidedAt: new Date().toISOString(),
-        choices: { analytics: false, advertising: false },
-      }),
-    );
-  });
-};
+async function toggleFavoriteAndConfirm(page: Page, control: Locator) {
+  await expect(control).toBeEnabled();
+  await expect(control).toHaveAttribute("aria-pressed", /^(true|false)$/);
+  const expected = (await control.getAttribute("aria-pressed")) !== "true";
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (candidate) =>
+        candidate.request().method() === "PUT" &&
+        /\/api\/v1\/listings\/[^/]+\/favorite$/.test(
+          new URL(candidate.url()).pathname,
+        ),
+    ),
+    control.click(),
+  ]);
+  expect(response.status()).toBe(200);
+  expect(await response.json()).toMatchObject({ isFavorite: expected });
+  await expect(control).toBeEnabled();
+  await expect(control).toHaveAttribute("aria-pressed", String(expected));
+}
 
 const expectActionInsideGallery = async (
   gallery: Locator,
@@ -39,7 +46,7 @@ test("listing, property and vehicle details share the same favorite gallery acti
   page,
 }) => {
   await usePersona(page, "individual_buyer");
-  await seedConsentDecision(page);
+  await useEstablishedConsent(page);
 
   for (const viewport of [
     { width: 1408, height: 900 },
@@ -62,13 +69,7 @@ test("listing, property and vehicle details share the same favorite gallery acti
     const sharedFavoriteClasses = await listingFavorite.getAttribute("class");
     expect(sharedFavoriteClasses).toContain("favorite-touch-target");
 
-    const initialListingState =
-      await listingFavorite.getAttribute("aria-pressed");
-    await listingFavorite.click();
-    await expect(listingFavorite).toHaveAttribute(
-      "aria-pressed",
-      initialListingState === "true" ? "false" : "true",
-    );
+    await toggleFavoriteAndConfirm(page, listingFavorite);
 
     await page.goto("/immo/bien/appartement-lumineux-lyon-montchat", {
       waitUntil: "domcontentloaded",
@@ -88,13 +89,7 @@ test("listing, property and vehicle details share the same favorite gallery acti
       .locator('[data-listing-gallery-actions="true"]')
       .locator("..");
     await expectActionInsideGallery(propertyMedia, propertyFavorite);
-    const initialPropertyState =
-      await propertyFavorite.getAttribute("aria-pressed");
-    await propertyFavorite.click();
-    await expect(propertyFavorite).toHaveAttribute(
-      "aria-pressed",
-      initialPropertyState === "true" ? "false" : "true",
-    );
+    await toggleFavoriteAndConfirm(page, propertyFavorite);
     await expectNoHorizontalOverflow(
       page,
       `property favorite overlay at ${viewport.width}px`,
@@ -128,7 +123,7 @@ test("listing details place the primary summary immediately below the media", as
   page,
 }) => {
   await usePersona(page, "individual_seller");
-  await seedConsentDecision(page);
+  await useEstablishedConsent(page);
 
   for (const viewport of [
     { width: 1408, height: 701 },
@@ -167,3 +162,81 @@ test("listing details place the primary summary immediately below the media", as
     );
   }
 });
+
+for (const width of [390, 1352]) {
+  for (const reduced of [false, true]) {
+    test(`gallery controls use shared feedback at ${width}px with reduced motion ${reduced}`, async ({
+      page,
+    }, testInfo) => {
+      const errors: string[] = [];
+      page.on("pageerror", (error) => errors.push(error.message));
+      await useEstablishedConsent(page);
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({
+        reducedMotion: reduced ? "reduce" : "no-preference",
+      });
+      await page.goto(testListingPath("list-105"));
+      await waitForStableLayout(page);
+      const gallery = page.getByRole("group", {
+        name: "Galerie de photos (2)",
+      });
+      const next = gallery.getByRole("button", { name: "Photo suivante" });
+      const photo = gallery.locator("img").first();
+      await next.scrollIntoViewIfNeeded();
+      await page.mouse.move(0, 0);
+      const initialPhoto = await photo.getAttribute("src");
+      const resting = await next.boundingBox();
+      const restingShadow = await next.evaluate(
+        (element) => getComputedStyle(element).boxShadow,
+      );
+      await next.hover();
+      expect(await next.boundingBox()).toEqual(resting);
+      await expect(next).toHaveCSS("box-shadow", restingShadow);
+      const pressScale = reduced
+        ? 1
+        : await next.evaluate((element) =>
+            Number(
+              getComputedStyle(element).getPropertyValue(
+                "--motion-press-control-scale",
+              ),
+            ),
+          );
+      await page.mouse.down();
+      await expect
+        .poll(() =>
+          next.evaluate((element) => {
+            const style = getComputedStyle(element);
+            return {
+              scale: style.scale === "none" ? 1 : Number(style.scale),
+              outline: style.outlineStyle,
+            };
+          }),
+        )
+        .toEqual({ scale: pressScale, outline: "none" });
+      await page.mouse.up();
+      await expect(photo).not.toHaveAttribute("src", initialPhoto!);
+      const open = gallery.getByRole("button", {
+        name: "Agrandir en plein écran",
+      });
+      await open.click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toBeVisible();
+      const close = dialog.getByRole("button", {
+        name: "Fermer le plein écran",
+      });
+      await page.keyboard.press("Tab");
+      await close.focus();
+      await expect(close).toHaveCSS("outline-style", "solid");
+      await page.keyboard.press("Escape");
+      await expect(dialog).not.toBeVisible();
+      await expect(open).toBeFocused();
+      await expectNoHorizontalOverflow(page, `gallery feedback at ${width}px`);
+      if (!reduced && testInfo.project.name === "chromium") {
+        await gallery.screenshot({
+          path: `/tmp/shongre-gallery-feedback-${width}.png`,
+        });
+      }
+      expect(errors).toEqual([]);
+    });
+  }
+}

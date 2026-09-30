@@ -69,6 +69,7 @@ import { BrandHeaderSignature } from "../../design-system/primitives/BrandLogo";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
 } from "../../design-system/utils/controlMetrics";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 import { useAuthorization } from "../../security/useAuthorization";
@@ -620,7 +621,7 @@ export const Header: React.FC = () => {
             <div
               data-header-publish-cta
               aria-hidden={isHeaderSearchActive}
-              className={`shrink-0 overflow-hidden motion-layout ${isHeaderSearchActive ? "max-w-0 opacity-0 pointer-events-none" : "max-w-56 opacity-100"}`}
+              className={`shrink-0 motion-layout ${isHeaderSearchActive ? "overflow-hidden max-w-0 opacity-0 pointer-events-none" : "overflow-visible max-w-56 opacity-100"}`}
             >
               <Button
                 to={publishCta.to}
@@ -646,10 +647,10 @@ export const Header: React.FC = () => {
             <Link
               to="/compte/favoris"
               data-marketplace-action="favorite.manage"
-              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-text-supporting ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-text-deep active:bg-bg-muted lg:flex group`}
+              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-text-supporting ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-text-deep active:bg-bg-muted lg:flex`}
               aria-label="Favoris"
             >
-              <Heart className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
+              <Heart className="w-icon-lg h-icon-lg" />
               {favCount > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-on-primary text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {favCount}
@@ -661,10 +662,10 @@ export const Header: React.FC = () => {
             <Link
               to="/compte/messages"
               data-marketplace-action="message.open"
-              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-text-supporting ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-text-deep active:bg-bg-muted lg:flex group`}
+              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-text-supporting ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-text-deep active:bg-bg-muted lg:flex`}
               aria-label="Messagerie"
             >
-              <MessageSquare className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
+              <MessageSquare className="w-icon-lg h-icon-lg" />
               {unreadMessagesCount > 0 && (
                 <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-on-primary text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {unreadMessagesCount}
@@ -703,7 +704,7 @@ export const Header: React.FC = () => {
                      communicates the relationship without promising either. */
                   aria-controls="header-account-menu"
                   aria-label={`Menu du compte de ${currentUser.name}`}
-                  className={`flex h-control-md items-center gap-2 rounded-control border py-1 pl-1.5 pr-2.5 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${isAccountMenuOpen ? "bg-bg-muted border-border-hover shadow-inner" : "bg-bg-surface border-border-base hover:bg-bg-subtle hover:border-border-hover hover:shadow-2xs"}`}
+                  className={`flex h-control-md items-center gap-2 rounded-control border py-1 pl-1.5 pr-2.5 ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${isAccountMenuOpen ? "bg-bg-muted border-border-hover shadow-inner" : "bg-bg-surface border-border-base hover:bg-bg-subtle hover:border-border-hover"}`}
                 >
                   <Avatar
                     src={currentUser.avatarUrl}
@@ -827,7 +828,7 @@ export const Header: React.FC = () => {
                 isMobileMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")
               }
               aria-expanded={isMobileMenuOpen}
-              className={`lg:hidden h-control-md w-control-md rounded-control text-text-strong hover:text-text-deep hover:bg-bg-subtle active:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} flex items-center justify-center cursor-pointer`}
+              className={`lg:hidden h-control-md w-control-md rounded-control text-text-strong hover:text-text-deep hover:bg-bg-subtle active:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} flex items-center justify-center cursor-pointer`}
             >
               {isMobileMenuOpen ? (
                 <X className="w-icon-xl h-icon-xl text-text-main" />
@@ -922,7 +923,7 @@ export const Header: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`h-control-sm w-control-sm touch-square rounded-pill text-text-tertiary hover:text-text-main hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} active:scale-95 cursor-pointer bg-bg-surface shadow-2xs border border-border-base flex items-center justify-center`}
+                  className={`h-control-sm w-control-sm touch-square rounded-pill text-text-tertiary hover:text-text-main hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${CONTROL_PRESS_CLASS} cursor-pointer bg-bg-surface shadow-2xs border border-border-base flex items-center justify-center`}
                   aria-label={t("shell.header.fermerLeMenuMobile")}
                 >
                   <X className="w-icon-md h-icon-md" />
@@ -1003,14 +1004,14 @@ export const Header: React.FC = () => {
                         <Link
                           to="/connexion"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-text-main bg-bg-surface border border-border-base rounded-control hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
+                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-text-main bg-bg-surface border border-border-base rounded-control hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
                         >
                           Se connecter
                         </Link>
                         <Link
                           to="/inscription"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-on-primary bg-primary rounded-control hover:bg-primary-hover active:bg-primary-active ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
+                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-on-primary bg-primary rounded-control hover:bg-primary-hover active:bg-primary-active ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
                         >
                           S'inscrire
                         </Link>

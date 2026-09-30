@@ -7,6 +7,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
   RAIL_CONTROL_CLASS,
   RAIL_CONTROL_ICON_CLASS,
 } from "../utils/controlMetrics";
@@ -185,7 +186,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               title={t(
                 "ui.categoryFilterRail.afficherToutesLesAnnoncesActives",
               )}
-              className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-95 ${
+              className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border ${CONTROL_PRESS_CLASS} ${
                 !selectedCategorySlug
                   ? "bg-surface-inverse text-text-inverse border-border-inverse-strong shadow-xs"
                   : "bg-bg-surface text-text-emphasis border-border-base hover:border-border-hover hover:bg-bg-subtle shadow-2xs"
@@ -217,7 +218,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                 onClick={() => handleCategoryClick(cat)}
                 aria-pressed={isSelected}
                 title={compactLabel}
-                className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-95 ${
+                className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border ${CONTROL_PRESS_CLASS} ${
                   isSelected
                     ? "bg-surface-inverse text-text-inverse border-border-inverse-strong font-semibold shadow-xs"
                     : "bg-bg-surface text-text-emphasis border-border-base hover:border-border-hover hover:bg-bg-subtle font-medium shadow-2xs"

@@ -29,6 +29,11 @@ import { useToast } from "../../../app/providers/ToastProvider";
 import { services } from "../../../api/client/service-registry";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
+} from "../../../design-system/utils/controlMetrics";
 import { publicRouteUrl } from "../../../domains/market/market-routing";
 
 export interface SellerProfileHeaderProps {
@@ -228,10 +233,10 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => onTabChange("reviews")}
-                  className="flex min-h-control-target shrink-0 items-center gap-1.5 font-semibold text-text-main hover:text-primary transition-colors cursor-pointer group"
+                  className={`flex min-h-control-target shrink-0 items-center gap-1.5 font-semibold text-text-main hover:text-primary ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer group}`}
                   aria-label={`Note moyenne : ${seller.rating.toFixed(1)} sur 5 basée sur ${seller.reviewCount} avis`}
                 >
-                  <Star className="w-icon-md h-icon-md fill-rating-fill text-rating-fill group-hover:scale-110 transition-transform duration-normal" />
+                  <Star className="w-icon-md h-icon-md fill-rating-fill text-rating-fill" />
                   <span>{seller.rating.toFixed(1)}</span>
                   <span className="font-medium text-text-tertiary underline decoration-border-disabled group-hover:decoration-primary-border underline-offset-4">
                     ({seller.reviewCount} avis)

@@ -1,5 +1,5 @@
 import type { ReactNode, Ref } from "react";
-import { interaction } from "@shongre/design-tokens";
+import { themeMotion } from "@shongre/design-tokens";
 import {
   ActivityIndicator,
   Pressable,
@@ -96,11 +96,11 @@ export function Button({
         fullWidth && styles.fullWidth,
         pressed &&
           !unavailable &&
-          (variant === "primary" && !reducedMotion
-            ? styles.primaryPressed
-            : variant === "primary"
+          (reducedMotion
+            ? variant === "primary"
               ? styles.stillPressed
-              : styles.pressed),
+              : styles.reducedPressed
+            : styles.pressed),
         unavailable && variant !== "primary" && styles.disabled,
         unavailable && variant === "primary" && styles.primaryDisabled,
         style,
@@ -158,8 +158,11 @@ const styles = StyleSheet.create({
   fullWidth: { width: nativeSizing.full },
   small: { paddingHorizontal: nativeSpacing.md },
   stillPressed: { borderColor: nativeColors.border.strong },
-  pressed: { opacity: nativeOpacity.pressed },
-  primaryPressed: { transform: [{ scale: interaction.pressScale }] },
+  reducedPressed: { opacity: nativeOpacity.pressed },
+  pressed: {
+    transform: [{ scale: Number(themeMotion["motion-press-control-scale"]) }],
+    borderColor: nativeColors.border.strong,
+  },
   disabled: { opacity: nativeOpacity.disabled },
   primaryDisabled: {
     backgroundColor: nativeColors.action.primaryDisabled,

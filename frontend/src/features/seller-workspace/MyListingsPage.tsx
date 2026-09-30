@@ -18,6 +18,11 @@ import { useToast } from "../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { formatRelativeDate } from "../../utilities/formatters";
 import { Button } from "../../design-system/primitives/Button";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
+} from "../../design-system/utils/controlMetrics";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Image } from "../../design-system/primitives/Image";
 import { Tabs, TabPanel, EmptyState, Skeleton } from "../../design-system";
@@ -763,7 +768,7 @@ export const MyListingsPage: React.FC = () => {
                       handleApplyBoost(boostModalListing.id, offer)
                     }
                     disabled={Boolean(activatingBoostId)}
-                    className={`p-4 rounded-xl border border-border-base text-left w-full cursor-pointer transition-all duration-fast space-y-2 active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 ${style.hoverClass} ${style.spanClass}`}
+                    className={`p-4 rounded-xl border border-border-base text-left w-full cursor-pointer ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} space-y-2 disabled:cursor-wait disabled:opacity-60 ${style.hoverClass} ${style.spanClass}`}
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span

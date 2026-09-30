@@ -1,3 +1,7 @@
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_PRESS_CLASS,
+} from "../../design-system/utils/controlMetrics";
 import { routes } from "../../configuration/routes";
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -37,10 +41,10 @@ export const MobileBottomNav: React.FC = () => {
           to={routes.home()}
           end
           className={({ isActive }) =>
-            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
+            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} ${
               isActive
                 ? "text-text-main"
-                : "text-text-tertiary hover:text-text-emphasis active:scale-95"
+                : "text-text-tertiary hover:text-text-emphasis"
             }`
           }
         >
@@ -68,10 +72,10 @@ export const MobileBottomNav: React.FC = () => {
         <NavLink
           to={routes.search()}
           className={({ isActive }) =>
-            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
+            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} ${
               isActive
                 ? "text-text-main"
-                : "text-text-tertiary hover:text-text-emphasis active:scale-95"
+                : "text-text-tertiary hover:text-text-emphasis"
             }`
           }
         >
@@ -104,12 +108,12 @@ export const MobileBottomNav: React.FC = () => {
           to={publishCta.to}
           data-marketplace-action="listing.publish"
           aria-label={t(publishCta.labelKey)}
-          className="group relative flex h-full w-full min-w-0 flex-col items-center justify-center"
+          className={`relative flex h-full w-full min-w-0 flex-col items-center justify-center motion-interactive ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS}`}
         >
           {/* Raised by the same token the layout reserves clearance from, so the
               disc can never protrude into space the page believes is free. */}
           <div className="absolute -top-(--mobile-nav-fab-rise) flex flex-col items-center">
-            <div className="w-control-fab h-control-fab rounded-pill bg-surface-inverse text-text-inverse flex items-center justify-center shadow-lg group-active:scale-95 motion-interactive border-3 border-bg-surface">
+            <div className="w-control-fab h-control-fab rounded-pill bg-surface-inverse text-text-inverse flex items-center justify-center shadow-lg motion-interactive border-3 border-bg-surface">
               <PlusCircle className="w-icon-xl h-icon-xl text-primary" />
             </div>
             <span className="mt-1 max-w-full truncate text-micro font-bold text-text-main">
@@ -123,10 +127,10 @@ export const MobileBottomNav: React.FC = () => {
           to="/compte/messages"
           data-marketplace-action="message.open"
           className={({ isActive }) =>
-            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
+            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} ${
               isActive
                 ? "text-text-main"
-                : "text-text-tertiary hover:text-text-emphasis active:scale-95"
+                : "text-text-tertiary hover:text-text-emphasis"
             }`
           }
         >
@@ -167,10 +171,10 @@ export const MobileBottomNav: React.FC = () => {
           to="/compte"
           data-marketplace-action="account.open"
           className={({ isActive }) =>
-            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
+            `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} ${
               isActive
                 ? "text-text-main"
-                : "text-text-tertiary hover:text-text-emphasis active:scale-95"
+                : "text-text-tertiary hover:text-text-emphasis"
             }`
           }
         >

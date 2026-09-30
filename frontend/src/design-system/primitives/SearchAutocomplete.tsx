@@ -18,6 +18,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
 } from "../utils/controlMetrics";
 
 export interface AutocompleteSelection {
@@ -391,7 +392,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                         submitImmediately: true,
                       });
                     }}
-                    className={`inline-flex items-center gap-1.5 h-control-md px-3 rounded-control bg-bg-subtle hover:bg-primary-light text-text-strong hover:text-primary border border-border-base hover:border-primary-border text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none active:scale-95`}
+                    className={`inline-flex items-center gap-1.5 h-control-md px-3 rounded-control bg-bg-subtle hover:bg-primary-light text-text-strong hover:text-primary border border-border-base hover:border-primary-border text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none ${CONTROL_PRESS_CLASS}`}
                   >
                     <TrendingUp className="w-icon-xs h-icon-xs text-primary shrink-0" />
                     <span>{trend.keyword}</span>

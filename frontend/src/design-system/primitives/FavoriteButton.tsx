@@ -3,6 +3,7 @@ import { Heart, LoaderCircle, RefreshCw } from "lucide-react";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
 } from "../utils/controlMetrics";
 
 type FavoriteButtonSize = "sm" | "md";
@@ -137,7 +138,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
               ? "Retirer des favoris"
               : "Ajouter aux favoris")
       }
-      className={`${position} flex items-center justify-center shrink-0 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:text-primary active:scale-90 cursor-pointer disabled:cursor-wait disabled:opacity-disabled ${BOX[size]} ${TOUCH_EXPANSION} ${surface} ${className}`}
+      className={`${position} flex items-center justify-center shrink-0 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:text-primary ${CONTROL_PRESS_CLASS} cursor-pointer disabled:cursor-wait disabled:opacity-disabled ${BOX[size]} ${TOUCH_EXPANSION} ${surface} ${className}`}
     >
       {interactionState === "loading" ? (
         <LoaderCircle className={`${ICON[size]} animate-spin`} />

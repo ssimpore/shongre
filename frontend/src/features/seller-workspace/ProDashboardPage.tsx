@@ -116,18 +116,19 @@ export const ProDashboardPage: React.FC = () => {
           </Button>
 
           {currentUser ? (
-            <Link
+            <Button
+              variant="pro"
+              size="compact"
+              rightIcon={<ArrowUpRight className="w-icon-md h-icon-md" />}
               to={routes.seller.publicPage({
                 id: currentUser.id,
                 slug: currentUser.slug,
                 storeSlug: currentUser.storeSlug,
                 isProfessional: true,
               })}
-              className="motion-interactive flex items-center gap-2 rounded-control bg-surface-inverse px-4 py-2.5 text-xs font-bold text-text-inverse shadow-sm hover:-translate-y-0.5 hover:bg-surface-inverse-hover hover:shadow-md"
             >
-              <span>Voir ma vitrine en ligne</span>
-              <ArrowUpRight className="w-icon-md h-icon-md" />
-            </Link>
+              Voir ma vitrine en ligne
+            </Button>
           ) : null}
         </div>
       </div>

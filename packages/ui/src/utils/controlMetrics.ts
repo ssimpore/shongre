@@ -2,8 +2,10 @@ export type ControlSize = "sm" | "compact" | "md" | "lg";
 
 export const CONTROL_RADIUS_CLASS = "rounded-control";
 export const CONTROL_MOTION_CLASS = "motion-interactive";
+export const CONTROL_PRESS_CLASS =
+  "active:scale-press-control active:shadow-inner motion-reduce:active:scale-100 disabled:active:scale-100 disabled:active:shadow-none aria-disabled:active:scale-100 aria-disabled:active:shadow-none";
 export const CONTROL_FOCUS_CLASS =
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  "focus:outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 export const RAIL_CONTROL_CLASS = "h-control-sm w-control-sm";
 export const RAIL_CONTROL_ICON_CLASS = "h-icon-sm w-icon-sm";
 

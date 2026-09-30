@@ -3,6 +3,7 @@ import { createVariants } from "../utils/variants";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
   CONTROL_RADIUS_CLASS,
 } from "../utils/controlMetrics";
 
@@ -39,7 +40,7 @@ const DISPLAY_SET_BY_CALLER =
   /(?:^|\s)(?:hidden|block|inline|inline-block|flex|inline-flex|grid|inline-grid|contents)(?:\s|$)/;
 
 const iconButtonClasses = createVariants({
-  base: `${CONTROL_MOTION_CLASS} items-center justify-center ${CONTROL_RADIUS_CLASS} cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${CONTROL_FOCUS_CLASS} active:translate-y-0 active:scale-press-icon`,
+  base: `${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} items-center justify-center ${CONTROL_RADIUS_CLASS} cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed ${CONTROL_FOCUS_CLASS}`,
   variants: {
     size: {
       sm: "w-control-sm h-control-sm p-1.5 text-xs",
@@ -47,7 +48,7 @@ const iconButtonClasses = createVariants({
     },
     variant: {
       primary:
-        "bg-primary text-on-primary hover:-translate-y-0.5 hover:bg-primary-hover active:bg-primary-active shadow-xs hover:shadow-sm",
+        "bg-primary text-on-primary hover:bg-primary-hover active:bg-primary-active shadow-xs",
       secondary:
         "bg-bg-subtle text-text-main hover:bg-bg-muted active:bg-surface-selected",
       outline:

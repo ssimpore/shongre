@@ -35,6 +35,11 @@ import {
   Textarea,
 } from "../../design-system";
 import { ListingMediaGallery } from "../listings/components/ListingMediaGallery";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
+} from "../../design-system/utils/controlMetrics";
 import { ListingDiscoveryRail } from "../listings/components/ListingDiscoveryRail";
 import { DetailMobileActionPanel } from "../listings/components/DetailMobileActionPanel";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -363,7 +368,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                     />
                     <Link
                       to={routes.auto.compare([vehicle.id])}
-                      className="flex h-8 w-8 items-center justify-center rounded-control bg-bg-surface/90 text-text-secondary shadow-xs backdrop-blur-xs transition-colors hover:bg-bg-surface hover:text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
+                      className={`flex h-8 w-8 items-center justify-center rounded-control bg-bg-surface/90 text-text-secondary shadow-xs backdrop-blur-xs ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-surface hover:text-text-main`}
                       aria-label="Comparer ce véhicule"
                     >
                       <GitCompareArrows className="h-icon-md w-icon-md" />

@@ -6,6 +6,7 @@ import { IconButton } from "./IconButton";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
 } from "../utils/controlMetrics";
 
 export interface DropdownOption<T = string> {
@@ -72,7 +73,7 @@ export const DROPDOWN_PANEL_CLASSES =
 export const FULL_WIDTH_DROPDOWN_PANEL_CLASSES = "w-full";
 
 export const DROPDOWN_ITEM_CLASSES = {
-  base: "w-full min-h-control-sm flex items-center justify-between px-3.5 py-2 text-xs motion-interactive cursor-pointer text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+  base: `w-full min-h-control-sm flex items-center justify-between px-3.5 py-2 text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer text-left`,
   /* The keyboard highlight. Focus never leaves the trigger while a listbox is
      open, so `:focus-visible` cannot express "the option you are on" — without
      its own class, arrowing through the menu moved an invisible cursor. */
@@ -354,11 +355,7 @@ export function DropdownMenu<T extends string | number = string>({
           aria-controls={isOpen ? listboxId : undefined}
           aria-activedescendant={searchable ? undefined : activeDescendant}
           aria-label={ariaLabel}
-          className={
-            fullWidth
-              ? "w-full text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-              : "text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-          }
+          className={`${fullWidth ? "w-full" : ""} text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS}`}
         >
           {renderTrigger(selectedOption, isOpen)}
         </button>
@@ -375,7 +372,7 @@ export function DropdownMenu<T extends string | number = string>({
           aria-controls={isOpen ? listboxId : undefined}
           aria-activedescendant={searchable ? undefined : activeDescendant}
           aria-label={ariaLabel}
-          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-text-strong font-semibold ${CONTROL_MOTION_CLASS} cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-focus disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-bg-base ${CONTROL_FOCUS_CLASS} ${
+          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-text-strong font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-bg-base ${CONTROL_FOCUS_CLASS} ${
             fullWidth ? "w-full" : ""
           } ${
             isOpen
@@ -488,7 +485,7 @@ export function DropdownMenu<T extends string | number = string>({
                       disabled={option.disabled}
                       onPointerMove={() => setActiveIndex(index)}
                       onClick={() => commit(option)}
-                      className={`w-full text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                      className={`w-full text-left cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} ${
                         isActive ? DROPDOWN_ITEM_CLASSES.active : ""
                       }`}
                     >

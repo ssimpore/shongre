@@ -50,6 +50,11 @@ import {
   SellerIdentityLink,
 } from "../../design-system";
 import { Button } from "../../design-system/primitives/Button";
+import {
+  CONTROL_FOCUS_CLASS,
+  CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
+} from "../../design-system/utils/controlMetrics";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Modal } from "../../design-system/primitives/Modal";
@@ -1135,7 +1140,7 @@ export const ListingDetailPage: React.FC = () => {
             type="button"
             onClick={handleShare}
             aria-label={t("listings.listingDetailPage.partagerLAnnonce")}
-            className="flex items-center gap-1.5 text-xs font-semibold text-text-supporting hover:text-text-main bg-bg-surface border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            className={`flex items-center gap-1.5 text-xs font-semibold text-text-supporting hover:text-text-main bg-bg-surface border border-border-base px-3 py-1.5 rounded-xl ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shadow-2xs`}
           >
             <Share2 className="w-icon-sm h-icon-sm" />
             <span className="hidden sm:inline">Partager</span>
@@ -1145,7 +1150,7 @@ export const ListingDetailPage: React.FC = () => {
             data-marketplace-action="listing.report"
             onClick={() => setIsReportModalOpen(true)}
             aria-label={t("listings.listingDetailPage.signalerCetteAnnonce")}
-            className="flex items-center gap-1.5 text-xs font-semibold text-text-tertiary hover:text-danger bg-bg-surface border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            className={`flex items-center gap-1.5 text-xs font-semibold text-text-tertiary hover:text-danger bg-bg-surface border border-border-base px-3 py-1.5 rounded-xl ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shadow-2xs`}
           >
             <Flag className="w-icon-sm h-icon-sm" />
             <span className="hidden sm:inline">Signaler</span>
@@ -1454,7 +1459,7 @@ export const ListingDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                className="mt-4 inline-flex min-h-control-target cursor-pointer items-center font-bold text-text-main underline underline-offset-4 transition-colors hover:text-primary"
+                className={`mt-4 inline-flex min-h-control-target cursor-pointer items-center font-bold text-text-main underline underline-offset-4 ${CONTROL_MOTION_CLASS} ${CONTROL_PRESS_CLASS} ${CONTROL_FOCUS_CLASS} hover:text-primary`}
               >
                 {isDescriptionExpanded ? "Afficher moins" : "Voir plus"}
               </button>
@@ -1697,7 +1702,7 @@ export const ListingDetailPage: React.FC = () => {
                     fullWidth
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
                     leftIcon={<CreditCard className="h-icon-lg w-icon-lg" />}
-                    className="shadow-md shadow-primary-shadow hover:shadow-lg hover:shadow-primary-shadow-strong"
+                    className="shadow-md shadow-primary-shadow"
                   >
                     {t("listings.listingDetailPage.acheterMaintenant")}
                   </Button>

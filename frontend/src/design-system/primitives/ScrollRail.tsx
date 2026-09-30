@@ -4,6 +4,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
+  CONTROL_PRESS_CLASS,
   RAIL_CONTROL_CLASS,
   RAIL_CONTROL_ICON_CLASS,
 } from "../utils/controlMetrics";
@@ -173,7 +174,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
             type="button"
             onClick={() => nudge(-1)}
             aria-label={t("common.scrollRailLeft", { label })}
-            className={`absolute left-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
+            className={`absolute left-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${CONTROL_PRESS_CLASS} z-sticky ${controlClassName}`}
           >
             <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
           </button>
@@ -184,7 +185,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
             type="button"
             onClick={() => nudge(1)}
             aria-label={t("common.scrollRailRight", { label })}
-            className={`absolute right-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
+            className={`absolute right-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${CONTROL_PRESS_CLASS} z-sticky ${controlClassName}`}
           >
             <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
           </button>
