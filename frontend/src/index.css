@@ -771,6 +771,24 @@
   margin-inline: 0;
 }
 
+/* Start a new result row whenever the canonical card format changes. Match
+   both direct cards and vertical/tracking wrappers, preserving API sort order
+   and keeping comparison controls attached to their result. */
+.listing-grid[data-listing-grid-variant="grid"]
+  > :is(.listing-card-no-media, :has(.listing-card-no-media))
+  + :is(
+    .listing-card-standard:not(.listing-card-no-media),
+    :has(.listing-card-standard:not(.listing-card-no-media))
+  ),
+.listing-grid[data-listing-grid-variant="grid"]
+  > :is(
+    .listing-card-standard:not(.listing-card-no-media),
+    :has(.listing-card-standard:not(.listing-card-no-media))
+  )
+  + :is(.listing-card-no-media, :has(.listing-card-no-media)) {
+  grid-column-start: 1;
+}
+
 .listing-card-title-vertical {
   display: -webkit-box;
   min-height: 2lh;
@@ -1025,6 +1043,37 @@
 
 .listing-rail-cell > * {
   flex: 1 1 auto;
+}
+
+/* Mixed discovery rails pack each format into its own row. Both rows share
+   scrolling and snapping; dense placement closes gaps within each format
+   without duplicating cards or changing their source order. */
+.listing-rail-track:has(.listing-card-no-media):has(
+    .listing-card-standard:not(.listing-card-no-media)
+  ) {
+  display: grid;
+  grid-auto-flow: column dense;
+  grid-auto-columns: var(--spacing-listing-card);
+  grid-template-rows: auto auto;
+
+  > .listing-rail-cell {
+    grid-row: 1;
+  }
+
+  > .listing-rail-cell:has(.listing-card-no-media) {
+    grid-row: 2;
+  }
+
+  /* Keep the first API result in the leading row. */
+  &:has(> .listing-rail-cell:first-child .listing-card-no-media) {
+    > .listing-rail-cell {
+      grid-row: 2;
+    }
+
+    > .listing-rail-cell:has(.listing-card-no-media) {
+      grid-row: 1;
+    }
+  }
 }
 
 /* Touch is the clearest rail control on phones, where an overlaid arrow would

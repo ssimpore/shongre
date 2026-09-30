@@ -62,6 +62,11 @@ test.describe("design-token runtime contracts @serial", () => {
               );
             }).length
           : 0;
+      const rowCounts = new Map<number, number>();
+      for (const cell of firstTrackCells) {
+        const top = Math.round(cell.getBoundingClientRect().top);
+        rowCounts.set(top, (rowCounts.get(top) ?? 0) + 1);
+      }
 
       return {
         version: root
@@ -71,6 +76,7 @@ test.describe("design-token runtime contracts @serial", () => {
         widths,
         firstTrackCardCount: firstTrackCells.length,
         fullyVisibleCards,
+        rowCounts: [...rowCounts.values()],
       };
     });
 
@@ -78,7 +84,10 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(contract.tokenWidth).toBe("13.75rem");
     expect(contract.firstTrackCardCount).toBeGreaterThan(0);
     expect(contract.fullyVisibleCards).toBe(
-      Math.min(5, contract.firstTrackCardCount),
+      contract.rowCounts.reduce(
+        (total, count) => total + Math.min(5, count),
+        0,
+      ),
     );
     expect(
       contract.widths.length,
@@ -152,6 +161,14 @@ test.describe("design-token runtime contracts @serial", () => {
           ]
         : [];
       const firstTop = cards[0]?.getBoundingClientRect().top;
+      const firstCompact = cards[0]?.classList.contains(
+        "listing-card-no-media",
+      );
+      const formatBoundary = cards.findIndex(
+        (candidate) =>
+          candidate.classList.contains("listing-card-no-media") !==
+          firstCompact,
+      );
       const firstRow = cards.filter(
         (candidate) =>
           Math.abs(candidate.getBoundingClientRect().top - (firstTop ?? 0)) < 1,
@@ -173,6 +190,7 @@ test.describe("design-token runtime contracts @serial", () => {
         gridColumns: gridStyle?.gridTemplateColumns ?? "",
         cardCount: cards.length,
         firstRowCount: firstRow.length,
+        leadingFormatCount: formatBoundary < 0 ? cards.length : formatBoundary,
         cardWidth: card?.getBoundingClientRect().width ?? null,
         cardHeight: card?.getBoundingClientRect().height ?? null,
         cardMinHeight: cardStyle?.minHeight ?? "",
@@ -192,7 +210,9 @@ test.describe("design-token runtime contracts @serial", () => {
       .filter((column) => column > 0);
     expect(contract.cardCount).toBeGreaterThanOrEqual(6);
     expect(columns.length).toBeGreaterThanOrEqual(4);
-    expect(contract.firstRowCount).toBe(columns.length);
+    expect(contract.firstRowCount).toBe(
+      Math.min(columns.length, contract.leadingFormatCount),
+    );
     expect(columns.every((column) => Math.abs(column - 220) < 1)).toBe(true);
     expect(contract.cardWidth).toBeCloseTo(220, 0);
     expect(contract.cardHeight).toBeCloseTo(420, 0);

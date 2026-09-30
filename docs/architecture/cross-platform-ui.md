@@ -144,6 +144,16 @@ Vertical cards without a photo use a compact neutral media well on Web and
 native, with extra space for media badges when present. Cards with media
 keep the standard 210-pixel well. The shared card owns this decision, so search
 and discovery surfaces stay consistent.
+Mixed Web listing rails use that canonical media state to pack photo cards and
+compact cards into separate rows, keeping the first result's format in the
+leading row and the source order within each format. Both rows share the
+existing scroll and snap controls. Result grids start a new row when the format
+changes, preserving backend ranking, URL-selected sorting, and pagination.
+The rules also match vertical/tracking wrappers, so comparison controls remain
+with their card. Horizontal list views and native single-column collections
+already display one result per row and retain their existing layout. This is
+Web collection geometry over the existing public media projection; it requires
+no database, API, ranking, provider, or shared-card contract change.
 Web result grids use the shared `ListingGrid`; token-sized card tracks pack from
 the inline start with the shared gap instead of centering or distributing sparse
 results across the available row. Search and vertical result pages pair that

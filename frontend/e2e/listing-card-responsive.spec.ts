@@ -671,34 +671,48 @@ test.describe("canonical listing cards", () => {
       const viewport = element.parentElement?.getBoundingClientRect();
       const cards = Array.from(
         element.querySelectorAll<HTMLElement>(":scope > .listing-rail-cell"),
-      ).map((item) => item.getBoundingClientRect());
+      ).map((item) => ({
+        box: item.getBoundingClientRect(),
+        compact: Boolean(item.querySelector(".listing-card-no-media")),
+      }));
       return {
         viewportWidth: viewport?.width ?? 0,
         gap: Number.parseFloat(getComputedStyle(element).columnGap),
         complete: viewport
           ? cards.filter(
-              (card) =>
-                card.left >= viewport.left - 1 &&
-                card.right <= viewport.right + 1,
+              ({ box }) =>
+                box.left >= viewport.left - 1 &&
+                box.right <= viewport.right + 1,
             ).length
           : 0,
-        firstWidth: cards[0]?.width,
-        heights: cards.map((card) => card.height),
+        firstWidth: cards[0]?.box.width,
+        cards: cards.map(({ box, compact }) => ({
+          top: Math.round(box.top),
+          height: box.height,
+          compact,
+        })),
       };
     });
-    expect(geometry.heights.length).toBeGreaterThan(0);
+    expect(geometry.cards.length).toBeGreaterThan(0);
     expect(geometry.firstWidth).toBeCloseTo(220, 0);
     const availableColumns = Math.floor(
       (geometry.viewportWidth + geometry.gap) / (220 + geometry.gap),
     );
     expect(availableColumns).toBeGreaterThan(0);
-    expect(geometry.complete).toBe(
-      Math.min(availableColumns, geometry.heights.length),
-    );
-    for (const height of geometry.heights) {
-      expect(height).toBeCloseTo(420, 0);
-      expect(height).toBeCloseTo(geometry.heights[0], 0);
+    const rows = new Map<number, typeof geometry.cards>();
+    for (const card of geometry.cards) {
+      rows.set(card.top, [...(rows.get(card.top) ?? []), card]);
+      if (card.compact) expect(card.height).toBeLessThan(420);
+      else expect(card.height).toBeCloseTo(420, 0);
     }
+    for (const row of rows.values())
+      expect(new Set(row.map((card) => card.compact)).size).toBe(1);
+    expect(geometry.complete).toBe(
+      [...rows.values()].reduce(
+        (total, row) => total + Math.min(availableColumns, row.length),
+        0,
+      ),
+    );
   });
 
   for (const width of [320, 768, 1440]) {

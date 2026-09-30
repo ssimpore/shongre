@@ -173,6 +173,11 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
             variant="primary"
             size="md"
             fullWidth
+            className={
+              !onSaveSearch && !secondaryAction
+                ? "sm:col-span-2 sm:w-1/2 sm:justify-self-center"
+                : undefined
+            }
             onClick={onClearFilters}
             leftIcon={<RotateCcw className="w-icon-md h-icon-md" />}
           >

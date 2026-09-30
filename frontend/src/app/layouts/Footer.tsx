@@ -242,9 +242,9 @@ export const Footer: React.FC = () => {
       <Container width="full" data-footer-container>
         <div
           data-footer-main
-          className="grid gap-8 pb-10 md:gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12 2xl:pb-12"
+          className="grid gap-8 pb-10 md:gap-10 lg:flex lg:gap-8 xl:gap-12 2xl:pb-12"
         >
-          <div className="min-w-0 lg:col-span-3">
+          <div className="min-w-0 lg:w-min lg:shrink-0">
             <Link
               to={routes.home()}
               aria-label={t("footer.home")}
@@ -279,7 +279,7 @@ export const Footer: React.FC = () => {
             </section>
             <section
               aria-label={t("footer.mobileAppsHeading")}
-              className="mt-4 flex flex-wrap gap-3"
+              className="mt-4 flex flex-wrap gap-3 lg:flex-nowrap"
             >
               {MOBILE_STORE_LINKS.map((store) => (
                 <StoreBadge
@@ -304,7 +304,7 @@ export const Footer: React.FC = () => {
               {t("footer.mobileAppsTagline")}
             </p>
           </div>
-          <div className="grid min-w-0 md:grid-cols-4 lg:col-span-9 lg:pt-2">
+          <div className="grid min-w-0 md:grid-cols-4 lg:flex-1 lg:pt-2">
             <FooterColumn
               id="buy"
               title={t("footer.buy")}

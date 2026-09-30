@@ -1004,7 +1004,13 @@ France-only happy path is insufficient for market-sensitive work.
   the shared `ListingGrid`: content-sized token tracks pack from the inline
   start with the shared gap, so sparse rows never center or distribute cards
   across the remaining row width. Homepage rails retain their independent
-  content-sized scrolling layout.
+  content-sized scrolling layout. Mixed listing rails automatically pack
+  photo and compact no-photo cards into separate rows using the canonical
+  card's media state, with the first result's format in the leading row.
+  Result grids start a new row at each format transition without changing
+  backend ranking, selected sorting, or pagination. Keep wrapped cards and
+  their comparison controls together; horizontal list views remain one result
+  per row.
   Keep deferred section rendering intact.
   Profile results, hero media slides, operational rows, and map popups may
   remain specialized when they are not listing-card equivalents.

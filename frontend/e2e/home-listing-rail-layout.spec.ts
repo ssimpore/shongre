@@ -1,6 +1,8 @@
 import { expect as baseExpect, test, type Locator } from "@playwright/test";
 import { useEstablishedConsent } from "./personas";
 import { expectNoHorizontalOverflow } from "./overflow";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const expect = baseExpect.configure({ timeout: 30_000 });
 test.setTimeout(120_000);
@@ -44,10 +46,10 @@ for (const width of [1408, 390]) {
   });
 }
 
-for (const width of [1408, 768, 390, 320]) {
+for (const width of [1408, 1352, 768, 390, 320]) {
   test(`homepage listing rails fit their own content without clipping at ${width}px`, async ({
     page,
-  }) => {
+  }, testInfo) => {
     await useEstablishedConsent(page);
     await page.setViewportSize({ width, height: 900 });
     const errors: string[] = [];
@@ -79,6 +81,9 @@ for (const width of [1408, 768, 390, 320]) {
             return {
               width: box.width,
               height: box.height,
+              top: box.top,
+              left: box.left,
+              compact: card.classList.contains("listing-card-no-media"),
               variant: card.getAttribute("data-listing-card-variant"),
               clipped:
                 card.scrollHeight > card.clientHeight + 1 ||
@@ -92,19 +97,48 @@ for (const width of [1408, 768, 390, 320]) {
             };
           }),
         );
-      const heights: number[] = [];
       for (const card of geometry) {
         expect(card.variant).toBe("showcase");
         expect(card.clipped).toBe(false);
         expect(card.titleOverflowIsClamped).toBe(true);
         expect(card.overlap).toBe(false);
-        heights.push(card.height);
         widths.push(card.width);
       }
-      expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
+      const rows = new Map<number, typeof geometry>();
+      for (const card of geometry) {
+        const top = Math.round(card.top);
+        rows.set(top, [...(rows.get(top) ?? []), card]);
+      }
+      for (const row of rows.values()) {
+        expect(new Set(row.map((card) => card.compact)).size).toBe(1);
+        for (let index = 1; index < row.length; index++) {
+          expect(row[index].left - row[index - 1].left).toBeCloseTo(
+            row[index - 1].width + (width < 640 ? 12 : 16),
+            0,
+          );
+        }
+        if (!row[0].compact) {
+          const heights = row.map((card) => card.height);
+          expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
+        }
+      }
+      expect(rows.size).toBe(
+        new Set(geometry.map((card) => card.compact)).size,
+      );
     }
     expect(Math.max(...widths) - Math.min(...widths)).toBeLessThan(1);
     await expectNoHorizontalOverflow(page, `homepage shared rails ${width}`);
+
+    if (width === 1352) {
+      const recent = page.getByTestId("home-discovery-recent_listings");
+      await recent.scrollIntoViewIfNeeded();
+      await recent.screenshot({
+        path: join(
+          tmpdir(),
+          `shongre-listing-rows-home-${testInfo.project.name}.png`,
+        ),
+      });
+    }
 
     const deals = page.getByTestId("home-discovery-deals");
     await deals.scrollIntoViewIfNeeded();

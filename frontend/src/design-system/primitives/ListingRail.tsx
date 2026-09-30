@@ -13,8 +13,9 @@ export interface ListingRailProps {
 }
 
 /**
- * Token-width cards share their row's natural height through flex alignment.
- * Other rails size independently, so long titles cannot stretch another section.
+ * Token-width cards share their row's natural height. The shared stylesheet
+ * automatically gives compact and photo cards separate rows in mixed rails.
+ * Other rails size independently, so content cannot stretch another section.
  *
  * The mobile bleed (`-mx-4 px-4`) is the shared homepage rail pattern — it
  * lets the row run to the screen edge on a phone

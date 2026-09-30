@@ -13,6 +13,8 @@ export interface ListingGridProps {
  * Mobile keeps one readable column. Desktop uses the same content-sized width
  * as rail cards and packs each row from the inline start without stretching an
  * individual card or distributing sparse results across the container.
+ * The shared stylesheet starts a new row at compact/photo format transitions
+ * while preserving the API's result order, including wrapped vertical cards.
  */
 export const ListingGrid: React.FC<ListingGridProps> = ({
   children,
