@@ -64,13 +64,13 @@
     }
   },
   "devDependencies": {
-    "@redocly/cli": "^2.47.0",
+    "@redocly/cli": "^2.54.3",
     "openapi-typescript": "^7.13.0",
-    "prettier": "^3.6.2",
+    "prettier": "^3.9.9",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "read-excel-file": "9.3.10",
-    "supabase": "^2.117.0",
-    "tsx": "^4.23.12"
+    "supabase": "^2.118.0",
+    "tsx": "^4.23.15"
   }
 }
