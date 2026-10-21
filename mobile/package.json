@@ -38,23 +38,23 @@
     "expo-splash-screen": "~57.0.9",
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
-    "lucide-react-native": "^1.33.0",
+    "lucide-react-native": "^1.59.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-native": "0.86.3",
+    "react-native": "0.88.0",
     "react-native-gesture-handler": "~2.32.0",
-    "react-native-reanimated": "4.5.1",
-    "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "~4.26.0",
-    "react-native-svg": "15.15.4",
-    "react-native-web": "~0.21.0"
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "react-native-svg": "15.16.0",
+    "react-native-web": "~0.21.4"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
     "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^9.39.5",
     "eslint-config-expo": "~57.0.2",
-    "expo-doctor": "1.20.2",
+    "expo-doctor": "1.21.5",
     "typescript": "~6.0.3",
     "vitest": "^4.1.10"
   }
